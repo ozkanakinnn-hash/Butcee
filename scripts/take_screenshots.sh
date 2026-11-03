@@ -73,6 +73,12 @@ write_prefs "" "LIGHT" "en"
 launch
 shot 10_english_home 2
 adb shell input swipe 540 1700 540 700 500; shot 10b_english_home_asagi
+adb shell input swipe 540 1800 540 300 600; adb shell input swipe 540 1800 540 300 600; shot 10c_english_menu
+adb shell input swipe 540 1800 540 300 600; shot 10d_english_names
+adb shell input swipe 540 1800 540 300 600; shot 10e_english_inspiration
+tap_text "More"; sleep 2; tap_text "The Holy Quran"; shot 10f_english_quran 3
+tap_text "Fâtiha"; shot 10g_english_fatiha 3
+adb shell input swipe 540 1800 540 400 600; shot 10h_english_fatiha_meaning
 
 adb logcat -d -b crash >> $OUT/crash_log.txt
 ls -la $OUT; cat $OUT/crash_log.txt | head -80
