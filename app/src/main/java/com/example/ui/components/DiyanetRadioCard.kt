@@ -79,13 +79,16 @@ fun DiyanetRadioCard(modifier: Modifier = Modifier) {
     val token = SessionToken(context, ComponentName(context, RadioPlaybackService::class.java))
     val future = MediaController.Builder(context, token).buildAsync()
     val listener = object : Player.Listener {
-      override fun onIsPlayingChanged(playing: Boolean) { isPlaying = playing }
-      override fun onPlaybackStateChanged(state: Int) {
-        isBuffering = state == Player.STATE_BUFFERING
-        if (state == Player.STATE_READY) error = null
+      // Her olay grubundan sonra durumu doğrudan oynatıcıdan oku (tek tek geri çağrılara
+      // güvenmek, durdurma sonrası arayüzün "çalıyor" olarak takılı kalmasına yol açıyordu).
+      override fun onEvents(player: Player, events: Player.Events) {
+        isPlaying = player.isPlaying
+        isBuffering = player.playWhenReady && player.playbackState == Player.STATE_BUFFERING
+        if (player.playbackState == Player.STATE_READY) error = null
       }
       override fun onPlayerError(e: PlaybackException) {
         error = "Yayına bağlanılamadı (${e.errorCodeName}). İnternet bağlantınızı kontrol edip tekrar deneyin."
+        isPlaying = false
         isBuffering = false
       }
     }
@@ -95,7 +98,7 @@ fun DiyanetRadioCard(modifier: Modifier = Modifier) {
         c.addListener(listener)
         // Uygulama yeniden açıldığında arka planda çalan yayını göster
         isPlaying = c.isPlaying
-        isBuffering = c.playbackState == Player.STATE_BUFFERING
+        isBuffering = c.playWhenReady && c.playbackState == Player.STATE_BUFFERING
         c.currentMediaItem?.mediaId?.let { id -> channels.firstOrNull { it.id == id }?.let { selected = it } }
       }
     }, ContextCompat.getMainExecutor(context))
@@ -123,6 +126,7 @@ fun DiyanetRadioCard(modifier: Modifier = Modifier) {
     c.setMediaItem(item)
     c.prepare()
     c.play()
+    isBuffering = true
   }
 
   // DİKKAT: `controller?.run { stop() }` yazılmamalı — run bloğu içinde `stop()` bu yerel
@@ -131,6 +135,8 @@ fun DiyanetRadioCard(modifier: Modifier = Modifier) {
     val c = controller ?: return
     c.stop()
     c.clearMediaItems()
+    isPlaying = false
+    isBuffering = false
   }
 
   val active = isPlaying || isBuffering
