@@ -38,6 +38,7 @@ import com.example.data.RamadanMenu
 fun IftarMenuCard(
   menu: RamadanMenu,
   onViewAllMenus: () -> Unit,
+  ramadanDay: Int? = null, // Ramazan'da kaçıncı gün; Ramazan dışında null
   modifier: Modifier = Modifier
 ) {
   Card(
@@ -70,7 +71,7 @@ fun IftarMenuCard(
           )
           Spacer(modifier = Modifier.width(8.dp))
           Text(
-            text = "Günün İftar Menüsü",
+            text = if (ramadanDay != null) "Günün İftar Menüsü" else "Günün Menüsü",
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSurface
@@ -83,7 +84,7 @@ fun IftarMenuCard(
             .padding(horizontal = 8.dp, vertical = 4.dp)
         ) {
           Text(
-            text = "${menu.day}. Gün",
+            text = if (ramadanDay != null) "$ramadanDay. Gün" else "Bugün",
             style = MaterialTheme.typography.labelSmall,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.primary
@@ -134,7 +135,7 @@ fun IftarMenuCard(
           )
           Spacer(modifier = Modifier.width(6.dp))
           Text(
-            text = "Ramazan Rehberi & Günlük Menüyü Gör ›",
+            text = if (ramadanDay != null) "Ramazan Rehberi & Günlük Menüyü Gör ›" else "Tüm Menüleri Gör ›",
             fontSize = 13.sp,
             fontWeight = FontWeight.SemiBold
           )

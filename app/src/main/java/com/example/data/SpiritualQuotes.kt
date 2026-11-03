@@ -187,6 +187,67 @@ object SpiritualQuotes {
     )
   )
 
+  /** Ramazan dışında gösterilen genel (Ramazan'a özel olmayan) ayet, hadis ve dualar. */
+  val generalList: List<SpiritualItem> = listOf(
+    SpiritualItem(101, "أَلَا بِذِكْرِ اللَّهِ تَطْمَئِنُّ الْقُلُوبُ",
+      "Bilesiniz ki kalpler ancak Allah'ı anmakla huzur bulur.", "Ra'd Suresi, 28. Ayet",
+      "Kolaylaştırınız, zorlaştırmayınız; müjdeleyiniz, nefret ettirmeyiniz.", "Buhârî, İlim 11",
+      "Rabbimiz! Bize dünyada da iyilik ver, ahirette de iyilik ver ve bizi cehennem azabından koru.", "Bakara Suresi, 201. Ayet",
+      "السَّلَامُ", "Es-Selâm", "Kullarını her türlü tehlikeden selamete çıkaran."),
+    SpiritualItem(102, "فَإِنَّ مَعَ الْعُسْرِ يُسْرًا",
+      "Şüphesiz zorlukla beraber bir kolaylık vardır.", "İnşirâh Suresi, 5. Ayet",
+      "Müslüman, elinden ve dilinden Müslümanların emin olduğu kimsedir.", "Buhârî, Îmân 4",
+      "Rabbim! İlmimi artır.", "Tâhâ Suresi, 114. Ayet",
+      "الْفَتَّاحُ", "El-Fettâh", "Her türlü zorluğu çözen, hayır kapılarını açan."),
+    SpiritualItem(103, "فَاذْكُرُونِي أَذْكُرْكُمْ",
+      "Öyleyse yalnız beni anın ki ben de sizi anayım.", "Bakara Suresi, 152. Ayet",
+      "Sizin en hayırlınız, ahlakı en güzel olanınızdır.", "Buhârî, Edeb 39",
+      "Rabbimiz! Bizi doğru yola ilettikten sonra kalplerimizi eğriltme.", "Âl-i İmrân Suresi, 8. Ayet",
+      "الْوَدُودُ", "El-Vedûd", "Kullarını çok seven ve sevilmeye en layık olan."),
+    SpiritualItem(104, "وَمَنْ يَتَوَكَّلْ عَلَى اللَّهِ فَهُوَ حَسْبُهُ",
+      "Kim Allah'a tevekkül ederse, O ona yeter.", "Talâk Suresi, 3. Ayet",
+      "Ameller niyetlere göredir.", "Buhârî, Bed'ü'l-vahy 1",
+      "Rabbim! Göğsüme genişlik ver, işimi bana kolaylaştır.", "Tâhâ Suresi, 25-26. Ayetler",
+      "الْوَكِيلُ", "El-Vekîl", "Kendisine güvenip dayananların işlerini en güzel şekilde yoluna koyan."),
+    SpiritualItem(105, "إِنَّمَا الْمُؤْمِنُونَ إِخْوَةٌ",
+      "Müminler ancak kardeştirler.", "Hucurât Suresi, 10. Ayet",
+      "Sizden biriniz, kendisi için istediğini kardeşi için de istemedikçe (gerçek anlamda) iman etmiş olmaz.", "Buhârî, Îmân 7",
+      "Rabbimiz! Bizi ve bizden önce iman etmiş kardeşlerimizi bağışla.", "Haşr Suresi, 10. Ayet",
+      "الْغَفُورُ", "El-Gafûr", "Günahları çokça bağışlayan."),
+    SpiritualItem(106, "لَا يُكَلِّفُ اللَّهُ نَفْسًا إِلَّا وُسْعَهَا",
+      "Allah hiç kimseye gücünün yeteceğinden fazlasını yüklemez.", "Bakara Suresi, 286. Ayet",
+      "Kardeşine tebessüm etmen sadakadır.", "Tirmizî, Birr 36",
+      "Rabbimiz! Unutur veya yanılırsak bizi sorumlu tutma.", "Bakara Suresi, 286. Ayet",
+      "الرَّحِيمُ", "Er-Rahîm", "Müminlere ahirette sonsuz merhamet eden."),
+    SpiritualItem(107, "وَهُوَ مَعَكُمْ أَيْنَ مَا كُنْتُمْ",
+      "Nerede olursanız olun, O sizinle beraberdir.", "Hadîd Suresi, 4. Ayet",
+      "Temizlik imanın yarısıdır.", "Müslim, Tahâret 1",
+      "Allah'ım! Senden faydalı ilim, helal rızık ve kabul edilmiş amel isterim.", "İbn Mâce, İkâmetü's-salât 32",
+      "الرَّزَّاقُ", "Er-Rezzâk", "Bütün canlıların rızkını veren."),
+    SpiritualItem(108, "وَقَضَىٰ رَبُّكَ أَلَّا تَعْبُدُوا إِلَّا إِيَّاهُ وَبِالْوَالِدَيْنِ إِحْسَانًا",
+      "Rabbin, yalnız kendisine ibadet etmenizi ve anne babaya iyi davranmanızı kesin olarak emretti.", "İsrâ Suresi, 23. Ayet",
+      "Allah'ın rızası anne babanın rızasındadır.", "Tirmizî, Birr 3",
+      "Rabbim! Onlar beni küçükken nasıl yetiştirdilerse, sen de onlara öyle merhamet et.", "İsrâ Suresi, 24. Ayet",
+      "الْبَرُّ", "El-Berr", "İyiliği ve ihsanı bol olan."),
+    SpiritualItem(109, "إِنَّ الصَّلَاةَ تَنْهَىٰ عَنِ الْفَحْشَاءِ وَالْمُنْكَرِ",
+      "Şüphesiz namaz, hayâsızlıktan ve kötülükten alıkoyar.", "Ankebût Suresi, 45. Ayet",
+      "Beş vakit namaz, aralarında işlenen (küçük) günahlara kefarettir.", "Müslim, Tahâret 16",
+      "Rabbim! Beni ve soyumdan gelecekleri namazı devamlı kılanlardan eyle.", "İbrâhîm Suresi, 40. Ayet",
+      "الْمُجِيبُ", "El-Mücîb", "Dualara karşılık veren."),
+    SpiritualItem(110, "إِنَّ اللَّهَ مَعَ الصَّابِرِينَ",
+      "Şüphesiz Allah sabredenlerle beraberdir.", "Bakara Suresi, 153. Ayet",
+      "Gerçek güçlü kimse, öfkelendiği zaman kendine hâkim olandır.", "Buhârî, Edeb 76",
+      "Rabbimiz! Üzerimize sabır yağdır, ayaklarımızı sabit kıl.", "Bakara Suresi, 250. Ayet",
+      "الصَّبُورُ", "Es-Sabûr", "Çok sabırlı olan, cezalandırmada acele etmeyen.")
+  )
+
+  /** Bugünün içeriği: Ramazan'da Ramazan'ın gününe göre, Ramazan dışında genel listeden. */
+  fun forToday(cal: java.util.Calendar = java.util.Calendar.getInstance()): SpiritualItem {
+    val ramadanDay = RamadanCalendar.dayOfRamadan(cal)
+    return if (ramadanDay != null) getForDay(ramadanDay)
+    else generalList[cal.get(java.util.Calendar.DAY_OF_YEAR) % generalList.size]
+  }
+
   fun getForDay(dayIndex: Int): SpiritualItem {
     val safeDay = ((dayIndex - 1) % list.size + list.size) % list.size
     return list[safeDay]

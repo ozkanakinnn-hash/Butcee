@@ -30,6 +30,16 @@ object RamadanCalendar {
 
   fun isRamadanDay(cal: Calendar): Boolean = isRamadanDay(dateKey(cal))
 
+  /** Bugün Ramazan'ın kaçıncı günü (1..30); Ramazan değilse null. */
+  fun dayOfRamadan(cal: Calendar = Calendar.getInstance()): Int? {
+    val key = dateKey(cal)
+    val r = ranges.firstOrNull { key >= it.start && key <= it.end } ?: return null
+    val p = r.start.split("-").map { it.toInt() }
+    val start = Calendar.getInstance().apply { clear(); set(p[0], p[1] - 1, p[2]) }
+    val today = Calendar.getInstance().apply { clear(); set(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH)) }
+    return (((today.timeInMillis - start.timeInMillis) / 86_400_000L) + 1).toInt()
+  }
+
   /** Verilen miladi yılda başlayan Ramazan'ın (ilk oruç, son oruç) anahtarları; tabloda yoksa null. */
   fun rangeForYear(year: Int): Pair<String, String>? =
     ranges.firstOrNull { it.start.startsWith("$year-") }?.let { it.start to it.end }

@@ -92,31 +92,29 @@ fun DailySpiritualCard(
 
         // Paylaş menüsü: Instagram Hikâyesi + diğer uygulamalar
         Box {
-          IconButton(
-            onClick = { shareMenuOpen = true },
-            modifier = Modifier.testTag("share_spiritual_button")
+          Row(
+            modifier = Modifier
+              .clip(RoundedCornerShape(10.dp))
+              .background(MaterialTheme.colorScheme.primaryContainer)
+              .clickable { shareMenuOpen = true }
+              .padding(horizontal = 10.dp, vertical = 6.dp)
+              .testTag("share_spiritual_button"),
+            verticalAlignment = Alignment.CenterVertically
           ) {
-            Row(
-              modifier = Modifier
-                .clip(RoundedCornerShape(10.dp))
-                .background(MaterialTheme.colorScheme.primaryContainer)
-                .padding(horizontal = 8.dp, vertical = 4.dp),
-              verticalAlignment = Alignment.CenterVertically
-            ) {
-              Icon(
-                imageVector = Icons.Default.Share,
-                contentDescription = "Sosyal Medyada Paylaş",
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(14.dp)
-              )
-              Spacer(modifier = Modifier.width(4.dp))
-              Text(
-                text = "Paylaş",
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary
-              )
-            }
+            Icon(
+              imageVector = Icons.Default.Share,
+              contentDescription = "Sosyal Medyada Paylaş",
+              tint = MaterialTheme.colorScheme.primary,
+              modifier = Modifier.size(14.dp)
+            )
+            Spacer(modifier = Modifier.width(4.dp))
+            Text(
+              text = "Paylaş",
+              fontSize = 11.sp,
+              fontWeight = FontWeight.Bold,
+              color = MaterialTheme.colorScheme.primary,
+              maxLines = 1
+            )
           }
           DropdownMenu(
             expanded = shareMenuOpen,

@@ -243,6 +243,7 @@ fun HomeScreen(
     item {
       IftarMenuCard(
         menu = menu,
+        ramadanDay = com.example.data.RamadanCalendar.dayOfRamadan(),
         onViewAllMenus = onOpenAllMenus
       )
     }

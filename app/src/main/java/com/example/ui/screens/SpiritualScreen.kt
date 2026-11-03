@@ -62,7 +62,7 @@ fun SpiritualScreen(
   val isRamadan = holidayInfo.title.contains("Bayramı", ignoreCase = true)
 
   // Today's item based on day of year / Ramadan day
-  val todayItem = remember { SpiritualQuotes.getForDay(1) }
+  val todayItem = remember { SpiritualQuotes.forToday() }
 
   val badgeText = if (isRamadan) {
     "Ramazan'ın ${todayItem.day}. Günü Hikmeti"

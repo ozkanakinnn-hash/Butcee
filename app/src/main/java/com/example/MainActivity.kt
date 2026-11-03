@@ -45,6 +45,7 @@ import com.example.data.HolidayCountdownInfo
 import com.example.data.PrayerRepository
 import com.example.data.PrayerTimeUtils
 import com.example.data.PrayerTimes
+import com.example.data.RamadanCalendar
 import com.example.data.RamadanMenus
 import com.example.data.SpiritualQuotes
 import com.example.ui.components.CannonConfettiAnimation
@@ -94,6 +95,8 @@ class MainActivity : ComponentActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     AppHolder.context = applicationContext
+    com.example.util.CrashReporter.install(this)
+    val lastCrash = com.example.util.CrashReporter.consumeLastCrash(this)
     enableEdgeToEdge()
 
     // Initialize Google Mobile Ads SDK (AdMob)
@@ -133,8 +136,33 @@ class MainActivity : ComponentActivity() {
       }
 
       var isOnboardingCompleted by remember { mutableStateOf(prefs.isOnboardingCompleted) }
+      var crashReport by remember { mutableStateOf(lastCrash) }
 
       MyApplicationTheme(darkTheme = isDark, colorTheme = currentColorTheme) {
+        // Önceki açılışta çökme olduysa raporu göster
+        crashReport?.let { report ->
+          androidx.compose.material3.AlertDialog(
+            onDismissRequest = { crashReport = null },
+            title = { Text("Uygulama beklenmedik şekilde kapandı") },
+            text = {
+              Text(
+                "Sorunu çözebilmemiz için hata raporunu kopyalayıp geliştiriciye gönderebilirsiniz.\n\n" +
+                  report.lineSequence().take(6).joinToString("\n"),
+                fontSize = 11.sp
+              )
+            },
+            confirmButton = {
+              androidx.compose.material3.TextButton(onClick = {
+                com.example.util.CrashReporter.copyToClipboard(this@MainActivity, report)
+                android.widget.Toast.makeText(this@MainActivity, "Hata raporu kopyalandı", android.widget.Toast.LENGTH_SHORT).show()
+                crashReport = null
+              }) { Text("Raporu Kopyala") }
+            },
+            dismissButton = {
+              androidx.compose.material3.TextButton(onClick = { crashReport = null }) { Text("Kapat") }
+            }
+          )
+        }
         if (!isOnboardingCompleted) {
           OnboardingScreen(
             prefs = prefs,
@@ -217,8 +245,12 @@ fun RamazanRehberiApp(
     }
   }
 
-  val todayMenu = remember { RamadanMenus.getMenuForDay(1) }
-  val todaySpiritual = remember { SpiritualQuotes.getForDay(1) }
+  // Ramazan'da Ramazan'ın gününe göre, dışında yılın gününe göre döner
+  val ramadanDay = remember { RamadanCalendar.dayOfRamadan() }
+  val todayMenu = remember {
+    RamadanMenus.getMenuForDay(ramadanDay ?: java.util.Calendar.getInstance().get(java.util.Calendar.DAY_OF_YEAR))
+  }
+  val todaySpiritual = remember { SpiritualQuotes.forToday() }
 
   // 5 Tabs: Ana Sayfa, Ramazan Rehberi, Takvim, Ayet & Dua, Dahası
   val navTabs = listOf(
