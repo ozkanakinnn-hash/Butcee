@@ -10,7 +10,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -33,9 +32,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
@@ -43,6 +42,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import java.util.Calendar
@@ -61,7 +61,6 @@ fun WelcomeBanner(
   isRamadanSeason: Boolean = false,
   modifier: Modifier = Modifier
 ) {
-  val isDark = isSystemInDarkTheme()
 
   // 7-Day Historic Istanbul Mosques Cycle based on Day of Week
   val todayMosque = remember {
@@ -137,160 +136,209 @@ fun WelcomeBanner(
     label = "shimmer_glow"
   )
 
-  // Cream, beige and gold luxury palette
-  val cardContainerColor = if (isDark) Color(0xFF22201D) else Color(0xFFF9F4EB)
-  val goldAccent = if (isDark) Color(0xFFD4AF37) else Color(0xFF9E6B20)
-  val deepTextColor = if (isDark) Color(0xFFEDE5D8) else Color(0xFF382A1B)
-
   Card(
-    modifier = modifier
-      .fillMaxWidth()
-      .padding(horizontal = 16.dp, vertical = 6.dp)
-      .testTag("welcome_ramadan_banner"),
-    shape = RoundedCornerShape(24.dp),
-    colors = CardDefaults.cardColors(containerColor = cardContainerColor),
-    border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE2D6C0).copy(alpha = 0.7f)),
-    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    modifier = modifier.testTag("welcome_ramadan_banner"),
+    shape = RoundedCornerShape(22.dp),
+    colors = CardDefaults.cardColors(containerColor = Color(0xFF1B2440)),
+    elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
   ) {
-    Box(modifier = Modifier.fillMaxWidth()) {
-      // 1. SOFT BLUR BACKGROUND MOSQUE LAYER (Hafif arka plan blur efekti)
+    Box(modifier = Modifier.fillMaxSize()) {
+      // 1. ARKA PLAN: Günün İstanbul camisi — akşam vakti silüeti
+      IstanbulMosqueScene(
+        minaretCount = todayMosque.minaretCount,
+        glow = shimmerOffset,
+        modifier = Modifier.fillMaxSize()
+      )
+
+      // 2. Metnin okunması için alttan koyulaşan perde
       Box(
         modifier = Modifier
-          .fillMaxWidth()
-          .height(145.dp)
-          .blur(5.dp)
-      ) {
-        Canvas(modifier = Modifier.fillMaxSize()) {
-          val w = size.width
-          val h = size.height
-
-          // Soft diffused background radial light
-          drawCircle(
-            brush = Brush.radialGradient(
-              colors = listOf(
-                Color(0xFFEEDCBB).copy(alpha = 0.45f * shimmerOffset),
-                Color.Transparent
-              ),
-              center = Offset(w * 0.5f, h * 0.4f),
-              radius = w * 0.45f
+          .fillMaxSize()
+          .background(
+            Brush.verticalGradient(
+              0.0f to Color.Black.copy(alpha = 0.15f),
+              0.45f to Color.Transparent,
+              1.0f to Color.Black.copy(alpha = 0.82f)
             )
           )
+      )
 
-          // Soft Mosque Dome & Minaret Silhouettes in warm gold/beige
-          val silhouetteColor = if (isDark) Color(0xFF332D24).copy(alpha = 0.5f) else Color(0xFFDACBB4).copy(alpha = 0.6f)
-
-          // Central Grand Dome
-          val domeRadius = w * 0.22f
-          val domeCenter = Offset(w * 0.5f, h * 0.85f)
-          drawCircle(
-            color = silhouetteColor,
-            radius = domeRadius,
-            center = domeCenter
-          )
-
-          // Side Half Domes
-          drawCircle(
-            color = silhouetteColor.copy(alpha = 0.4f),
-            radius = domeRadius * 0.65f,
-            center = Offset(w * 0.32f, h * 0.90f)
-          )
-          drawCircle(
-            color = silhouetteColor.copy(alpha = 0.4f),
-            radius = domeRadius * 0.65f,
-            center = Offset(w * 0.68f, h * 0.90f)
-          )
-
-          // Left Minaret
-          val minaretWidth = 8f
-          drawRect(
-            color = silhouetteColor,
-            topLeft = Offset(w * 0.18f - minaretWidth / 2, h * 0.15f),
-            size = androidx.compose.ui.geometry.Size(minaretWidth, h * 0.85f)
-          )
-          val leftSpire = Path().apply {
-            moveTo(w * 0.18f - minaretWidth, h * 0.15f)
-            lineTo(w * 0.18f, h * 0.04f)
-            lineTo(w * 0.18f + minaretWidth, h * 0.15f)
-            close()
-          }
-          drawPath(leftSpire, color = silhouetteColor)
-
-          // Right Minaret
-          drawRect(
-            color = silhouetteColor,
-            topLeft = Offset(w * 0.82f - minaretWidth / 2, h * 0.15f),
-            size = androidx.compose.ui.geometry.Size(minaretWidth, h * 0.85f)
-          )
-          val rightSpire = Path().apply {
-            moveTo(w * 0.82f - minaretWidth, h * 0.15f)
-            lineTo(w * 0.82f, h * 0.04f)
-            lineTo(w * 0.82f + minaretWidth, h * 0.15f)
-            close()
-          }
-          drawPath(rightSpire, color = silhouetteColor)
-        }
-      }
-
-      // 2. FOREGROUND CONTENT WITH LUXURY CREAM/BEIGE/GOLD TYPOGRAPHY
+      // 3. ÖN PLAN METİNLERİ
       Column(
         modifier = Modifier
-          .fillMaxWidth()
-          .padding(horizontal = 18.dp, vertical = 14.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+          .fillMaxSize()
+          .padding(12.dp)
       ) {
-        // Daily Mosque Badge
-        val badgeBg = if (isDark) Color(0xFF2E2A24) else Color(0xFFEFE6D5).copy(alpha = 0.95f)
-        val badgeBorder = if (isDark) Color(0xFF7A684C) else Color(0xFFD8C7AA)
         Row(
           modifier = Modifier
-            .clip(RoundedCornerShape(12.dp))
-            .background(badgeBg)
-            .border(1.dp, badgeBorder, RoundedCornerShape(12.dp))
-            .padding(horizontal = 10.dp, vertical = 4.dp),
+            .clip(RoundedCornerShape(10.dp))
+            .background(Color.Black.copy(alpha = 0.35f))
+            .border(1.dp, Color(0xFFE5B869).copy(alpha = 0.6f), RoundedCornerShape(10.dp))
+            .padding(horizontal = 8.dp, vertical = 3.dp),
           verticalAlignment = Alignment.CenterVertically
         ) {
-          Text(todayMosque.emoji, fontSize = 13.sp)
-          Spacer(modifier = Modifier.width(6.dp))
+          Text(todayMosque.emoji, fontSize = 11.sp)
+          Spacer(modifier = Modifier.width(4.dp))
           Text(
-            text = "${todayMosque.dayName} • Tarihi İstanbul Camileri",
-            fontSize = 11.sp,
+            text = todayMosque.dayName,
+            fontSize = 10.sp,
             fontWeight = FontWeight.Bold,
-            color = goldAccent
+            color = Color(0xFFE5B869)
           )
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.weight(1f))
 
-        // Mosque Name
+        Text(
+          text = "Tarihi İstanbul Camileri",
+          fontSize = 9.sp,
+          fontWeight = FontWeight.SemiBold,
+          color = Color(0xFFE5B869).copy(alpha = 0.9f)
+        )
         Text(
           text = todayMosque.mosqueName,
-          fontSize = 17.sp,
+          fontSize = 15.sp,
+          lineHeight = 18.sp,
           fontWeight = FontWeight.Bold,
-          color = deepTextColor,
-          textAlign = TextAlign.Center
+          color = Color.White,
+          maxLines = 2,
+          overflow = TextOverflow.Ellipsis
         )
-
         Text(
           text = todayMosque.titleDesc,
-          fontSize = 11.sp,
+          fontSize = 10.sp,
           fontWeight = FontWeight.Medium,
-          color = goldAccent,
-          textAlign = TextAlign.Center
+          color = Color(0xFFFFD56B),
+          maxLines = 1,
+          overflow = TextOverflow.Ellipsis
         )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // Spiritual Quote
+        Spacer(modifier = Modifier.height(6.dp))
         Text(
           text = "“${todayMosque.spiritualQuote}”",
-          fontSize = 12.sp,
+          fontSize = 10.sp,
           fontStyle = FontStyle.Italic,
-          lineHeight = 17.sp,
-          color = deepTextColor.copy(alpha = 0.85f),
-          textAlign = TextAlign.Center,
-          modifier = Modifier.padding(horizontal = 8.dp)
+          lineHeight = 13.sp,
+          color = Color.White.copy(alpha = 0.88f),
+          maxLines = 4,
+          overflow = TextOverflow.Ellipsis
         )
       }
+    }
+  }
+}
+
+/** Akşam ezanı vaktinde İstanbul camisi: gökyüzü, hilal, kubbeler, minareler ve deniz yansıması. */
+@Composable
+private fun IstanbulMosqueScene(
+  minaretCount: Int,
+  glow: Float,
+  modifier: Modifier = Modifier
+) {
+  Canvas(modifier = modifier) {
+    val w = size.width
+    val h = size.height
+    val baseY = h * 0.58f
+    val silhouette = Color(0xFF16110E)
+
+    // Gökyüzü (lacivert → mor → kehribar)
+    drawRect(
+      brush = Brush.verticalGradient(
+        colors = listOf(Color(0xFF1B2440), Color(0xFF473A5E), Color(0xFFB9744A), Color(0xFFE8B66A)),
+        startY = 0f,
+        endY = baseY
+      ),
+      size = Size(w, baseY)
+    )
+    // Ufuktaki güneş ışıltısı
+    drawCircle(
+      brush = Brush.radialGradient(
+        colors = listOf(Color(0xFFFFD56B).copy(alpha = 0.55f * glow), Color.Transparent),
+        center = Offset(w * 0.5f, baseY),
+        radius = w * 0.6f
+      ),
+      center = Offset(w * 0.5f, baseY),
+      radius = w * 0.6f
+    )
+
+    // Yıldızlar
+    listOf(0.12f to 0.08f, 0.30f to 0.15f, 0.55f to 0.06f, 0.64f to 0.20f, 0.92f to 0.30f, 0.20f to 0.27f)
+      .forEach { (x, y) ->
+        drawCircle(Color.White.copy(alpha = 0.75f), radius = w * 0.008f, center = Offset(w * x, h * y))
+      }
+
+    // Hilal
+    val moonC = Offset(w * 0.80f, h * 0.12f)
+    val moonR = w * 0.065f
+    drawCircle(Color(0xFFFFE3A3), radius = moonR, center = moonC)
+    drawCircle(Color(0xFF1E2643), radius = moonR * 0.85f, center = Offset(moonC.x + moonR * 0.4f, moonC.y - moonR * 0.15f))
+
+    // Deniz (Boğaz) ve yansıma
+    drawRect(
+      brush = Brush.verticalGradient(
+        colors = listOf(Color(0xFF6B4A3A), Color(0xFF1E2238)),
+        startY = baseY,
+        endY = h
+      ),
+      topLeft = Offset(0f, baseY),
+      size = Size(w, h - baseY)
+    )
+    for (k in 1..5) {
+      val y = baseY + (h - baseY) * k / 7f
+      drawLine(
+        color = Color(0xFFFFD56B).copy(alpha = 0.18f - k * 0.025f),
+        start = Offset(w * (0.25f + k * 0.03f), y),
+        end = Offset(w * (0.75f - k * 0.03f), y),
+        strokeWidth = 2f
+      )
+    }
+
+    // Cami gövdesi
+    val bodyTop = baseY - h * 0.10f
+    drawRect(silhouette, topLeft = Offset(w * 0.18f, bodyTop), size = Size(w * 0.64f, baseY - bodyTop))
+
+    // Yan yarım kubbeler
+    val sideR = w * 0.12f
+    listOf(0.30f, 0.70f).forEach { x ->
+      drawArc(
+        color = silhouette, startAngle = 180f, sweepAngle = 180f, useCenter = true,
+        topLeft = Offset(w * x - sideR, bodyTop - sideR * 0.55f), size = Size(sideR * 2, sideR * 2)
+      )
+    }
+    // Ana kubbe + kasnak + alem
+    val domeR = w * 0.19f
+    val drumTop = bodyTop - h * 0.05f
+    drawRect(silhouette, topLeft = Offset(w * 0.5f - domeR * 0.92f, drumTop), size = Size(domeR * 1.84f, bodyTop - drumTop + 2f))
+    drawArc(
+      color = silhouette, startAngle = 180f, sweepAngle = 180f, useCenter = true,
+      topLeft = Offset(w * 0.5f - domeR, drumTop - domeR), size = Size(domeR * 2, domeR * 2)
+    )
+    drawLine(silhouette, Offset(w * 0.5f, drumTop - domeR), Offset(w * 0.5f, drumTop - domeR - h * 0.05f), strokeWidth = w * 0.012f)
+
+    // Minareler (günün camisinin minare sayısı kadar)
+    val xs = when {
+      minaretCount >= 6 -> listOf(0.05f, 0.13f, 0.21f, 0.79f, 0.87f, 0.95f)
+      minaretCount >= 4 -> listOf(0.06f, 0.16f, 0.84f, 0.94f)
+      else -> listOf(0.09f, 0.91f)
+    }
+    val mw = w * 0.026f
+    xs.forEach { fx ->
+      val outer = fx < 0.08f || fx > 0.92f
+      val top = if (outer) h * 0.14f else h * 0.20f
+      val cx = w * fx
+      drawRect(silhouette, topLeft = Offset(cx - mw / 2, top), size = Size(mw, baseY - top))
+      // Şerefeler
+      listOf(0.35f, 0.62f).forEach { t ->
+        val by = top + (baseY - top) * t
+        drawRect(silhouette, topLeft = Offset(cx - mw, by), size = Size(mw * 2, h * 0.012f))
+      }
+      // Külah
+      val spire = Path().apply {
+        moveTo(cx - mw * 0.75f, top)
+        lineTo(cx, top - h * 0.07f)
+        lineTo(cx + mw * 0.75f, top)
+        close()
+      }
+      drawPath(spire, silhouette)
     }
   }
 }

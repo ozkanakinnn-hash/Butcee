@@ -8,8 +8,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -208,6 +210,133 @@ private fun TimeUnitBox(
       fontSize = 10.sp,
       fontWeight = FontWeight.Medium,
       color = MaterialTheme.colorScheme.onSurfaceVariant
+    )
+  }
+}
+
+/**
+ * Ana sayfanın üst satırında, cami kartının yanında yarım genişlikte duran kompakt geri sayım.
+ */
+@Composable
+fun CompactCountdownCard(
+  countdown: CountdownResult,
+  onFireCannon: () -> Unit,
+  modifier: Modifier = Modifier
+) {
+  Card(
+    modifier = modifier.testTag("smart_countdown_card"),
+    shape = RoundedCornerShape(22.dp),
+    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+    elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
+  ) {
+    Column(
+      modifier = Modifier
+        .fillMaxSize()
+        .padding(horizontal = 10.dp, vertical = 12.dp),
+      horizontalAlignment = Alignment.CenterHorizontally,
+      verticalArrangement = Arrangement.SpaceBetween
+    ) {
+      AnimatedContent(
+        targetState = countdown.title,
+        transitionSpec = { fadeIn() togetherWith fadeOut() },
+        label = "compact_countdown_title_anim"
+      ) { title ->
+        Text(
+          text = title,
+          fontSize = 13.sp,
+          fontWeight = FontWeight.Bold,
+          color = MaterialTheme.colorScheme.onSurface,
+          textAlign = TextAlign.Center,
+          maxLines = 2
+        )
+      }
+
+      Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center
+      ) {
+        MiniTimeUnitBox(String.format("%02d", countdown.hours), "Saat", Modifier.weight(1f))
+        CompactColon()
+        MiniTimeUnitBox(String.format("%02d", countdown.minutes), "Dakika", Modifier.weight(1f))
+        CompactColon()
+        MiniTimeUnitBox(String.format("%02d", countdown.seconds), "Saniye", Modifier.weight(1f))
+      }
+
+      Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(
+          text = countdown.targetTimeName,
+          fontSize = 11.sp,
+          color = MaterialTheme.colorScheme.onSurfaceVariant,
+          maxLines = 1
+        )
+        Text(
+          text = countdown.targetTimeString,
+          fontSize = 16.sp,
+          fontWeight = FontWeight.Bold,
+          color = MaterialTheme.colorScheme.primary
+        )
+      }
+
+      LinearProgressIndicator(
+        progress = { countdown.progress },
+        modifier = Modifier
+          .fillMaxWidth()
+          .height(5.dp)
+          .clip(CircleShape),
+        color = MaterialTheme.colorScheme.primary,
+        trackColor = MaterialTheme.colorScheme.surfaceVariant
+      )
+
+      OutlinedButton(
+        onClick = onFireCannon,
+        modifier = Modifier
+          .fillMaxWidth()
+          .height(34.dp)
+          .testTag("fire_cannon_button"),
+        shape = RoundedCornerShape(10.dp),
+        contentPadding = PaddingValues(horizontal = 6.dp, vertical = 0.dp),
+        colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.primary)
+      ) {
+        Text("💥 Topu Test Et", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, maxLines = 1)
+      }
+    }
+  }
+}
+
+@Composable
+private fun CompactColon() {
+  Text(
+    text = ":",
+    fontSize = 18.sp,
+    fontWeight = FontWeight.Bold,
+    color = MaterialTheme.colorScheme.primary,
+    modifier = Modifier.padding(horizontal = 2.dp)
+  )
+}
+
+@Composable
+private fun MiniTimeUnitBox(value: String, label: String, modifier: Modifier = Modifier) {
+  Column(
+    horizontalAlignment = Alignment.CenterHorizontally,
+    modifier = modifier
+      .clip(RoundedCornerShape(10.dp))
+      .background(MaterialTheme.colorScheme.surfaceVariant)
+      .padding(vertical = 6.dp)
+  ) {
+    Text(
+      text = value,
+      fontSize = 20.sp,
+      fontWeight = FontWeight.Bold,
+      fontFamily = FontFamily.Monospace,
+      color = MaterialTheme.colorScheme.primary
+    )
+    Text(
+      text = label,
+      fontSize = 8.sp,
+      fontWeight = FontWeight.Medium,
+      color = MaterialTheme.colorScheme.onSurfaceVariant,
+      maxLines = 1
     )
   }
 }

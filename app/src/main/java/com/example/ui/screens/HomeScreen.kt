@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -44,7 +45,7 @@ import com.example.data.PrayerTimes
 import com.example.data.RamadanMenu
 import com.example.data.SpiritualItem
 import com.example.ui.components.AdBannerComponent
-import com.example.ui.components.CountdownCard
+import com.example.ui.components.CompactCountdownCard
 import com.example.ui.components.DailySpiritualCard
 import com.example.ui.components.HolidayCountdownCard
 import com.example.ui.components.IftarMenuCard
@@ -136,20 +137,35 @@ fun HomeScreen(
       }
     }
 
-    // 2. Ramadan Minarets & Welcome Banner
+    // 2. Üst satır: iki eşit pano — (1) Günün İstanbul camisi, (2) İftara/İmsaka kalan vakit
     item {
-      WelcomeBanner(
-        isRamadanSeason = isRamadanSeason
-      )
+      Row(
+        modifier = Modifier
+          .fillMaxWidth()
+          .height(250.dp)
+          .padding(horizontal = 16.dp, vertical = 6.dp),
+        horizontalArrangement = Arrangement.spacedBy(10.dp)
+      ) {
+        WelcomeBanner(
+          isRamadanSeason = isRamadanSeason,
+          modifier = Modifier
+            .weight(1f)
+            .fillMaxHeight()
+        )
+        CompactCountdownCard(
+          countdown = countdown,
+          onFireCannon = onFireCannon,
+          modifier = Modifier
+            .weight(1f)
+            .fillMaxHeight()
+        )
+      }
     }
 
-    // 3. Smart Countdown Card (İftara Kalan / İmsaka Kalan)
+    // 3. Günlük Vakit Namazları tablosu (eski geri sayım panosunun yeri)
     item {
-      CountdownCard(
-        countdown = countdown,
-        city = prefs.province,
-        district = prefs.district,
-        onFireCannon = onFireCannon
+      PrayerTimesCard(
+        prayerTimes = prayerTimes
       )
     }
 
@@ -249,13 +265,6 @@ fun HomeScreen(
           Text("Gör ›", fontWeight = FontWeight.Bold, fontSize = 13.sp, color = MaterialTheme.colorScheme.primary)
         }
       }
-    }
-
-    // 6. Daily Prayer Times (6 vakit)
-    item {
-      PrayerTimesCard(
-        prayerTimes = prayerTimes
-      )
     }
 
     // 7. Smart Holiday Countdown (Ramazan'a / Ramazan Bayramı'na / Kurban Bayramı'na)
