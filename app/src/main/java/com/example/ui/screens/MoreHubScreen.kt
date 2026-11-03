@@ -56,6 +56,7 @@ fun MoreHubScreen(
   onOpenFastingTracker: () -> Unit,
   onOpenNotes: () -> Unit,
   onOpenSettings: () -> Unit,
+  onOpenRadioTv: () -> Unit = {},
   modifier: Modifier = Modifier
 ) {
   LazyColumn(
@@ -135,6 +136,31 @@ fun MoreHubScreen(
       }
     }
 
+    // Radyo & TV
+    item {
+      Row(
+        modifier = Modifier
+          .fillMaxWidth()
+          .padding(horizontal = 16.dp, vertical = 6.dp),
+        horizontalArrangement = Arrangement.spacedBy(10.dp)
+      ) {
+        HubCard(
+          title = "Radyo",
+          subtitle = "Diyanet • Kur'an\nRisalet (Canlı)",
+          emoji = "📻",
+          onClick = onOpenRadioTv,
+          modifier = Modifier.weight(1f)
+        )
+        HubCard(
+          title = "Kâbe TV",
+          subtitle = "Mescid-i Haram\nCanlı Yayın",
+          emoji = "🕋",
+          onClick = onOpenRadioTv,
+          modifier = Modifier.weight(1f)
+        )
+      }
+    }
+
     // Grid row 3: Manevi Notlar & Ayarlar
     item {
       Row(
@@ -152,58 +178,11 @@ fun MoreHubScreen(
         )
         HubCard(
           title = "Uygulama Ayarları",
-          subtitle = "Top & Ney Sesi\nDakika Barları & Vakit",
+          subtitle = "Tema, Dil\nBildirim & Hatırlatıcı",
           emoji = "⚙️",
           onClick = onOpenSettings,
           modifier = Modifier.weight(1f)
         )
-      }
-    }
-
-    // Direct Notification Test Card
-    item {
-      Card(
-        modifier = Modifier
-          .fillMaxWidth()
-          .padding(horizontal = 16.dp, vertical = 6.dp)
-          .clickable { onOpenSettings() },
-        shape = RoundedCornerShape(18.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7f))
-      ) {
-        Row(
-          modifier = Modifier
-            .fillMaxWidth()
-            .padding(14.dp),
-          verticalAlignment = Alignment.CenterVertically,
-          horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-          Row(verticalAlignment = Alignment.CenterVertically) {
-            Box(
-              modifier = Modifier
-                .size(40.dp)
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.primary),
-              contentAlignment = Alignment.Center
-            ) {
-              Text("🔔", fontSize = 18.sp)
-            }
-            Spacer(modifier = Modifier.width(12.dp))
-            Column {
-              Text(
-                text = "Bildirim Test Paneli",
-                fontWeight = FontWeight.Bold,
-                fontSize = 14.sp,
-                color = MaterialTheme.colorScheme.onPrimaryContainer
-              )
-              Text(
-                text = "Ramazan topu ve Ney sesli bildirimleri hemen test edin",
-                fontSize = 11.sp,
-                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.85f)
-              )
-            }
-          }
-          Text("Test Et ›", fontWeight = FontWeight.Bold, fontSize = 12.sp, color = MaterialTheme.colorScheme.primary)
-        }
       }
     }
 

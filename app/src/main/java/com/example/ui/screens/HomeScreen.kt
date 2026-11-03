@@ -240,6 +240,11 @@ fun HomeScreen(
       DiyanetRadioCard()
     }
 
+    // 3b. Kâbe canlı yayını (YouTube'da açılır)
+    item {
+      com.example.ui.components.KabeLiveCard()
+    }
+
     // 4. Smart Holiday Countdown (Ramazan'a / Ramazan Bayramı'na / Kurban Bayramı'na)
     item {
       HolidayCountdownCard(
