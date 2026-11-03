@@ -153,6 +153,7 @@ fun WelcomeBanner(
       val photo = when (todayMosque.dayName) {
         "Pazartesi" -> R.drawable.mosque_sultanahmet
         "Salı" -> R.drawable.mosque_ayasofya
+        "Perşembe" -> R.drawable.mosque_camlica
         "Çarşamba" -> R.drawable.mosque_suleymaniye
         "Cuma" -> R.drawable.mosque_eyup
         "Cumartesi" -> R.drawable.mosque_ortakoy
