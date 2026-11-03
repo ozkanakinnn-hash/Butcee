@@ -58,7 +58,7 @@ for i in 1 2 3 4 5 6 7; do adb shell input tap 540 1400; sleep 0.3; done; shot 0
 adb shell input keyevent KEYCODE_BACK; sleep 2
 adb shell input swipe 540 1700 540 700 500; shot 02_ana_sayfa_asagi
 adb shell input swipe 540 1700 540 700 500; shot 03_ana_sayfa_radyo_menu
-tap_text "Oruç Rehberi"; shot 04_oruc_rehberi
+tap_text "Kur'an-ı Kerim"; shot 04_kuran_sekmesi
 tap_text "Takvim"; shot 05_takvim
 tap_text "Ayet & Dua"; shot 06_ayet_dua
 tap_text "Dahası"; sleep 2; tap_text "Esmâü'l-Hüsnâ"; shot 06b_esma 2
@@ -81,7 +81,7 @@ adb shell input swipe 540 1700 540 700 500; shot 10b_english_home_asagi
 adb shell input swipe 540 1800 540 300 600; adb shell input swipe 540 1800 540 300 600; shot 10c_english_menu
 adb shell input swipe 540 1800 540 300 600; shot 10d_english_names
 adb shell input swipe 540 1800 540 300 600; shot 10e_english_inspiration
-tap_text "More"; sleep 2; tap_text "The Holy Quran"; shot 10f_english_quran 3
+tap_text "Holy Quran"; shot 10f_english_quran 3
 tap_text "Fâtiha"; shot 10g_english_fatiha 3
 adb shell input swipe 540 1800 540 400 600; shot 10h_english_fatiha_meaning
 

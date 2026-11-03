@@ -96,6 +96,8 @@ private val dictionary: Map<String, String> = mapOf(
     "Uygulama Ayarları" to "App Settings",
     "Tema, Dil\nBildirim & Hatırlatıcı" to "Theme, Language\nNotifications",
     "Geri" to "Back",
+    "Kur'an-ı Kerim" to "Holy Quran",
+    "Günün Menüsü\nOruç Takibi" to "Daily Menu\nFasting Tracker",
     "Radyo & TV" to "Radio & TV",
     "Kıble Bulucu (Hassas Pusula)" to "Qibla Finder",
     "📍 Daha hassas ölçüm için konumumu kullan" to "📍 Use my location for better accuracy",

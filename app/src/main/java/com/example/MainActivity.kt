@@ -15,6 +15,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.ui.Alignment
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.RestaurantMenu
@@ -84,7 +86,8 @@ sealed class ActiveSubScreen {
   data object Mosques : ActiveSubScreen()
   data object FastingTracker : ActiveSubScreen()
   data object QuranList : ActiveSubScreen()
-  data class SurahDetail(val surah: SurahInfo) : ActiveSubScreen()
+  data class SurahDetail(val surah: SurahInfo, val fromTab: Boolean = false) : ActiveSubScreen()
+  data object FastingGuide : ActiveSubScreen()
   data object SpiritualNotes : ActiveSubScreen()
   data object Zikirmatik : ActiveSubScreen()
   data object Esma : ActiveSubScreen()
@@ -272,7 +275,9 @@ fun RamazanRehberiApp(
   // 5 Tabs: Ana Sayfa, Ramazan Rehberi, Takvim, Ayet & Dua, Dahası
   val navTabs = listOf(
     NavTabItem(t("Ana Sayfa"), icon = Icons.Default.Home, testTag = "nav_tab_home"),
-    NavTabItem(t(if (ramadanDay != null) "Ramazan Rehberi" else "Oruç Rehberi"), iconRes = R.drawable.ic_ramadan_guide, testTag = "nav_tab_guide"),
+    // Ramazan'da "Ramazan Rehberi", diğer aylarda "Kur'an-ı Kerim" sekmesi
+    if (ramadanDay != null) NavTabItem(t("Ramazan Rehberi"), iconRes = R.drawable.ic_ramadan_guide, testTag = "nav_tab_guide")
+    else NavTabItem(t("Kur'an-ı Kerim"), iconRes = R.drawable.ic_quran_tab, testTag = "nav_tab_quran"),
     NavTabItem(t("Takvim"), icon = Icons.Default.CalendarMonth, testTag = "nav_tab_calendar"),
     NavTabItem(t("Ayet & Dua"), iconRes = R.drawable.ic_quran_mushaf, testTag = "nav_tab_spiritual"),
     NavTabItem(t("Dahası"), icon = Icons.Default.MoreHoriz, testTag = "nav_tab_more")
@@ -349,7 +354,7 @@ fun RamazanRehberiApp(
             spiritualItem = todaySpiritual,
             onOpenLocationDialog = { showLocationDialog = true },
             onOpenSettings = { showSettingsDialog = true },
-            onOpenAllMenus = { currentTab = 1 },
+            onOpenAllMenus = { if (ramadanDay != null) currentTab = 1 else activeSubScreen = ActiveSubScreen.FastingGuide },
             onOpenQibla = { activeSubScreen = ActiveSubScreen.Qibla },
             onOpenMosques = { activeSubScreen = ActiveSubScreen.Mosques },
             onOpenZikirmatik = { activeSubScreen = ActiveSubScreen.Zikirmatik },
@@ -358,10 +363,13 @@ fun RamazanRehberiApp(
               NotificationHelper.triggerCannonHaptics(AppHolder.context)
             }
           )
-          1 -> MenusScreen(
+          1 -> if (ramadanDay != null) MenusScreen(
             prefs = prefs,
             prayerTimes = prayerTimes,
             onOpenFastingTracker = { activeSubScreen = ActiveSubScreen.FastingTracker }
+          ) else QuranScreen(
+            onSelectSurah = { surah: SurahInfo -> activeSubScreen = ActiveSubScreen.SurahDetail(surah, fromTab = true) },
+            onNavigateBack = { currentTab = 0 }
           )
           2 -> FastingCalendarScreen(
             prefs = prefs,
@@ -373,6 +381,8 @@ fun RamazanRehberiApp(
           4 -> MoreHubScreen(
             prefs = prefs,
             onOpenQuran = { activeSubScreen = ActiveSubScreen.QuranList },
+            isRamadan = ramadanDay != null,
+            onOpenFastingGuide = { activeSubScreen = ActiveSubScreen.FastingGuide },
             onOpenQibla = { activeSubScreen = ActiveSubScreen.Qibla },
             onOpenMosques = { activeSubScreen = ActiveSubScreen.Mosques },
             onOpenFastingTracker = { activeSubScreen = ActiveSubScreen.FastingTracker },
@@ -388,7 +398,7 @@ fun RamazanRehberiApp(
     // Active SubScreen Overlay
     activeSubScreen?.let { subScreen ->
       BackHandler {
-        if (subScreen is ActiveSubScreen.SurahDetail) {
+        if (subScreen is ActiveSubScreen.SurahDetail && !subScreen.fromTab) {
           activeSubScreen = ActiveSubScreen.QuranList
         } else {
           activeSubScreen = null
@@ -425,8 +435,34 @@ fun RamazanRehberiApp(
           )
           is ActiveSubScreen.SurahDetail -> SurahDetailScreen(
             surah = subScreen.surah,
-            onNavigateBack = { activeSubScreen = ActiveSubScreen.QuranList }
+            onNavigateBack = { activeSubScreen = if (subScreen.fromTab) null else ActiveSubScreen.QuranList }
           )
+          is ActiveSubScreen.FastingGuide -> androidx.compose.foundation.layout.Column(Modifier.fillMaxSize()) {
+            androidx.compose.foundation.layout.Row(
+              modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp),
+              verticalAlignment = Alignment.CenterVertically
+            ) {
+              androidx.compose.material3.IconButton(onClick = { activeSubScreen = null }) {
+                Icon(
+                  imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                  contentDescription = t("Geri"),
+                  tint = MaterialTheme.colorScheme.primary
+                )
+              }
+              Text(
+                text = t("Oruç Rehberi"),
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground
+              )
+            }
+            MenusScreen(
+              prefs = prefs,
+              prayerTimes = prayerTimes,
+              onOpenFastingTracker = { activeSubScreen = ActiveSubScreen.FastingTracker },
+              modifier = Modifier.weight(1f)
+            )
+          }
           is ActiveSubScreen.Zikirmatik -> com.example.ui.screens.ZikirmatikScreen(onNavigateBack = { activeSubScreen = null })
           is ActiveSubScreen.Esma -> com.example.ui.screens.EsmaulHusnaScreen(onNavigateBack = { activeSubScreen = null })
           is ActiveSubScreen.SpiritualNotes -> SpiritualNotesScreen(

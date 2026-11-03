@@ -52,6 +52,8 @@ import com.example.ui.components.PrivacyFooter
 fun MoreHubScreen(
   prefs: AppPreferences,
   onOpenQuran: () -> Unit,
+  isRamadan: Boolean = false,
+  onOpenFastingGuide: () -> Unit = {},
   onOpenQibla: () -> Unit,
   onOpenMosques: () -> Unit,
   onOpenFastingTracker: () -> Unit,
@@ -96,11 +98,18 @@ fun MoreHubScreen(
           .padding(horizontal = 16.dp, vertical = 6.dp),
         horizontalArrangement = Arrangement.spacedBy(10.dp)
       ) {
-        HubCard(
+        // Ramazan dışında Kur'an alt sekmede; burada Oruç Rehberi gösterilir
+        if (isRamadan) HubCard(
           title = t("Kur'an-ı Kerîm"),
           subtitle = t("114 Sure • 30 Cüz\nArapça & Meâl"),
           emoji = "📖",
           onClick = onOpenQuran,
+          modifier = Modifier.weight(1f)
+        ) else HubCard(
+          title = t("Oruç Rehberi"),
+          subtitle = t("Günün Menüsü\nOruç Takibi"),
+          emoji = "🌙",
+          onClick = onOpenFastingGuide,
           modifier = Modifier.weight(1f)
         )
         HubCard(
