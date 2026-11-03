@@ -69,24 +69,38 @@ adb shell input swipe 540 1800 540 500 500; adb shell input swipe 540 1800 540 5
 adb shell am force-stop $PKG; launch
 adb shell input swipe 540 1700 540 900 400; sleep 2
 adb shell uiautomator dump /sdcard/ui.xml >/dev/null; adb pull /sdcard/ui.xml $OUT/ui_radyo.xml >/dev/null
-tap_text "Dinle"; sleep 20; shot 11_radyo_caliyor 1
-# Durdur senaryosu (kullanıcı bildirimi: durdurunca çöküyor)
+# Oynat/Durdur düğmesinin koordinatını (animasyon başlamadan önce) bir kez bul
+python3 - <<'PY' > /tmp/playxy
+import re
+s=open('screenshots/ui_radyo.xml',encoding='utf-8').read()
+for m in re.finditer(r'<node [^>]*>', s):
+    n=m.group(0)
+    if 'content-desc="Dinle"' in n:
+        b=list(map(int,re.findall(r'\d+',re.search(r'bounds="([^"]*)"',n).group(1))))
+        print((b[0]+b[2])//2,(b[1]+b[3])//2); break
+PY
+echo "play button at: $(cat /tmp/playxy)"
+adb shell input tap $(cat /tmp/playxy); sleep 20; shot 11_radyo_caliyor 1
+adb shell dumpsys media_session | grep -E "state=PlaybackState" | head -3 >> $OUT/crash_log.txt
+# Durdur senaryosu
 adb logcat -c
-tap_text "Durdur"; sleep 8; shot 11b_radyo_durduruldu 1
+adb shell input tap $(cat /tmp/playxy); sleep 8; shot 11b_radyo_durduruldu 1
 echo "=== DURDUR SONRASI ===" >> $OUT/crash_log.txt
+adb shell dumpsys media_session | grep -E "state=PlaybackState" | head -3 >> $OUT/crash_log.txt
 adb logcat -d -b crash >> $OUT/crash_log.txt
 adb logcat -d | grep -B2 -A60 "FATAL EXCEPTION" >> $OUT/crash_log.txt || true
 # Hızlı oynat-durdur (bağlanırken durdurma)
 adb logcat -c
-tap_text "Dinle"; sleep 1; tap_text "Durdur" || true; sleep 1
-adb shell uiautomator dump /sdcard/ui.xml >/dev/null; adb pull /sdcard/ui.xml /tmp/ui2.xml >/dev/null
-grep -q 'content-desc="Durdur"' /tmp/ui2.xml && tap_text "Durdur"
-sleep 10
+adb shell input tap $(cat /tmp/playxy); sleep 1; adb shell input tap $(cat /tmp/playxy); sleep 10
+shot 11c_hizli_durdur 1
 echo "=== HIZLI DURDUR SONRASI ===" >> $OUT/crash_log.txt
 adb logcat -d -b crash >> $OUT/crash_log.txt
 adb logcat -d | grep -B2 -A60 "FATAL EXCEPTION" >> $OUT/crash_log.txt || true
-tap_text "Dinle"; sleep 20
+# Arka plan için tekrar çal
+adb shell input tap $(cat /tmp/playxy); sleep 20
 adb shell input keyevent KEYCODE_HOME; sleep 30
+echo "=== ARKA PLAN BİLDİRİMLERİ ===" >> $OUT/crash_log.txt
+adb shell dumpsys notification --noredact | grep -A3 "pkg=com.abacusai" | head -12 >> $OUT/crash_log.txt
 adb shell dumpsys activity services $PKG | grep -E "ServiceRecord|isForeground" | head -5 >> $OUT/crash_log.txt
 shot 12_arka_plan_bildirim 1
 adb shell cmd statusbar expand-notifications; shot 13_bildirim_paneli 3
