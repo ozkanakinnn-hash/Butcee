@@ -15,7 +15,7 @@ write_prefs () { # $1 = festival preview ("" / RAMAZAN), $2 = theme mode
     <boolean name="key_onboarding_completed" value="true" />
     <string name="key_user_name">Özkan</string>
     <string name="key_theme_mode">$2</string>
-    <string name="key_festival_preview">$1</string>
+    <string name="key_language">${3:-tr}</string>
 </map>
 XML
   adb shell am force-stop $PKG
@@ -55,7 +55,7 @@ launch
 shot 01_ana_sayfa 2
 adb shell input swipe 540 1700 540 700 500; shot 02_ana_sayfa_asagi
 adb shell input swipe 540 1700 540 700 500; shot 03_ana_sayfa_radyo_menu
-tap_text "Ramazan Rehberi"; shot 04_ramazan_rehberi
+tap_text "Oruç Rehberi"; shot 04_oruc_rehberi
 tap_text "Takvim"; shot 05_takvim
 tap_text "Ayet & Dua"; shot 06_ayet_dua
 tap_text "Ana Sayfa"; sleep 2
@@ -112,10 +112,11 @@ adb logcat -d -b crash >> $OUT/crash_log.txt
 adb logcat -d | grep -B2 -A60 "FATAL EXCEPTION" >> $OUT/crash_log.txt || true
 adb logcat -d | grep -iE "AndroidRuntime|ForegroundService|ramazanrehberi" | tail -40 >> $OUT/crash_log.txt || true
 
-# 2) Bayram süslemesi önizlemesi (aydınlık tema)
-write_prefs "RAMAZAN" "LIGHT"
+# 2) İngilizce + aydınlık tema
+write_prefs "" "LIGHT" "en"
 launch
-shot 10_bayram_suslemesi 2
+shot 10_english_home 2
+adb shell input swipe 540 1700 540 700 500; shot 10b_english_home_asagi
 
 adb logcat -d -b crash >> $OUT/crash_log.txt
 ls -la $OUT; cat $OUT/crash_log.txt | head -80
