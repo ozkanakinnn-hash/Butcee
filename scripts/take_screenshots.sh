@@ -64,6 +64,22 @@ adb shell input keyevent KEYCODE_BACK; sleep 2
 tap_text "Ayarlar"; shot 08_ayarlar
 adb shell input swipe 540 1800 540 500 500; adb shell input swipe 540 1800 540 500 500; shot 09_ayarlar_tema
 
+# 1b) Arka plan senaryosu: radyoyu çal, uygulamayı arka plana al, bekle
+tap_text "Ana Sayfa"; sleep 2
+adb shell input swipe 540 1700 540 900 400; sleep 2
+tap_text "Dinle"; sleep 20; shot 11_radyo_caliyor 1
+adb shell input keyevent KEYCODE_HOME; sleep 30
+adb shell dumpsys activity services $PKG | grep -E "ServiceRecord|isForeground" | head -5 >> $OUT/crash_log.txt
+shot 12_arka_plan_bildirim 1
+adb shell cmd statusbar expand-notifications; shot 13_bildirim_paneli 3
+adb shell cmd statusbar collapse
+# Son kullanılanlardan uygulamayı kaldır (onTaskRemoved)
+adb shell am kill $PKG; sleep 5
+adb shell am start -n $PKG/com.example.MainActivity; sleep 10
+adb logcat -d -b crash >> $OUT/crash_log.txt
+adb logcat -d | grep -B2 -A60 "FATAL EXCEPTION" >> $OUT/crash_log.txt || true
+adb logcat -d | grep -iE "AndroidRuntime|ForegroundService|ramazanrehberi" | tail -40 >> $OUT/crash_log.txt || true
+
 # 2) Bayram süslemesi önizlemesi (aydınlık tema)
 write_prefs "RAMAZAN" "LIGHT"
 launch
