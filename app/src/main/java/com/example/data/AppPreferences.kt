@@ -130,6 +130,15 @@ class AppPreferences(context: Context) {
     get() = prefs.getInt("key_remind_before_yatsi_min", 15)
     set(value) = prefs.edit().putInt("key_remind_before_yatsi_min", value).apply()
 
+  // Hatırlatıcıların cihaz yeniden başlasa da kurulabilmesi için son bilinen vakitler
+  var lastImsak: String
+    get() = prefs.getString("key_last_imsak", "05:45") ?: "05:45"
+    set(value) = prefs.edit().putString("key_last_imsak", value).apply()
+
+  var lastAksam: String
+    get() = prefs.getString("key_last_aksam", "18:45") ?: "18:45"
+    set(value) = prefs.edit().putString("key_last_aksam", value).apply()
+
   var iftarSound: IftarSoundChoice
     get() {
       val name = prefs.getString("key_iftar_sound", IftarSoundChoice.RAMAZAN_TOPU.name)

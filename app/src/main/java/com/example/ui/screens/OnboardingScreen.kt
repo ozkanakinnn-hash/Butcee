@@ -379,42 +379,10 @@ fun OnboardingScreen(
               Spacer(modifier = Modifier.height(16.dp))
 
               Text(
-                text = "İftar Bildirim Sesi Tercihiniz:",
-                fontWeight = FontWeight.Bold,
-                fontSize = 13.sp,
-                color = MaterialTheme.colorScheme.primary
+                text = "🔔 Bildirimler cihazınızın varsayılan bildirim sesiyle gelir.",
+                fontSize = 12.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
               )
-              Spacer(modifier = Modifier.height(8.dp))
-
-              // 3 Sound Choices
-              IftarSoundChoice.values().forEach { sound ->
-                val isSelected = selectedSound == sound
-                Row(
-                  modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 4.dp)
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(if (isSelected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent)
-                    .clickable {
-                      selectedSound = sound
-                      prefs.iftarSound = sound
-                    }
-                    .padding(10.dp),
-                  verticalAlignment = Alignment.CenterVertically
-                ) {
-                  Box(
-                    modifier = Modifier
-                      .size(18.dp)
-                      .clip(CircleShape)
-                      .background(if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline)
-                  )
-                  Spacer(modifier = Modifier.width(10.dp))
-                  Column {
-                    Text(text = sound.title, fontSize = 13.sp, fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium)
-                    Text(text = sound.subtitle, fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                  }
-                }
-              }
             }
           }
 

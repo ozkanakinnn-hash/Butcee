@@ -32,7 +32,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.reminder.ReminderScheduler
 import com.example.data.AppPreferences
 import com.example.data.AppColorTheme
 import com.example.data.AppThemeMode
@@ -190,6 +193,7 @@ fun RamazanRehberiApp(
     coroutineScope.launch {
       val result = prayerRepo.getPrayerTimes(city = prefs.province, district = prefs.district, country = prefs.country)
       prayerTimes = result
+      ReminderScheduler.onPrayerTimesLoaded(AppHolder.context, result)
     }
   }
 
@@ -219,7 +223,7 @@ fun RamazanRehberiApp(
   // 5 Tabs: Ana Sayfa, Ramazan Rehberi, Takvim, Ayet & Dua, Dahası
   val navTabs = listOf(
     NavTabItem("Ana Sayfa", icon = Icons.Default.Home, testTag = "nav_tab_home"),
-    NavTabItem("Ramazan Rehberi", icon = Icons.Default.RestaurantMenu, testTag = "nav_tab_guide"),
+    NavTabItem("Ramazan Rehberi", iconRes = R.drawable.ic_ramadan_guide, testTag = "nav_tab_guide"),
     NavTabItem("Takvim", icon = Icons.Default.CalendarMonth, testTag = "nav_tab_calendar"),
     NavTabItem("Ayet & Dua", iconRes = R.drawable.ic_quran_mushaf, testTag = "nav_tab_spiritual"),
     NavTabItem("Dahası", icon = Icons.Default.MoreHoriz, testTag = "nav_tab_more")
@@ -244,19 +248,26 @@ fun RamazanRehberiApp(
                   Icon(
                     painter = painterResource(tab.iconRes),
                     contentDescription = tab.title,
-                    modifier = Modifier.size(22.dp)
+                    modifier = Modifier.size(24.dp)
                   )
                 } else if (tab.icon != null) {
                   Icon(
                     imageVector = tab.icon,
-                    contentDescription = tab.title
+                    contentDescription = tab.title,
+                    modifier = Modifier.size(24.dp)
                   )
                 }
               },
               label = {
+                // Tüm etiketler tek satır: ikonlar aynı hizada kalır
                 Text(
                   text = tab.title,
                   style = MaterialTheme.typography.labelSmall,
+                  fontSize = 10.sp,
+                  letterSpacing = (-0.2).sp,
+                  maxLines = 1,
+                  softWrap = false,
+                  overflow = TextOverflow.Visible,
                   fontWeight = if (isSelected) androidx.compose.ui.text.font.FontWeight.Bold else androidx.compose.ui.text.font.FontWeight.Normal
                 )
               },
@@ -267,6 +278,7 @@ fun RamazanRehberiApp(
                 unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
                 indicatorColor = MaterialTheme.colorScheme.primaryContainer
               ),
+              alwaysShowLabel = true,
               modifier = Modifier.testTag(tab.testTag)
             )
           }
@@ -298,7 +310,8 @@ fun RamazanRehberiApp(
           )
           1 -> MenusScreen(
             prefs = prefs,
-            prayerTimes = prayerTimes
+            prayerTimes = prayerTimes,
+            onOpenFastingTracker = { activeSubScreen = ActiveSubScreen.FastingTracker }
           )
           2 -> FastingCalendarScreen(
             prefs = prefs,
@@ -396,7 +409,11 @@ fun RamazanRehberiApp(
           showSettingsDialog = false
           showLocationDialog = true
         },
-        onDismiss = { showSettingsDialog = false }
+        onDismiss = {
+          showSettingsDialog = false
+          // Ayarlardaki hatırlatıcı değişikliklerini uygula
+          ReminderScheduler.rescheduleAll(AppHolder.context)
+        }
       )
     }
   }

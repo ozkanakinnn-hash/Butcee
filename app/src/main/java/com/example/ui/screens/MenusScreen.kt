@@ -45,16 +45,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.R
 import com.example.data.AppPreferences
 import com.example.data.PrayerTimes
 import com.example.data.RamadanMenu
 import com.example.data.RamadanMenus
 import com.example.ui.components.AdBannerComponent
+import com.example.ui.components.FastingTrackerSection
+import com.example.ui.components.RamadanRemindersSection
 import com.example.ui.components.PrivacyFooter
 import java.util.Calendar
 
@@ -62,6 +66,7 @@ import java.util.Calendar
 fun MenusScreen(
   prefs: AppPreferences,
   prayerTimes: PrayerTimes? = null,
+  onOpenFastingTracker: () -> Unit = {},
   modifier: Modifier = Modifier
 ) {
   var selectedDay by remember { mutableIntStateOf(1) }
@@ -101,7 +106,7 @@ fun MenusScreen(
       ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
           Icon(
-            imageVector = Icons.Default.RestaurantMenu,
+            painter = painterResource(R.drawable.ic_ramadan_guide),
             contentDescription = null,
             tint = MaterialTheme.colorScheme.primary,
             modifier = Modifier.size(24.dp)
@@ -224,6 +229,19 @@ fun MenusScreen(
           }
         }
       }
+    }
+
+    // 2a. ORUÇ TAKİBİ
+    item {
+      FastingTrackerSection(
+        prefs = prefs,
+        onOpenFastingTracker = onOpenFastingTracker
+      )
+    }
+
+    // 2b. SAHUR & İFTAR HATIRLATICILARI
+    item {
+      RamadanRemindersSection(prefs = prefs)
     }
 
     // 3. MOTIVATIONAL DAILY SENTENCE (GÜNÜN MOTİVE EDİCİ CÜMLESİ)

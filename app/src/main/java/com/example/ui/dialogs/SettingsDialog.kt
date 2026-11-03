@@ -370,7 +370,7 @@ fun SettingsDialog(
           Spacer(modifier = Modifier.height(16.dp))
 
           // 4. ÖZEL İSLAMİ SESLER KÜTÜPHANESİ (Requirement 4)
-          SettingsSectionHeader(title = "Özel İftar & Bildirim Sesleri")
+          SettingsSectionHeader(title = "Bildirim Sesi")
           Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
@@ -378,79 +378,17 @@ fun SettingsDialog(
           ) {
             Column(modifier = Modifier.padding(14.dp)) {
               Text(
-                text = "Sadeleştirilmiş iki özel ses (Ramazan Topu ve Ney):",
+                text = "🔔 Tüm bildirimler şu an cihazınızın varsayılan bildirim sesini kullanıyor.",
+                fontSize = 12.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface
+              )
+              Spacer(modifier = Modifier.height(4.dp))
+              Text(
+                text = "Özel iftar ve ezan sesleri yakında eklenecek. Sesi değiştirmek için telefonunuzun Ayarlar > Bildirimler bölümünü kullanabilirsiniz.",
                 fontSize = 11.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
               )
-              Spacer(modifier = Modifier.height(8.dp))
-
-              IftarSoundChoice.entries.forEach { sound ->
-                val isSelected = selectedSound == sound
-                val isPlayingThis = currentlyPlayingSound == sound
-
-                Row(
-                  modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 4.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(if (isSelected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent)
-                    .clickable {
-                      selectedSound = sound
-                      prefs.iftarSound = sound
-                      Toast.makeText(context, "${sound.title} seçildi", Toast.LENGTH_SHORT).show()
-                    }
-                    .padding(10.dp),
-                  horizontalArrangement = Arrangement.SpaceBetween,
-                  verticalAlignment = Alignment.CenterVertically
-                ) {
-                  Row(modifier = Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
-                    Box(
-                      modifier = Modifier
-                        .size(24.dp)
-                        .clip(CircleShape)
-                        .background(if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline),
-                      contentAlignment = Alignment.Center
-                    ) {
-                      if (isSelected) {
-                        Icon(imageVector = Icons.Default.Check, contentDescription = null, tint = Color.White, modifier = Modifier.size(14.dp))
-                      }
-                    }
-                    Spacer(modifier = Modifier.width(10.dp))
-                    Text(sound.iconEmoji, fontSize = 16.sp)
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Column {
-                      Text(text = sound.title, fontSize = 13.sp, fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium)
-                      Text(text = sound.subtitle, fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    }
-                  }
-
-                  // Preview Listen Button
-                  OutlinedButton(
-                    onClick = {
-                      if (isPlayingThis) {
-                        SoundManager.stopSound()
-                        currentlyPlayingSound = null
-                      } else {
-                        SoundManager.playSound(context, sound) {
-                          currentlyPlayingSound = null
-                        }
-                        currentlyPlayingSound = sound
-                      }
-                    },
-                    shape = RoundedCornerShape(8.dp),
-                    modifier = Modifier.height(34.dp)
-                  ) {
-                    Icon(
-                      imageVector = if (isPlayingThis) Icons.Default.Stop else Icons.Default.PlayArrow,
-                      contentDescription = null,
-                      modifier = Modifier.size(14.dp)
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(if (isPlayingThis) "Durdur" else "Dinle", fontSize = 11.sp)
-                  }
-                }
-              }
-
               Spacer(modifier = Modifier.height(14.dp))
               HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f), thickness = 0.5.dp)
               Spacer(modifier = Modifier.height(10.dp))
