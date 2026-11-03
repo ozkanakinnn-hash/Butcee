@@ -53,11 +53,16 @@ launch () {
 write_prefs "" "DARK"
 launch
 shot 01_ana_sayfa 2
+tap_text "Zikirmatik"; shot 01b_zikirmatik 2
+for i in 1 2 3 4 5 6 7; do adb shell input tap 540 1400; sleep 0.3; done; shot 01c_zikirmatik_7 1
+adb shell input keyevent KEYCODE_BACK; sleep 2
 adb shell input swipe 540 1700 540 700 500; shot 02_ana_sayfa_asagi
 adb shell input swipe 540 1700 540 700 500; shot 03_ana_sayfa_radyo_menu
 tap_text "Oruç Rehberi"; shot 04_oruc_rehberi
 tap_text "Takvim"; shot 05_takvim
 tap_text "Ayet & Dua"; shot 06_ayet_dua
+tap_text "Dahası"; sleep 2; tap_text "Esmâü'l-Hüsnâ"; shot 06b_esma 2
+adb shell input keyevent KEYCODE_BACK; sleep 2
 tap_text "Ana Sayfa"; sleep 2
 tap_text "Kıble Bulucu"; shot 07_kible 4
 adb shell input keyevent KEYCODE_BACK; sleep 2
