@@ -1,6 +1,7 @@
 package com.example.ui.screens
 
 import android.content.Context
+import com.example.util.SolarCalc
 import androidx.compose.foundation.clickable
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -102,15 +103,34 @@ fun QiblaFinderScreen(
   val locationPermissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
     locationRefresh++
   }
-  val location = remember(prefs.country, prefs.province, prefs.district, locationRefresh) {
+  val resolvedLocation = remember(prefs.country, prefs.province, prefs.district, locationRefresh) {
     resolveQiblaLocation(context, prefs.country, prefs.province, prefs.district)
   }
+  // Son bilinen konum yoksa / eskiyse, izin varsa cihazdan tek seferlik taze konum iste
+  var freshLocation by remember { mutableStateOf<QiblaLocation?>(null) }
+  LaunchedEffect(locationRefresh) {
+    if (!resolvedLocation.fromDevice) {
+      requestFreshLocation(context) { lat, lon -> freshLocation = QiblaLocation(lat, lon, fromDevice = true) }
+    }
+  }
+  val location = freshLocation ?: resolvedLocation
   val qiblaBearing = remember(location) { qiblaBearingFrom(location.lat, location.lon) }
 
   // Manyetik sapma: pusula manyetik kuzeyi gösterir, Kıble açısı coğrafi (gerçek) kuzeye göredir.
   // Türkiye'de bu fark ~5-7° doğudur; düzeltilmezse ibre bu kadar kayar.
   val declination = remember(location) {
     GeomagneticField(location.lat.toFloat(), location.lon.toFloat(), 0f, System.currentTimeMillis()).declination
+  }
+
+  val qiblaTime = remember(location) {
+    SolarCalc.qiblaTime(location.lat, location.lon, qiblaBearing.toDouble())
+  }
+  var sun by remember { mutableStateOf(SolarCalc.position(location.lat, location.lon, System.currentTimeMillis())) }
+  LaunchedEffect(location) {
+    while (true) {
+      sun = SolarCalc.position(location.lat, location.lon, System.currentTimeMillis())
+      kotlinx.coroutines.delay(60_000)
+    }
   }
 
   var currentAzimuth by remember { mutableFloatStateOf(0f) }
@@ -452,6 +472,18 @@ fun QiblaFinderScreen(
         )
       }
 
+      // 1b. GÜNEŞ İŞARETİ: pusula doğruysa ☀ gökyüzündeki gerçek güneşi gösterir (kontrol için)
+      if (sun.elevation > 0) {
+        Box(
+          modifier = Modifier
+            .fillMaxSize()
+            .rotate(((sun.azimuth.toFloat() - currentAzimuth) + 360f) % 360f),
+          contentAlignment = Alignment.TopCenter
+        ) {
+          Text("☀️", fontSize = 18.sp, modifier = Modifier.padding(top = 22.dp))
+        }
+      }
+
       // 2. DEDICATED ROTATING QIBLA NEEDLE WITH KAABA ICON
       // Needle dynamically rotates directly toward Mecca at needleAngle
       Box(
@@ -556,6 +588,33 @@ fun QiblaFinderScreen(
     Spacer(modifier = Modifier.height(18.dp))
 
     // Real-Time Degree & Bearing Details
+    // KIBLE SAATİ — pusuladan bağımsız, en güvenilir yöntem (Diyanet takvimlerindeki "Kıble Saati")
+    Card(
+      modifier = Modifier.fillMaxWidth(),
+      shape = RoundedCornerShape(16.dp),
+      colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
+    ) {
+      Column(modifier = Modifier.padding(14.dp)) {
+        Text(
+          text = "☀️ Bugünün Kıble Saati: " + (qiblaTime ?: "—"),
+          fontWeight = FontWeight.Bold,
+          fontSize = 15.sp,
+          color = MaterialTheme.colorScheme.onPrimaryContainer
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+          text = if (qiblaTime != null)
+            "Saat $qiblaTime'de güneşe döndüğünüzde kıbleye dönmüş olursunuz. Güneş mıknatıstan, metalden veya kalibrasyondan etkilenmez; pusulayı bu yöntemle kontrol edebilirsiniz. Kadrandaki ☀️ işareti gerçek güneşi göstermiyorsa pusulayı kalibre edin."
+          else
+            "Bugün güneş bu konumda kıble yönünden geçmiyor; pusulayı kullanın.",
+          fontSize = 11.sp,
+          lineHeight = 15.sp,
+          color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.85f)
+        )
+      }
+    }
+    Spacer(modifier = Modifier.height(12.dp))
+
     Row(
       modifier = Modifier.fillMaxWidth(),
       horizontalArrangement = Arrangement.spacedBy(10.dp)
@@ -719,6 +778,26 @@ private fun resolveQiblaLocation(context: Context, country: String, province: St
   }
   val c = getCoordinatesForLocation(country, province, district)
   return QiblaLocation(c.first, c.second, fromDevice = false)
+}
+
+/** İzin varsa cihazdan tek seferlik güncel konum ister (Android 11+ getCurrentLocation; eskilerde tek güncelleme). */
+private fun requestFreshLocation(context: Context, onResult: (Double, Double) -> Unit) {
+  val granted = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
+    ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
+  if (!granted) return
+  try {
+    val lm = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+    val provider = when {
+      lm.isProviderEnabled(LocationManager.GPS_PROVIDER) -> LocationManager.GPS_PROVIDER
+      lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER) -> LocationManager.NETWORK_PROVIDER
+      else -> return
+    }
+    androidx.core.location.LocationManagerCompat.getCurrentLocation(
+      lm, provider, null as android.os.CancellationSignal?, ContextCompat.getMainExecutor(context)
+    ) { loc -> if (loc != null) onResult(loc.latitude, loc.longitude) }
+  } catch (_: SecurityException) {
+  } catch (_: Exception) {
+  }
 }
 
 /** Büyük çember (ortodromi) formülüyle gerçek kuzeye göre Kâbe açısı. */
