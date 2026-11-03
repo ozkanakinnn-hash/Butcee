@@ -41,7 +41,13 @@ PY
   [ -s /tmp/xy ] && adb shell input tap $(cat /tmp/xy)
 }
 
-launch () { adb shell am start -n $PKG/com.example.MainActivity; sleep 15; }
+launch () {
+  adb logcat -c
+  adb shell am start -n $PKG/com.example.MainActivity; sleep 15
+  # Çökme olursa yığın izini kaydet
+  adb logcat -d -b crash >> $OUT/crash_log.txt
+  adb logcat -d | grep -B2 -A60 "FATAL EXCEPTION" >> $OUT/crash_log.txt || true
+}
 
 # 1) Koyu tema, normal gün
 write_prefs "" "DARK"
@@ -63,4 +69,5 @@ write_prefs "RAMAZAN" "LIGHT"
 launch
 shot 10_bayram_suslemesi 2
 
-ls -la $OUT
+adb logcat -d -b crash >> $OUT/crash_log.txt
+ls -la $OUT; cat $OUT/crash_log.txt | head -80
