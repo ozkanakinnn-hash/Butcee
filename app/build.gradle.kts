@@ -117,6 +117,8 @@ dependencies {
   implementation(libs.firebase.ai)
   implementation(libs.firebase.messaging)
   implementation(libs.play.services.ads)
+  // Akıllı saate namaz vakitlerini gönderme (Wear Data Layer)
+  implementation(libs.play.services.wearable)
   // Uncomment to use Firestore:
   // implementation(libs.firebase.firestore)
 

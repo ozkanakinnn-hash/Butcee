@@ -25,3 +25,5 @@ dependencyResolutionManagement {
 rootProject.name = "Ramazan Rehberi"
 
 include(":app")
+// Wear OS (akıllı saat) uygulaması
+include(":wear")

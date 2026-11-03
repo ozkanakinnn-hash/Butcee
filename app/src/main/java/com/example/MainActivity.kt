@@ -235,6 +235,7 @@ fun RamazanRehberiApp(
       val result = prayerRepo.getPrayerTimes(city = prefs.province, district = prefs.district, country = prefs.country)
       prayerTimes = result
       ReminderScheduler.onPrayerTimesLoaded(AppHolder.context, result)
+      com.example.util.WearSync.send(AppHolder.context, result, prefs)
     }
   }
 
