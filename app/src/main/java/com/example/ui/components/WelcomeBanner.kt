@@ -28,6 +28,10 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import com.example.R
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.foundation.Image
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -145,20 +149,39 @@ fun WelcomeBanner(
   ) {
     Box(modifier = Modifier.fillMaxSize()) {
       // 1. ARKA PLAN: Günün İstanbul camisi — akşam vakti silüeti
-      IstanbulMosqueScene(
-        spec = when (todayMosque.dayName) {
-          "Pazartesi" -> IstanbulMosques.sultanahmet
-          "Salı" -> IstanbulMosques.ayasofya
-          "Çarşamba" -> IstanbulMosques.suleymaniye
-          "Perşembe" -> IstanbulMosques.camlica
-          "Cuma" -> IstanbulMosques.eyup
-          "Cumartesi" -> IstanbulMosques.ortakoy
-          else -> IstanbulMosques.fatih
-        },
-        glow = shimmerOffset,
-        mahya = mahya,
-        modifier = Modifier.fillMaxSize()
-      )
+      // Günün camisinin fotoğrafı (varsa); yoksa çizim sahnesi
+      val photo = when (todayMosque.dayName) {
+        "Pazartesi" -> R.drawable.mosque_sultanahmet
+        "Salı" -> R.drawable.mosque_ayasofya
+        "Çarşamba" -> R.drawable.mosque_suleymaniye
+        "Cuma" -> R.drawable.mosque_eyup
+        "Cumartesi" -> R.drawable.mosque_ortakoy
+        "Pazar" -> R.drawable.mosque_fatih
+        else -> null
+      }
+      if (photo != null) {
+        Image(
+          painter = painterResource(photo),
+          contentDescription = todayMosque.mosqueName,
+          contentScale = ContentScale.Crop,
+          modifier = Modifier.fillMaxSize()
+        )
+      } else {
+        IstanbulMosqueScene(
+          spec = when (todayMosque.dayName) {
+            "Pazartesi" -> IstanbulMosques.sultanahmet
+            "Salı" -> IstanbulMosques.ayasofya
+            "Çarşamba" -> IstanbulMosques.suleymaniye
+            "Perşembe" -> IstanbulMosques.camlica
+            "Cuma" -> IstanbulMosques.eyup
+            "Cumartesi" -> IstanbulMosques.ortakoy
+            else -> IstanbulMosques.fatih
+          },
+          glow = shimmerOffset,
+          mahya = mahya,
+          modifier = Modifier.fillMaxSize()
+        )
+      }
 
       // 2. Metnin okunması için alttan koyulaşan perde
       Box(
