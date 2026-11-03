@@ -31,7 +31,13 @@ ile referans verilen ama olmayan kaynakları bul:
 
 ## 4. Bulut ortamı kısıtı
 Bu konteynerde `dl.google.com` engelli → Android SDK/Google Maven indirilemez, yerel derleme yapılamaz.
-Çözüm: `.github/workflows/android-build.yml` ekle (setup-java 21 + android-actions/setup-android + `./gradlew assembleDebug`, APK'yı artifact olarak yükle) ve doğrulamayı CI'da yap.
+Çözüm: `.github/workflows/android-build.yml` ekle ve doğrulamayı CI'da yap:
+checkout@v5 → setup-java@v5 (21) → runner'daki hazır SDK ile
+`yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses` + `"platforms;android-36.1"` →
+gradle/actions/setup-gradle@v5 → `./gradlew assembleDebug` → upload-artifact@v5.
+- **`android-actions/setup-android@v3` KULLANMA**: artık var olmayan `tools` paketini kurmaya çalışıp çöküyor.
+- Depo herkese açıksa CI sonucunu `curl https://api.github.com/repos/OWNER/REPO/actions/runs?head_sha=SHA` ile arka planda bekle.
+- APK linki: `https://github.com/OWNER/REPO/actions/runs/RUN_ID/artifacts/ARTIFACT_ID` (indirmek için GitHub girişi gerekir, zip içinde gelir).
 
 ## 5. Tasarım tercihleri (kullanıcının uygulamaları)
 - Türkçe arayüz, Material 3, krem/bej/altın + zümrüt yeşili palet, karanlık mod desteği.
