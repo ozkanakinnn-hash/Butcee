@@ -16,8 +16,6 @@
     <!-- Instagram Hikâyesi paylaşımı için paket görünürlüğü (Android 11+) -->
     <queries>
         <package android:name="com.instagram.android" />
-        <!-- Resmî Diyanet Radyo TV uygulaması (radyo bu uygulamada açılır) -->
-        <package android:name="gov.diyanet.diyanetradyotv" />
     </queries>
 
     <application

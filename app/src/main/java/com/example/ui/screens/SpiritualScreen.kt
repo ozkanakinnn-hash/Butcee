@@ -242,14 +242,16 @@ fun SpiritualScreen(
               modifier = Modifier.fillMaxWidth()
             )
           }
-          Spacer(modifier = Modifier.height(6.dp))
-          Text(
-            text = "“${todayItem.verseTurkish}”",
-            fontSize = 13.sp,
-            fontStyle = FontStyle.Italic,
-            color = MaterialTheme.colorScheme.onSurface,
-            lineHeight = 19.sp
-          )
+          if (todayItem.verseTurkish.isNotBlank()) {
+            Spacer(modifier = Modifier.height(6.dp))
+            Text(
+              text = "“${todayItem.verseTurkish}”",
+              fontSize = 13.sp,
+              fontStyle = FontStyle.Italic,
+              color = MaterialTheme.colorScheme.onSurface,
+              lineHeight = 19.sp
+            )
+          }
           Spacer(modifier = Modifier.height(2.dp))
           Text(
             text = "— ${todayItem.verseSource}",

@@ -54,7 +54,6 @@ import com.example.ui.components.CompactCountdownCard
 import com.example.ui.components.DailySpiritualCard
 import com.example.ui.components.FestiveGarland
 import com.example.ui.components.FestiveGreetingCard
-import com.example.ui.components.DiyanetRadioCard
 import com.example.ui.components.HolidayCountdownCard
 import com.example.ui.components.IftarMenuCard
 import com.example.ui.components.PrayerTimesCard
@@ -255,15 +254,14 @@ fun HomeScreen(
       )
     }
 
-    // 3a. Diyanet Radyo (canlı yayın, arka planda çalar)
+    // 3a. Günün Manevi İklimi (namaz vakitlerinin hemen altında)
     item {
-      DiyanetRadioCard()
+      DailySpiritualCard(
+        item = spiritualItem
+      )
     }
 
-    // 3b. Kâbe canlı yayını (YouTube'da açılır)
-    item {
-      com.example.ui.components.KabeLiveCard()
-    }
+
 
     // 4. Smart Holiday Countdown (Ramazan'a / Ramazan Bayramı'na / Kurban Bayramı'na)
     item {
@@ -286,12 +284,6 @@ fun HomeScreen(
       com.example.ui.components.NameSuggestionsCard()
     }
 
-    // 6. Günün Ayeti / Hadisi / Duası
-    item {
-      DailySpiritualCard(
-        item = spiritualItem
-      )
-    }
 
     // 7. Google AdMob Banner
     item {

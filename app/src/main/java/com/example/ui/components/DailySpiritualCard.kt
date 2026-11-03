@@ -197,16 +197,18 @@ fun DailySpiritualCard(
                 )
                 Spacer(modifier = Modifier.height(8.dp))
               }
-              Text(
-                text = "“${item.verseTurkish}”",
-                fontSize = 13.sp,
-                fontStyle = FontStyle.Italic,
-                lineHeight = 19.sp,
-                color = MaterialTheme.colorScheme.onSurface,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth()
-              )
-              Spacer(modifier = Modifier.height(6.dp))
+              if (item.verseTurkish.isNotBlank()) {
+                Text(
+                  text = "“${item.verseTurkish}”",
+                  fontSize = 13.sp,
+                  fontStyle = FontStyle.Italic,
+                  lineHeight = 19.sp,
+                  color = MaterialTheme.colorScheme.onSurface,
+                  textAlign = TextAlign.Center,
+                  modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier = Modifier.height(6.dp))
+              }
               Text(
                 text = "— ${item.verseSource}",
                 fontSize = 11.sp,

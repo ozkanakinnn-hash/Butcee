@@ -318,8 +318,8 @@ fun SurahDetailScreen(
       }
     }
 
-    // 3. BÖLÜM: EN ALTTA DİYANET KAYNAKLI/UYUMLU TÜRKÇE MEALİ
-    item {
+    // 3. BÖLÜM: EN ALTTA DİYANET KAYNAKLI/UYUMLU TÜRKÇE MEALİ (İngilizcede meal yok)
+    if (surahDetail.fullTranslation.isNotBlank()) item {
       Card(
         modifier = Modifier
           .fillMaxWidth()

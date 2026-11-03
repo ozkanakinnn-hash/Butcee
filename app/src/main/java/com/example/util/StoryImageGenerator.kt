@@ -291,7 +291,7 @@ object StoryImageGenerator {
       1 -> item.hadithTurkish
       else -> item.prayerTurkish
     }
-    val turkishText = "“$turkishBody”"
+    val turkishText = if (turkishBody.isBlank()) "" else "“$turkishBody”"
     val sourceText = when (selectedTab) {
       0 -> item.verseSource
       1 -> item.hadithSource

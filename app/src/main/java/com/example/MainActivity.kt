@@ -86,7 +86,6 @@ sealed class ActiveSubScreen {
   data object QuranList : ActiveSubScreen()
   data class SurahDetail(val surah: SurahInfo) : ActiveSubScreen()
   data object SpiritualNotes : ActiveSubScreen()
-  data object RadioTv : ActiveSubScreen()
   data object Zikirmatik : ActiveSubScreen()
   data object Esma : ActiveSubScreen()
 }
@@ -379,7 +378,6 @@ fun RamazanRehberiApp(
             onOpenFastingTracker = { activeSubScreen = ActiveSubScreen.FastingTracker },
             onOpenNotes = { activeSubScreen = ActiveSubScreen.SpiritualNotes },
             onOpenSettings = { showSettingsDialog = true },
-            onOpenRadioTv = { activeSubScreen = ActiveSubScreen.RadioTv },
             onOpenZikirmatik = { activeSubScreen = ActiveSubScreen.Zikirmatik },
             onOpenEsma = { activeSubScreen = ActiveSubScreen.Esma }
           )
@@ -431,9 +429,6 @@ fun RamazanRehberiApp(
           )
           is ActiveSubScreen.Zikirmatik -> com.example.ui.screens.ZikirmatikScreen(onNavigateBack = { activeSubScreen = null })
           is ActiveSubScreen.Esma -> com.example.ui.screens.EsmaulHusnaScreen(onNavigateBack = { activeSubScreen = null })
-          is ActiveSubScreen.RadioTv -> com.example.ui.screens.RadioTvScreen(
-            onNavigateBack = { activeSubScreen = null }
-          )
           is ActiveSubScreen.SpiritualNotes -> SpiritualNotesScreen(
             prefs = prefs,
             onNavigateBack = { activeSubScreen = null }

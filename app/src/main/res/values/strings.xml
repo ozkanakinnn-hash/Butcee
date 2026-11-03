@@ -2,10 +2,4 @@
     <string name="app_name">Ramazan Rehberi</string>
     <!-- Instagram Hikâyesine doğrudan paylaşım için Meta (Facebook) Uygulama Kimliği. Boşsa Instagram genel paylaşımı kullanılır. -->
     <string name="facebook_app_id" translatable="false"></string>
-    <!-- Radyo uygulama içinde çalınmaz (telif); Diyanet'in resmî canlı yayın sayfaları açılır. -->
-    <string name="radio_diyanet_url" translatable="false">https://www.diyanetradyo.com/Canli-Dinle</string>
-    <string name="radio_diyanet_kuran_url" translatable="false">https://www.diyanetkuranradyo.com/canli-dinle</string>
-    <string name="radio_risalet_url" translatable="false">https://risaletradyo.com/canli-dinle</string>
-    <!-- Kâbe canlı yayını uygulama içinde oynatılmaz; YouTube'da açılır (telif). Resmî kanal bağlantısını buraya koyabilirsiniz. -->
-    <string name="kabe_live_url" translatable="false">https://www.youtube.com/results?search_query=Makkah+Live+%D9%82%D9%86%D8%A7%D8%A9+%D8%A7%D9%84%D9%82%D8%B1%D8%A2%D9%86+%D8%A7%D9%84%D9%83%D8%B1%D9%8A%D9%85&amp;sp=EgJAAQ%253D%253D</string>
 </resources>

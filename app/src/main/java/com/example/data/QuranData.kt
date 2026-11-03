@@ -240,10 +240,10 @@ object QuranData {
     val tr = getSurahDetailContentTr(surahNumber, surahName)
     if (!com.example.i18n.AppLanguage.isEnglish) return tr
     val en = EnglishContent.surahTexts[surahNumber]
-    return if (en != null) tr.copy(fullPronunciation = en.first, fullTranslation = en.second)
-    else tr.copy(
-      fullPronunciation = "English transliteration for this surah will be added soon.",
-      fullTranslation = "The English meaning of this surah will be added soon."
+    // İngilizce meal gösterilmez; yalnızca Arapça metin + Latin harfli okunuş.
+    return tr.copy(
+      fullPronunciation = en ?: "English transliteration for this surah will be added soon.",
+      fullTranslation = ""
     )
   }
 

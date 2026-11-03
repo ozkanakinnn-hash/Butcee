@@ -57,7 +57,6 @@ fun MoreHubScreen(
   onOpenFastingTracker: () -> Unit,
   onOpenNotes: () -> Unit,
   onOpenSettings: () -> Unit,
-  onOpenRadioTv: () -> Unit = {},
   onOpenZikirmatik: () -> Unit = {},
   onOpenEsma: () -> Unit = {},
   modifier: Modifier = Modifier
@@ -134,31 +133,6 @@ fun MoreHubScreen(
           subtitle = t("Bugünkü Durum\nKaza & Nafile Sayacı"),
           emoji = "🤲",
           onClick = onOpenFastingTracker,
-          modifier = Modifier.weight(1f)
-        )
-      }
-    }
-
-    // Radyo & TV
-    item {
-      Row(
-        modifier = Modifier
-          .fillMaxWidth()
-          .padding(horizontal = 16.dp, vertical = 6.dp),
-        horizontalArrangement = Arrangement.spacedBy(10.dp)
-      ) {
-        HubCard(
-          title = t("Radyo"),
-          subtitle = t("Diyanet • Kur'an\nRisalet (resmî)"),
-          emoji = "📻",
-          onClick = onOpenRadioTv,
-          modifier = Modifier.weight(1f)
-        )
-        HubCard(
-          title = t("Kâbe TV"),
-          subtitle = t("Mescid-i Haram\nCanlı Yayın"),
-          emoji = "🕋",
-          onClick = onOpenRadioTv,
           modifier = Modifier.weight(1f)
         )
       }

@@ -69,9 +69,9 @@ adb shell input keyevent KEYCODE_BACK; sleep 2
 tap_text "Ayarlar"; shot 08_ayarlar
 adb shell input swipe 540 1800 540 500 500; adb shell input swipe 540 1800 540 500 500; shot 09_ayarlar_tema
 
-# 1b) Radyo kartı (resmî Diyanet sayfası/uygulaması açılır; uygulama içinde yayın yok)
+# 1b) Namaz vakitlerinin altındaki Günün Manevi İklimi kartı
 adb shell am force-stop $PKG; launch
-adb shell input swipe 540 1700 540 900 400; shot 11_radyo_karti 2
+adb shell input swipe 540 1700 540 900 400; shot 11_manevi_iklim 2
 
 # 2) İngilizce + aydınlık tema
 write_prefs "" "LIGHT" "en"
