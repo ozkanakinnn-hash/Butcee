@@ -68,6 +68,22 @@ adb shell input swipe 540 1800 540 500 500; adb shell input swipe 540 1800 540 5
 tap_text "Ana Sayfa"; sleep 2
 adb shell input swipe 540 1700 540 900 400; sleep 2
 tap_text "Dinle"; sleep 20; shot 11_radyo_caliyor 1
+# Durdur senaryosu (kullanıcı bildirimi: durdurunca çöküyor)
+adb logcat -c
+tap_text "Durdur"; sleep 8; shot 11b_radyo_durduruldu 1
+echo "=== DURDUR SONRASI ===" >> $OUT/crash_log.txt
+adb logcat -d -b crash >> $OUT/crash_log.txt
+adb logcat -d | grep -B2 -A60 "FATAL EXCEPTION" >> $OUT/crash_log.txt || true
+# Hızlı oynat-durdur (bağlanırken durdurma)
+adb logcat -c
+tap_text "Dinle"; sleep 1; tap_text "Durdur" || true; sleep 1
+adb shell uiautomator dump /sdcard/ui.xml >/dev/null; adb pull /sdcard/ui.xml /tmp/ui2.xml >/dev/null
+grep -q 'content-desc="Durdur"' /tmp/ui2.xml && tap_text "Durdur"
+sleep 10
+echo "=== HIZLI DURDUR SONRASI ===" >> $OUT/crash_log.txt
+adb logcat -d -b crash >> $OUT/crash_log.txt
+adb logcat -d | grep -B2 -A60 "FATAL EXCEPTION" >> $OUT/crash_log.txt || true
+tap_text "Dinle"; sleep 20
 adb shell input keyevent KEYCODE_HOME; sleep 30
 adb shell dumpsys activity services $PKG | grep -E "ServiceRecord|isForeground" | head -5 >> $OUT/crash_log.txt
 shot 12_arka_plan_bildirim 1
