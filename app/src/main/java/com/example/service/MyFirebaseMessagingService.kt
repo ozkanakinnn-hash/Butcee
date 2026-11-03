@@ -10,7 +10,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
 
   override fun onNewToken(token: String) {
     super.onNewToken(token)
-    Log.d("FCM", "New Firebase Cloud Messaging registration token: $token")
+    // Güvenlik: cihaz kimliği (FCM token) loglara yazılmaz.
   }
 
   override fun onMessageReceived(remoteMessage: RemoteMessage) {

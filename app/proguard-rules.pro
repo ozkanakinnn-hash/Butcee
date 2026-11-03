@@ -23,3 +23,10 @@
 
 # Veri modelleri (JSON ile kaydediliyor)
 -keep class com.example.data.** { *; }
+
+# Güvenlik / gizlilik: yayın (release) sürümünde hata ayıklama loglarını kaldır
+-assumenosideeffects class android.util.Log {
+    public static int v(...);
+    public static int d(...);
+    public static int i(...);
+}
