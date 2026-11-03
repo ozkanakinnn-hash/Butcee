@@ -55,6 +55,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -377,91 +378,35 @@ fun SettingsDialog(
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
           ) {
             Column(modifier = Modifier.padding(14.dp)) {
-              Text(
-                text = "🔔 Tüm bildirimler şu an cihazınızın varsayılan bildirim sesini kullanıyor.",
-                fontSize = 12.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurface
+              // Şu an tek etkin seçenek: sistem sesi
+              SoundOptionRow(
+                emoji = "🔔",
+                title = "Sistem Bildirim Sesi",
+                subtitle = "Telefonunuzun varsayılan bildirim sesi",
+                selected = true,
+                available = true
               )
-              Spacer(modifier = Modifier.height(4.dp))
-              Text(
-                text = "Özel iftar ve ezan sesleri yakında eklenecek. Sesi değiştirmek için telefonunuzun Ayarlar > Bildirimler bölümünü kullanabilirsiniz.",
-                fontSize = 11.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+              // Yüklenecek özel sesler için ayrılmış alanlar
+              SoundOptionRow(
+                emoji = "💥",
+                title = "Ramazan Topu",
+                subtitle = "İftar vaktinde geleneksel top sesi",
+                selected = false,
+                available = false
               )
-              Spacer(modifier = Modifier.height(14.dp))
-              HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f), thickness = 0.5.dp)
-              Spacer(modifier = Modifier.height(10.dp))
-
-              // BİLDİRİM TEST PANELİ
-              Text(
-                text = "🔔 BİLDİRİM TEST PANELİ",
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary
+              SoundOptionRow(
+                emoji = "🌙",
+                title = "Sahur Davulu",
+                subtitle = "Sahur hatırlatıcısı için davul sesi",
+                selected = false,
+                available = false
               )
-              Spacer(modifier = Modifier.height(4.dp))
+              Spacer(modifier = Modifier.height(6.dp))
               Text(
-                text = "Cihazınızda bildirim seslerini ve titreşimleri hemen test edin:",
+                text = "Özel sesler yüklendiğinde buradan seçilebilecek.",
                 fontSize = 10.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
               )
-              Spacer(modifier = Modifier.height(8.dp))
-
-              // Test 1: Ramazan Topu
-              Button(
-                onClick = {
-                  NotificationHelper.sendNotification(
-                    context = context,
-                    title = "💥 Ramazan Topu Patladı • İftar Vakti!",
-                    message = "${prefs.province} için iftar vakti girdi. Hayırlı iftarlar! Allah kabul etsin 🤲",
-                    soundChoice = IftarSoundChoice.RAMAZAN_TOPU
-                  )
-                  Toast.makeText(context, "💥 Ramazan Topu bildirimi gönderildi!", Toast.LENGTH_SHORT).show()
-                },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(10.dp)
-              ) {
-                Text("💥 İftar Topu Bildirimini Test Et", fontSize = 12.sp)
-              }
-
-              Spacer(modifier = Modifier.height(6.dp))
-
-              // Test 2: Ney Sesi Vakit Hatırlatıcısı
-              OutlinedButton(
-                onClick = {
-                  NotificationHelper.sendNotification(
-                    context = context,
-                    title = "🕌 Vakit Hatırlatıcısı",
-                    message = "Akşam namazı vakti girdi. Huzur ve sükûnetle namaza durabilirsiniz.",
-                    soundChoice = IftarSoundChoice.SUFI_NEY
-                  )
-                  Toast.makeText(context, "🎶 Ney sesi vakit bildirimi gönderildi!", Toast.LENGTH_SHORT).show()
-                },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(10.dp)
-              ) {
-                Text("🎶 Ney Sesi Vakit Bildirimini Test Et", fontSize = 12.sp)
-              }
-
-              Spacer(modifier = Modifier.height(6.dp))
-
-              // Test 3: 15 Dakika Önce Hatırlatıcı
-              OutlinedButton(
-                onClick = {
-                  NotificationHelper.sendNotification(
-                    context = context,
-                    title = "⏳ Vaktinden Önce Hatırlatıcı (15 Dk)",
-                    message = "İftar vaktine 15 dakika kaldı. Sofranız bereketli, dualarınız kabul olsun.",
-                    soundChoice = IftarSoundChoice.SUFI_NEY
-                  )
-                  Toast.makeText(context, "⏳ 15 Dk Önce bildirimi test edildi!", Toast.LENGTH_SHORT).show()
-                },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(10.dp)
-              ) {
-                Text("⏳ 15 Dk Önce Hatırlatıcıyı Test Et", fontSize = 12.sp)
-              }
             }
           }
 
@@ -719,5 +664,60 @@ private fun ColorThemeCard(
       textAlign = TextAlign.Center,
       maxLines = 3
     )
+  }
+}
+
+
+@Composable
+private fun SoundOptionRow(
+  emoji: String,
+  title: String,
+  subtitle: String,
+  selected: Boolean,
+  available: Boolean
+) {
+  val contentAlpha = if (available) 1f else 0.5f
+  Row(
+    modifier = Modifier
+      .fillMaxWidth()
+      .padding(vertical = 3.dp)
+      .clip(RoundedCornerShape(12.dp))
+      .background(if (selected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent)
+      .padding(10.dp),
+    verticalAlignment = Alignment.CenterVertically
+  ) {
+    Box(
+      modifier = Modifier
+        .size(22.dp)
+        .clip(CircleShape)
+        .background(
+          if (selected) MaterialTheme.colorScheme.primary
+          else MaterialTheme.colorScheme.outline.copy(alpha = contentAlpha)
+        ),
+      contentAlignment = Alignment.Center
+    ) {
+      if (selected) {
+        Icon(imageVector = Icons.Default.Check, contentDescription = "Seçili", tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(14.dp))
+      }
+    }
+    Spacer(modifier = Modifier.width(10.dp))
+    Text(emoji, fontSize = 16.sp, modifier = Modifier.alpha(contentAlpha))
+    Spacer(modifier = Modifier.width(8.dp))
+    Column(modifier = Modifier.weight(1f).alpha(contentAlpha)) {
+      Text(title, fontSize = 13.sp, fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface)
+      Text(subtitle, fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
+    if (!available) {
+      Text(
+        text = "Yakında",
+        fontSize = 10.sp,
+        fontWeight = FontWeight.Bold,
+        color = MaterialTheme.colorScheme.primary,
+        modifier = Modifier
+          .clip(RoundedCornerShape(8.dp))
+          .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f))
+          .padding(horizontal = 8.dp, vertical = 3.dp)
+      )
+    }
   }
 }

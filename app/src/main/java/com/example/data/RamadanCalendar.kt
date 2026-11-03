@@ -29,4 +29,8 @@ object RamadanCalendar {
   fun isRamadanDay(dateKey: String): Boolean = ranges.any { dateKey >= it.start && dateKey <= it.end }
 
   fun isRamadanDay(cal: Calendar): Boolean = isRamadanDay(dateKey(cal))
+
+  /** Verilen miladi yılda başlayan Ramazan'ın (ilk oruç, son oruç) anahtarları; tabloda yoksa null. */
+  fun rangeForYear(year: Int): Pair<String, String>? =
+    ranges.firstOrNull { it.start.startsWith("$year-") }?.let { it.start to it.end }
 }

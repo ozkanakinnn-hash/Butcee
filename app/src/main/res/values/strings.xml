@@ -2,4 +2,7 @@
     <string name="app_name">Ramazan Rehberi</string>
     <!-- Instagram Hikâyesine doğrudan paylaşım için Meta (Facebook) Uygulama Kimliği. Boşsa Instagram genel paylaşımı kullanılır. -->
     <string name="facebook_app_id" translatable="false"></string>
+    <!-- Canlı radyo yayın adresleri (HLS). Yayın adresi değişirse yalnızca burayı güncelleyin. -->
+    <string name="radio_diyanet_url" translatable="false">https://diyanetradyo-live.daioncdn.net/diyanetradyo/diyanetradyo.m3u8</string>
+    <string name="radio_diyanet_kuran_url" translatable="false">https://diyanetkuran-live.daioncdn.net/diyanetkuran/diyanetkuran.m3u8</string>
 </resources>

@@ -9,6 +9,7 @@ import android.graphics.Color
 import android.graphics.LinearGradient
 import android.graphics.Paint
 import android.graphics.Path
+import android.graphics.RadialGradient
 import android.graphics.RectF
 import android.graphics.Shader
 import android.graphics.Typeface
@@ -18,8 +19,11 @@ import android.text.Layout
 import android.text.StaticLayout
 import android.text.TextPaint
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import com.example.R
+import com.example.data.AppColorTheme
+import com.example.data.AppPreferences
 import com.example.data.SpiritualItem
 import java.io.File
 import java.io.FileOutputStream
@@ -34,7 +38,7 @@ object StoryImageGenerator {
     val height = 1920
     val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
     val canvas = Canvas(bitmap)
-    drawStoryCanvas(canvas, width, height, item, selectedTab)
+    drawStoryCanvas(context, canvas, width, height, item, selectedTab)
 
     val sharedDir = File(context.cacheDir, "shared_images")
     if (!sharedDir.exists()) sharedDir.mkdirs()
@@ -56,7 +60,7 @@ object StoryImageGenerator {
       val shareIntent = Intent(Intent.ACTION_SEND).apply {
         type = "image/png"
         putExtra(Intent.EXTRA_STREAM, uri)
-        putExtra(Intent.EXTRA_TEXT, "🌙 Günün Manevi İklimi • Ramazan Rehberi 2026")
+        putExtra(Intent.EXTRA_TEXT, "🌙 Günün Manevi İklimi • ${context.getString(R.string.app_name)}")
         addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
       }
       val chooser = Intent.createChooser(shareIntent, "Manevi İklim Hikayesini Paylaş")
@@ -113,277 +117,325 @@ object StoryImageGenerator {
     }
   }
 
+  /** Hikâye görselinin renkleri: kullanıcının seçtiği uygulama temasına göre. */
+  private class StoryPalette(
+    val bgTop: Int, val bgBottom: Int, val pattern: Int, val panel: Int,
+    val accent: Int, val accentLight: Int, val ornament: Int,
+    val text: Int, val muted: Int, val arabic: Int
+  )
+
+  private fun paletteFor(theme: AppColorTheme): StoryPalette = when (theme) {
+    AppColorTheme.SARAY -> StoryPalette(
+      bgTop = Color.parseColor("#FBF6EC"), bgBottom = Color.parseColor("#E8D8BB"),
+      pattern = Color.parseColor("#B98A3E"), panel = Color.parseColor("#FFFDF8"),
+      accent = Color.parseColor("#A8762A"), accentLight = Color.parseColor("#E2C68C"),
+      ornament = Color.parseColor("#2F5E46"),
+      text = Color.parseColor("#2B241C"), muted = Color.parseColor("#7A6448"),
+      arabic = Color.parseColor("#1F4D3A")
+    )
+    AppColorTheme.IZNIK -> StoryPalette(
+      bgTop = Color.parseColor("#F4F7FB"), bgBottom = Color.parseColor("#D3DFEE"),
+      pattern = Color.parseColor("#1A3F7A"), panel = Color.parseColor("#FFFFFF"),
+      accent = Color.parseColor("#1A3F7A"), accentLight = Color.parseColor("#8FB0DA"),
+      ornament = Color.parseColor("#C0392B"),
+      text = Color.parseColor("#1B2230"), muted = Color.parseColor("#55627A"),
+      arabic = Color.parseColor("#1A3F7A")
+    )
+    AppColorTheme.ZUMRUT -> StoryPalette(
+      bgTop = Color.parseColor("#F3F7F2"), bgBottom = Color.parseColor("#D3E3D8"),
+      pattern = Color.parseColor("#1E6B4F"), panel = Color.parseColor("#FFFEFA"),
+      accent = Color.parseColor("#1E6B4F"), accentLight = Color.parseColor("#D8BC5E"),
+      ornament = Color.parseColor("#B8901F"),
+      text = Color.parseColor("#1A241F"), muted = Color.parseColor("#52665A"),
+      arabic = Color.parseColor("#1E6B4F")
+    )
+  }
+
+  private fun withAlpha(color: Int, alpha: Float): Int =
+    Color.argb((alpha * 255).toInt().coerceIn(0, 255), Color.red(color), Color.green(color), Color.blue(color))
+
+  private fun staticLayout(text: String, paint: TextPaint, width: Int, spacingAdd: Float, spacingMult: Float): StaticLayout =
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+      StaticLayout.Builder.obtain(text, 0, text.length, paint, width)
+        .setAlignment(Layout.Alignment.ALIGN_CENTER)
+        .setLineSpacing(spacingAdd, spacingMult)
+        .build()
+    } else {
+      @Suppress("DEPRECATION")
+      StaticLayout(text, paint, width, Layout.Alignment.ALIGN_CENTER, spacingMult, spacingAdd, false)
+    }
+
+  /**
+   * Mihrap kemerli, temaya uyumlu 1080x1920 hikâye tasarımı:
+   * zemin degrade + ince sekiz köşeli yıldız deseni, ortada kemerli kart,
+   * üstte yalnızca uygulama ikonu, altta yalnızca uygulama adı (strings.xml'den).
+   */
   private fun drawStoryCanvas(
+    context: Context,
     canvas: Canvas,
     w: Int,
     h: Int,
     item: SpiritualItem,
     selectedTab: Int
   ) {
-    // 1. Soft Luxury Cream/Gold Gradient Background
-    val bgPaint = Paint().apply {
-      isAntiAlias = true
-      shader = LinearGradient(
-        0f, 0f, 0f, h.toFloat(),
-        intArrayOf(
-          Color.parseColor("#FFFDF9"), // Pure soft cream
-          Color.parseColor("#F9F3E8"), // Warm parchment
-          Color.parseColor("#EFE4D0"), // Rich golden cream
-          Color.parseColor("#F7F1E6")
-        ),
-        floatArrayOf(0f, 0.35f, 0.75f, 1f),
-        Shader.TileMode.CLAMP
-      )
-    }
-    canvas.drawRect(0f, 0f, w.toFloat(), h.toFloat(), bgPaint)
+    val pal = paletteFor(AppPreferences(context).colorTheme)
+    val wf = w.toFloat()
+    val hf = h.toFloat()
+    val cx = wf / 2f
 
-    // 2. Ornate Double Gold Borders
-    val outerGoldBorder = Paint().apply {
+    // 1. Zemin degradesi
+    canvas.drawRect(0f, 0f, wf, hf, Paint().apply {
+      shader = LinearGradient(0f, 0f, 0f, hf, pal.bgTop, pal.bgBottom, Shader.TileMode.CLAMP)
+    })
+
+    // 2. İnce sekiz köşeli yıldız (Rub-ül Hizb) deseni
+    drawStarPattern(canvas, wf, hf, withAlpha(pal.pattern, 0.10f))
+
+    // 3. Kenarlara doğru hafif koyulaşan vinyet
+    canvas.drawRect(0f, 0f, wf, hf, Paint().apply {
+      shader = RadialGradient(
+        cx, hf * 0.45f, hf * 0.75f,
+        intArrayOf(Color.TRANSPARENT, Color.TRANSPARENT, withAlpha(pal.pattern, 0.14f)),
+        floatArrayOf(0f, 0.6f, 1f), Shader.TileMode.CLAMP
+      )
+    })
+
+    // 4. Mihrap kemerli kart
+    val left = 105f
+    val right = wf - 105f
+    val bottom = 1650f
+    val sideTop = 600f
+    val apex = 230f
+    val arch = archPath(left, right, sideTop, apex, bottom)
+
+    canvas.drawPath(arch, Paint().apply {
+      isAntiAlias = true
+      color = pal.panel
+      setShadowLayer(36f, 0f, 14f, withAlpha(pal.pattern, 0.22f))
+    })
+    canvas.drawPath(arch, Paint().apply {
       isAntiAlias = true
       style = Paint.Style.STROKE
-      strokeWidth = 6f
-      color = Color.parseColor("#C99A45") // Warm Islamic Gold
-    }
-    val innerGoldBorder = Paint().apply {
+      strokeWidth = 5f
+      color = pal.accent
+    })
+    val inset = 20f
+    canvas.drawPath(archPath(left + inset, right - inset, sideTop + inset * 0.4f, apex + inset * 1.6f, bottom - inset), Paint().apply {
       isAntiAlias = true
       style = Paint.Style.STROKE
       strokeWidth = 2f
-      color = Color.parseColor("#E0C58A")
-    }
+      color = pal.accentLight
+    })
 
-    val marginOuter = 50f
-    val marginInner = 68f
-    canvas.drawRoundRect(RectF(marginOuter, marginOuter, w - marginOuter, h - marginOuter), 40f, 40f, outerGoldBorder)
-    canvas.drawRoundRect(RectF(marginInner, marginInner, w - marginInner, h - marginInner), 32f, 32f, innerGoldBorder)
-
-    // Corner Ornaments
-    drawCornerOrnaments(canvas, marginInner, w.toFloat() - marginInner, marginInner, h.toFloat() - marginInner)
-
-    // 3. Top Decorative Header (Crescent, Stars & Lantern Motif)
-    val goldPaint = Paint().apply {
+    // Kemerin tepesinde küçük sekiz köşeli yıldız (alem yerine sade süs)
+    drawEightPointStar(canvas, cx, apex - 42f, 20f, Paint().apply {
       isAntiAlias = true
-      color = Color.parseColor("#B8860B")
-      style = Paint.Style.FILL
+      color = pal.ornament
+    })
+
+    // 5. Uygulama ikonu
+    val iconR = 72f
+    val iconCy = 395f
+    canvas.drawCircle(cx, iconCy, iconR + 10f, Paint().apply {
+      isAntiAlias = true
+      style = Paint.Style.STROKE
+      strokeWidth = 3f
+      color = pal.accentLight
+    })
+    ContextCompat.getDrawable(context, R.mipmap.ic_launcher)?.let { icon ->
+      canvas.save()
+      canvas.clipPath(Path().apply { addCircle(cx, iconCy, iconR, Path.Direction.CW) })
+      icon.setBounds((cx - iconR).toInt(), (iconCy - iconR).toInt(), (cx + iconR).toInt(), (iconCy + iconR).toInt())
+      icon.draw(canvas)
+      canvas.restore()
     }
-    val textPaint = Paint().apply {
+
+    // 6. Başlık ve tür rozeti
+    val centered = Paint().apply {
       isAntiAlias = true
       textAlign = Paint.Align.CENTER
     }
+    centered.apply {
+      textSize = 60f
+      typeface = Typeface.create(Typeface.SERIF, Typeface.BOLD)
+      color = pal.text
+      letterSpacing = 0.02f
+    }
+    canvas.drawText("Günün Manevi İklimi", cx, 560f, centered)
 
-    // Top Emblem Icon
-    textPaint.textSize = 80f
-    canvas.drawText("🌙 ۞ 🕋", w / 2f, 180f, textPaint)
-
-    // App Branding & Title
-    textPaint.textSize = 34f
-    textPaint.typeface = Typeface.create(Typeface.SERIF, Typeface.BOLD)
-    textPaint.color = Color.parseColor("#8C621D")
-    textPaint.letterSpacing = 0.15f
-    canvas.drawText("RAMAZAN REHBERİ 2026", w / 2f, 250f, textPaint)
-
-    textPaint.textSize = 56f
-    textPaint.typeface = Typeface.create(Typeface.SERIF, Typeface.BOLD)
-    textPaint.color = Color.parseColor("#2C241E")
-    textPaint.letterSpacing = 0.05f
-    canvas.drawText("Günün Manevi İklimi", w / 2f, 330f, textPaint)
-
-    // Category Badge
     val categoryTitle = when (selectedTab) {
-      0 -> "• ÂYET-İ KERÎME •"
-      1 -> "• HADÎS-İ ŞERÎF •"
-      else -> "• GÜNÜN DUASI •"
+      0 -> "ÂYET-İ KERÎME"
+      1 -> "HADÎS-İ ŞERÎF"
+      else -> "GÜNÜN DUASI"
     }
-    val badgePaint = Paint().apply {
-      isAntiAlias = true
-      color = Color.parseColor("#E5D4B3")
-      style = Paint.Style.FILL
+    centered.apply {
+      textSize = 30f
+      typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+      color = pal.accent
+      letterSpacing = 0.18f
     }
-    val badgeRect = RectF(w / 2f - 240f, 375f, w / 2f + 240f, 440f)
-    canvas.drawRoundRect(badgeRect, 20f, 20f, badgePaint)
+    val badgeW = centered.measureText(categoryTitle) + 80f
+    val badge = RectF(cx - badgeW / 2f, 595f, cx + badgeW / 2f, 655f)
+    canvas.drawRoundRect(badge, 30f, 30f, Paint().apply { isAntiAlias = true; color = withAlpha(pal.accent, 0.10f) })
+    canvas.drawRoundRect(badge, 30f, 30f, Paint().apply {
+      isAntiAlias = true; style = Paint.Style.STROKE; strokeWidth = 2f; color = withAlpha(pal.accent, 0.6f)
+    })
+    canvas.drawText(categoryTitle, cx, 636f, centered)
 
-    val badgeStroke = Paint().apply {
-      isAntiAlias = true
-      color = Color.parseColor("#B8860B")
-      style = Paint.Style.STROKE
-      strokeWidth = 2f
-    }
-    canvas.drawRoundRect(badgeRect, 20f, 20f, badgeStroke)
+    drawIslamicDivider(canvas, cx, 705f, 380f, pal)
 
-    textPaint.textSize = 32f
-    textPaint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
-    textPaint.color = Color.parseColor("#704C14")
-    textPaint.letterSpacing = 0.08f
-    canvas.drawText(categoryTitle, w / 2f, 420f, textPaint)
-
-    // Decorative Floral Divider Under Header
-    drawIslamicDivider(canvas, w / 2f, 490f, 360f)
-
-    // Content Variables
+    // 7. İçerik (Arapça + Türkçe + kaynak) — kartın kalan alanında dikey ortalanır
     val arabicText = if (selectedTab == 0) item.verseArabic else ""
-    val turkishText = when (selectedTab) {
+    val turkishBody = when (selectedTab) {
       0 -> item.verseTurkish
       1 -> item.hadithTurkish
       else -> item.prayerTurkish
     }
+    val turkishText = "“$turkishBody”"
     val sourceText = when (selectedTab) {
       0 -> item.verseSource
       1 -> item.hadithSource
       else -> item.prayerSource
     }
 
-    var currentY = 560f
+    val contentTop = 750f
+    val contentBottom = bottom - 70f
+    val contentWidth = (right - left - 150f).toInt()
 
-    // 4. Arabic Text (if present)
-    if (arabicText.isNotBlank()) {
-      val arabicPaint = TextPaint().apply {
-        isAntiAlias = true
-        color = Color.parseColor("#1B4332") // Deep Islamic Emerald
-        textSize = 50f
-        typeface = Typeface.create(Typeface.SERIF, Typeface.BOLD)
-      }
-
-      val contentWidth = (w - 220).coerceAtLeast(400)
-      val arabicLayout = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-        StaticLayout.Builder.obtain(arabicText, 0, arabicText.length, arabicPaint, contentWidth)
-          .setAlignment(Layout.Alignment.ALIGN_CENTER)
-          .setLineSpacing(16f, 1.25f)
-          .build()
-      } else {
-        @Suppress("DEPRECATION")
-        StaticLayout(arabicText, arabicPaint, contentWidth, Layout.Alignment.ALIGN_CENTER, 1.25f, 16f, false)
-      }
-
-      canvas.save()
-      canvas.translate(w / 2f - contentWidth / 2f, currentY)
-      arabicLayout.draw(canvas)
-      canvas.restore()
-
-      currentY += arabicLayout.height + 70f
-
-      // Small secondary divider between Arabic and Turkish
-      drawIslamicDivider(canvas, w / 2f, currentY, 200f)
-      currentY += 60f
-    } else {
-      currentY += 40f
-    }
-
-    // 5. Large Quote Mark “
-    val quotePaint = Paint().apply {
+    val arabicPaint = TextPaint().apply {
       isAntiAlias = true
-      color = Color.parseColor("#C99A45")
-      textSize = 140f
+      color = pal.arabic
       typeface = Typeface.create(Typeface.SERIF, Typeface.BOLD)
-      textAlign = Paint.Align.CENTER
-      alpha = 180
     }
-    canvas.drawText("“", w / 2f, currentY, quotePaint)
-    currentY += 50f
-
-    // 6. Turkish Text
     val bodyPaint = TextPaint().apply {
       isAntiAlias = true
-      color = Color.parseColor("#26221D") // Deep charcoal
-      textSize = if (turkishText.length > 200) 44f else 50f
+      color = pal.text
       typeface = Typeface.create(Typeface.SERIF, Typeface.NORMAL)
     }
-
-    val bodyWidth = (w - 240).coerceAtLeast(400)
-    val bodyLayout = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-      StaticLayout.Builder.obtain(turkishText, 0, turkishText.length, bodyPaint, bodyWidth)
-        .setAlignment(Layout.Alignment.ALIGN_CENTER)
-        .setLineSpacing(18f, 1.35f)
-        .build()
-    } else {
-      @Suppress("DEPRECATION")
-      StaticLayout(turkishText, bodyPaint, bodyWidth, Layout.Alignment.ALIGN_CENTER, 1.35f, 18f, false)
-    }
-
-    canvas.save()
-    canvas.translate(w / 2f - bodyWidth / 2f, currentY)
-    bodyLayout.draw(canvas)
-    canvas.restore()
-
-    currentY += bodyLayout.height + 50f
-
-    // Closing Quote Mark ”
-    canvas.drawText("”", w / 2f, currentY, quotePaint)
-    currentY += 60f
-
-    // 7. Source Citation Box
-    val sourcePaint = Paint().apply {
+    val sourcePaint = TextPaint().apply {
       isAntiAlias = true
-      color = Color.parseColor("#8C621D")
-      textSize = 36f
+      color = pal.accent
       typeface = Typeface.create(Typeface.SERIF, Typeface.BOLD)
-      textAlign = Paint.Align.CENTER
-      letterSpacing = 0.04f
+      letterSpacing = 0.03f
     }
-    canvas.drawText("— $sourceText —", w / 2f, currentY, sourcePaint)
 
-    // 8. Bottom Footer with Islamic Watermark & App Stamp
-    val footerDividerY = h - 260f
-    drawIslamicDivider(canvas, w / 2f, footerDividerY, 500f)
-
-    val footerPaint = Paint().apply {
-      isAntiAlias = true
-      textAlign = Paint.Align.CENTER
-      color = Color.parseColor("#7A551E")
-      textSize = 34f
-      typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
-      letterSpacing = 0.06f
+    // Uzun metinlerde yazıyı sığana kadar küçült
+    var scale = 1f
+    lateinit var arabicLayout: StaticLayout
+    lateinit var bodyLayout: StaticLayout
+    lateinit var sourceLayout: StaticLayout
+    var gapArabic = 0f
+    var total = 0f
+    while (true) {
+      arabicPaint.textSize = 54f * scale
+      bodyPaint.textSize = 50f * scale
+      sourcePaint.textSize = 36f * scale
+      arabicLayout = staticLayout(arabicText, arabicPaint, contentWidth, 18f * scale, 1.3f)
+      bodyLayout = staticLayout(turkishText, bodyPaint, contentWidth, 16f * scale, 1.3f)
+      sourceLayout = staticLayout("— $sourceText —", sourcePaint, contentWidth, 0f, 1.1f)
+      gapArabic = if (arabicText.isNotBlank()) 90f * scale else 0f
+      total = (if (arabicText.isNotBlank()) arabicLayout.height.toFloat() else 0f) +
+        gapArabic + bodyLayout.height + 56f * scale + sourceLayout.height
+      if (total <= contentBottom - contentTop || scale <= 0.6f) break
+      scale -= 0.05f
     }
-    canvas.drawText("✨ Ramazan Rehberi 2026 • Manisa / Saruhanlı", w / 2f, h - 190f, footerPaint)
 
-    footerPaint.textSize = 28f
-    footerPaint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
-    footerPaint.color = Color.parseColor("#9C7F58")
-    canvas.drawText("Huzurlu İbadet, Namaz Vakitleri & Oruç Takibi", w / 2f, h - 135f, footerPaint)
+    var y = contentTop + ((contentBottom - contentTop) - total).coerceAtLeast(0f) / 2f
+    val layoutLeft = cx - contentWidth / 2f
+    if (arabicText.isNotBlank()) {
+      canvas.save(); canvas.translate(layoutLeft, y); arabicLayout.draw(canvas); canvas.restore()
+      y += arabicLayout.height
+      drawEightPointStar(canvas, cx, y + gapArabic / 2f, 12f, Paint().apply { isAntiAlias = true; color = pal.accentLight })
+      y += gapArabic
+    }
+    canvas.save(); canvas.translate(layoutLeft, y); bodyLayout.draw(canvas); canvas.restore()
+    y += bodyLayout.height + 56f * scale
+    canvas.save(); canvas.translate(layoutLeft, y); sourceLayout.draw(canvas); canvas.restore()
+
+    // 8. Alt bilgi: yalnızca uygulama adı (isim değişirse otomatik güncellenir)
+    drawIslamicDivider(canvas, cx, 1730f, 300f, pal)
+    centered.apply {
+      textSize = 40f
+      typeface = Typeface.create(Typeface.SERIF, Typeface.BOLD)
+      color = pal.accent
+      letterSpacing = 0.12f
+    }
+    canvas.drawText(context.getString(R.string.app_name), cx, 1800f, centered)
   }
 
-  private fun drawIslamicDivider(canvas: Canvas, cx: Float, cy: Float, width: Float) {
-    val linePaint = Paint().apply {
-      isAntiAlias = true
-      color = Color.parseColor("#C99A45")
-      strokeWidth = 3f
-      style = Paint.Style.STROKE
-    }
-
-    val half = width / 2f
-    canvas.drawLine(cx - half, cy, cx - 30f, cy, linePaint)
-    canvas.drawLine(cx + 30f, cy, cx + half, cy, linePaint)
-
-    // Central 8-pointed star / diamond
-    val starPaint = Paint().apply {
-      isAntiAlias = true
-      color = Color.parseColor("#B8860B")
-      style = Paint.Style.FILL
-    }
-    val diamond = Path().apply {
-      moveTo(cx, cy - 14f)
-      lineTo(cx + 14f, cy)
-      lineTo(cx, cy + 14f)
-      lineTo(cx - 14f, cy)
+  /** Sivri (mihrap) kemerli kart yolu; alt köşeler yuvarlatılmış. */
+  private fun archPath(left: Float, right: Float, sideTop: Float, apex: Float, bottom: Float): Path {
+    val cx = (left + right) / 2f
+    val r = 36f
+    return Path().apply {
+      moveTo(left, bottom - r)
+      lineTo(left, sideTop)
+      cubicTo(left, sideTop - (sideTop - apex) * 0.55f, cx - (right - left) * 0.16f, apex + (sideTop - apex) * 0.22f, cx, apex)
+      cubicTo(cx + (right - left) * 0.16f, apex + (sideTop - apex) * 0.22f, right, sideTop - (sideTop - apex) * 0.55f, right, sideTop)
+      lineTo(right, bottom - r)
+      quadTo(right, bottom, right - r, bottom)
+      lineTo(left + r, bottom)
+      quadTo(left, bottom, left, bottom - r)
       close()
     }
-    canvas.drawPath(diamond, starPaint)
   }
 
-  private fun drawCornerOrnaments(canvas: Canvas, left: Float, right: Float, top: Float, bottom: Float) {
-    val goldPaint = Paint().apply {
-      isAntiAlias = true
-      color = Color.parseColor("#C99A45")
-      style = Paint.Style.STROKE
-      strokeWidth = 3f
+  /** İki karenin 45° döndürülmüş birleşimi: sekiz köşeli yıldız. */
+  private fun eightPointStarPath(cx: Float, cy: Float, r: Float): Path {
+    val path = Path()
+    for (k in 0 until 16) {
+      val angle = Math.PI / 8 * k - Math.PI / 2
+      val rad = if (k % 2 == 0) r else r * 0.62f
+      val x = cx + (rad * Math.cos(angle)).toFloat()
+      val y = cy + (rad * Math.sin(angle)).toFloat()
+      if (k == 0) path.moveTo(x, y) else path.lineTo(x, y)
     }
-    val len = 40f
+    path.close()
+    return path
+  }
 
-    // Top Left
-    canvas.drawLine(left, top + len, left + len, top, goldPaint)
-    // Top Right
-    canvas.drawLine(right - len, top, right, top + len, goldPaint)
-    // Bottom Left
-    canvas.drawLine(left, bottom - len, left + len, bottom, goldPaint)
-    // Bottom Right
-    canvas.drawLine(right - len, bottom, right, bottom - len, goldPaint)
+  private fun drawEightPointStar(canvas: Canvas, cx: Float, cy: Float, r: Float, paint: Paint) {
+    canvas.drawPath(eightPointStarPath(cx, cy, r), paint)
+  }
+
+  private fun drawStarPattern(canvas: Canvas, w: Float, h: Float, color: Int) {
+    val stroke = Paint().apply {
+      isAntiAlias = true
+      style = Paint.Style.STROKE
+      strokeWidth = 2f
+      this.color = color
+    }
+    val step = 150f
+    var row = 0
+    var y = -step / 2f
+    while (y < h + step) {
+      val offset = if (row % 2 == 0) 0f else step / 2f
+      var x = -step / 2f + offset
+      while (x < w + step) {
+        canvas.drawPath(eightPointStarPath(x, y, 34f), stroke)
+        // Yıldızları birbirine bağlayan ince kafes
+        canvas.drawLine(x + 34f, y, x + step / 2f - 20f, y + step / 2f - 20f, stroke)
+        canvas.drawLine(x - 34f, y, x - step / 2f + 20f, y + step / 2f - 20f, stroke)
+        x += step
+      }
+      y += step / 2f
+      row++
+    }
+  }
+
+  private fun drawIslamicDivider(canvas: Canvas, cx: Float, cy: Float, width: Float, pal: StoryPalette) {
+    val linePaint = Paint().apply {
+      isAntiAlias = true
+      color = pal.accentLight
+      strokeWidth = 3f
+      style = Paint.Style.STROKE
+    }
+    val half = width / 2f
+    canvas.drawLine(cx - half, cy, cx - 34f, cy, linePaint)
+    canvas.drawLine(cx + 34f, cy, cx + half, cy, linePaint)
+    drawEightPointStar(canvas, cx, cy, 16f, Paint().apply {
+      isAntiAlias = true
+      color = pal.accent
+    })
   }
 }

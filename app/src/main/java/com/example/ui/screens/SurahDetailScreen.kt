@@ -126,14 +126,14 @@ fun SurahDetailScreen(
                 📖 ${surah.number}. ${surah.nameTurkish} Sûresi (${surah.nameArabic})
                 ${surah.juzRangeStr} • ${surah.totalVerses} Ayet
                 
-                [1. ARAPÇA METİN]
+                [ARAPÇA METİN]
                 ${surahDetail.fullArabic}
                 
-                [2. TÜRKÇE OKUNUŞU]
-                ${surahDetail.fullPronunciation}
+                [TÜRKÇE OKUNUŞU]
+                ${surahDetail.fullPronunciation.withoutVerseNumbers()}
                 
-                [3. DİYANET TÜRKÇE MEALİ]
-                ${surahDetail.fullTranslation}
+                [DİYANET TÜRKÇE MEALİ]
+                ${surahDetail.fullTranslation.withoutVerseNumbers()}
                 
                 🏷️ Ramazan Rehberi Uygulaması
               """.trimIndent()
@@ -216,7 +216,7 @@ fun SurahDetailScreen(
                   .padding(horizontal = 10.dp, vertical = 4.dp)
               ) {
                 Text(
-                  text = "1. ARAPÇA METİN (TAMAMI)",
+                  text = "ARAPÇA METİN",
                   fontSize = 11.sp,
                   fontWeight = FontWeight.Bold,
                   color = MaterialTheme.colorScheme.primary
@@ -282,7 +282,7 @@ fun SurahDetailScreen(
                 .padding(horizontal = 10.dp, vertical = 4.dp)
             ) {
               Text(
-                text = "2. TÜRKÇE OKUNUŞU (LATİN HARFLERİYLE)",
+                text = "TÜRKÇE OKUNUŞU",
                 fontSize = 11.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary
@@ -291,7 +291,7 @@ fun SurahDetailScreen(
 
             IconButton(
               onClick = {
-                clipboardManager.setText(AnnotatedString(surahDetail.fullPronunciation))
+                clipboardManager.setText(AnnotatedString(surahDetail.fullPronunciation.withoutVerseNumbers()))
                 Toast.makeText(context, "Türkçe okunuşu kopyalandı ✓", Toast.LENGTH_SHORT).show()
               },
               modifier = Modifier.size(32.dp)
@@ -303,7 +303,7 @@ fun SurahDetailScreen(
           Spacer(modifier = Modifier.height(12.dp))
 
           Text(
-            text = surahDetail.fullPronunciation,
+            text = surahDetail.fullPronunciation.withoutVerseNumbers(),
             fontSize = 14.sp,
             lineHeight = 22.sp,
             color = MaterialTheme.colorScheme.onSurface,
@@ -342,7 +342,7 @@ fun SurahDetailScreen(
                 .padding(horizontal = 10.dp, vertical = 4.dp)
             ) {
               Text(
-                text = "3. DİYANET TÜRKÇE MEALİ (ANLAMI)",
+                text = "DİYANET TÜRKÇE MEALİ",
                 fontSize = 11.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.secondary
@@ -351,7 +351,7 @@ fun SurahDetailScreen(
 
             IconButton(
               onClick = {
-                clipboardManager.setText(AnnotatedString(surahDetail.fullTranslation))
+                clipboardManager.setText(AnnotatedString(surahDetail.fullTranslation.withoutVerseNumbers()))
                 Toast.makeText(context, "Türkçe meal kopyalandı ✓", Toast.LENGTH_SHORT).show()
               },
               modifier = Modifier.size(32.dp)
@@ -363,7 +363,7 @@ fun SurahDetailScreen(
           Spacer(modifier = Modifier.height(12.dp))
 
           Text(
-            text = surahDetail.fullTranslation,
+            text = surahDetail.fullTranslation.withoutVerseNumbers(),
             fontSize = 14.sp,
             lineHeight = 22.sp,
             color = MaterialTheme.colorScheme.onSurface,
@@ -383,3 +383,7 @@ fun SurahDetailScreen(
     }
   }
 }
+
+/** Okunuş ve meal metinlerindeki satır başı ayet numaralarını ("1. ", "2. " …) kaldırır. */
+private fun String.withoutVerseNumbers(): String =
+  lines().joinToString("\n") { it.replaceFirst(Regex("^(\\s*)\\d+\\.\\s+"), "$1") }

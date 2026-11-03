@@ -55,17 +55,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.AppPreferences
+import com.example.data.IslamicDays
+import com.example.data.RamadanCalendar
+import com.example.data.SpecialCalendarDay
 import com.example.ui.components.AdBannerComponent
 import com.example.ui.components.PrivacyFooter
 import java.util.Calendar
 import java.util.Locale
-
-data class SpecialCalendarDay(
-  val dateKey: String, // "YYYY-MM-DD"
-  val title: String,
-  val category: String, // "Dini Gün", "Kandil", "Bayram", "Resmi Tatil"
-  val badgeEmoji: String
-)
 
 @Composable
 fun FastingCalendarScreen(
@@ -88,20 +84,45 @@ fun FastingCalendarScreen(
 
   // Special Religious Days & Kandils map for year 2026/2027
   val specialDaysMap = remember(calendarYear) {
-    getSpecialDaysForYear(calendarYear)
+    IslamicDays.forYear(calendarYear)
   }
 
+  // Yıl listesi: dini haftalar tek satırda (tarih aralığıyla), diğer günler tek tek
   val specialList = remember(calendarYear) {
-    specialDaysMap.values.toList().sortedBy { it.dateKey }
+    val weekStarts = linkedMapOf<String, SpecialCalendarDay>()
+    val weekEnds = mutableMapOf<String, String>()
+    val singles = mutableListOf<SpecialCalendarDay>()
+    specialDaysMap.values.sortedBy { it.dateKey }.forEach { day ->
+      val parts = day.title.split(" • ")
+      parts.filter { it.endsWith("Haftası") }.forEach { weekName ->
+        if (weekName !in weekStarts) weekStarts[weekName] = SpecialCalendarDay(day.dateKey, weekName, "Dini Hafta", if (weekName.contains("Cami")) "🕌" else "🌹")
+        weekEnds[weekName] = day.dateKey
+      }
+      val rest = parts.filterNot { it.endsWith("Haftası") }
+      if (rest.isNotEmpty()) singles.add(day.copy(title = rest.joinToString(" • ")))
+    }
+    val weeks = weekStarts.map { (name, start) ->
+      start.copy(category = "Dini Hafta • ${formatDateStr(start.dateKey)} – ${formatDateStr(weekEnds[name] ?: start.dateKey)}")
+    }
+    (singles + weeks).sortedBy { it.dateKey }
   }
 
   // Statistics Calculation
   val totalThisYear = fastingDates.count { it.startsWith("$calendarYear-") }
-  val totalInRamadan = fastingDates.count {
-    it.startsWith(String.format(Locale.ROOT, "%04d-02", calendarYear)) ||
-      it.startsWith(String.format(Locale.ROOT, "%04d-03", calendarYear))
-  }.coerceAtMost(30)
-  val kazaDebt = (30 - totalInRamadan).coerceAtLeast(0)
+  // Bu yılın Ramazan günleri (Diyanet tablosu) içinde tutulan oruçlar
+  val ramadanRange = RamadanCalendar.rangeForYear(calendarYear)
+  val ramadanLength = ramadanRange?.let { (start, end) ->
+    val st = start.split("-").map { it.toInt() }
+    val en = end.split("-").map { it.toInt() }
+    val c1 = Calendar.getInstance().apply { clear(); set(st[0], st[1] - 1, st[2]) }
+    val c2 = Calendar.getInstance().apply { clear(); set(en[0], en[1] - 1, en[2]) }
+    (((c2.timeInMillis - c1.timeInMillis) / 86_400_000L) + 1).toInt()
+  } ?: 30
+  val totalInRamadan = fastingDates.count { key ->
+    ramadanRange != null && key >= ramadanRange.first && key <= ramadanRange.second
+  }
+  // Kaza borcu: Oruç Takibi'ndeki sayaç (tutamadım / bozuldu işaretleri)
+  val kazaDebt = prefs.kazaDebtCount
 
   LazyColumn(
     modifier = modifier
@@ -156,7 +177,7 @@ fun FastingCalendarScreen(
         )
         MetricCard(
           title = "Ramazan",
-          value = "$totalInRamadan / 30",
+          value = "$totalInRamadan / $ramadanLength",
           subtitle = "Farz Oruç",
           color = Color(0xFF2D5A43),
           modifier = Modifier.weight(1f)
@@ -359,7 +380,7 @@ fun FastingCalendarScreen(
             Spacer(modifier = Modifier.width(10.dp))
             Column {
               Text(text = special.title, fontWeight = FontWeight.Bold, fontSize = 14.sp, color = MaterialTheme.colorScheme.onPrimaryContainer)
-              Text(text = "${special.category} • Mübarek gün vesilesiyle ibadetlerinizi bereketlendirin.", fontSize = 11.sp, color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f))
+              Text(text = special.category, fontSize = 11.sp, color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f))
             }
           }
         }
@@ -369,7 +390,7 @@ fun FastingCalendarScreen(
     // Upcoming Special Days List for the Year
     item {
       Text(
-        text = "$calendarYear Yılı Önemli Dini Günler & Bayramlar",
+        text = "$calendarYear Yılı Dini Günler, Haftalar & Bayramlar",
         style = MaterialTheme.typography.titleMedium,
         fontWeight = FontWeight.Bold,
         color = MaterialTheme.colorScheme.onBackground,
@@ -496,42 +517,3 @@ private fun formatDateStr(dateKey: String): String {
   return dateKey
 }
 
-private fun getSpecialDaysForYear(year: Int): Map<String, SpecialCalendarDay> {
-  val map = mutableMapOf<String, SpecialCalendarDay>()
-  // 2026 / 2027 Diyanet Dini & Resmi Günler Takvimi
-  val y = year.toString()
-
-  fun add(month: String, day: String, title: String, category: String, emoji: String) {
-    val key = "$y-$month-$day"
-    map[key] = SpecialCalendarDay(key, title, category, emoji)
-  }
-
-  // Kandiller ve Dini Günler
-  add("01", "15", "Miraç Kandili", "Mübarek Gece", "✨")
-  add("02", "02", "Berat Kandili", "Mübarek Gece", "✨")
-  add("02", "19", "Ramazan Başlangıcı (1 Ramazan)", "Dini Gün", "🌙")
-  add("03", "16", "Kadir Gecesi (27 Ramazan)", "Mübarek Gece", "🌟")
-  add("03", "19", "Ramazan Bayramı Arefesi", "Dini Gün", "🕊️")
-  add("03", "20", "Ramazan Bayramı 1. Gün", "Dini Bayram", "🍬")
-  add("03", "21", "Ramazan Bayramı 2. Gün", "Dini Bayram", "🍬")
-  add("03", "22", "Ramazan Bayramı 3. Gün", "Dini Bayram", "🍬")
-  add("05", "26", "Kurban Bayramı Arefesi", "Dini Gün", "🕊️")
-  add("05", "27", "Kurban Bayramı 1. Gün", "Dini Bayram", "🐑")
-  add("05", "28", "Kurban Bayramı 2. Gün", "Dini Bayram", "🐑")
-  add("05", "29", "Kurban Bayramı 3. Gün", "Dini Bayram", "🐑")
-  add("05", "30", "Kurban Bayramı 4. Gün", "Dini Bayram", "🐑")
-  add("06", "16", "Hicri Yılbaşı (1 Muharrem)", "Dini Gün", "🌙")
-  add("06", "25", "Aşure Günü (10 Muharrem)", "Dini Gün", "🥣")
-  add("08", "24", "Mevlid Kandili", "Mübarek Gece", "✨")
-  add("12", "11", "Regaip Kandili", "Mübarek Gece", "✨")
-
-  // Resmi Tatiller
-  add("04", "23", "23 Nisan Ulusal Egemenlik ve Çocuk Bayramı", "Resmi Tatil", "🇹🇷")
-  add("05", "01", "1 Mayıs Emek ve Dayanışma Günü", "Resmi Tatil", "🇹🇷")
-  add("05", "19", "19 Mayıs Gençlik ve Spor Bayramı", "Resmi Tatil", "🇹🇷")
-  add("07", "15", "15 Temmuz Demokrasi ve Milli Birlik Günü", "Resmi Tatil", "🇹🇷")
-  add("08", "30", "30 Ağustos Zafer Bayramı", "Resmi Tatil", "🇹🇷")
-  add("10", "29", "29 Ekim Cumhuriyet Bayramı", "Resmi Tatil", "🇹🇷")
-
-  return map
-}

@@ -117,6 +117,10 @@ dependencies {
   implementation(libs.firebase.ai)
   implementation(libs.firebase.messaging)
   implementation(libs.play.services.ads)
+  // Diyanet Radyo: arka planda canlı yayın
+  implementation(libs.media3.exoplayer)
+  implementation(libs.media3.exoplayer.hls)
+  implementation(libs.media3.session)
   // Uncomment to use Firestore:
   // implementation(libs.firebase.firestore)
 

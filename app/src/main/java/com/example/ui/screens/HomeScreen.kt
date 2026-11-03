@@ -50,6 +50,7 @@ import com.example.data.SpiritualItem
 import com.example.ui.components.AdBannerComponent
 import com.example.ui.components.CompactCountdownCard
 import com.example.ui.components.DailySpiritualCard
+import com.example.ui.components.DiyanetRadioCard
 import com.example.ui.components.HolidayCountdownCard
 import com.example.ui.components.IftarMenuCard
 import com.example.ui.components.PrayerTimesCard
@@ -208,6 +209,11 @@ fun HomeScreen(
       PrayerTimesCard(
         prayerTimes = prayerTimes
       )
+    }
+
+    // 3a. Diyanet Radyo (canlı yayın, arka planda çalar)
+    item {
+      DiyanetRadioCard()
     }
 
     // 4. Smart Holiday Countdown (Ramazan'a / Ramazan Bayramı'na / Kurban Bayramı'na)

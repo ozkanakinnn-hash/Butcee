@@ -145,7 +145,15 @@ fun WelcomeBanner(
     Box(modifier = Modifier.fillMaxSize()) {
       // 1. ARKA PLAN: Günün İstanbul camisi — akşam vakti silüeti
       IstanbulMosqueScene(
-        minaretCount = todayMosque.minaretCount,
+        spec = when (todayMosque.dayName) {
+          "Pazartesi" -> IstanbulMosques.sultanahmet
+          "Salı" -> IstanbulMosques.ayasofya
+          "Çarşamba" -> IstanbulMosques.suleymaniye
+          "Perşembe" -> IstanbulMosques.camlica
+          "Cuma" -> IstanbulMosques.eyup
+          "Cumartesi" -> IstanbulMosques.ortakoy
+          else -> IstanbulMosques.fatih
+        },
         glow = shimmerOffset,
         modifier = Modifier.fillMaxSize()
       )
@@ -223,122 +231,6 @@ fun WelcomeBanner(
           overflow = TextOverflow.Ellipsis
         )
       }
-    }
-  }
-}
-
-/** Akşam ezanı vaktinde İstanbul camisi: gökyüzü, hilal, kubbeler, minareler ve deniz yansıması. */
-@Composable
-private fun IstanbulMosqueScene(
-  minaretCount: Int,
-  glow: Float,
-  modifier: Modifier = Modifier
-) {
-  Canvas(modifier = modifier) {
-    val w = size.width
-    val h = size.height
-    val baseY = h * 0.58f
-    val silhouette = Color(0xFF16110E)
-
-    // Gökyüzü (lacivert → mor → kehribar)
-    drawRect(
-      brush = Brush.verticalGradient(
-        colors = listOf(Color(0xFF1B2440), Color(0xFF473A5E), Color(0xFFB9744A), Color(0xFFE8B66A)),
-        startY = 0f,
-        endY = baseY
-      ),
-      size = Size(w, baseY)
-    )
-    // Ufuktaki güneş ışıltısı
-    drawCircle(
-      brush = Brush.radialGradient(
-        colors = listOf(Color(0xFFFFD56B).copy(alpha = 0.55f * glow), Color.Transparent),
-        center = Offset(w * 0.5f, baseY),
-        radius = w * 0.6f
-      ),
-      center = Offset(w * 0.5f, baseY),
-      radius = w * 0.6f
-    )
-
-    // Yıldızlar
-    listOf(0.12f to 0.08f, 0.30f to 0.15f, 0.55f to 0.06f, 0.64f to 0.20f, 0.92f to 0.30f, 0.20f to 0.27f)
-      .forEach { (x, y) ->
-        drawCircle(Color.White.copy(alpha = 0.75f), radius = w * 0.008f, center = Offset(w * x, h * y))
-      }
-
-    // Hilal
-    val moonC = Offset(w * 0.80f, h * 0.12f)
-    val moonR = w * 0.065f
-    drawCircle(Color(0xFFFFE3A3), radius = moonR, center = moonC)
-    drawCircle(Color(0xFF1E2643), radius = moonR * 0.85f, center = Offset(moonC.x + moonR * 0.4f, moonC.y - moonR * 0.15f))
-
-    // Deniz (Boğaz) ve yansıma
-    drawRect(
-      brush = Brush.verticalGradient(
-        colors = listOf(Color(0xFF6B4A3A), Color(0xFF1E2238)),
-        startY = baseY,
-        endY = h
-      ),
-      topLeft = Offset(0f, baseY),
-      size = Size(w, h - baseY)
-    )
-    for (k in 1..5) {
-      val y = baseY + (h - baseY) * k / 7f
-      drawLine(
-        color = Color(0xFFFFD56B).copy(alpha = 0.18f - k * 0.025f),
-        start = Offset(w * (0.25f + k * 0.03f), y),
-        end = Offset(w * (0.75f - k * 0.03f), y),
-        strokeWidth = 2f
-      )
-    }
-
-    // Cami gövdesi
-    val bodyTop = baseY - h * 0.10f
-    drawRect(silhouette, topLeft = Offset(w * 0.18f, bodyTop), size = Size(w * 0.64f, baseY - bodyTop))
-
-    // Yan yarım kubbeler
-    val sideR = w * 0.12f
-    listOf(0.30f, 0.70f).forEach { x ->
-      drawArc(
-        color = silhouette, startAngle = 180f, sweepAngle = 180f, useCenter = true,
-        topLeft = Offset(w * x - sideR, bodyTop - sideR * 0.55f), size = Size(sideR * 2, sideR * 2)
-      )
-    }
-    // Ana kubbe + kasnak + alem
-    val domeR = w * 0.19f
-    val drumTop = bodyTop - h * 0.05f
-    drawRect(silhouette, topLeft = Offset(w * 0.5f - domeR * 0.92f, drumTop), size = Size(domeR * 1.84f, bodyTop - drumTop + 2f))
-    drawArc(
-      color = silhouette, startAngle = 180f, sweepAngle = 180f, useCenter = true,
-      topLeft = Offset(w * 0.5f - domeR, drumTop - domeR), size = Size(domeR * 2, domeR * 2)
-    )
-    drawLine(silhouette, Offset(w * 0.5f, drumTop - domeR), Offset(w * 0.5f, drumTop - domeR - h * 0.05f), strokeWidth = w * 0.012f)
-
-    // Minareler (günün camisinin minare sayısı kadar)
-    val xs = when {
-      minaretCount >= 6 -> listOf(0.05f, 0.13f, 0.21f, 0.79f, 0.87f, 0.95f)
-      minaretCount >= 4 -> listOf(0.06f, 0.16f, 0.84f, 0.94f)
-      else -> listOf(0.09f, 0.91f)
-    }
-    val mw = w * 0.026f
-    xs.forEach { fx ->
-      val outer = fx < 0.08f || fx > 0.92f
-      val top = if (outer) h * 0.14f else h * 0.20f
-      val cx = w * fx
-      drawRect(silhouette, topLeft = Offset(cx - mw / 2, top), size = Size(mw, baseY - top))
-      // Şerefeler
-      listOf(0.35f, 0.62f).forEach { t ->
-        val by = top + (baseY - top) * t
-        drawRect(silhouette, topLeft = Offset(cx - mw, by), size = Size(mw * 2, h * 0.012f))
-      }
-      // Külah
-      val spire = Path().apply {
-        moveTo(cx - mw * 0.75f, top)
-        lineTo(cx, top - h * 0.07f)
-        lineTo(cx + mw * 0.75f, top)
-        close()
-      }
-      drawPath(spire, silhouette)
     }
   }
 }
