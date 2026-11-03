@@ -120,3 +120,8 @@ adb shell input swipe 540 1700 540 700 500; shot 10b_english_home_asagi
 
 adb logcat -d -b crash >> $OUT/crash_log.txt
 ls -la $OUT; cat $OUT/crash_log.txt | head -80
+
+# Uygulama ikonu: ana ekrana çık, uygulama çekmecesini aç
+adb shell input keyevent KEYCODE_HOME; sleep 2
+adb shell input swipe 540 1900 540 500 400; sleep 3
+adb exec-out screencap -p > $OUT/14_uygulama_ikonu.png
