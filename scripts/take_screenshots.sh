@@ -65,8 +65,10 @@ tap_text "Ayarlar"; shot 08_ayarlar
 adb shell input swipe 540 1800 540 500 500; adb shell input swipe 540 1800 540 500 500; shot 09_ayarlar_tema
 
 # 1b) Arka plan senaryosu: radyoyu çal, uygulamayı arka plana al, bekle
-tap_text "Ana Sayfa"; sleep 2
+# Ayarlar penceresini kapat ve uygulamayı temiz başlat
+adb shell am force-stop $PKG; launch
 adb shell input swipe 540 1700 540 900 400; sleep 2
+adb shell uiautomator dump /sdcard/ui.xml >/dev/null; adb pull /sdcard/ui.xml $OUT/ui_radyo.xml >/dev/null
 tap_text "Dinle"; sleep 20; shot 11_radyo_caliyor 1
 # Durdur senaryosu (kullanıcı bildirimi: durdurunca çöküyor)
 adb logcat -c
