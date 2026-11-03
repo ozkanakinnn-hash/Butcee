@@ -145,6 +145,18 @@ class AppPreferences(context: Context) {
     get() = prefs.getString("key_last_imsak", "05:45") ?: "05:45"
     set(value) = prefs.edit().putString("key_last_imsak", value).apply()
 
+  var lastOgle: String
+    get() = prefs.getString("key_last_ogle", "13:00") ?: "13:00"
+    set(value) = prefs.edit().putString("key_last_ogle", value).apply()
+
+  var lastIkindi: String
+    get() = prefs.getString("key_last_ikindi", "16:00") ?: "16:00"
+    set(value) = prefs.edit().putString("key_last_ikindi", value).apply()
+
+  var lastYatsi: String
+    get() = prefs.getString("key_last_yatsi", "20:00") ?: "20:00"
+    set(value) = prefs.edit().putString("key_last_yatsi", value).apply()
+
   var lastAksam: String
     get() = prefs.getString("key_last_aksam", "18:45") ?: "18:45"
     set(value) = prefs.edit().putString("key_last_aksam", value).apply()

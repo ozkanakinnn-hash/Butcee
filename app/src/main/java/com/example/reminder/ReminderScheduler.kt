@@ -13,7 +13,12 @@ import java.util.Calendar
 /** İftar ve sahur öncesi hatırlatıcılarını AlarmManager ile kurar. */
 object ReminderScheduler {
 
-  enum class Type(val requestCode: Int) { SAHUR(7101), IFTAR(7102) }
+  enum class Type(val requestCode: Int, val label: String) {
+    SAHUR(7101, "Sahur"), IFTAR(7102, "İftar"),
+    // Vakit bildirimleri (Ayarlar > Namaz Vakitleri anahtarları)
+    PRAYER_IMSAK(7201, "İmsak"), PRAYER_OGLE(7202, "Öğle"), PRAYER_IKINDI(7203, "İkindi"),
+    PRAYER_AKSAM(7204, "Akşam"), PRAYER_YATSI(7205, "Yatsı")
+  }
 
   const val EXTRA_TYPE = "reminder_type"
   const val EXTRA_TARGET_MILLIS = "reminder_target_millis"
@@ -23,6 +28,9 @@ object ReminderScheduler {
     val prefs = AppPreferences(context)
     prefs.lastImsak = PrayerTimeUtils.cleanTimeString(prayerTimes.imsak, prefs.lastImsak)
     prefs.lastAksam = PrayerTimeUtils.cleanTimeString(prayerTimes.aksam, prefs.lastAksam)
+    prefs.lastOgle = PrayerTimeUtils.cleanTimeString(prayerTimes.ogle, prefs.lastOgle)
+    prefs.lastIkindi = PrayerTimeUtils.cleanTimeString(prayerTimes.ikindi, prefs.lastIkindi)
+    prefs.lastYatsi = PrayerTimeUtils.cleanTimeString(prayerTimes.yatsi, prefs.lastYatsi)
     rescheduleAll(context)
   }
 
@@ -30,6 +38,12 @@ object ReminderScheduler {
     val prefs = AppPreferences(context)
     schedule(context, Type.SAHUR, prefs.remindBeforeImsak, prefs.lastImsak, prefs.remindBeforeImsakMinutes)
     schedule(context, Type.IFTAR, prefs.remindBeforeIftar, prefs.lastAksam, prefs.remindBeforeIftarMinutes)
+    val on = prefs.notificationsEnabled
+    schedule(context, Type.PRAYER_IMSAK, on && prefs.notifyImsak, prefs.lastImsak, 0)
+    schedule(context, Type.PRAYER_OGLE, on && prefs.notifyOgle, prefs.lastOgle, 0)
+    schedule(context, Type.PRAYER_IKINDI, on && prefs.notifyIkindi, prefs.lastIkindi, 0)
+    schedule(context, Type.PRAYER_AKSAM, on && prefs.notifyIftar, prefs.lastAksam, 0)
+    schedule(context, Type.PRAYER_YATSI, on && prefs.notifyYatsi, prefs.lastYatsi, 0)
   }
 
   private fun schedule(context: Context, type: Type, enabled: Boolean, targetTime: String, minutesBefore: Int) {

@@ -21,11 +21,26 @@ class ReminderReceiver : BroadcastReceiver() {
       val dayKey = RamadanCalendar.dateKey(targetDay)
       val isFastingDay = RamadanCalendar.isRamadanDay(dayKey) || prefs.getFastingDates().contains(dayKey)
 
-      if (isFastingDay) {
+      if (type.name.startsWith("PRAYER_")) {
+        val time = String.format(java.util.Locale.ROOT, "%02d:%02d", targetDay.get(Calendar.HOUR_OF_DAY), targetDay.get(Calendar.MINUTE))
+        val place = "${prefs.province} / ${prefs.district}"
+        if (type == ReminderScheduler.Type.PRAYER_AKSAM) {
+          NotificationHelper.sendEzanNotification(
+            context,
+            title = if (isFastingDay) "🕌 Akşam Ezanı • İftar Vakti" else "🕌 Akşam Ezanı",
+            message = if (isFastingDay) "$place için iftar vakti ($time). Allah orucunuzu kabul etsin! 🤲"
+              else "$place için akşam namazı vakti girdi ($time).",
+            notificationId = type.requestCode
+          )
+        } else {
+          val title = if (type == ReminderScheduler.Type.PRAYER_IMSAK) "🌙 İmsak Vakti" else "🕌 ${type.label} Namazı Vakti"
+          NotificationHelper.sendNotification(context, title, "$place • $time", notificationId = type.requestCode)
+        }
+      } else if (isFastingDay) {
         val (title, message) = when (type) {
           ReminderScheduler.Type.SAHUR ->
             "🌙 Sahura ${prefs.remindBeforeImsakMinutes} dakika kaldı" to MotivationMessages.randomSahur()
-          ReminderScheduler.Type.IFTAR ->
+          else ->
             "🍽️ İftara ${prefs.remindBeforeIftarMinutes} dakika kaldı" to MotivationMessages.randomIftar()
         }
         NotificationHelper.sendNotification(context, title, message, notificationId = type.requestCode)

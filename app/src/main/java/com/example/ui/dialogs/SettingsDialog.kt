@@ -92,6 +92,10 @@ fun SettingsDialog(
   var currentColorTheme by remember { mutableStateOf(prefs.colorTheme) }
   var currentLanguage by remember { mutableStateOf(prefs.language) }
   var notificationsEnabled by remember { mutableStateOf(prefs.notificationsEnabled) }
+  val notifPermissionLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
+    androidx.activity.result.contract.ActivityResultContracts.RequestPermission()
+  ) { }
+  var ezanPreviewPlaying by remember { mutableStateOf(false) }
 
   // 5 Vakit Namaz Onayları
   var notifyImsak by remember { mutableStateOf(prefs.notifyImsak) }
@@ -298,6 +302,12 @@ fun SettingsDialog(
                   onCheckedChange = {
                     notificationsEnabled = it
                     prefs.notificationsEnabled = it
+                    if (it && android.os.Build.VERSION.SDK_INT >= 33 &&
+                      androidx.core.content.ContextCompat.checkSelfPermission(context, android.Manifest.permission.POST_NOTIFICATIONS) !=
+                      android.content.pm.PackageManager.PERMISSION_GRANTED
+                    ) {
+                      notifPermissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+                    }
                   }
                 )
               }
@@ -385,11 +395,37 @@ fun SettingsDialog(
               SoundOptionRow(
                 emoji = "🔔",
                 title = t("Sistem Bildirim Sesi"),
-                subtitle = t("Telefonunuzun varsayılan bildirim sesi"),
+                subtitle = t("Diğer vakitler ve hatırlatıcılar"),
                 selected = true,
                 available = true
               )
               // Yüklenecek özel sesler için ayrılmış alanlar
+              // Akşam ezanı: akşam (iftar) vakti bildiriminde çalar
+              SoundOptionRow(
+                emoji = "🕌",
+                title = t("Akşam Ezanı"),
+                subtitle = t("Akşam / iftar vakti bildiriminde çalar"),
+                selected = true,
+                available = true
+              )
+              Text(
+                text = if (ezanPreviewPlaying) t("⏹ Durdur") else t("▶ Ezanı Dinle"),
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier
+                  .padding(start = 44.dp, bottom = 6.dp)
+                  .clip(RoundedCornerShape(8.dp))
+                  .clickable {
+                    if (ezanPreviewPlaying) {
+                      SoundManager.stopSound(); ezanPreviewPlaying = false
+                    } else {
+                      ezanPreviewPlaying = true
+                      SoundManager.playUri(context, NotificationHelper.ezanSoundUri(context)) { ezanPreviewPlaying = false }
+                    }
+                  }
+                  .padding(horizontal = 8.dp, vertical = 4.dp)
+              )
               SoundOptionRow(
                 emoji = "💥",
                 title = t("Ramazan Topu"),

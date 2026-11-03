@@ -45,6 +45,28 @@ object SoundManager {
     }
   }
 
+  /** Belirli bir ses adresini (ör. res/raw ezan) önizleme olarak çalar. */
+  fun playUri(context: Context, uri: Uri, onComplete: (() -> Unit)? = null) {
+    try {
+      stopSound()
+      currentPlayer = MediaPlayer().apply {
+        setAudioAttributes(
+          AudioAttributes.Builder()
+            .setUsage(AudioAttributes.USAGE_NOTIFICATION_EVENT)
+            .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+            .build()
+        )
+        setDataSource(context, uri)
+        setOnCompletionListener { stopSound(); onComplete?.invoke() }
+        prepare()
+        start()
+      }
+    } catch (e: Exception) {
+      Log.e("SoundManager", "Error playing uri: ${e.message}")
+      onComplete?.invoke()
+    }
+  }
+
   fun stopSound() {
     try {
       currentPlayer?.let { player ->

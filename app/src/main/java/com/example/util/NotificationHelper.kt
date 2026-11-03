@@ -40,6 +40,54 @@ object NotificationHelper {
     }
   }
 
+  /** Akşam ezanı sesli kanal (res/raw/ezan_aksam.mp3). Kanal sesi sonradan değişmez; ses değişirse ID değiştirilmeli. */
+  private const val EZAN_CHANNEL_ID = "ramazan_rehberi_ezan_aksam_v1"
+
+  fun ezanSoundUri(context: Context): android.net.Uri =
+    android.net.Uri.parse("android.resource://${context.packageName}/${R.raw.ezan_aksam}")
+
+  private fun createEzanChannel(context: Context) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+      val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+      val channel = NotificationChannel(EZAN_CHANNEL_ID, "Ezan (Akşam / İftar)", NotificationManager.IMPORTANCE_HIGH).apply {
+        description = "Akşam ezanı vaktinde ezan sesiyle bildirim"
+        enableVibration(true)
+        setSound(
+          ezanSoundUri(context),
+          android.media.AudioAttributes.Builder()
+            .setUsage(android.media.AudioAttributes.USAGE_NOTIFICATION_EVENT)
+            .setContentType(android.media.AudioAttributes.CONTENT_TYPE_SONIFICATION)
+            .build()
+        )
+      }
+      manager.createNotificationChannel(channel)
+    }
+  }
+
+  /** Ezan sesli bildirim (akşam / iftar vakti). */
+  fun sendEzanNotification(context: Context, title: String, message: String, notificationId: Int) {
+    createEzanChannel(context)
+    val launchIntent = context.packageManager.getLaunchIntentForPackage(context.packageName)
+    val contentIntent = launchIntent?.let {
+      PendingIntent.getActivity(context, 0, it, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
+    }
+    val builder = NotificationCompat.Builder(context, EZAN_CHANNEL_ID)
+      .setSmallIcon(R.mipmap.ic_launcher)
+      .setContentTitle(title)
+      .setContentText(message)
+      .setStyle(NotificationCompat.BigTextStyle().bigText(message))
+      .setPriority(NotificationCompat.PRIORITY_HIGH)
+      .setCategory(NotificationCompat.CATEGORY_REMINDER)
+      .setAutoCancel(true)
+      .setSound(ezanSoundUri(context)) // Android 7 ve altı
+      .setContentIntent(contentIntent)
+    try {
+      NotificationManagerCompat.from(context).notify(notificationId, builder.build())
+    } catch (e: SecurityException) {
+      // Android 13+ bildirim izni yok
+    }
+  }
+
   @Suppress("UNUSED_PARAMETER")
   fun sendNotification(
     context: Context,
