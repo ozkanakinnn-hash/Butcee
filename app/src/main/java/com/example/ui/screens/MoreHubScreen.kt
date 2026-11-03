@@ -147,7 +147,7 @@ fun MoreHubScreen(
       ) {
         HubCard(
           title = t("Radyo"),
-          subtitle = t("Diyanet • Kur'an\nRisalet (Canlı)"),
+          subtitle = t("Diyanet • Kur'an\nRisalet (resmî)"),
           emoji = "📻",
           onClick = onOpenRadioTv,
           modifier = Modifier.weight(1f)

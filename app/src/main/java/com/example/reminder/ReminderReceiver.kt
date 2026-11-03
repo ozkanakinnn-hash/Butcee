@@ -24,18 +24,16 @@ class ReminderReceiver : BroadcastReceiver() {
       if (type.name.startsWith("PRAYER_")) {
         val time = String.format(java.util.Locale.ROOT, "%02d:%02d", targetDay.get(Calendar.HOUR_OF_DAY), targetDay.get(Calendar.MINUTE))
         val place = "${prefs.province} / ${prefs.district}"
-        if (type == ReminderScheduler.Type.PRAYER_AKSAM) {
-          NotificationHelper.sendEzanNotification(
-            context,
-            title = if (isFastingDay) "🕌 Akşam Ezanı • İftar Vakti" else "🕌 Akşam Ezanı",
-            message = if (isFastingDay) "$place için iftar vakti ($time). Allah orucunuzu kabul etsin! 🤲"
-              else "$place için akşam namazı vakti girdi ($time).",
-            notificationId = type.requestCode
-          )
-        } else {
-          val title = if (type == ReminderScheduler.Type.PRAYER_IMSAK) "🌙 İmsak Vakti" else "🕌 ${type.label} Namazı Vakti"
-          NotificationHelper.sendNotification(context, title, "$place • $time", notificationId = type.requestCode)
+        // Şimdilik tüm vakitlerde aynı ezan sesi çalar
+        val (title, message) = when {
+          type == ReminderScheduler.Type.PRAYER_AKSAM && isFastingDay ->
+            "🕌 Akşam Ezanı • İftar Vakti" to "$place için iftar vakti ($time). Allah orucunuzu kabul etsin! 🤲"
+          type == ReminderScheduler.Type.PRAYER_IMSAK ->
+            "🌙 İmsak Vakti" to "$place için imsak vakti ($time)."
+          else ->
+            "🕌 ${type.label} Ezanı" to "$place için ${type.label.lowercase()} namazı vakti girdi ($time)."
         }
+        NotificationHelper.sendEzanNotification(context, title, message, notificationId = type.requestCode)
       } else if (isFastingDay) {
         val (title, message) = when (type) {
           ReminderScheduler.Type.SAHUR ->

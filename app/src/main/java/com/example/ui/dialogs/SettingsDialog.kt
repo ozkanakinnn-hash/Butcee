@@ -395,7 +395,7 @@ fun SettingsDialog(
               SoundOptionRow(
                 emoji = "🔔",
                 title = t("Sistem Bildirim Sesi"),
-                subtitle = t("Diğer vakitler ve hatırlatıcılar"),
+                subtitle = t("Sahur ve iftar hatırlatıcıları"),
                 selected = true,
                 available = true
               )
@@ -403,8 +403,8 @@ fun SettingsDialog(
               // Akşam ezanı: akşam (iftar) vakti bildiriminde çalar
               SoundOptionRow(
                 emoji = "🕌",
-                title = t("Akşam Ezanı"),
-                subtitle = t("Akşam / iftar vakti bildiriminde çalar"),
+                title = t("Ezan Sesi"),
+                subtitle = t("Tüm namaz vakti bildirimlerinde çalar"),
                 selected = true,
                 available = true
               )

@@ -40,8 +40,8 @@ object NotificationHelper {
     }
   }
 
-  /** Akşam ezanı sesli kanal (res/raw/ezan_aksam.mp3). Kanal sesi sonradan değişmez; ses değişirse ID değiştirilmeli. */
-  private const val EZAN_CHANNEL_ID = "ramazan_rehberi_ezan_aksam_v1"
+  /** Ezan sesli kanal (res/raw/ezan_aksam.mp3). Kanal sesi sonradan değişmez; ses değişirse ID değiştirilmeli. */
+  private const val EZAN_CHANNEL_ID = "ramazan_rehberi_ezan_v2"
 
   fun ezanSoundUri(context: Context): android.net.Uri =
     android.net.Uri.parse("android.resource://${context.packageName}/${R.raw.ezan_aksam}")
@@ -49,8 +49,9 @@ object NotificationHelper {
   private fun createEzanChannel(context: Context) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
       val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-      val channel = NotificationChannel(EZAN_CHANNEL_ID, "Ezan (Akşam / İftar)", NotificationManager.IMPORTANCE_HIGH).apply {
-        description = "Akşam ezanı vaktinde ezan sesiyle bildirim"
+      manager.deleteNotificationChannel("ramazan_rehberi_ezan_aksam_v1")
+      val channel = NotificationChannel(EZAN_CHANNEL_ID, "Ezan (Namaz Vakitleri)", NotificationManager.IMPORTANCE_HIGH).apply {
+        description = "Namaz vakitlerinde ezan sesiyle bildirim"
         enableVibration(true)
         setSound(
           ezanSoundUri(context),
@@ -64,7 +65,7 @@ object NotificationHelper {
     }
   }
 
-  /** Ezan sesli bildirim (akşam / iftar vakti). */
+  /** Ezan sesli bildirim (tüm namaz vakitleri). */
   fun sendEzanNotification(context: Context, title: String, message: String, notificationId: Int) {
     createEzanChannel(context)
     val launchIntent = context.packageManager.getLaunchIntentForPackage(context.packageName)
