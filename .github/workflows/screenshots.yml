@@ -53,4 +53,8 @@ jobs:
           rm -rf docs/screenshots && mkdir -p docs && cp -r screenshots docs/screenshots
           git add docs/screenshots
           git commit -m "Ekran görüntüleri [skip ci]" || exit 0
-          git push origin HEAD:${{ github.ref_name }}
+          # Bu sırada dala yeni commit gelmiş olabilir: yeniden temellendirip birkaç kez dene
+          for i in 1 2 3 4; do
+            git pull --rebase origin ${{ github.ref_name }} && git push origin HEAD:${{ github.ref_name }} && break
+            sleep $((i * 5))
+          done
