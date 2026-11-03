@@ -43,3 +43,13 @@ gradle/actions/setup-gradle@v5 → `./gradlew assembleDebug` → upload-artifact
 - Türkçe arayüz, Material 3, krem/bej/altın + zümrüt yeşili palet, karanlık mod desteği.
 - MVVM + StateFlow, SharedPreferences tabanlı `AppPreferences`.
 - AdMob test kimliğiyle başla; yayın öncesi gerçek kimliği hatırlat.
+
+## 6. Sık hatalar ve kalıplar (bu projeden)
+- **StaticLayout + `Paint.Align.CENTER` birlikte kullanılmaz**: metin sola kayar. StaticLayout'ta yalnızca `Layout.Alignment.ALIGN_CENTER` kullan.
+- **Bildirim kanalı sesi sonradan değişmez**: sesi değiştirmek için yeni kanal ID'si aç, eskisini `deleteNotificationChannel` ile sil. Sistem sesi için `setSound` çağırma.
+- **"Hatırlatıcı" ayarı ≠ hatırlatıcı**: AlarmManager (`setExactAndAllowWhileIdle`, izin yoksa `setAndAllowWhileIdle`) + BroadcastReceiver + BOOT_COMPLETED/MY_PACKAGE_REPLACED receiver kur; alarm çalınca bir sonrakini kur. Android 13+ `POST_NOTIFICATIONS` iznini iste.
+- **Koyu tema kontrolü**: ekranlarda `isSystemInDarkTheme()` değil, uygulamanın seçtiği temaya bak (`MaterialTheme.colorScheme.background.luminance() < 0.5f`).
+- **Çoklu tema**: `enum AppColorTheme` + her tema için açık/koyu `ColorScheme`; koyu mod için neredeyse siyah (#050505) zemin + temanın hafif tonlu yüzeyleri.
+- **Alt menü hizası**: tüm ikonlar aynı boyut (24dp), etiketler `maxLines = 1, softWrap = false`.
+- **Instagram Hikâyesi**: `com.instagram.share.ADD_TO_STORY` Meta App ID ister; yoksa `ACTION_SEND` + `setPackage("com.instagram.android")`. Manifest'e `<queries>` ekle.
+- **Ramazan tarihleri** yıla göre değişir; sabit tarih yerine yıl tablosu (`RamadanCalendar`) kullan.
