@@ -36,7 +36,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import com.example.R
 import androidx.compose.ui.unit.sp
 import com.example.data.AppPreferences
 import com.example.data.CountdownResult
@@ -124,15 +127,35 @@ fun HomeScreen(
           }
         }
 
-        IconButton(
-          onClick = onOpenSettings,
-          modifier = Modifier.testTag("home_settings_button")
-        ) {
-          Icon(
-            imageVector = Icons.Default.Settings,
-            contentDescription = "Ayarlar",
-            tint = MaterialTheme.colorScheme.onBackground
-          )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+          // Kıble Bulucu kısayolu (Kâbe ikonu)
+          Box(
+            modifier = Modifier
+              .size(40.dp)
+              .clip(CircleShape)
+              .background(MaterialTheme.colorScheme.primaryContainer)
+              .clickable { onOpenQibla() }
+              .testTag("shortcut_qibla_button"),
+            contentAlignment = Alignment.Center
+          ) {
+            Icon(
+              painter = painterResource(R.drawable.ic_kaaba),
+              contentDescription = "Kıble Bulucu",
+              tint = Color.Unspecified,
+              modifier = Modifier.size(24.dp)
+            )
+          }
+          Spacer(modifier = Modifier.width(4.dp))
+          IconButton(
+            onClick = onOpenSettings,
+            modifier = Modifier.testTag("home_settings_button")
+          ) {
+            Icon(
+              imageVector = Icons.Default.Settings,
+              contentDescription = "Ayarlar",
+              tint = MaterialTheme.colorScheme.onBackground
+            )
+          }
         }
       }
     }
@@ -169,56 +192,7 @@ fun HomeScreen(
       )
     }
 
-    // 4. SHORTCUT 1: KIBLE BULUCU (Direct single-tap shortcut requested by user)
-    item {
-      Card(
-        modifier = Modifier
-          .fillMaxWidth()
-          .padding(horizontal = 16.dp, vertical = 4.dp)
-          .clickable { onOpenQibla() }
-          .testTag("shortcut_qibla_button"),
-        shape = RoundedCornerShape(18.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-      ) {
-        Row(
-          modifier = Modifier
-            .fillMaxWidth()
-            .padding(14.dp),
-          verticalAlignment = Alignment.CenterVertically,
-          horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-          Row(verticalAlignment = Alignment.CenterVertically) {
-            Box(
-              modifier = Modifier
-                .size(42.dp)
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.primaryContainer),
-              contentAlignment = Alignment.Center
-            ) {
-              Text("🧭", fontSize = 20.sp)
-            }
-            Spacer(modifier = Modifier.width(12.dp))
-            Column {
-              Text(
-                text = "Kıble Bulucu (Pusula)",
-                fontWeight = FontWeight.Bold,
-                fontSize = 14.sp,
-                color = MaterialTheme.colorScheme.onSurface
-              )
-              Text(
-                text = "${prefs.province} için Kâbe yönü ve derece göstergesi",
-                fontSize = 11.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-              )
-            }
-          }
-          Text("Bul ›", fontWeight = FontWeight.Bold, fontSize = 13.sp, color = MaterialTheme.colorScheme.primary)
-        }
-      }
-    }
-
-    // 5. SHORTCUT 2: YAKINDAKİ CAMİLER (Placed directly below Qibla Finder)
+    // 4. YAKINDAKİ CAMİLER kısayolu
     item {
       Card(
         modifier = Modifier
