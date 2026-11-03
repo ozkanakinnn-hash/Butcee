@@ -16,27 +16,72 @@ import com.example.data.IftarSoundChoice
 object NotificationHelper {
 
   private const val BASE_CHANNEL_ID = "ramazan_rehberi_channel"
-  /** Sistem varsayılan sesli tek kanal. (Eski özel sesli kanallar silinir.) */
-  private const val CHANNEL_ID = "ramazan_rehberi_system"
-  private const val CHANNEL_NAME = "Ramazan Rehberi & Namaz Vakitleri"
+  /** Genel bildirimler: ney sesi (res/raw/bildirim_ney.mp3). Kanal sesi sonradan değişmez; ses değişirse ID değiştirilmeli. */
+  private const val CHANNEL_ID = "ramazan_rehberi_ney_v1"
+  private const val CHANNEL_NAME = "Ramazan Rehberi (Ney)"
+  /** Sahur hatırlatıcısı: davul sesi + güçlü titreşim (res/raw/sahur_davul.mp3). */
+  private const val DAVUL_CHANNEL_ID = "ramazan_rehberi_davul_v1"
+  /** Davul ritmine uygun titreşim deseni. */
+  private val DAVUL_VIBRATION = longArrayOf(0, 300, 150, 300, 150, 600, 250, 300, 150, 300, 150, 600)
+
+  private fun rawUri(context: Context, resId: Int): android.net.Uri =
+    android.net.Uri.parse("android.resource://${context.packageName}/$resId")
+
+  fun neySoundUri(context: Context) = rawUri(context, R.raw.bildirim_ney)
+  fun davulSoundUri(context: Context) = rawUri(context, R.raw.sahur_davul)
+
+  private fun soundAttributes() = android.media.AudioAttributes.Builder()
+    .setUsage(android.media.AudioAttributes.USAGE_NOTIFICATION_EVENT)
+    .setContentType(android.media.AudioAttributes.CONTENT_TYPE_SONIFICATION)
+    .build()
 
   @Suppress("UNUSED_PARAMETER")
   fun createNotificationChannel(context: Context, soundChoice: IftarSoundChoice = IftarSoundChoice.RAMAZAN_TOPU) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
       val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-      // Önceki sürümlerdeki özel sesli kanalları kaldır
+      // Önceki sürümlerdeki kanalları kaldır
       IftarSoundChoice.entries.forEach { manager.deleteNotificationChannel("${BASE_CHANNEL_ID}_${it.name}") }
+      manager.deleteNotificationChannel("ramazan_rehberi_system")
 
-      val channel = NotificationChannel(
-        CHANNEL_ID,
-        CHANNEL_NAME,
-        NotificationManager.IMPORTANCE_HIGH
-      ).apply {
-        description = "Namaz vakitleri, iftar ve sahur hatırlatıcıları"
-        enableVibration(true)
-        // setSound çağrılmıyor: sistem varsayılan bildirim sesi kullanılır
-      }
-      manager.createNotificationChannel(channel)
+      manager.createNotificationChannel(
+        NotificationChannel(CHANNEL_ID, CHANNEL_NAME, NotificationManager.IMPORTANCE_HIGH).apply {
+          description = "İftar hatırlatıcısı ve diğer bildirimler (ney sesi)"
+          enableVibration(true)
+          setSound(neySoundUri(context), soundAttributes())
+        }
+      )
+      manager.createNotificationChannel(
+        NotificationChannel(DAVUL_CHANNEL_ID, "Sahur Davulu", NotificationManager.IMPORTANCE_HIGH).apply {
+          description = "Sahur hatırlatıcısı (davul sesi ve titreşim)"
+          enableVibration(true)
+          vibrationPattern = DAVUL_VIBRATION
+          setSound(davulSoundUri(context), soundAttributes())
+        }
+      )
+    }
+  }
+
+  /** Sahur hatırlatıcısı: davul sesi ve davul ritminde titreşim. */
+  fun sendDavulNotification(context: Context, title: String, message: String, notificationId: Int) {
+    createNotificationChannel(context)
+    val launchIntent = context.packageManager.getLaunchIntentForPackage(context.packageName)
+    val contentIntent = launchIntent?.let {
+      PendingIntent.getActivity(context, 0, it, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
+    }
+    val builder = NotificationCompat.Builder(context, DAVUL_CHANNEL_ID)
+      .setSmallIcon(R.drawable.ic_stat_mosque)
+      .setContentTitle(title)
+      .setContentText(message)
+      .setStyle(NotificationCompat.BigTextStyle().bigText(message))
+      .setPriority(NotificationCompat.PRIORITY_HIGH)
+      .setCategory(NotificationCompat.CATEGORY_REMINDER)
+      .setAutoCancel(true)
+      .setSound(davulSoundUri(context))      // Android 7 ve altı
+      .setVibrate(DAVUL_VIBRATION)           // Android 7 ve altı
+      .setContentIntent(contentIntent)
+    try {
+      NotificationManagerCompat.from(context).notify(notificationId, builder.build())
+    } catch (e: SecurityException) {
     }
   }
 
@@ -111,7 +156,8 @@ object NotificationHelper {
       .setStyle(NotificationCompat.BigTextStyle().bigText(message))
       .setPriority(NotificationCompat.PRIORITY_HIGH)
       .setAutoCancel(true)
-      .setDefaults(NotificationCompat.DEFAULT_ALL) // sistem sesi + titreşimi
+      .setSound(neySoundUri(context)) // Android 7 ve altı (8+ kanal sesi kullanılır)
+      .setDefaults(NotificationCompat.DEFAULT_VIBRATE)
       .setContentIntent(contentIntent)
 
     try {

@@ -41,7 +41,12 @@ class ReminderReceiver : BroadcastReceiver() {
           else ->
             "🍽️ İftara ${prefs.remindBeforeIftarMinutes} dakika kaldı" to MotivationMessages.randomIftar()
         }
-        NotificationHelper.sendNotification(context, title, message, notificationId = type.requestCode)
+        // Sahur: davul sesi + titreşim; iftar ve diğerleri: ney sesi
+        if (type == ReminderScheduler.Type.SAHUR) {
+          NotificationHelper.sendDavulNotification(context, title, message, notificationId = type.requestCode)
+        } else {
+          NotificationHelper.sendNotification(context, title, message, notificationId = type.requestCode)
+        }
       }
     }
 

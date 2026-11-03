@@ -95,7 +95,7 @@ fun SettingsDialog(
   val notifPermissionLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
     androidx.activity.result.contract.ActivityResultContracts.RequestPermission()
   ) { }
-  var ezanPreviewPlaying by remember { mutableStateOf(false) }
+  var previewPlaying by remember { mutableStateOf<String?>(null) }
 
   // 5 Vakit Namaz Onayları
   var notifyImsak by remember { mutableStateOf(prefs.notifyImsak) }
@@ -392,51 +392,38 @@ fun SettingsDialog(
           ) {
             Column(modifier = Modifier.padding(14.dp)) {
               // Şu an tek etkin seçenek: sistem sesi
-              SoundOptionRow(
-                emoji = "🔔",
-                title = t("Sistem Bildirim Sesi"),
-                subtitle = t("Sahur ve iftar hatırlatıcıları"),
-                selected = true,
-                available = true
-              )
-              // Yüklenecek özel sesler için ayrılmış alanlar
-              // Akşam ezanı: akşam (iftar) vakti bildiriminde çalar
-              SoundOptionRow(
-                emoji = "🕌",
-                title = t("Ezan Sesi"),
-                subtitle = t("Tüm namaz vakti bildirimlerinde çalar"),
-                selected = true,
-                available = true
-              )
-              Text(
-                text = if (ezanPreviewPlaying) t("⏹ Durdur") else t("▶ Ezanı Dinle"),
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier
-                  .padding(start = 44.dp, bottom = 6.dp)
-                  .clip(RoundedCornerShape(8.dp))
-                  .clickable {
-                    if (ezanPreviewPlaying) {
-                      SoundManager.stopSound(); ezanPreviewPlaying = false
-                    } else {
-                      ezanPreviewPlaying = true
-                      SoundManager.playUri(context, NotificationHelper.ezanSoundUri(context)) { ezanPreviewPlaying = false }
+              // Bildirim sesleri: ezan (vakitler), davul (sahur), ney (diğer bildirimler)
+              listOf(
+                Triple("🕌", t("Ezan Sesi"), t("Tüm namaz vakti bildirimlerinde çalar")) to NotificationHelper.ezanSoundUri(context),
+                Triple("🥁", t("Sahur Davulu"), t("Sahur hatırlatıcısında çalar, titreşimli")) to NotificationHelper.davulSoundUri(context),
+                Triple("🎶", t("Ney"), t("İftar hatırlatıcısı ve diğer tüm bildirimler")) to NotificationHelper.neySoundUri(context)
+              ).forEach { (info, uri) ->
+                val (emoji, title, subtitle) = info
+                SoundOptionRow(emoji = emoji, title = title, subtitle = subtitle, selected = true, available = true)
+                val playingThis = previewPlaying == title
+                Text(
+                  text = if (playingThis) t("⏹ Durdur") else t("▶ Dinle"),
+                  fontSize = 12.sp,
+                  fontWeight = FontWeight.Bold,
+                  color = MaterialTheme.colorScheme.primary,
+                  modifier = Modifier
+                    .padding(start = 44.dp, bottom = 6.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .clickable {
+                      if (playingThis) {
+                        SoundManager.stopSound(); previewPlaying = null
+                      } else {
+                        previewPlaying = title
+                        SoundManager.playUri(context, uri) { previewPlaying = null }
+                      }
                     }
-                  }
-                  .padding(horizontal = 8.dp, vertical = 4.dp)
-              )
+                    .padding(horizontal = 8.dp, vertical = 4.dp)
+                )
+              }
               SoundOptionRow(
                 emoji = "💥",
                 title = t("Ramazan Topu"),
                 subtitle = t("İftar vaktinde geleneksel top sesi"),
-                selected = false,
-                available = false
-              )
-              SoundOptionRow(
-                emoji = "🌙",
-                title = t("Sahur Davulu"),
-                subtitle = t("Sahur hatırlatıcısı için davul sesi"),
                 selected = false,
                 available = false
               )
