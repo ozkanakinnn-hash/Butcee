@@ -1,5 +1,6 @@
 package com.example.ui.screens
 
+import com.example.i18n.t
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -77,7 +78,7 @@ fun HomeScreen(
   modifier: Modifier = Modifier
 ) {
   val isRamadanSeason = holidayInfo.title.contains("Bayramı", ignoreCase = true)
-  val greetingName = if (prefs.userName.isNotBlank()) prefs.userName else "Değerli Kardeşimiz"
+  val greetingName = if (prefs.userName.isNotBlank()) prefs.userName else t("Değerli Kardeşimiz")
 
   // Bayram süslemesi ve mahya (her saniyelik yeniden çizimde ucuz: yıllık takvim önbellekte)
   val festival = FestivalCalendar.today(prefs)
@@ -115,7 +116,7 @@ fun HomeScreen(
             ) {
               Icon(
                 imageVector = Icons.Default.LocationOn,
-                contentDescription = "Konum Değiştir",
+                contentDescription = t("Konum Değiştir"),
                 tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(15.dp)
               )
@@ -131,7 +132,7 @@ fun HomeScreen(
               )
               Spacer(modifier = Modifier.width(4.dp))
               Text(
-                text = "• Değiştir",
+                text = t("• Değiştir"),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
               )
@@ -150,7 +151,7 @@ fun HomeScreen(
           ) {
             Icon(
               painter = painterResource(R.drawable.ic_kaaba),
-              contentDescription = "Kıble Bulucu",
+              contentDescription = t("Kıble Bulucu"),
               tint = Color.Unspecified,
               modifier = Modifier.size(24.dp)
             )
@@ -168,7 +169,7 @@ fun HomeScreen(
           ) {
             Icon(
               imageVector = Icons.Default.Mosque,
-              contentDescription = "Yakınımdaki Camiler",
+              contentDescription = t("Yakınımdaki Camiler"),
               tint = MaterialTheme.colorScheme.primary,
               modifier = Modifier.size(22.dp)
             )
@@ -180,7 +181,7 @@ fun HomeScreen(
           ) {
             Icon(
               imageVector = Icons.Default.Settings,
-              contentDescription = "Ayarlar",
+              contentDescription = t("Ayarlar"),
               tint = MaterialTheme.colorScheme.onBackground
             )
           }
@@ -188,7 +189,7 @@ fun HomeScreen(
         }
         Spacer(modifier = Modifier.height(6.dp))
         Text(
-          text = "Merhaba, $greetingName 👋",
+          text = "${t("Merhaba")}, $greetingName 👋",
           maxLines = 2,
           overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
           style = MaterialTheme.typography.titleLarge,

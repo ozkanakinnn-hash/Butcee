@@ -1,5 +1,6 @@
 package com.example.ui.screens
 
+import com.example.i18n.t
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
@@ -76,11 +77,15 @@ fun FastingCalendarScreen(
   var fastingDates by remember { mutableStateOf(prefs.getFastingDates()) }
   var selectedDaySpecialInfo by remember { mutableStateOf<SpecialCalendarDay?>(null) }
 
-  val monthNames = listOf(
+  val monthNames = if (com.example.i18n.AppLanguage.isEnglish) listOf(
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+  ) else listOf(
     "Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran",
     "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"
   )
-  val dayNames = listOf("Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz")
+  val dayNames = if (com.example.i18n.AppLanguage.isEnglish) listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
+  else listOf("Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz")
 
   // Special Religious Days & Kandils map for year 2026/2027
   val specialDaysMap = remember(calendarYear) {
@@ -144,7 +149,7 @@ fun FastingCalendarScreen(
           )
           Spacer(modifier = Modifier.width(8.dp))
           Text(
-            text = "Oruç Takvimi & Dini Günler",
+            text = t("Oruç Takvimi & Dini Günler"),
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onBackground
@@ -152,7 +157,7 @@ fun FastingCalendarScreen(
         }
         Spacer(modifier = Modifier.height(4.dp))
         Text(
-          text = "Günlere dokunarak oruç işaretleyin; kandil, bayram ve dini günleri takip edin.",
+          text = t("Günlere dokunarak oruç işaretleyin; kandil, bayram ve dini günleri takip edin."),
           style = MaterialTheme.typography.bodySmall,
           color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -168,23 +173,23 @@ fun FastingCalendarScreen(
         horizontalArrangement = Arrangement.spacedBy(8.dp)
       ) {
         MetricCard(
-          title = "Bu Yıl Toplam",
+          title = t("Bu Yıl Toplam"),
           value = "$totalThisYear Gün",
-          subtitle = "Tüm Oruçlar",
+          subtitle = t("Tüm Oruçlar"),
           color = MaterialTheme.colorScheme.primary,
           modifier = Modifier.weight(1f)
         )
         MetricCard(
-          title = "Ramazan",
+          title = t("Ramazan"),
           value = "$totalInRamadan / $ramadanLength",
-          subtitle = "Farz Oruç",
+          subtitle = t("Farz Oruç"),
           color = Color(0xFF2D5A43),
           modifier = Modifier.weight(1f)
         )
         MetricCard(
-          title = "Kaza Borcu",
+          title = t("Kaza Borcu"),
           value = "$kazaDebt Gün",
-          subtitle = "Kalan Oruç",
+          subtitle = t("Kalan Oruç"),
           color = if (kazaDebt > 0) Color(0xFF8A3B2B) else Color(0xFF2D5A43),
           modifier = Modifier.weight(1f)
         )
@@ -212,13 +217,13 @@ fun FastingCalendarScreen(
               Text("🤲", fontSize = 18.sp)
               Spacer(modifier = Modifier.width(8.dp))
               Text(
-                text = "Bugünkü Oruç Durumunu Kaydet / Kaza Sayacı",
+                text = t("Bugünkü Oruç Durumunu Kaydet / Kaza Sayacı"),
                 style = MaterialTheme.typography.bodySmall,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onPrimaryContainer
               )
             }
-            Text("Aç ›", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+            Text(t("Aç ›"), fontSize = 12.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
           }
         }
       }
@@ -254,7 +259,7 @@ fun FastingCalendarScreen(
                 selectedDaySpecialInfo = null
               }
             ) {
-              Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Önceki Ay")
+              Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = t("Önceki Ay"))
             }
 
             Text(
@@ -275,7 +280,7 @@ fun FastingCalendarScreen(
                 selectedDaySpecialInfo = null
               }
             ) {
-              Icon(imageVector = Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "Sonraki Ay")
+              Icon(imageVector = Icons.AutoMirrored.Filled.ArrowForward, contentDescription = t("Sonraki Ay"))
             }
           }
 
@@ -389,7 +394,7 @@ fun FastingCalendarScreen(
     // Upcoming Special Days List for the Year
     item {
       Text(
-        text = "$calendarYear Yılı Dini Bayramlar",
+        text = if (com.example.i18n.AppLanguage.isEnglish) "$calendarYear Eid Holidays" else "$calendarYear Yılı Dini Bayramlar",
         style = MaterialTheme.typography.titleMedium,
         fontWeight = FontWeight.Bold,
         color = MaterialTheme.colorScheme.onBackground,

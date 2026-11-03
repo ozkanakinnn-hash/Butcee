@@ -1,5 +1,6 @@
 package com.example.ui.screens
 
+import com.example.i18n.t
 import android.content.Context
 import com.example.util.SolarCalc
 import androidx.compose.foundation.clickable
@@ -290,12 +291,12 @@ fun QiblaFinderScreen(
       verticalAlignment = Alignment.CenterVertically
     ) {
       IconButton(onClick = onNavigateBack) {
-        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Geri")
+        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = t("Geri"))
       }
       Spacer(modifier = Modifier.width(8.dp))
       Column {
         Text(
-          text = "Kıble Bulucu (Hassas Pusula)",
+          text = t("Kıble Bulucu (Hassas Pusula)"),
           style = MaterialTheme.typography.titleLarge,
           fontWeight = FontWeight.Bold,
           color = MaterialTheme.colorScheme.onBackground
@@ -390,7 +391,7 @@ fun QiblaFinderScreen(
       TextButton(onClick = {
         locationPermissionLauncher.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION))
       }) {
-        Text("📍 Daha hassas ölçüm için konumumu kullan", fontSize = 12.sp)
+        Text(t("📍 Daha hassas ölçüm için konumumu kullan"), fontSize = 12.sp)
       }
     }
 
@@ -443,28 +444,28 @@ fun QiblaFinderScreen(
 
         // Cardinal Direction Labels on Rotating Rose
         Text(
-          text = "K",
+          text = t("K"),
           fontWeight = FontWeight.Bold,
           color = Color(0xFFD32F2F), // Red North
           fontSize = 17.sp,
           modifier = Modifier.align(Alignment.TopCenter).padding(top = 16.dp)
         )
         Text(
-          text = "G",
+          text = t("G"),
           fontWeight = FontWeight.Bold,
           color = if (isDark) Color(0xFFB0A48E) else Color(0xFF6B5838),
           fontSize = 16.sp,
           modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 16.dp)
         )
         Text(
-          text = "D",
+          text = t("D"),
           fontWeight = FontWeight.Bold,
           color = if (isDark) Color(0xFFB0A48E) else Color(0xFF6B5838),
           fontSize = 16.sp,
           modifier = Modifier.align(Alignment.CenterEnd).padding(end = 16.dp)
         )
         Text(
-          text = "B",
+          text = t("B"),
           fontWeight = FontWeight.Bold,
           color = if (isDark) Color(0xFFB0A48E) else Color(0xFF6B5838),
           fontSize = 16.sp,
@@ -596,7 +597,7 @@ fun QiblaFinderScreen(
     ) {
       Column(modifier = Modifier.padding(14.dp)) {
         Text(
-          text = "☀️ Bugünün Kıble Saati: " + (qiblaTime ?: "—"),
+          text = t("☀️ Bugünün Kıble Saati: ") + (qiblaTime ?: "—"),
           fontWeight = FontWeight.Bold,
           fontSize = 15.sp,
           color = MaterialTheme.colorScheme.onPrimaryContainer
@@ -628,7 +629,7 @@ fun QiblaFinderScreen(
           modifier = Modifier.padding(12.dp),
           horizontalAlignment = Alignment.CenterHorizontally
         ) {
-          Text("Mevcut Yön", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+          Text(t("Mevcut Yön"), fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
           Text("${currentAzimuth.toInt()}°", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
           Text(getHeadingName(currentAzimuth), fontSize = 10.sp, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold)
         }
@@ -643,7 +644,7 @@ fun QiblaFinderScreen(
           modifier = Modifier.padding(12.dp),
           horizontalAlignment = Alignment.CenterHorizontally
         ) {
-          Text("Hedef Kıble", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+          Text(t("Hedef Kıble"), fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
           Text("${qiblaBearing.toInt()}°", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color(0xFF9E6B20))
           Text(getHeadingName(qiblaBearing), fontSize = 10.sp, color = Color(0xFF2D5A43), fontWeight = FontWeight.SemiBold)
         }
@@ -658,9 +659,9 @@ fun QiblaFinderScreen(
           modifier = Modifier.padding(12.dp),
           horizontalAlignment = Alignment.CenterHorizontally
         ) {
-          Text("Sensör Durumu", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+          Text(t("Sensör Durumu"), fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
           Text(sensorAccuracy, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-          Text("Manyetometre", fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+          Text(t("Manyetometre"), fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
       }
     }
@@ -683,7 +684,7 @@ fun QiblaFinderScreen(
           )
           Spacer(modifier = Modifier.width(8.dp))
           Text(
-            text = "Hassas Ölçüm İpuçları",
+            text = t("Hassas Ölçüm İpuçları"),
             fontWeight = FontWeight.Bold,
             fontSize = 13.sp,
             color = MaterialTheme.colorScheme.onSurface
@@ -709,7 +710,7 @@ fun QiblaFinderScreen(
     ) {
       Icon(imageVector = Icons.Default.CompassCalibration, contentDescription = null, modifier = Modifier.size(18.dp))
       Spacer(modifier = Modifier.width(8.dp))
-      Text("Pusulayı Kalibre Et (8 Çiz)")
+      Text(t("Pusulayı Kalibre Et (8 Çiz)"))
     }
 
     Spacer(modifier = Modifier.height(20.dp))
@@ -721,23 +722,23 @@ fun QiblaFinderScreen(
       onDismissRequest = { showCalibrationDialog = false },
       title = {
         Row(verticalAlignment = Alignment.CenterVertically) {
-          Text("Pusula Kalibrasyonu 🧭", fontWeight = FontWeight.Bold)
+          Text(t("Pusula Kalibrasyonu 🧭"), fontWeight = FontWeight.Bold)
         }
       },
       text = {
         Column {
-          Text("Cihazın manyetik sensörlerinin en yüksek doğrulukla çalışması için:")
+          Text(t("Cihazın manyetik sensörlerinin en yüksek doğrulukla çalışması için:"))
           Spacer(modifier = Modifier.height(8.dp))
-          Text("1. Telefonunuzu elinize alarak havada yatay bir '8' (sonsuzluk) işareti çizecek şekilde 3-4 kez çevirin.")
+          Text(t("1. Telefonunuzu elinize alarak havada yatay bir '8' (sonsuzluk) işareti çizecek şekilde 3-4 kez çevirin."))
           Spacer(modifier = Modifier.height(6.dp))
-          Text("2. Mıknatıslı telefon kılıflarından, prizlerden ve büyük metal yüzeylerden uzaklaşın.")
+          Text(t("2. Mıknatıslı telefon kılıflarından, prizlerden ve büyük metal yüzeylerden uzaklaşın."))
           Spacer(modifier = Modifier.height(6.dp))
-          Text("3. Telefonunuzu yere paralel (avucunuzun içinde düz) tutarak Kâbe yönüne çevirin.")
+          Text(t("3. Telefonunuzu yere paralel (avucunuzun içinde düz) tutarak Kâbe yönüne çevirin."))
         }
       },
       confirmButton = {
         TextButton(onClick = { showCalibrationDialog = false }) {
-          Text("Anladım")
+          Text(t("Anladım"))
         }
       }
     )

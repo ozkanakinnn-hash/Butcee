@@ -1,5 +1,6 @@
 package com.example
 
+import com.example.i18n.t
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -124,11 +125,13 @@ class MainActivity : ComponentActivity() {
     }
 
     val prefs = AppPreferences(this)
+    com.example.i18n.AppLanguage.current = prefs.language
     val prayerRepo = PrayerRepository(this)
 
     setContent {
       var currentThemeMode by remember { mutableStateOf(prefs.themeMode) }
       var currentColorTheme by remember { mutableStateOf(prefs.colorTheme) }
+      var currentLanguage by remember { mutableStateOf(prefs.language) }
       val systemInDark = isSystemInDarkTheme()
       val isDark = when (currentThemeMode) {
         AppThemeMode.LIGHT -> false
@@ -144,7 +147,7 @@ class MainActivity : ComponentActivity() {
         crashReport?.let { report ->
           androidx.compose.material3.AlertDialog(
             onDismissRequest = { crashReport = null },
-            title = { Text("Uygulama beklenmedik şekilde kapandı") },
+            title = { Text(t("Uygulama beklenmedik şekilde kapandı")) },
             text = {
               Text(
                 "Sorunu çözebilmemiz için hata raporunu kopyalayıp geliştiriciye gönderebilirsiniz.\n\n" +
@@ -157,10 +160,10 @@ class MainActivity : ComponentActivity() {
                 com.example.util.CrashReporter.copyToClipboard(this@MainActivity, report)
                 android.widget.Toast.makeText(this@MainActivity, "Hata raporu kopyalandı", android.widget.Toast.LENGTH_SHORT).show()
                 crashReport = null
-              }) { Text("Raporu Kopyala") }
+              }) { Text(t("Raporu Kopyala")) }
             },
             dismissButton = {
-              androidx.compose.material3.TextButton(onClick = { crashReport = null }) { Text("Kapat") }
+              androidx.compose.material3.TextButton(onClick = { crashReport = null }) { Text(t("Kapat")) }
             }
           )
         }
@@ -172,12 +175,18 @@ class MainActivity : ComponentActivity() {
             }
           )
         } else {
-          RamazanRehberiApp(
-            prefs = prefs,
-            prayerRepo = prayerRepo,
-            onThemeChanged = { currentThemeMode = it },
-            onColorThemeChanged = { currentColorTheme = it }
-          )
+          androidx.compose.runtime.key(currentLanguage) {
+            RamazanRehberiApp(
+              prefs = prefs,
+              prayerRepo = prayerRepo,
+              onThemeChanged = { currentThemeMode = it },
+              onColorThemeChanged = { currentColorTheme = it },
+              onLanguageChanged = { lang ->
+                com.example.i18n.AppLanguage.current = lang
+                currentLanguage = lang
+              }
+            )
+          }
         }
       }
     }
@@ -189,7 +198,8 @@ fun RamazanRehberiApp(
   prefs: AppPreferences,
   prayerRepo: PrayerRepository,
   onThemeChanged: (AppThemeMode) -> Unit,
-  onColorThemeChanged: (AppColorTheme) -> Unit
+  onColorThemeChanged: (AppColorTheme) -> Unit,
+  onLanguageChanged: (String) -> Unit = {}
 ) {
   val coroutineScope = rememberCoroutineScope()
   var currentTab by remember { mutableIntStateOf(0) }
@@ -255,11 +265,11 @@ fun RamazanRehberiApp(
 
   // 5 Tabs: Ana Sayfa, Ramazan Rehberi, Takvim, Ayet & Dua, Dahası
   val navTabs = listOf(
-    NavTabItem("Ana Sayfa", icon = Icons.Default.Home, testTag = "nav_tab_home"),
-    NavTabItem(if (ramadanDay != null) "Ramazan Rehberi" else "Oruç Rehberi", iconRes = R.drawable.ic_ramadan_guide, testTag = "nav_tab_guide"),
-    NavTabItem("Takvim", icon = Icons.Default.CalendarMonth, testTag = "nav_tab_calendar"),
-    NavTabItem("Ayet & Dua", iconRes = R.drawable.ic_quran_mushaf, testTag = "nav_tab_spiritual"),
-    NavTabItem("Dahası", icon = Icons.Default.MoreHoriz, testTag = "nav_tab_more")
+    NavTabItem(t("Ana Sayfa"), icon = Icons.Default.Home, testTag = "nav_tab_home"),
+    NavTabItem(t(if (ramadanDay != null) "Ramazan Rehberi" else "Oruç Rehberi"), iconRes = R.drawable.ic_ramadan_guide, testTag = "nav_tab_guide"),
+    NavTabItem(t("Takvim"), icon = Icons.Default.CalendarMonth, testTag = "nav_tab_calendar"),
+    NavTabItem(t("Ayet & Dua"), iconRes = R.drawable.ic_quran_mushaf, testTag = "nav_tab_spiritual"),
+    NavTabItem(t("Dahası"), icon = Icons.Default.MoreHoriz, testTag = "nav_tab_more")
   )
 
   Box(modifier = Modifier.fillMaxSize()) {
@@ -442,6 +452,7 @@ fun RamazanRehberiApp(
         prefs = prefs,
         onThemeChanged = onThemeChanged,
         onColorThemeChanged = onColorThemeChanged,
+        onLanguageChanged = onLanguageChanged,
         onChangeLocation = {
           showSettingsDialog = false
           showLocationDialog = true

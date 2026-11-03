@@ -1,5 +1,6 @@
 package com.example.ui.components
 
+import com.example.i18n.t
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
@@ -83,8 +84,8 @@ fun FastingTrackerSection(
     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
   ) {
     Column(modifier = Modifier.padding(16.dp)) {
-      Text("📿 Oruç Takibi", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
-      Text("Bugünkü orucunuzu işaretleyin", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+      Text(t("📿 Oruç Takibi"), fontSize = 16.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+      Text(t("Bugünkü orucunuzu işaretleyin"), fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
       Spacer(modifier = Modifier.height(12.dp))
 
       Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -107,7 +108,7 @@ fun FastingTrackerSection(
 
       Spacer(modifier = Modifier.height(10.dp))
       Text(
-        text = "Detaylı oruç takibi ve takvim ›",
+        text = t("Detaylı oruç takibi ve takvim ›"),
         fontSize = 12.sp,
         fontWeight = FontWeight.Bold,
         color = MaterialTheme.colorScheme.primary,
@@ -205,16 +206,16 @@ fun RamadanRemindersSection(
     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
   ) {
     Column(modifier = Modifier.padding(16.dp)) {
-      Text("⏰ Sahur & İftar Hatırlatıcıları", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+      Text(t("⏰ Sahur & İftar Hatırlatıcıları"), fontSize = 16.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
       Text(
-        "Oruç günlerinde vaktinden önce motive edici bir bildirim alırsınız.",
+        t("Oruç günlerinde vaktinden önce motive edici bir bildirim alırsınız."),
         fontSize = 11.sp,
         color = MaterialTheme.colorScheme.onSurfaceVariant
       )
       Spacer(modifier = Modifier.height(10.dp))
 
       ReminderRow(
-        title = "🌙 Sahur Hatırlatıcısı",
+        title = t("🌙 Sahur Hatırlatıcısı"),
         subtitle = "İmsaktan $sahurMin dk önce",
         enabled = sahurOn,
         minutes = sahurMin,
@@ -233,7 +234,7 @@ fun RamadanRemindersSection(
       HorizontalDivider(modifier = Modifier.padding(vertical = 10.dp), color = MaterialTheme.colorScheme.outlineVariant)
 
       ReminderRow(
-        title = "🍽️ İftar Hatırlatıcısı",
+        title = t("🍽️ İftar Hatırlatıcısı"),
         subtitle = "Akşam ezanından $iftarMin dk önce",
         enabled = iftarOn,
         minutes = iftarMin,

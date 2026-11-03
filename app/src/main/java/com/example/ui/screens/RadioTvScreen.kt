@@ -1,5 +1,6 @@
 package com.example.ui.screens
 
+import com.example.i18n.t
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Row
@@ -38,10 +39,10 @@ fun RadioTvScreen(onNavigateBack: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically
       ) {
         IconButton(onClick = onNavigateBack) {
-          Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Geri")
+          Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = t("Geri"))
         }
         Spacer(modifier = Modifier.width(4.dp))
-        Text("Radyo & TV", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+        Text(t("Radyo & TV"), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
       }
     }
     item { DiyanetRadioCard() }

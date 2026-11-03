@@ -1,5 +1,6 @@
 package com.example.ui.components
 
+import com.example.i18n.t
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -108,21 +109,21 @@ fun IftarMenuCard(
         ) {
           Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
-              text = if (ramadanDay != null) "İftar" else "Günün",
+              text = t(if (ramadanDay != null) "İftar" else "Günün"),
               fontSize = 11.sp,
               letterSpacing = 2.sp,
               color = accent,
               fontWeight = FontWeight.SemiBold
             )
             Text(
-              text = "Menü",
+              text = t("Menü"),
               fontFamily = FontFamily.Cursive,
               fontSize = 34.sp,
               fontWeight = FontWeight.Bold,
               color = ink
             )
             Text(
-              text = if (ramadanDay != null) "$ramadanDay. Gün" else "Bugün",
+              text = if (ramadanDay != null) (if (com.example.i18n.AppLanguage.isEnglish) "Day $ramadanDay" else "$ramadanDay. Gün") else t("Bugün"),
               fontSize = 10.sp,
               color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -131,14 +132,14 @@ fun IftarMenuCard(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        MenuCourse("ÇORBA", menu.soup, accent, ink)
-        MenuCourse("ANA YEMEK", menu.mainDish, accent, ink)
-        MenuCourse("YAN YEMEK & SALATA", menu.sideDish, accent, ink)
-        MenuCourse("TATLI", menu.dessert, accent, ink)
+        MenuCourse(t("ÇORBA"), menu.soup, accent, ink)
+        MenuCourse(t("ANA YEMEK"), menu.mainDish, accent, ink)
+        MenuCourse(t("YAN YEMEK & SALATA"), menu.sideDish, accent, ink)
+        MenuCourse(t("TATLI"), menu.dessert, accent, ink)
 
         Spacer(modifier = Modifier.height(6.dp))
         Text(
-          text = if (ramadanDay != null) "Ramazan Rehberi & tüm menüler ›" else "Tüm menüleri gör ›",
+          text = t(if (ramadanDay != null) "Ramazan Rehberi & tüm menüler ›" else "Tüm menüleri gör ›"),
           fontSize = 12.sp,
           fontWeight = FontWeight.Bold,
           color = accent,

@@ -1,5 +1,6 @@
 package com.example.ui.components
 
+import com.example.i18n.t
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -64,7 +65,7 @@ fun HolidayCountdownCard(
           )
           Spacer(modifier = Modifier.width(8.dp))
           Text(
-            text = info.title,
+            text = t(info.title),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSurface
@@ -75,7 +76,7 @@ fun HolidayCountdownCard(
       Spacer(modifier = Modifier.height(4.dp))
 
       Text(
-        text = info.subtitle,
+        text = t(info.subtitle),
         style = MaterialTheme.typography.bodySmall,
         color = MaterialTheme.colorScheme.onSurfaceVariant
       )

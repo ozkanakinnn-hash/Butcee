@@ -1,5 +1,6 @@
 package com.example.ui.screens
 
+import com.example.i18n.t
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
@@ -113,7 +114,7 @@ fun MenusScreen(
           )
           Spacer(modifier = Modifier.width(8.dp))
           Text(
-            text = if (com.example.data.RamadanCalendar.dayOfRamadan() != null) "Ramazan Rehberi & Günlük Menü" else "Oruç Rehberi & Günlük Menü",
+            text = if (com.example.i18n.AppLanguage.isEnglish) (if (com.example.data.RamadanCalendar.dayOfRamadan() != null) "Ramadan Guide & Daily Menu" else "Fasting Guide & Daily Menu") else (if (com.example.data.RamadanCalendar.dayOfRamadan() != null) "Ramazan Rehberi & Günlük Menü" else "Oruç Rehberi & Günlük Menü"),
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onBackground
@@ -162,7 +163,7 @@ fun MenusScreen(
               Spacer(modifier = Modifier.width(10.dp))
               Column {
                 Text(
-                  text = "Bugünkü Oruç Süresi",
+                  text = t("Bugünkü Oruç Süresi"),
                   style = MaterialTheme.typography.bodySmall,
                   color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -271,7 +272,7 @@ fun MenusScreen(
           Spacer(modifier = Modifier.width(12.dp))
           Column {
             Text(
-              text = "Günün Manevi İlhamı & Motivasyonu",
+              text = t("Günün Manevi İlhamı & Motivasyonu"),
               fontSize = 11.sp,
               fontWeight = FontWeight.Bold,
               color = MaterialTheme.colorScheme.primary
@@ -310,7 +311,7 @@ fun MenusScreen(
             onClick = { if (selectedDay > 1) selectedDay -= 1 },
             enabled = selectedDay > 1
           ) {
-            Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Önceki Gün")
+            Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = t("Önceki Gün"))
           }
 
           Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -332,7 +333,7 @@ fun MenusScreen(
             onClick = { if (selectedDay < 30) selectedDay += 1 },
             enabled = selectedDay < 30
           ) {
-            Icon(imageVector = Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "Sonraki Gün")
+            Icon(imageVector = Icons.AutoMirrored.Filled.ArrowForward, contentDescription = t("Sonraki Gün"))
           }
         }
       }
@@ -410,7 +411,7 @@ fun MenusScreen(
           Spacer(modifier = Modifier.width(10.dp))
           Column {
             Text(
-              text = "Şifalı İftar & Sahur Önerisi",
+              text = t("Şifalı İftar & Sahur Önerisi"),
               fontWeight = FontWeight.Bold,
               fontSize = 12.sp,
               color = MaterialTheme.colorScheme.onSurface

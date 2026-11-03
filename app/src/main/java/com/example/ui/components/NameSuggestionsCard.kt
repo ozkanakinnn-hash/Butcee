@@ -1,5 +1,6 @@
 package com.example.ui.components
 
+import com.example.i18n.t
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -40,16 +41,16 @@ fun NameSuggestionsCard(modifier: Modifier = Modifier) {
     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
   ) {
     Column(modifier = Modifier.padding(16.dp)) {
-      Text("👶 Bugün Doğanlara İsim Önerileri", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+      Text(t("👶 Bugün Doğanlara İsim Önerileri"), fontSize = 16.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
       Text(
-        "Anlamı güzel, Kur'an ve İslam tarihinde geçen isimler",
+        t("Anlamı güzel, Kur'an ve İslam tarihinde geçen isimler"),
         fontSize = 11.sp,
         color = MaterialTheme.colorScheme.onSurfaceVariant
       )
       Spacer(modifier = Modifier.height(12.dp))
       Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-        NameColumn("👧 Kız", girls, Color(0xFFD9779B), Modifier.weight(1f))
-        NameColumn("👦 Erkek", boys, Color(0xFF5B8FD1), Modifier.weight(1f))
+        NameColumn(t("👧 Kız"), girls, Color(0xFFD9779B), Modifier.weight(1f))
+        NameColumn(t("👦 Erkek"), boys, Color(0xFF5B8FD1), Modifier.weight(1f))
       }
     }
   }

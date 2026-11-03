@@ -1,5 +1,6 @@
 package com.example.ui.components
 
+import com.example.i18n.t
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.background
@@ -72,15 +73,15 @@ fun KabeLiveCard(modifier: Modifier = Modifier) {
         Row(verticalAlignment = Alignment.CenterVertically) {
           Box(modifier = Modifier.size(8.dp).clip(CircleShape).background(Color(0xFFE53935)))
           Spacer(modifier = Modifier.width(6.dp))
-          Text("Kâbe Canlı Yayın", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+          Text(t("Kâbe Canlı Yayın"), fontSize = 15.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
         }
         Text(
-          "Mescid-i Haram'dan resmî canlı yayını YouTube'da izleyin",
+          t("Mescid-i Haram'dan resmî canlı yayını YouTube'da izleyin"),
           fontSize = 11.sp,
           color = MaterialTheme.colorScheme.onSurfaceVariant
         )
       }
-      Icon(Icons.Default.PlayArrow, contentDescription = "İzle", tint = MaterialTheme.colorScheme.primary)
+      Icon(Icons.Default.PlayArrow, contentDescription = t("İzle"), tint = MaterialTheme.colorScheme.primary)
     }
   }
 }

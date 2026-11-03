@@ -1,5 +1,6 @@
 package com.example.ui.components
 
+import com.example.i18n.t
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -181,7 +182,7 @@ fun CountdownCard(
           contentColor = MaterialTheme.colorScheme.primary
         )
       ) {
-        Text("💥 Ramazan Topunu Test Et", fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+        Text(t("💥 Ramazan Topunu Test Et"), fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
       }
     }
   }
@@ -243,7 +244,7 @@ fun CompactCountdownCard(
         label = "compact_countdown_title_anim"
       ) { title ->
         Text(
-          text = title,
+          text = t(title),
           fontSize = 13.sp,
           fontWeight = FontWeight.Bold,
           color = MaterialTheme.colorScheme.onSurface,
@@ -266,7 +267,7 @@ fun CompactCountdownCard(
 
       Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
-          text = countdown.targetTimeName,
+          text = t(countdown.targetTimeName),
           fontSize = 11.sp,
           color = MaterialTheme.colorScheme.onSurfaceVariant,
           maxLines = 1
@@ -300,7 +301,7 @@ fun CompactCountdownCard(
           contentPadding = PaddingValues(horizontal = 6.dp, vertical = 0.dp),
           colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.primary)
         ) {
-          Text("💥 Topu Test Et", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, maxLines = 1)
+          Text(t("💥 Topu Test Et"), fontSize = 11.sp, fontWeight = FontWeight.SemiBold, maxLines = 1)
         }
       } else {
         // Sahur / Teravih / Namaz modunda: hedeften sonraki vakit
@@ -313,7 +314,7 @@ fun CompactCountdownCard(
           contentAlignment = Alignment.Center
         ) {
           Text(
-            text = "Sonra: ${countdown.nextLabel}",
+            text = t("Sonra:") + " " + t(countdown.nextLabel),
             fontSize = 11.sp,
             fontWeight = FontWeight.SemiBold,
             color = MaterialTheme.colorScheme.onPrimaryContainer,

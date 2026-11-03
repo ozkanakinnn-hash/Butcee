@@ -1,5 +1,6 @@
 package com.example.ui.screens
 
+import com.example.i18n.t
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -73,13 +74,13 @@ fun MoreHubScreen(
           .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 8.dp)
       ) {
         Text(
-          text = "Dahası & Faydalı Araçlar",
+          text = t("Dahası & Faydalı Araçlar"),
           style = MaterialTheme.typography.titleLarge,
           fontWeight = FontWeight.Bold,
           color = MaterialTheme.colorScheme.onBackground
         )
         Text(
-          text = "Kur'an-ı Kerim, Kıble bulucu, camiler ve zengin İslami modüller",
+          text = t("Kur'an-ı Kerim, Kıble bulucu, camiler ve zengin İslami modüller"),
           style = MaterialTheme.typography.bodySmall,
           color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -95,15 +96,15 @@ fun MoreHubScreen(
         horizontalArrangement = Arrangement.spacedBy(10.dp)
       ) {
         HubCard(
-          title = "Kur'an-ı Kerîm",
-          subtitle = "114 Sure • 30 Cüz\nArapça & Meâl",
+          title = t("Kur'an-ı Kerîm"),
+          subtitle = t("114 Sure • 30 Cüz\nArapça & Meâl"),
           emoji = "📖",
           onClick = onOpenQuran,
           modifier = Modifier.weight(1f)
         )
         HubCard(
-          title = "Kıble Bulucu",
-          subtitle = "Pusula Sensörü\nKâbe İstikameti",
+          title = t("Kıble Bulucu"),
+          subtitle = t("Pusula Sensörü\nKâbe İstikameti"),
           emoji = "🧭",
           onClick = onOpenQibla,
           modifier = Modifier.weight(1f)
@@ -120,15 +121,15 @@ fun MoreHubScreen(
         horizontalArrangement = Arrangement.spacedBy(10.dp)
       ) {
         HubCard(
-          title = "Yakındaki Camiler",
+          title = t("Yakındaki Camiler"),
           subtitle = "${prefs.province} / ${prefs.district}\nHarita & Navigasyon",
           emoji = "🕌",
           onClick = onOpenMosques,
           modifier = Modifier.weight(1f)
         )
         HubCard(
-          title = "Oruç Takibi",
-          subtitle = "Bugünkü Durum\nKaza & Nafile Sayacı",
+          title = t("Oruç Takibi"),
+          subtitle = t("Bugünkü Durum\nKaza & Nafile Sayacı"),
           emoji = "🤲",
           onClick = onOpenFastingTracker,
           modifier = Modifier.weight(1f)
@@ -145,15 +146,15 @@ fun MoreHubScreen(
         horizontalArrangement = Arrangement.spacedBy(10.dp)
       ) {
         HubCard(
-          title = "Radyo",
-          subtitle = "Diyanet • Kur'an\nRisalet (Canlı)",
+          title = t("Radyo"),
+          subtitle = t("Diyanet • Kur'an\nRisalet (Canlı)"),
           emoji = "📻",
           onClick = onOpenRadioTv,
           modifier = Modifier.weight(1f)
         )
         HubCard(
-          title = "Kâbe TV",
-          subtitle = "Mescid-i Haram\nCanlı Yayın",
+          title = t("Kâbe TV"),
+          subtitle = t("Mescid-i Haram\nCanlı Yayın"),
           emoji = "🕋",
           onClick = onOpenRadioTv,
           modifier = Modifier.weight(1f)
@@ -170,15 +171,15 @@ fun MoreHubScreen(
         horizontalArrangement = Arrangement.spacedBy(10.dp)
       ) {
         HubCard(
-          title = "Manevi Notlar",
-          subtitle = "Kişisel Dualar\nRamazan Günlüğü",
+          title = t("Manevi Notlar"),
+          subtitle = t("Kişisel Dualar\nRamazan Günlüğü"),
           emoji = "📝",
           onClick = onOpenNotes,
           modifier = Modifier.weight(1f)
         )
         HubCard(
-          title = "Uygulama Ayarları",
-          subtitle = "Tema, Dil\nBildirim & Hatırlatıcı",
+          title = t("Uygulama Ayarları"),
+          subtitle = t("Tema, Dil\nBildirim & Hatırlatıcı"),
           emoji = "⚙️",
           onClick = onOpenSettings,
           modifier = Modifier.weight(1f)

@@ -1,5 +1,6 @@
 package com.example.ui.components
 
+import com.example.i18n.t
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -46,7 +47,7 @@ fun PrivacyFooter(
       )
       Spacer(modifier = Modifier.width(6.dp))
       Text(
-        text = "Gizlilik & Güvenlik Güvencesi",
+        text = t("Gizlilik & Güvenlik Güvencesi"),
         fontSize = 11.sp,
         fontWeight = FontWeight.Bold,
         color = MaterialTheme.colorScheme.primary
@@ -54,7 +55,7 @@ fun PrivacyFooter(
     }
     Spacer(modifier = Modifier.height(4.dp))
     Text(
-      text = "🔒 Verileriniz yalnızca cihazınızda güvenli ve yerel olarak saklanmaktadır.",
+      text = t("🔒 Verileriniz yalnızca cihazınızda güvenli ve yerel olarak saklanmaktadır."),
       fontSize = 10.sp,
       color = MaterialTheme.colorScheme.onSurfaceVariant,
       textAlign = TextAlign.Center,

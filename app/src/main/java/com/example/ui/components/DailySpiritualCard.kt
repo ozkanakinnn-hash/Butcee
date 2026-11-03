@@ -1,5 +1,6 @@
 package com.example.ui.components
 
+import com.example.i18n.t
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -51,7 +52,7 @@ fun DailySpiritualCard(
   val context = androidx.compose.ui.platform.LocalContext.current
   var selectedTab by remember { mutableIntStateOf(0) }
   var shareMenuOpen by remember { mutableStateOf(false) }
-  val tabs = listOf("📖 Ayet", "💬 Hadis", "🤲 Dua")
+  val tabs = listOf("📖 Ayet", "💬 Hadis", "🤲 Dua").map { t(it) }
 
   Card(
     modifier = modifier
@@ -77,13 +78,13 @@ fun DailySpiritualCard(
         Row(verticalAlignment = Alignment.CenterVertically) {
           Icon(
             painter = painterResource(R.drawable.ic_quran_mushaf),
-            contentDescription = "Manevi İklim",
+            contentDescription = t("Manevi İklim"),
             tint = MaterialTheme.colorScheme.primary,
             modifier = Modifier.size(20.dp)
           )
           Spacer(modifier = Modifier.width(8.dp))
           Text(
-            text = "Günün Manevi İklimi",
+            text = t("Günün Manevi İklimi"),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSurface
@@ -103,13 +104,13 @@ fun DailySpiritualCard(
           ) {
             Icon(
               imageVector = Icons.Default.Share,
-              contentDescription = "Sosyal Medyada Paylaş",
+              contentDescription = t("Sosyal Medyada Paylaş"),
               tint = MaterialTheme.colorScheme.primary,
               modifier = Modifier.size(14.dp)
             )
             Spacer(modifier = Modifier.width(4.dp))
             Text(
-              text = "Paylaş",
+              text = t("Paylaş"),
               fontSize = 11.sp,
               fontWeight = FontWeight.Bold,
               color = MaterialTheme.colorScheme.primary,
@@ -121,7 +122,7 @@ fun DailySpiritualCard(
             onDismissRequest = { shareMenuOpen = false }
           ) {
             DropdownMenuItem(
-              text = { Text("📸 Instagram Hikayesi", fontSize = 13.sp, fontWeight = FontWeight.SemiBold) },
+              text = { Text(t("📸 Instagram Hikayesi"), fontSize = 13.sp, fontWeight = FontWeight.SemiBold) },
               onClick = {
                 shareMenuOpen = false
                 com.example.util.StoryImageGenerator.shareToInstagramStory(context, item, selectedTab)
@@ -129,7 +130,7 @@ fun DailySpiritualCard(
               modifier = Modifier.testTag("share_instagram_story")
             )
             DropdownMenuItem(
-              text = { Text("📤 Diğer Uygulamalar", fontSize = 13.sp) },
+              text = { Text(t("📤 Diğer Uygulamalar"), fontSize = 13.sp) },
               onClick = {
                 shareMenuOpen = false
                 com.example.util.StoryImageGenerator.shareSpiritualStory(context, item, selectedTab)

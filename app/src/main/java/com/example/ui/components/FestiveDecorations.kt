@@ -1,5 +1,6 @@
 package com.example.ui.components
 
+import com.example.i18n.t
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
@@ -156,14 +157,14 @@ fun FestiveGreetingCard(festival: Festival, name: String, modifier: Modifier = M
       ) {
         Text(festival.emoji + "  " + festival.emoji + "  " + festival.emoji, fontSize = 20.sp)
         Text(
-          text = festival.greeting,
+          text = t(festival.greeting),
           fontSize = 18.sp,
           fontWeight = FontWeight.Bold,
           color = Color(0xFFFFF4D6),
           textAlign = TextAlign.Center
         )
         Text(
-          text = "Sevgili $name, bayramınız hayırlara vesile olsun.",
+          text = if (com.example.i18n.AppLanguage.isEnglish) "Dear $name, may your Eid be blessed." else "Sevgili $name, bayramınız hayırlara vesile olsun.",
           fontSize = 12.sp,
           color = Color(0xFFFFF4D6).copy(alpha = 0.85f),
           textAlign = TextAlign.Center

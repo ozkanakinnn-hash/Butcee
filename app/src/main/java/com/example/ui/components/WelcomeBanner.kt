@@ -1,5 +1,6 @@
 package com.example.ui.components
 
+import com.example.i18n.t
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
@@ -214,7 +215,7 @@ fun WelcomeBanner(
           Text("🕌", fontSize = 11.sp)
           Spacer(modifier = Modifier.width(4.dp))
           Text(
-            text = "Tarihi Camiler",
+            text = t("Tarihi Camiler"),
             fontSize = 10.sp,
             fontWeight = FontWeight.Bold,
             color = Color(0xFFE5B869)
@@ -233,7 +234,7 @@ fun WelcomeBanner(
           overflow = TextOverflow.Ellipsis
         )
         Text(
-          text = todayMosque.titleDesc,
+          text = t(todayMosque.titleDesc),
           fontSize = 10.sp,
           fontWeight = FontWeight.Medium,
           color = Color(0xFFFFD56B),

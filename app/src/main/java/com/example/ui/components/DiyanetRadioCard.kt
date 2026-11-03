@@ -1,5 +1,6 @@
 package com.example.ui.components
 
+import com.example.i18n.t
 import android.content.ComponentName
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -59,11 +60,15 @@ import com.example.radio.RadioPlaybackService
 
 private data class RadioChannel(val id: String, val title: String, val urlRes: Int)
 
-private val channels = listOf(
+private val allChannels = listOf(
   RadioChannel("diyanet", "Diyanet Radyo", R.string.radio_diyanet_url),
   RadioChannel("kuran", "Kur'an Radyo", R.string.radio_diyanet_kuran_url),
   RadioChannel("risalet", "Risalet Radyo", R.string.radio_risalet_url)
 )
+
+/** İngilizce seçiliyse yalnızca Kur'an Radyo gösterilir. */
+private val channels: List<RadioChannel>
+  get() = if (com.example.i18n.AppLanguage.isEnglish) allChannels.filter { it.id == "kuran" } else allChannels
 
 /** Ana sayfadaki canlı radyo kartı: oynat / durdur, arka planda çalmaya devam eder. */
 @Composable
@@ -74,6 +79,8 @@ fun DiyanetRadioCard(modifier: Modifier = Modifier) {
   var isBuffering by remember { mutableStateOf(false) }
   var error by remember { mutableStateOf<String?>(null) }
   var selected by remember { mutableStateOf(channels.first()) }
+  // Dil değiştiyse ve seçili kanal artık listede yoksa ilk kanala geç
+  if (selected !in channels) selected = channels.first()
 
   DisposableEffect(Unit) {
     val token = SessionToken(context, ComponentName(context, RadioPlaybackService::class.java))
@@ -87,7 +94,8 @@ fun DiyanetRadioCard(modifier: Modifier = Modifier) {
         if (player.playbackState == Player.STATE_READY) error = null
       }
       override fun onPlayerError(e: PlaybackException) {
-        error = "Yayına bağlanılamadı (${e.errorCodeName}). İnternet bağlantınızı kontrol edip tekrar deneyin."
+        error = if (com.example.i18n.AppLanguage.isEnglish) "Could not connect (${e.errorCodeName}). Check your internet connection and try again."
+          else "Yayına bağlanılamadı (${e.errorCodeName}). İnternet bağlantınızı kontrol edip tekrar deneyin."
         isPlaying = false
         isBuffering = false
       }
@@ -118,8 +126,8 @@ fun DiyanetRadioCard(modifier: Modifier = Modifier) {
       .setMimeType(MimeTypes.APPLICATION_M3U8)
       .setMediaMetadata(
         MediaMetadata.Builder()
-          .setTitle(channel.title)
-          .setArtist("Canlı Yayın")
+          .setTitle(t(channel.title))
+          .setArtist(t("Canlı Yayın"))
           .build()
       )
       .build()
@@ -168,8 +176,8 @@ fun DiyanetRadioCard(modifier: Modifier = Modifier) {
               color = MaterialTheme.colorScheme.onPrimary,
               strokeWidth = 2.5.dp
             )
-            isPlaying -> Icon(Icons.Default.Stop, contentDescription = "Durdur", tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(30.dp))
-            else -> Icon(Icons.Default.PlayArrow, contentDescription = "Dinle", tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(32.dp))
+            isPlaying -> Icon(Icons.Default.Stop, contentDescription = t("Durdur"), tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(30.dp))
+            else -> Icon(Icons.Default.PlayArrow, contentDescription = t("Dinle"), tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(32.dp))
           }
         }
         Spacer(modifier = Modifier.width(14.dp))
@@ -177,14 +185,14 @@ fun DiyanetRadioCard(modifier: Modifier = Modifier) {
           Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(Icons.Default.Radio, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
             Spacer(modifier = Modifier.width(6.dp))
-            Text(selected.title, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+            Text(t(selected.title), fontSize = 15.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
           }
           Spacer(modifier = Modifier.height(2.dp))
           when {
             error != null -> Text(error!!, fontSize = 11.sp, color = Color(0xFFD9534F))
-            isBuffering -> Text("Bağlanıyor…", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            isBuffering -> Text(t("Bağlanıyor…"), fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             isPlaying -> LiveBadge()
-            else -> Text("Canlı yayını dinlemek için dokunun", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            else -> Text(t("Canlı yayını dinlemek için dokunun"), fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
           }
         }
       }
@@ -194,7 +202,7 @@ fun DiyanetRadioCard(modifier: Modifier = Modifier) {
         channels.forEach { ch ->
           val isSel = ch == selected
           Text(
-            text = ch.title,
+            text = t(ch.title),
             fontSize = 11.sp,
             fontWeight = if (isSel) FontWeight.Bold else FontWeight.Medium,
             color = if (isSel) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
@@ -216,7 +224,7 @@ fun DiyanetRadioCard(modifier: Modifier = Modifier) {
       }
       Spacer(modifier = Modifier.height(6.dp))
       Text(
-        "Uygulamadan çıksanız da yayın bildirim alanından kontrol edilebilir.",
+        t("Uygulamadan çıksanız da yayın bildirim alanından kontrol edilebilir."),
         fontSize = 10.sp,
         color = MaterialTheme.colorScheme.onSurfaceVariant
       )
@@ -240,6 +248,6 @@ private fun LiveBadge() {
         .background(Color(0xFFE53935))
     )
     Spacer(modifier = Modifier.width(6.dp))
-    Text("CANLI • Şu an çalıyor", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFFE53935))
+    Text(t("CANLI • Şu an çalıyor"), fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFFE53935))
   }
 }

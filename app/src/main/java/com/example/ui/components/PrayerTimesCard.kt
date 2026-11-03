@@ -1,5 +1,6 @@
 package com.example.ui.components
 
+import com.example.i18n.t
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -108,7 +109,7 @@ fun PrayerTimesCard(
           )
           Spacer(modifier = Modifier.padding(3.dp))
           Text(
-            text = "Günün Namaz Vakitleri",
+            text = t("Günün Namaz Vakitleri"),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSurface
@@ -183,7 +184,7 @@ private fun PrayerColumnItem(
     )
     Spacer(modifier = Modifier.height(6.dp))
     Text(
-      text = item.name,
+      text = t(item.name),
       fontSize = 11.sp,
       fontWeight = if (isActive || item.isIftar) FontWeight.Bold else FontWeight.Medium,
       color = textColor
@@ -197,7 +198,7 @@ private fun PrayerColumnItem(
     )
     if (item.isIftar && !isActive) {
       Text(
-        text = "İFTAR",
+        text = t("İFTAR"),
         fontSize = 8.sp,
         fontWeight = FontWeight.Bold,
         color = MaterialTheme.colorScheme.primary

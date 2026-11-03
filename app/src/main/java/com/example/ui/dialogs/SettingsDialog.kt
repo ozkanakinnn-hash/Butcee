@@ -1,5 +1,6 @@
 package com.example.ui.dialogs
 
+import com.example.i18n.t
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
@@ -78,6 +79,7 @@ fun SettingsDialog(
   prefs: AppPreferences,
   onThemeChanged: (AppThemeMode) -> Unit,
   onColorThemeChanged: (AppColorTheme) -> Unit,
+  onLanguageChanged: (String) -> Unit = {},
   onChangeLocation: () -> Unit,
   onDismiss: () -> Unit
 ) {
@@ -88,6 +90,7 @@ fun SettingsDialog(
 
   var currentTheme by remember { mutableStateOf(prefs.themeMode) }
   var currentColorTheme by remember { mutableStateOf(prefs.colorTheme) }
+  var currentLanguage by remember { mutableStateOf(prefs.language) }
   var notificationsEnabled by remember { mutableStateOf(prefs.notificationsEnabled) }
 
   // 5 Vakit Namaz Onayları
@@ -150,7 +153,7 @@ fun SettingsDialog(
           verticalAlignment = Alignment.CenterVertically
         ) {
           Text(
-            text = "Ayarlar & Özelleştirme",
+            text = t("Ayarlar & Özelleştirme"),
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSurface
@@ -161,7 +164,7 @@ fun SettingsDialog(
               onDismiss()
             }
           ) {
-            Icon(imageVector = Icons.Default.Close, contentDescription = "Kapat")
+            Icon(imageVector = Icons.Default.Close, contentDescription = t("Kapat"))
           }
         }
 
@@ -174,7 +177,7 @@ fun SettingsDialog(
             .verticalScroll(rememberScrollState())
         ) {
           // 1. Profile / Name Section
-          SettingsSectionHeader(title = "Kullanıcı Profili")
+          SettingsSectionHeader(title = t("Kullanıcı Profili"))
           Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
@@ -185,7 +188,7 @@ fun SettingsDialog(
                 OutlinedTextField(
                   value = userName,
                   onValueChange = { userName = it },
-                  label = { Text("Hitap Edilecek İsim") },
+                  label = { Text(t("Hitap Edilecek İsim")) },
                   singleLine = true,
                   modifier = Modifier.fillMaxWidth()
                 )
@@ -199,7 +202,7 @@ fun SettingsDialog(
                     },
                     shape = RoundedCornerShape(8.dp)
                   ) {
-                    Text("Kaydet")
+                    Text(t("Kaydet"))
                   }
                 }
               } else {
@@ -218,14 +221,14 @@ fun SettingsDialog(
                         fontSize = 14.sp
                       )
                       Text(
-                        text = "Ana sayfa selamlama hitabı",
+                        text = t("Ana sayfa selamlama hitabı"),
                         fontSize = 11.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                       )
                     }
                   }
                   IconButton(onClick = { isEditingName = true }) {
-                    Icon(imageVector = Icons.Default.Edit, contentDescription = "Düzenle", tint = MaterialTheme.colorScheme.primary)
+                    Icon(imageVector = Icons.Default.Edit, contentDescription = t("Düzenle"), tint = MaterialTheme.colorScheme.primary)
                   }
                 }
               }
@@ -235,7 +238,7 @@ fun SettingsDialog(
           Spacer(modifier = Modifier.height(16.dp))
 
           // 2. Location Setting
-          SettingsSectionHeader(title = "Konum")
+          SettingsSectionHeader(title = t("Konum"))
           Card(
             modifier = Modifier
               .fillMaxWidth()
@@ -266,14 +269,14 @@ fun SettingsDialog(
                   )
                 }
               }
-              Text("Değiştir ›", fontWeight = FontWeight.Bold, fontSize = 13.sp, color = MaterialTheme.colorScheme.primary)
+              Text(t("Değiştir ›"), fontWeight = FontWeight.Bold, fontSize = 13.sp, color = MaterialTheme.colorScheme.primary)
             }
           }
 
           Spacer(modifier = Modifier.height(16.dp))
 
           // 3. VAKİT BİLDİRİMLERİ & DAKİKA BARLARI (Requirement 6)
-          SettingsSectionHeader(title = "Namaz Vakitleri & Hatırlatıcı Barları")
+          SettingsSectionHeader(title = t("Namaz Vakitleri & Hatırlatıcı Barları"))
           Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
@@ -287,8 +290,8 @@ fun SettingsDialog(
                 verticalAlignment = Alignment.CenterVertically
               ) {
                 Column {
-                  Text("Tüm Vakit Bildirimleri", fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                  Text("Ezan ve iftar bildirimlerini aç / kapat", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                  Text(t("Tüm Vakit Bildirimleri"), fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                  Text(t("Ezan ve iftar bildirimlerini aç / kapat"), fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 Switch(
                   checked = notificationsEnabled,
@@ -304,7 +307,7 @@ fun SettingsDialog(
 
                 // 1. İmsak / Sahur
                 PrayerReminderItem(
-                  title = "Sahur / İmsak Vakti",
+                  title = t("Sahur / İmsak Vakti"),
                   isNotifyChecked = notifyImsak,
                   onNotifyChanged = { notifyImsak = it; prefs.notifyImsak = it },
                   isRemindBeforeChecked = remindBeforeImsak,
@@ -317,7 +320,7 @@ fun SettingsDialog(
 
                 // 2. Öğle
                 PrayerReminderItem(
-                  title = "Öğle Namazı",
+                  title = t("Öğle Namazı"),
                   isNotifyChecked = notifyOgle,
                   onNotifyChanged = { notifyOgle = it; prefs.notifyOgle = it },
                   isRemindBeforeChecked = remindBeforeOgle,
@@ -330,7 +333,7 @@ fun SettingsDialog(
 
                 // 3. İkindi
                 PrayerReminderItem(
-                  title = "İkindi Namazı",
+                  title = t("İkindi Namazı"),
                   isNotifyChecked = notifyIkindi,
                   onNotifyChanged = { notifyIkindi = it; prefs.notifyIkindi = it },
                   isRemindBeforeChecked = remindBeforeIkindi,
@@ -343,7 +346,7 @@ fun SettingsDialog(
 
                 // 4. İftar / Akşam
                 PrayerReminderItem(
-                  title = "İftar / Akşam Ezanı",
+                  title = t("İftar / Akşam Ezanı"),
                   isNotifyChecked = notifyIftar,
                   onNotifyChanged = { notifyIftar = it; prefs.notifyIftar = it },
                   isRemindBeforeChecked = remindBeforeIftar,
@@ -356,7 +359,7 @@ fun SettingsDialog(
 
                 // 5. Yatsı / Teravih
                 PrayerReminderItem(
-                  title = "Yatsı / Teravih Vakti",
+                  title = t("Yatsı / Teravih Vakti"),
                   isNotifyChecked = notifyYatsi,
                   onNotifyChanged = { notifyYatsi = it; prefs.notifyYatsi = it },
                   isRemindBeforeChecked = remindBeforeYatsi,
@@ -371,7 +374,7 @@ fun SettingsDialog(
           Spacer(modifier = Modifier.height(16.dp))
 
           // 4. ÖZEL İSLAMİ SESLER KÜTÜPHANESİ (Requirement 4)
-          SettingsSectionHeader(title = "Bildirim Sesi")
+          SettingsSectionHeader(title = t("Bildirim Sesi"))
           Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
@@ -381,29 +384,29 @@ fun SettingsDialog(
               // Şu an tek etkin seçenek: sistem sesi
               SoundOptionRow(
                 emoji = "🔔",
-                title = "Sistem Bildirim Sesi",
-                subtitle = "Telefonunuzun varsayılan bildirim sesi",
+                title = t("Sistem Bildirim Sesi"),
+                subtitle = t("Telefonunuzun varsayılan bildirim sesi"),
                 selected = true,
                 available = true
               )
               // Yüklenecek özel sesler için ayrılmış alanlar
               SoundOptionRow(
                 emoji = "💥",
-                title = "Ramazan Topu",
-                subtitle = "İftar vaktinde geleneksel top sesi",
+                title = t("Ramazan Topu"),
+                subtitle = t("İftar vaktinde geleneksel top sesi"),
                 selected = false,
                 available = false
               )
               SoundOptionRow(
                 emoji = "🌙",
-                title = "Sahur Davulu",
-                subtitle = "Sahur hatırlatıcısı için davul sesi",
+                title = t("Sahur Davulu"),
+                subtitle = t("Sahur hatırlatıcısı için davul sesi"),
                 selected = false,
                 available = false
               )
               Spacer(modifier = Modifier.height(6.dp))
               Text(
-                text = "Özel sesler yüklendiğinde buradan seçilebilecek.",
+                text = t("Özel sesler yüklendiğinde buradan seçilebilecek."),
                 fontSize = 10.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
               )
@@ -412,8 +415,38 @@ fun SettingsDialog(
 
           Spacer(modifier = Modifier.height(16.dp))
 
+          // 4b. Dil / Language
+          SettingsSectionHeader(title = t("Dil / Language"))
+          Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            listOf("tr" to "🇹🇷 Türkçe", "en" to "🇬🇧 English").forEach { (code, label) ->
+              val sel = currentLanguage == code
+              Text(
+                text = label,
+                fontSize = 13.sp,
+                fontWeight = if (sel) FontWeight.Bold else FontWeight.Medium,
+                color = if (sel) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                  .weight(1f)
+                  .clip(RoundedCornerShape(12.dp))
+                  .background(if (sel) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant)
+                  .clickable {
+                    if (!sel) {
+                      currentLanguage = code
+                      prefs.language = code
+                      onLanguageChanged(code)
+                    }
+                  }
+                  .padding(vertical = 12.dp)
+                  .testTag("language_$code")
+              )
+            }
+          }
+
+          Spacer(modifier = Modifier.height(16.dp))
+
           // 5. Theme Settings
-          SettingsSectionHeader(title = "Görünüm & Tema")
+          SettingsSectionHeader(title = t("Görünüm & Tema"))
           // 5a. Renk teması (3 seçenek)
           Row(
             modifier = Modifier.fillMaxWidth(),
@@ -442,7 +475,7 @@ fun SettingsDialog(
           ) {
             Column(modifier = Modifier.padding(14.dp)) {
               ThemeOptionRow(
-                title = "☀️ Aydınlık",
+                title = t("☀️ Aydınlık"),
                 isSelected = currentTheme == AppThemeMode.LIGHT,
                 onClick = {
                   currentTheme = AppThemeMode.LIGHT
@@ -451,7 +484,7 @@ fun SettingsDialog(
                 }
               )
               ThemeOptionRow(
-                title = "🌙 Koyu (Gece Siyahı)",
+                title = t("🌙 Koyu (Gece Siyahı)"),
                 isSelected = currentTheme == AppThemeMode.DARK,
                 onClick = {
                   currentTheme = AppThemeMode.DARK
@@ -460,7 +493,7 @@ fun SettingsDialog(
                 }
               )
               ThemeOptionRow(
-                title = "📱 Sistem Teması",
+                title = t("📱 Sistem Teması"),
                 isSelected = currentTheme == AppThemeMode.SYSTEM,
                 onClick = {
                   currentTheme = AppThemeMode.SYSTEM
@@ -482,7 +515,7 @@ fun SettingsDialog(
             Icon(imageVector = Icons.Default.Lock, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(14.dp))
             Spacer(modifier = Modifier.width(6.dp))
             Text(
-              text = "🔒 Verileriniz yalnızca cihazınızda yerel olarak saklanmaktadır.",
+              text = t("🔒 Verileriniz yalnızca cihazınızda yerel olarak saklanmaktadır."),
               fontSize = 10.sp,
               color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -534,7 +567,7 @@ private fun PrayerReminderItem(
           )
           Spacer(modifier = Modifier.width(8.dp))
           Text(
-            text = "Vaktinden Önce Hatırlat",
+            text = t("Vaktinden Önce Hatırlat"),
             fontSize = 11.sp,
             color = if (isRemindBeforeChecked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
           )
@@ -550,7 +583,7 @@ private fun PrayerReminderItem(
               onClick = { if (minutes > 5) onMinutesChanged(minutes - 5) },
               modifier = Modifier.size(26.dp).background(MaterialTheme.colorScheme.primaryContainer, CircleShape)
             ) {
-              Icon(imageVector = Icons.Default.Remove, contentDescription = "Azalt", modifier = Modifier.size(12.dp))
+              Icon(imageVector = Icons.Default.Remove, contentDescription = t("Azalt"), modifier = Modifier.size(12.dp))
             }
 
             Box(
@@ -571,7 +604,7 @@ private fun PrayerReminderItem(
               onClick = { if (minutes < 60) onMinutesChanged(minutes + 5) },
               modifier = Modifier.size(26.dp).background(MaterialTheme.colorScheme.primaryContainer, CircleShape)
             ) {
-              Icon(imageVector = Icons.Default.Add, contentDescription = "Arttır", modifier = Modifier.size(12.dp))
+              Icon(imageVector = Icons.Default.Add, contentDescription = t("Arttır"), modifier = Modifier.size(12.dp))
             }
           }
         }
@@ -698,7 +731,7 @@ private fun SoundOptionRow(
       contentAlignment = Alignment.Center
     ) {
       if (selected) {
-        Icon(imageVector = Icons.Default.Check, contentDescription = "Seçili", tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(14.dp))
+        Icon(imageVector = Icons.Default.Check, contentDescription = t("Seçili"), tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(14.dp))
       }
     }
     Spacer(modifier = Modifier.width(10.dp))
@@ -710,7 +743,7 @@ private fun SoundOptionRow(
     }
     if (!available) {
       Text(
-        text = "Yakında",
+        text = t("Yakında"),
         fontSize = 10.sp,
         fontWeight = FontWeight.Bold,
         color = MaterialTheme.colorScheme.primary,

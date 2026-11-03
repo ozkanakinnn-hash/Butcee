@@ -69,6 +69,11 @@ class AppPreferences(context: Context) {
     get() = prefs.getString("key_festival_preview", "") ?: ""
     set(value) = prefs.edit().putString("key_festival_preview", value).apply()
 
+  /** Uygulama dili: "tr" veya "en". */
+  var language: String
+    get() = prefs.getString("key_language", "tr") ?: "tr"
+    set(value) = prefs.edit().putString("key_language", value).apply()
+
   var notificationsEnabled: Boolean
     get() = prefs.getBoolean("key_notif_enabled", false)
     set(value) = prefs.edit().putBoolean("key_notif_enabled", value).apply()
