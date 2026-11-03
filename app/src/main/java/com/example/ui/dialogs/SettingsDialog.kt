@@ -88,7 +88,6 @@ fun SettingsDialog(
 
   var currentTheme by remember { mutableStateOf(prefs.themeMode) }
   var currentColorTheme by remember { mutableStateOf(prefs.colorTheme) }
-  var festivalPreview by remember { mutableStateOf(prefs.festivalPreview) }
   var notificationsEnabled by remember { mutableStateOf(prefs.notificationsEnabled) }
 
   // 5 Vakit Namaz Onayları
@@ -434,40 +433,6 @@ fun SettingsDialog(
             }
           }
           Spacer(modifier = Modifier.height(10.dp))
-          // 5a-2. Bayram süslemesi önizlemesi (bayram günlerinde otomatik açılır)
-          Text(
-            text = "🎉 Bayram süslemesini önizle",
-            fontSize = 12.sp,
-            fontWeight = FontWeight.SemiBold,
-            color = MaterialTheme.colorScheme.onSurface
-          )
-          Text(
-            text = "Bayram günlerinde uygulama kendiliğinden süslenir. Görmek için önizleyebilirsiniz.",
-            fontSize = 10.sp,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-          )
-          Spacer(modifier = Modifier.height(6.dp))
-          Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-            listOf("" to "Kapalı", "RAMAZAN" to "Ramazan B.", "KURBAN" to "Kurban B.").forEach { (key, label) ->
-              val sel = festivalPreview == key
-              Text(
-                text = label,
-                fontSize = 11.sp,
-                fontWeight = if (sel) FontWeight.Bold else FontWeight.Medium,
-                color = if (sel) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center,
-                modifier = Modifier
-                  .weight(1f)
-                  .clip(RoundedCornerShape(10.dp))
-                  .background(if (sel) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant)
-                  .clickable {
-                    festivalPreview = key
-                    prefs.festivalPreview = key
-                  }
-                  .padding(vertical = 8.dp)
-              )
-            }
-          }
           Spacer(modifier = Modifier.height(10.dp))
           // 5b. Aydınlık / Koyu / Sistem
           Card(

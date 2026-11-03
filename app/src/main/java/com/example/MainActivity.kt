@@ -255,7 +255,7 @@ fun RamazanRehberiApp(
   // 5 Tabs: Ana Sayfa, Ramazan Rehberi, Takvim, Ayet & Dua, Dahası
   val navTabs = listOf(
     NavTabItem("Ana Sayfa", icon = Icons.Default.Home, testTag = "nav_tab_home"),
-    NavTabItem("Ramazan Rehberi", iconRes = R.drawable.ic_ramadan_guide, testTag = "nav_tab_guide"),
+    NavTabItem(if (ramadanDay != null) "Ramazan Rehberi" else "Oruç Rehberi", iconRes = R.drawable.ic_ramadan_guide, testTag = "nav_tab_guide"),
     NavTabItem("Takvim", icon = Icons.Default.CalendarMonth, testTag = "nav_tab_calendar"),
     NavTabItem("Ayet & Dua", iconRes = R.drawable.ic_quran_mushaf, testTag = "nav_tab_spiritual"),
     NavTabItem("Dahası", icon = Icons.Default.MoreHoriz, testTag = "nav_tab_more")

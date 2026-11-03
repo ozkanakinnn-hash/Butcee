@@ -87,24 +87,23 @@ fun FastingCalendarScreen(
     IslamicDays.forYear(calendarYear)
   }
 
-  // Yıl listesi: dini haftalar tek satırda (tarih aralığıyla), diğer günler tek tek
+  // Alt liste: yalnızca dini bayramlar (bayram başına tek satır, tarih aralığıyla).
+  // Diğer dini günler ve haftalar takvim ızgarasında işaretli; güne dokununca ayrıntı çıkar.
   val specialList = remember(calendarYear) {
-    val weekStarts = linkedMapOf<String, SpecialCalendarDay>()
-    val weekEnds = mutableMapOf<String, String>()
-    val singles = mutableListOf<SpecialCalendarDay>()
-    specialDaysMap.values.sortedBy { it.dateKey }.forEach { day ->
-      val parts = day.title.split(" • ")
-      parts.filter { it.endsWith("Haftası") }.forEach { weekName ->
-        if (weekName !in weekStarts) weekStarts[weekName] = SpecialCalendarDay(day.dateKey, weekName, "Dini Hafta", if (weekName.contains("Cami")) "🕌" else "🌹")
-        weekEnds[weekName] = day.dateKey
+    specialDaysMap.values
+      .filter { it.category == "Dini Bayram" }
+      .sortedBy { it.dateKey }
+      .groupBy { day -> if (day.title.contains("Ramazan")) "Ramazan Bayramı" else "Kurban Bayramı" }
+      .map { (name, days) ->
+        val first = days.first()
+        SpecialCalendarDay(
+          dateKey = first.dateKey,
+          title = name,
+          category = "Dini Bayram • ${formatDateStr(first.dateKey)} – ${formatDateStr(days.last().dateKey)} (${days.size} gün)",
+          badgeEmoji = first.badgeEmoji
+        )
       }
-      val rest = parts.filterNot { it.endsWith("Haftası") }
-      if (rest.isNotEmpty()) singles.add(day.copy(title = rest.joinToString(" • ")))
-    }
-    val weeks = weekStarts.map { (name, start) ->
-      start.copy(category = "Dini Hafta • ${formatDateStr(start.dateKey)} – ${formatDateStr(weekEnds[name] ?: start.dateKey)}")
-    }
-    (singles + weeks).sortedBy { it.dateKey }
+      .sortedBy { it.dateKey }
   }
 
   // Statistics Calculation
@@ -390,7 +389,7 @@ fun FastingCalendarScreen(
     // Upcoming Special Days List for the Year
     item {
       Text(
-        text = "$calendarYear Yılı Dini Günler, Haftalar & Bayramlar",
+        text = "$calendarYear Yılı Dini Bayramlar",
         style = MaterialTheme.typography.titleMedium,
         fontWeight = FontWeight.Bold,
         color = MaterialTheme.colorScheme.onBackground,
@@ -472,7 +471,7 @@ private fun CalendarDayCell(
         color = if (isFasted) Color.White else MaterialTheme.colorScheme.onSurface
       )
       if (specialEmoji != null && !isFasted) {
-        Text(specialEmoji, fontSize = 8.sp)
+        Text(specialEmoji, fontSize = 11.sp)
       } else if (isFasted) {
         Text("✓", fontSize = 9.sp, color = Color(0xFFE8D39E), fontWeight = FontWeight.Bold)
       }

@@ -92,59 +92,51 @@ fun HomeScreen(
       item { FestiveGarland(festival = festival) }
     }
 
-    // 1. Top Bar Greeting & Location Action
+    // 1. Üst bölüm: konum + kısayol ikonları; altında tam genişlikte selamlama
     item {
-      Row(
+      Column(
         modifier = Modifier
           .fillMaxWidth()
-          .padding(horizontal = 16.dp, vertical = 12.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+          .padding(horizontal = 16.dp, vertical = 10.dp)
       ) {
-        // İsim uzun olsa da sağdaki ikonlar her zaman görünsün: metin kalan alanı kullanır
-        Column(modifier = Modifier.weight(1f).padding(end = 8.dp)) {
-          Text(
-            text = "Merhaba, $greetingName 👋",
-            maxLines = 1,
-            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onBackground
-          )
-          Spacer(modifier = Modifier.height(2.dp))
-          // Clickable location badge
-          Row(
-            modifier = Modifier
-              .clip(RoundedCornerShape(8.dp))
-              .clickable { onOpenLocationDialog() }
-              .padding(vertical = 2.dp, horizontal = 2.dp),
-            verticalAlignment = Alignment.CenterVertically
-          ) {
-            Icon(
-              imageVector = Icons.Default.LocationOn,
-              contentDescription = "Konum Değiştir",
-              tint = MaterialTheme.colorScheme.primary,
-              modifier = Modifier.size(15.dp)
-            )
-            Spacer(modifier = Modifier.width(4.dp))
-            Text(
-              text = "${prefs.province} / ${prefs.district}",
-              maxLines = 1,
-              overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
-              modifier = Modifier.weight(1f, fill = false),
-              style = MaterialTheme.typography.bodySmall,
-              fontWeight = FontWeight.SemiBold,
-              color = MaterialTheme.colorScheme.primary
-            )
-            Spacer(modifier = Modifier.width(4.dp))
-            Text(
-              text = "• Değiştir",
-              style = MaterialTheme.typography.bodySmall,
-              color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+        Row(
+          modifier = Modifier.fillMaxWidth(),
+          horizontalArrangement = Arrangement.SpaceBetween,
+          verticalAlignment = Alignment.CenterVertically
+        ) {
+          Box(modifier = Modifier.weight(1f).padding(end = 8.dp)) {
+            // Clickable location badge
+            Row(
+              modifier = Modifier
+                .clip(RoundedCornerShape(8.dp))
+                .clickable { onOpenLocationDialog() }
+                .padding(vertical = 2.dp, horizontal = 2.dp),
+              verticalAlignment = Alignment.CenterVertically
+            ) {
+              Icon(
+                imageVector = Icons.Default.LocationOn,
+                contentDescription = "Konum Değiştir",
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(15.dp)
+              )
+              Spacer(modifier = Modifier.width(4.dp))
+              Text(
+                text = "${prefs.province} / ${prefs.district}",
+                maxLines = 1,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f, fill = false),
+                style = MaterialTheme.typography.bodySmall,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.primary
+              )
+              Spacer(modifier = Modifier.width(4.dp))
+              Text(
+                text = "• Değiştir",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+              )
+            }
           }
-        }
-
         Row(verticalAlignment = Alignment.CenterVertically) {
           // Kıble Bulucu kısayolu (Kâbe ikonu)
           Box(
@@ -192,7 +184,17 @@ fun HomeScreen(
               tint = MaterialTheme.colorScheme.onBackground
             )
           }
+          }
         }
+        Spacer(modifier = Modifier.height(6.dp))
+        Text(
+          text = "Merhaba, $greetingName 👋",
+          maxLines = 2,
+          overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+          style = MaterialTheme.typography.titleLarge,
+          fontWeight = FontWeight.Bold,
+          color = MaterialTheme.colorScheme.onBackground
+        )
       }
     }
 

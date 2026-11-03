@@ -24,12 +24,9 @@ object FestivalCalendar {
   private fun todaySpecial(cal: Calendar): SpecialCalendarDay? =
     daysFor(cal.get(Calendar.YEAR))[RamadanCalendar.dateKey(cal)]
 
-  /** Bugün bayramsa (ya da ayarlardan önizleme açıksa) bayram türü. */
+  /** Bugün bayramsa bayram türü (bayram günlerinde süsleme otomatik açılır). */
+  @Suppress("UNUSED_PARAMETER")
   fun today(prefs: AppPreferences, cal: Calendar = Calendar.getInstance()): Festival? {
-    when (prefs.festivalPreview) {
-      "RAMAZAN" -> return Festival.RAMAZAN_BAYRAMI
-      "KURBAN" -> return Festival.KURBAN_BAYRAMI
-    }
     val special = todaySpecial(cal) ?: return null
     if (special.category != "Dini Bayram") return null
     return if (special.title.contains("Ramazan")) Festival.RAMAZAN_BAYRAMI else Festival.KURBAN_BAYRAMI

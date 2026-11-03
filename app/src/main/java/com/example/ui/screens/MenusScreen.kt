@@ -113,7 +113,7 @@ fun MenusScreen(
           )
           Spacer(modifier = Modifier.width(8.dp))
           Text(
-            text = "Ramazan Rehberi & Günlük Menü",
+            text = if (com.example.data.RamadanCalendar.dayOfRamadan() != null) "Ramazan Rehberi & Günlük Menü" else "Oruç Rehberi & Günlük Menü",
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onBackground

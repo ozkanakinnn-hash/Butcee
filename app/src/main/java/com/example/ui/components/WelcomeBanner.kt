@@ -211,10 +211,10 @@ fun WelcomeBanner(
             .padding(horizontal = 8.dp, vertical = 3.dp),
           verticalAlignment = Alignment.CenterVertically
         ) {
-          Text(todayMosque.emoji, fontSize = 11.sp)
+          Text("🕌", fontSize = 11.sp)
           Spacer(modifier = Modifier.width(4.dp))
           Text(
-            text = todayMosque.dayName,
+            text = "Tarihi Camiler",
             fontSize = 10.sp,
             fontWeight = FontWeight.Bold,
             color = Color(0xFFE5B869)
@@ -223,12 +223,6 @@ fun WelcomeBanner(
 
         Spacer(modifier = Modifier.weight(1f))
 
-        Text(
-          text = "Tarihi İstanbul Camileri",
-          fontSize = 9.sp,
-          fontWeight = FontWeight.SemiBold,
-          color = Color(0xFFE5B869).copy(alpha = 0.9f)
-        )
         Text(
           text = todayMosque.mosqueName,
           fontSize = 15.sp,
@@ -243,17 +237,7 @@ fun WelcomeBanner(
           fontSize = 10.sp,
           fontWeight = FontWeight.Medium,
           color = Color(0xFFFFD56B),
-          maxLines = 1,
-          overflow = TextOverflow.Ellipsis
-        )
-        Spacer(modifier = Modifier.height(6.dp))
-        Text(
-          text = "“${todayMosque.spiritualQuote}”",
-          fontSize = 10.sp,
-          fontStyle = FontStyle.Italic,
-          lineHeight = 13.sp,
-          color = Color.White.copy(alpha = 0.88f),
-          maxLines = 4,
+          maxLines = 2,
           overflow = TextOverflow.Ellipsis
         )
       }
