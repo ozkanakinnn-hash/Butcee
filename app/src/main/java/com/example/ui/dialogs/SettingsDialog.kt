@@ -3,6 +3,7 @@ package com.example.ui.dialogs
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -59,11 +60,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.example.data.AppPreferences
+import com.example.data.AppColorTheme
 import com.example.data.AppThemeMode
 import com.example.data.IftarSoundChoice
 import com.example.util.NotificationHelper
@@ -73,6 +76,7 @@ import com.example.util.SoundManager
 fun SettingsDialog(
   prefs: AppPreferences,
   onThemeChanged: (AppThemeMode) -> Unit,
+  onColorThemeChanged: (AppColorTheme) -> Unit,
   onChangeLocation: () -> Unit,
   onDismiss: () -> Unit
 ) {
@@ -82,6 +86,7 @@ fun SettingsDialog(
   var isEditingName by remember { mutableStateOf(false) }
 
   var currentTheme by remember { mutableStateOf(prefs.themeMode) }
+  var currentColorTheme by remember { mutableStateOf(prefs.colorTheme) }
   var notificationsEnabled by remember { mutableStateOf(prefs.notificationsEnabled) }
 
   // 5 Vakit Namaz Onayları
@@ -526,6 +531,26 @@ fun SettingsDialog(
 
           // 5. Theme Settings
           SettingsSectionHeader(title = "Görünüm & Tema")
+          // 5a. Renk teması (3 seçenek)
+          Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+          ) {
+            AppColorTheme.entries.forEach { theme ->
+              ColorThemeCard(
+                theme = theme,
+                isSelected = currentColorTheme == theme,
+                onClick = {
+                  currentColorTheme = theme
+                  prefs.colorTheme = theme
+                  onColorThemeChanged(theme)
+                },
+                modifier = Modifier.weight(1f)
+              )
+            }
+          }
+          Spacer(modifier = Modifier.height(10.dp))
+          // 5b. Aydınlık / Koyu / Sistem
           Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
@@ -533,7 +558,7 @@ fun SettingsDialog(
           ) {
             Column(modifier = Modifier.padding(14.dp)) {
               ThemeOptionRow(
-                title = "☀️ Aydınlık (Krem & Bej)",
+                title = "☀️ Aydınlık",
                 isSelected = currentTheme == AppThemeMode.LIGHT,
                 onClick = {
                   currentTheme = AppThemeMode.LIGHT
@@ -542,7 +567,7 @@ fun SettingsDialog(
                 }
               )
               ThemeOptionRow(
-                title = "🌙 Koyu (Huzurlu Gece)",
+                title = "🌙 Koyu (Gece Siyahı)",
                 isSelected = currentTheme == AppThemeMode.DARK,
                 onClick = {
                   currentTheme = AppThemeMode.DARK
@@ -701,5 +726,60 @@ private fun ThemeOptionRow(
     if (isSelected) {
       Icon(imageVector = Icons.Default.Check, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
     }
+  }
+}
+
+
+@Composable
+private fun ColorThemeCard(
+  theme: AppColorTheme,
+  isSelected: Boolean,
+  onClick: () -> Unit,
+  modifier: Modifier = Modifier
+) {
+  val borderColor = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
+  Column(
+    modifier = modifier
+      .clip(RoundedCornerShape(14.dp))
+      .border(if (isSelected) 2.dp else 1.dp, borderColor, RoundedCornerShape(14.dp))
+      .background(MaterialTheme.colorScheme.surfaceVariant)
+      .clickable(onClick = onClick)
+      .padding(vertical = 10.dp, horizontal = 6.dp),
+    horizontalAlignment = Alignment.CenterHorizontally
+  ) {
+    // Renk örnekleri: arka plan zemini üzerinde temanın vurgu renkleri
+    Row(
+      modifier = Modifier
+        .clip(RoundedCornerShape(10.dp))
+        .background(Color(theme.swatches.first()))
+        .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(10.dp))
+        .padding(horizontal = 8.dp, vertical = 8.dp),
+      horizontalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+      theme.swatches.drop(1).forEach { c ->
+        Box(
+          modifier = Modifier
+            .size(14.dp)
+            .clip(CircleShape)
+            .background(Color(c))
+        )
+      }
+    }
+    Spacer(modifier = Modifier.height(6.dp))
+    Text(
+      text = (if (isSelected) "✓ " else "") + theme.title,
+      fontSize = 12.sp,
+      fontWeight = FontWeight.Bold,
+      color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
+      maxLines = 1
+    )
+    Text(
+      text = theme.subtitle,
+      fontSize = 9.sp,
+      lineHeight = 11.sp,
+      color = MaterialTheme.colorScheme.onSurfaceVariant,
+      textAlign = TextAlign.Center,
+      maxLines = 3
+    )
   }
 }

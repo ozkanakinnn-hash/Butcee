@@ -15,16 +15,26 @@ data class PrayerTimes(
   val district: String
 )
 
+/** Ana sayfa sayacının o anki modu. */
+enum class CountdownMode {
+  SAHUR,    // İmsaka kalan (oruç günü öncesi)
+  IFTAR,    // İftara kalan
+  TERAVIH,  // İftardan sonra yatsıya (teravihe) kalan — yalnızca Ramazan geceleri
+  PRAYER    // Oruç yoksa: sıradaki namaz vaktine kalan
+}
+
 data class CountdownResult(
-  val title: String,         // "İftara Kalan Vakit" or "İmsaka Kalan Vakit"
-  val targetTimeName: String,// "Akşam (İftar)" or "İmsak (Sahur)"
+  val title: String,         // "İftara Kalan Vakit", "Teravihe Kalan Vakit", "Öğle Vaktine Kalan"...
+  val targetTimeName: String,// "Akşam (İftar)", "Yatsı (Teravih)", "Öğle"...
   val targetTimeString: String, // "18:45"
   val hours: Long,
   val minutes: Long,
   val seconds: Long,
   val totalSecondsRemaining: Long,
   val isIftarTimeNow: Boolean, // True when countdown reached 0 (cannon time!)
-  val progress: Float          // 0.0f to 1.0f progress through the fasting/night period
+  val progress: Float,         // 0.0f to 1.0f progress through the current period
+  val mode: CountdownMode = CountdownMode.PRAYER,
+  val nextLabel: String = ""   // Hedeften sonraki vakit, ör. "Yatsı 20:05"
 )
 
 object PrayerTimeUtils {
@@ -52,76 +62,86 @@ object PrayerTimeUtils {
     return h * 60 + m
   }
 
+  private val prayerNames = listOf("İmsak", "Güneş", "Öğle", "İkindi", "Akşam", "Yatsı")
+
   /**
-   * Calculates dynamic countdown:
-   * - Before Maghrib (Aksam): Counts down to Iftar! Title: "İftara Kalan Vakit"
-   * - After Maghrib (Aksam): Automatically flips to Imsak (next morning sahur)! Title: "İmsaka Kalan Vakit"
-   * Guarantees non-negative, non-NaN values.
+   * Akıllı geri sayım.
+   * Oruç günü (Ramazan ya da Oruç Takvimi'nde "tutuyorum" işaretli gün):
+   *   imsaktan önce → İmsaka kalan, gündüz → İftara kalan.
+   * İftardan sonra, ertesi gün Ramazan ise (teravih gecesi) → yatsıya / Teravihe kalan.
+   * Yatsıdan sonra, ertesi gün oruç ise → İmsaka (sahura) kalan.
+   * Diğer tüm durumlarda → sıradaki namaz vaktine kalan (İmsak, Güneş, Öğle, İkindi, Akşam, Yatsı).
    */
-  fun calculateCountdown(prayerTimes: PrayerTimes, calendar: Calendar = Calendar.getInstance()): CountdownResult {
-    val currentHour = calendar.get(Calendar.HOUR_OF_DAY)
-    val currentMinute = calendar.get(Calendar.MINUTE)
-    val currentSecond = calendar.get(Calendar.SECOND)
-    val currentTotalSec = (currentHour * 3600L) + (currentMinute * 60L) + currentSecond
+  fun calculateCountdown(
+    prayerTimes: PrayerTimes,
+    fastedDates: Set<String> = emptySet(),
+    calendar: Calendar = Calendar.getInstance()
+  ): CountdownResult {
+    val nowSec = calendar.get(Calendar.HOUR_OF_DAY) * 3600L +
+      calendar.get(Calendar.MINUTE) * 60L + calendar.get(Calendar.SECOND)
 
-    val imsakMinutes = parseTimeToMinutes(prayerTimes.imsak)
-    val aksamMinutes = parseTimeToMinutes(prayerTimes.aksam)
+    val timeStrings = listOf(
+      prayerTimes.imsak, prayerTimes.gunes, prayerTimes.ogle,
+      prayerTimes.ikindi, prayerTimes.aksam, prayerTimes.yatsi
+    ).map { cleanTimeString(it) }
+    val secs = timeStrings.map { parseTimeToMinutes(it) * 60L }
+    val imsakSec = secs[0]
+    val aksamSec = secs[4]
+    val yatsiSec = secs[5]
+    val day = 24 * 3600L
 
-    val imsakSec = imsakMinutes * 60L
-    val aksamSec = aksamMinutes * 60L
+    val todayKey = RamadanCalendar.dateKey(calendar)
+    val tomorrowKey = RamadanCalendar.dateKey((calendar.clone() as Calendar).apply { add(Calendar.DAY_OF_MONTH, 1) })
+    val ramadanTomorrow = RamadanCalendar.isRamadanDay(tomorrowKey)
+    val fastToday = RamadanCalendar.isRamadanDay(todayKey) || fastedDates.contains(todayKey)
+    val fastTomorrow = ramadanTomorrow || fastedDates.contains(tomorrowKey)
 
-    val isBeforeIftar = currentTotalSec < aksamSec && currentTotalSec >= imsakSec
-    val isJustIftar = kotlin.math.abs(currentTotalSec - aksamSec) < 30 // within 30 seconds of iftar
+    fun label(i: Int) = "${prayerNames[i % 6]} ${timeStrings[i % 6]}"
 
-    val (title, targetName, targetTimeStr, targetTotalSec, periodStartSec, periodDurationSec) = when {
-      currentTotalSec < imsakSec -> {
-        // Night after midnight, before Imsak -> counting down to Imsak
-        val prevAksamSec = aksamSec - (24 * 3600L)
-        val duration = (imsakSec - prevAksamSec).coerceAtLeast(1L)
-        val remaining = (imsakSec - currentTotalSec).coerceAtLeast(0L)
-        Tuple6("İmsaka Kalan Vakit", "İmsak (Sahur)", prayerTimes.imsak, imsakSec, currentTotalSec, remaining)
-      }
-      currentTotalSec < aksamSec -> {
-        // Fasting period -> counting down to Iftar (Aksam)
-        val duration = (aksamSec - imsakSec).coerceAtLeast(1L)
-        val remaining = (aksamSec - currentTotalSec).coerceAtLeast(0L)
-        Tuple6("İftara Kalan Vakit", "Akşam (İftar)", prayerTimes.aksam, aksamSec, imsakSec, remaining)
-      }
+    // (mod, başlık, hedef adı, hedef saat metni, hedef sn, dönem başlangıcı sn, sonraki etiket)
+    data class Plan(val mode: CountdownMode, val title: String, val name: String, val timeStr: String,
+                    val target: Long, val start: Long, val next: String)
+
+    val plan = when {
+      nowSec < imsakSec && fastToday ->
+        Plan(CountdownMode.SAHUR, "İmsaka Kalan Vakit", "İmsak (Sahur)", timeStrings[0], imsakSec, yatsiSec - day, label(1))
+      nowSec in imsakSec until aksamSec && fastToday ->
+        Plan(CountdownMode.IFTAR, "İftara Kalan Vakit", "Akşam (İftar)", timeStrings[4], aksamSec, imsakSec, label(5))
+      nowSec in aksamSec until yatsiSec && ramadanTomorrow ->
+        Plan(CountdownMode.TERAVIH, "Teravihe Kalan Vakit", "Yatsı (Teravih)", timeStrings[5], yatsiSec, aksamSec, label(0))
+      nowSec >= yatsiSec && fastTomorrow ->
+        Plan(CountdownMode.SAHUR, "İmsaka Kalan Vakit", "İmsak (Sahur)", timeStrings[0], imsakSec + day, yatsiSec, label(1))
       else -> {
-        // After Iftar -> counting down to tomorrow's Imsak
-        val nextImsakSec = (24 * 3600L) + imsakSec
-        val duration = (nextImsakSec - aksamSec).coerceAtLeast(1L)
-        val remaining = (nextImsakSec - currentTotalSec).coerceAtLeast(0L)
-        Tuple6("İmsaka Kalan Vakit", "İmsak (Sahur)", prayerTimes.imsak, nextImsakSec, aksamSec, remaining)
+        // Sıradaki namaz vakti
+        val idx = secs.indexOfFirst { it > nowSec }
+        val targetIdx = if (idx == -1) 0 else idx
+        val target = if (idx == -1) imsakSec + day else secs[idx]
+        val start = when (idx) {
+          -1 -> yatsiSec
+          0 -> yatsiSec - day
+          else -> secs[idx - 1]
+        }
+        val name = prayerNames[targetIdx]
+        Plan(CountdownMode.PRAYER, "$name Vaktine Kalan", name, timeStrings[targetIdx], target, start, label(targetIdx + 1))
       }
     }
 
-    val remainingSec = periodDurationSec.coerceAtLeast(0L)
-    val hours = remainingSec / 3600L
-    val minutes = (remainingSec % 3600L) / 60L
-    val seconds = remainingSec % 60L
-
-    val progress = when {
-      isBeforeIftar -> {
-        val totalFasting = (aksamSec - imsakSec).toFloat().coerceAtLeast(1f)
-        val elapsed = (currentTotalSec - imsakSec).toFloat().coerceAtLeast(0f)
-        (elapsed / totalFasting).coerceIn(0f, 1f)
-      }
-      else -> {
-        0.85f
-      }
-    }
+    val remainingSec = (plan.target - nowSec).coerceAtLeast(0L)
+    val duration = (plan.target - plan.start).coerceAtLeast(1L)
+    val progress = ((nowSec - plan.start).toFloat() / duration).coerceIn(0f, 1f)
 
     return CountdownResult(
-      title = title,
-      targetTimeName = targetName,
-      targetTimeString = targetTimeStr,
-      hours = hours,
-      minutes = minutes,
-      seconds = seconds,
+      title = plan.title,
+      targetTimeName = plan.name,
+      targetTimeString = plan.timeStr,
+      hours = remainingSec / 3600L,
+      minutes = (remainingSec % 3600L) / 60L,
+      seconds = remainingSec % 60L,
       totalSecondsRemaining = remainingSec,
-      isIftarTimeNow = isJustIftar,
-      progress = progress
+      isIftarTimeNow = fastToday && kotlin.math.abs(nowSec - aksamSec) < 30,
+      progress = progress,
+      mode = plan.mode,
+      nextLabel = plan.next
     )
   }
 
@@ -129,7 +149,3 @@ object PrayerTimeUtils {
     return String.format(Locale.ROOT, "%02d:%02d:%02d", hours.coerceAtLeast(0L), minutes.coerceAtLeast(0L), seconds.coerceAtLeast(0L))
   }
 }
-
-private data class Tuple6<A, B, C, D, E, F>(
-  val a: A, val b: B, val c: C, val d: D, val e: E, val f: F
-)

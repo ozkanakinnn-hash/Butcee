@@ -17,6 +17,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Card
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -25,6 +27,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -47,6 +50,7 @@ fun DailySpiritualCard(
 ) {
   val context = androidx.compose.ui.platform.LocalContext.current
   var selectedTab by remember { mutableIntStateOf(0) }
+  var shareMenuOpen by remember { mutableStateOf(false) }
   val tabs = listOf("📖 Ayet", "💬 Hadis", "🤲 Dua")
 
   Card(
@@ -86,32 +90,53 @@ fun DailySpiritualCard(
           )
         }
 
-        // Social Media Story Image Share Button
-        IconButton(
-          onClick = {
-            com.example.util.StoryImageGenerator.shareSpiritualStory(context, item, selectedTab)
-          },
-          modifier = Modifier.testTag("share_spiritual_button")
-        ) {
-          Row(
-            modifier = Modifier
-              .clip(RoundedCornerShape(10.dp))
-              .background(MaterialTheme.colorScheme.primaryContainer)
-              .padding(horizontal = 8.dp, vertical = 4.dp),
-            verticalAlignment = Alignment.CenterVertically
+        // Paylaş menüsü: Instagram Hikâyesi + diğer uygulamalar
+        Box {
+          IconButton(
+            onClick = { shareMenuOpen = true },
+            modifier = Modifier.testTag("share_spiritual_button")
           ) {
-            Icon(
-              imageVector = Icons.Default.Share,
-              contentDescription = "Sosyal Medyada Paylaş",
-              tint = MaterialTheme.colorScheme.primary,
-              modifier = Modifier.size(14.dp)
+            Row(
+              modifier = Modifier
+                .clip(RoundedCornerShape(10.dp))
+                .background(MaterialTheme.colorScheme.primaryContainer)
+                .padding(horizontal = 8.dp, vertical = 4.dp),
+              verticalAlignment = Alignment.CenterVertically
+            ) {
+              Icon(
+                imageVector = Icons.Default.Share,
+                contentDescription = "Sosyal Medyada Paylaş",
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(14.dp)
+              )
+              Spacer(modifier = Modifier.width(4.dp))
+              Text(
+                text = "Paylaş",
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary
+              )
+            }
+          }
+          DropdownMenu(
+            expanded = shareMenuOpen,
+            onDismissRequest = { shareMenuOpen = false }
+          ) {
+            DropdownMenuItem(
+              text = { Text("📸 Instagram Hikayesi", fontSize = 13.sp, fontWeight = FontWeight.SemiBold) },
+              onClick = {
+                shareMenuOpen = false
+                com.example.util.StoryImageGenerator.shareToInstagramStory(context, item, selectedTab)
+              },
+              modifier = Modifier.testTag("share_instagram_story")
             )
-            Spacer(modifier = Modifier.width(4.dp))
-            Text(
-              text = "Paylaş",
-              fontSize = 11.sp,
-              fontWeight = FontWeight.Bold,
-              color = MaterialTheme.colorScheme.primary
+            DropdownMenuItem(
+              text = { Text("📤 Diğer Uygulamalar", fontSize = 13.sp) },
+              onClick = {
+                shareMenuOpen = false
+                com.example.util.StoryImageGenerator.shareSpiritualStory(context, item, selectedTab)
+              },
+              modifier = Modifier.testTag("share_other_apps")
             )
           }
         }
@@ -158,7 +183,10 @@ fun DailySpiritualCard(
         when (targetTab) {
           0 -> {
             // Ayet
-            Column(modifier = Modifier.fillMaxWidth()) {
+            Column(
+              modifier = Modifier.fillMaxWidth(),
+              horizontalAlignment = Alignment.CenterHorizontally
+            ) {
               if (item.verseArabic.isNotBlank()) {
                 Text(
                   text = item.verseArabic,
@@ -175,51 +203,69 @@ fun DailySpiritualCard(
                 fontSize = 13.sp,
                 fontStyle = FontStyle.Italic,
                 lineHeight = 19.sp,
-                color = MaterialTheme.colorScheme.onSurface
+                color = MaterialTheme.colorScheme.onSurface,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
               )
               Spacer(modifier = Modifier.height(6.dp))
               Text(
                 text = "— ${item.verseSource}",
                 fontSize = 11.sp,
                 fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
               )
             }
           }
           1 -> {
             // Hadis
-            Column(modifier = Modifier.fillMaxWidth()) {
+            Column(
+              modifier = Modifier.fillMaxWidth(),
+              horizontalAlignment = Alignment.CenterHorizontally
+            ) {
               Text(
                 text = "“${item.hadithTurkish}”",
                 fontSize = 13.sp,
                 fontStyle = FontStyle.Italic,
                 lineHeight = 19.sp,
-                color = MaterialTheme.colorScheme.onSurface
+                color = MaterialTheme.colorScheme.onSurface,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
               )
               Spacer(modifier = Modifier.height(6.dp))
               Text(
                 text = "— ${item.hadithSource}",
                 fontSize = 11.sp,
                 fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
               )
             }
           }
           2 -> {
             // Dua
-            Column(modifier = Modifier.fillMaxWidth()) {
+            Column(
+              modifier = Modifier.fillMaxWidth(),
+              horizontalAlignment = Alignment.CenterHorizontally
+            ) {
               Text(
                 text = "“${item.prayerTurkish}”",
                 fontSize = 13.sp,
                 lineHeight = 19.sp,
-                color = MaterialTheme.colorScheme.onSurface
+                color = MaterialTheme.colorScheme.onSurface,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
               )
               Spacer(modifier = Modifier.height(6.dp))
               Text(
                 text = "— ${item.prayerSource}",
                 fontSize = 11.sp,
                 fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
               )
             }
           }

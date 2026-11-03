@@ -9,6 +9,13 @@ enum class AppThemeMode {
   SYSTEM
 }
 
+/** Kullanıcının seçebileceği üç renk teması (açık + koyu varyantlı). */
+enum class AppColorTheme(val title: String, val subtitle: String, val swatches: List<Long>) {
+  SARAY("Saray", "Krem, bej ve Osmanlı altını", listOf(0xFFFDFBF7, 0xFF9E6B20, 0xFF3F634B)),
+  IZNIK("İznik Çinisi", "Kobalt mavisi, turkuaz ve mercan kırmızısı", listOf(0xFFFAFAF6, 0xFF1A3F7A, 0xFF2A8C9C, 0xFFC0392B)),
+  ZUMRUT("Zümrüt", "Zümrüt yeşili ve altın, Ravza esintisi", listOf(0xFFF5F8F3, 0xFF1E6B4F, 0xFFC9A227))
+}
+
 enum class IftarSoundChoice(val title: String, val subtitle: String, val iconEmoji: String) {
   RAMAZAN_TOPU("Ramazan Topu Sesi", "İftar vakti için net ve gür geleneksel Ramazan topu", "💥"),
   SUFI_NEY("Huzur Veren Ney Sesi", "Tüm bildirim ve vakit hatırlatıcıları için saf, dinlendirici ney", "🎶")
@@ -49,6 +56,13 @@ class AppPreferences(context: Context) {
       }
     }
     set(value) = prefs.edit().putString("key_theme_mode", value.name).apply()
+
+  var colorTheme: AppColorTheme
+    get() {
+      val name = prefs.getString("key_color_theme", AppColorTheme.SARAY.name)
+      return AppColorTheme.entries.firstOrNull { it.name == name } ?: AppColorTheme.SARAY
+    }
+    set(value) = prefs.edit().putString("key_color_theme", value.name).apply()
 
   var notificationsEnabled: Boolean
     get() = prefs.getBoolean("key_notif_enabled", false)

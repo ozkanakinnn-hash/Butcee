@@ -1,5 +1,6 @@
 package com.example.util
 
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
@@ -11,62 +12,104 @@ import android.graphics.Path
 import android.graphics.RectF
 import android.graphics.Shader
 import android.graphics.Typeface
+import android.net.Uri
 import android.os.Build
 import android.text.Layout
 import android.text.StaticLayout
 import android.text.TextPaint
 import android.widget.Toast
 import androidx.core.content.FileProvider
+import com.example.R
 import com.example.data.SpiritualItem
 import java.io.File
 import java.io.FileOutputStream
 
 object StoryImageGenerator {
 
-  /**
-   * Generates a 9:16 (1080x1920) Instagram Story image for Daily Spiritual Climate and launches native share.
-   */
+  private const val INSTAGRAM_PACKAGE = "com.instagram.android"
+
+  /** 9:16 (1080x1920) hikâye görselini üretir, önbelleğe kaydeder ve paylaşılabilir Uri döndürür. */
+  private fun createStoryUri(context: Context, item: SpiritualItem, selectedTab: Int): Uri {
+    val width = 1080
+    val height = 1920
+    val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+    val canvas = Canvas(bitmap)
+    drawStoryCanvas(canvas, width, height, item, selectedTab)
+
+    val sharedDir = File(context.cacheDir, "shared_images")
+    if (!sharedDir.exists()) sharedDir.mkdirs()
+    val imageFile = File(sharedDir, "manevi_iklim_story.png")
+    FileOutputStream(imageFile).use { out -> bitmap.compress(Bitmap.CompressFormat.PNG, 100, out) }
+    bitmap.recycle()
+
+    return FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", imageFile)
+  }
+
+  /** Genel paylaşım: Android paylaşım menüsü (WhatsApp, Telegram, vb.). */
   fun shareSpiritualStory(
     context: Context,
     item: SpiritualItem,
     selectedTab: Int // 0: Ayet, 1: Hadis, 2: Dua
   ) {
     try {
-      val width = 1080
-      val height = 1920
-      val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-      val canvas = Canvas(bitmap)
-
-      drawStoryCanvas(canvas, width, height, item, selectedTab)
-
-      // Save to cacheDir/shared_images
-      val sharedDir = File(context.cacheDir, "shared_images")
-      if (!sharedDir.exists()) {
-        sharedDir.mkdirs()
-      }
-      val imageFile = File(sharedDir, "manevi_iklim_story.png")
-      FileOutputStream(imageFile).use { out ->
-        bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
-      }
-
-      val uri = FileProvider.getUriForFile(
-        context,
-        "${context.packageName}.fileprovider",
-        imageFile
-      )
-
+      val uri = createStoryUri(context, item, selectedTab)
       val shareIntent = Intent(Intent.ACTION_SEND).apply {
         type = "image/png"
         putExtra(Intent.EXTRA_STREAM, uri)
         putExtra(Intent.EXTRA_TEXT, "🌙 Günün Manevi İklimi • Ramazan Rehberi 2026")
         addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
       }
-
       val chooser = Intent.createChooser(shareIntent, "Manevi İklim Hikayesini Paylaş")
       chooser.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
       context.startActivity(chooser)
     } catch (e: Exception) {
       Toast.makeText(context, "Görsel oluşturulamadı: ${e.message}", Toast.LENGTH_LONG).show()
+    }
+  }
+
+  /**
+   * Doğrudan Instagram Hikâyesi.
+   * - strings.xml'de facebook_app_id tanımlıysa Instagram'ın resmi "ADD_TO_STORY" akışı ile
+   *   görsel doğrudan hikâye düzenleyicisinde açılır.
+   * - Tanımlı değilse (ya da akış reddedilirse) görsel Instagram'a gönderilir; Instagram kendi
+   *   menüsünde "Hikaye" seçeneğini sunar.
+   */
+  fun shareToInstagramStory(context: Context, item: SpiritualItem, selectedTab: Int) {
+    val uri = try {
+      createStoryUri(context, item, selectedTab)
+    } catch (e: Exception) {
+      Toast.makeText(context, "Görsel oluşturulamadı: ${e.message}", Toast.LENGTH_LONG).show()
+      return
+    }
+    context.grantUriPermission(INSTAGRAM_PACKAGE, uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+
+    val appId = context.getString(R.string.facebook_app_id).trim()
+    if (appId.isNotEmpty()) {
+      val storyIntent = Intent("com.instagram.share.ADD_TO_STORY").apply {
+        setPackage(INSTAGRAM_PACKAGE)
+        putExtra("source_application", appId)
+        setDataAndType(uri, "image/png")
+        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK)
+      }
+      try {
+        context.startActivity(storyIntent)
+        return
+      } catch (_: ActivityNotFoundException) {
+        // Aşağıdaki genel Instagram paylaşımına düş
+      }
+    }
+
+    val sendIntent = Intent(Intent.ACTION_SEND).apply {
+      setPackage(INSTAGRAM_PACKAGE)
+      type = "image/png"
+      putExtra(Intent.EXTRA_STREAM, uri)
+      addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK)
+    }
+    try {
+      context.startActivity(sendIntent)
+    } catch (_: ActivityNotFoundException) {
+      Toast.makeText(context, "Instagram yüklü değil. Diğer uygulamalarla paylaşabilirsiniz.", Toast.LENGTH_LONG).show()
+      shareSpiritualStory(context, item, selectedTab)
     }
   }
 
@@ -197,7 +240,6 @@ object StoryImageGenerator {
         color = Color.parseColor("#1B4332") // Deep Islamic Emerald
         textSize = 50f
         typeface = Typeface.create(Typeface.SERIF, Typeface.BOLD)
-        textAlign = Paint.Align.CENTER
       }
 
       val contentWidth = (w - 220).coerceAtLeast(400)
@@ -243,7 +285,6 @@ object StoryImageGenerator {
       color = Color.parseColor("#26221D") // Deep charcoal
       textSize = if (turkishText.length > 200) 44f else 50f
       typeface = Typeface.create(Typeface.SERIF, Typeface.NORMAL)
-      textAlign = Paint.Align.CENTER
     }
 
     val bodyWidth = (w - 240).coerceAtLeast(400)

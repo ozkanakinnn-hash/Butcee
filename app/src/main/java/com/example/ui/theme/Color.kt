@@ -14,14 +14,14 @@ val SlateTextSecondaryLight = Color(0xFF6B665D)
 val DividerLight = Color(0xFFE5DDD0)
 
 // Night / Dark Mode Palette
-val NightBackgroundDark = Color(0xFF141615)
-val NightSurfaceDark = Color(0xFF1E211F)
-val NightSurfaceVariantDark = Color(0xFF282C29)
+val NightBackgroundDark = Color(0xFF050505)
+val NightSurfaceDark = Color(0xFF0E0E0D)
+val NightSurfaceVariantDark = Color(0xFF181817)
 val WarmGoldDark = Color(0xFFE5B869)
 val SageGreenDark = Color(0xFF7CA885)
 val CreamTextPrimaryDark = Color(0xFFEDE9DF)
 val SandTextSecondaryDark = Color(0xFFA5A095)
-val DividerDark = Color(0xFF323633)
+val DividerDark = Color(0xFF2A2A2A)
 
 // Special Accents
 val NeonGoldGlow = Color(0xFFFFD56B)

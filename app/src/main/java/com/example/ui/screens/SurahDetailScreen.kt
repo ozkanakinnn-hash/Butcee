@@ -238,7 +238,7 @@ fun SurahDetailScreen(
           Spacer(modifier = Modifier.height(14.dp))
 
           // Full Continuous Arabic Text
-          val isDark = isSystemInDarkTheme()
+          val isDark = com.example.ui.theme.isAppInDarkTheme()
           val arabicTextColor = if (isDark) Color(0xFFF0E5D3) else Color(0xFF1B3D2F)
           Text(
             text = surahDetail.fullArabic,

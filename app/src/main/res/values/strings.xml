@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Ramazan Rehberi</string>
+    <!-- Instagram Hikâyesine doğrudan paylaşım için Meta (Facebook) Uygulama Kimliği. Boşsa Instagram genel paylaşımı kullanılır. -->
+    <string name="facebook_app_id" translatable="false"></string>
 </resources>

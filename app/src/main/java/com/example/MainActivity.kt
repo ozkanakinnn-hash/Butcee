@@ -34,6 +34,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.data.AppPreferences
+import com.example.data.AppColorTheme
 import com.example.data.AppThemeMode
 import com.example.data.CountdownResult
 import com.example.data.HolidayCountdownCalculator
@@ -120,6 +121,7 @@ class MainActivity : ComponentActivity() {
 
     setContent {
       var currentThemeMode by remember { mutableStateOf(prefs.themeMode) }
+      var currentColorTheme by remember { mutableStateOf(prefs.colorTheme) }
       val systemInDark = isSystemInDarkTheme()
       val isDark = when (currentThemeMode) {
         AppThemeMode.LIGHT -> false
@@ -129,7 +131,7 @@ class MainActivity : ComponentActivity() {
 
       var isOnboardingCompleted by remember { mutableStateOf(prefs.isOnboardingCompleted) }
 
-      MyApplicationTheme(darkTheme = isDark) {
+      MyApplicationTheme(darkTheme = isDark, colorTheme = currentColorTheme) {
         if (!isOnboardingCompleted) {
           OnboardingScreen(
             prefs = prefs,
@@ -141,7 +143,8 @@ class MainActivity : ComponentActivity() {
           RamazanRehberiApp(
             prefs = prefs,
             prayerRepo = prayerRepo,
-            onThemeChanged = { currentThemeMode = it }
+            onThemeChanged = { currentThemeMode = it },
+            onColorThemeChanged = { currentColorTheme = it }
           )
         }
       }
@@ -153,7 +156,8 @@ class MainActivity : ComponentActivity() {
 fun RamazanRehberiApp(
   prefs: AppPreferences,
   prayerRepo: PrayerRepository,
-  onThemeChanged: (AppThemeMode) -> Unit
+  onThemeChanged: (AppThemeMode) -> Unit,
+  onColorThemeChanged: (AppColorTheme) -> Unit
 ) {
   val coroutineScope = rememberCoroutineScope()
   var currentTab by remember { mutableIntStateOf(0) }
@@ -195,7 +199,7 @@ fun RamazanRehberiApp(
 
   // 1-Second Live Countdown Ticker
   var countdown by remember {
-    mutableStateOf(PrayerTimeUtils.calculateCountdown(prayerTimes))
+    mutableStateOf(PrayerTimeUtils.calculateCountdown(prayerTimes, prefs.getFastingDates()))
   }
   var holidayInfo by remember {
     mutableStateOf(HolidayCountdownCalculator.calculate())
@@ -203,7 +207,7 @@ fun RamazanRehberiApp(
 
   LaunchedEffect(prayerTimes) {
     while (isActive) {
-      countdown = PrayerTimeUtils.calculateCountdown(prayerTimes)
+      countdown = PrayerTimeUtils.calculateCountdown(prayerTimes, prefs.getFastingDates())
       holidayInfo = HolidayCountdownCalculator.calculate()
       delay(1000)
     }
@@ -387,6 +391,7 @@ fun RamazanRehberiApp(
       SettingsDialog(
         prefs = prefs,
         onThemeChanged = onThemeChanged,
+        onColorThemeChanged = onColorThemeChanged,
         onChangeLocation = {
           showSettingsDialog = false
           showLocationDialog = true

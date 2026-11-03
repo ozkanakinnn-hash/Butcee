@@ -85,7 +85,7 @@ fun QiblaFinderScreen(
 ) {
   BackHandler { onNavigateBack() }
   val context = LocalContext.current
-  val isDark = isSystemInDarkTheme()
+  val isDark = com.example.ui.theme.isAppInDarkTheme()
 
   // Exact mathematically calculated Qibla bearing based on user's province/district (e.g. Saruhanlı ~145.2° GD)
   val qiblaBearing = remember(prefs.country, prefs.province, prefs.district) {
@@ -302,7 +302,7 @@ fun QiblaFinderScreen(
     Spacer(modifier = Modifier.height(20.dp))
 
     // PRECISION COMPASS DIAL (Krem / Bej / Altın lüks pusula tablası)
-    val compassBgColor = if (isDark) Color(0xFF1E1B17) else Color(0xFFFBF8F0)
+    val compassBgColor = if (isDark) Color(0xFF111110) else Color(0xFFFBF8F0)
     val dialBorderColor = if (isFacingQibla) Color(0xFF2D5A43) else Color(0xFFC7A762)
 
     Box(

@@ -41,6 +41,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.data.CountdownMode
 import com.example.data.CountdownResult
 import com.example.data.PrayerTimeUtils
 
@@ -288,17 +289,37 @@ fun CompactCountdownCard(
         trackColor = MaterialTheme.colorScheme.surfaceVariant
       )
 
-      OutlinedButton(
-        onClick = onFireCannon,
-        modifier = Modifier
-          .fillMaxWidth()
-          .height(34.dp)
-          .testTag("fire_cannon_button"),
-        shape = RoundedCornerShape(10.dp),
-        contentPadding = PaddingValues(horizontal = 6.dp, vertical = 0.dp),
-        colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.primary)
-      ) {
-        Text("💥 Topu Test Et", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, maxLines = 1)
+      if (countdown.mode == CountdownMode.IFTAR) {
+        OutlinedButton(
+          onClick = onFireCannon,
+          modifier = Modifier
+            .fillMaxWidth()
+            .height(34.dp)
+            .testTag("fire_cannon_button"),
+          shape = RoundedCornerShape(10.dp),
+          contentPadding = PaddingValues(horizontal = 6.dp, vertical = 0.dp),
+          colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.primary)
+        ) {
+          Text("💥 Topu Test Et", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, maxLines = 1)
+        }
+      } else {
+        // Sahur / Teravih / Namaz modunda: hedeften sonraki vakit
+        Box(
+          modifier = Modifier
+            .fillMaxWidth()
+            .height(34.dp)
+            .clip(RoundedCornerShape(10.dp))
+            .background(MaterialTheme.colorScheme.primaryContainer),
+          contentAlignment = Alignment.Center
+        ) {
+          Text(
+            text = "Sonra: ${countdown.nextLabel}",
+            fontSize = 11.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.onPrimaryContainer,
+            maxLines = 1
+          )
+        }
       }
     }
   }
