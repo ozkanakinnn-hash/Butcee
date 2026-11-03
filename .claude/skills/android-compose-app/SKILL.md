@@ -5,6 +5,19 @@ description: Kotlin + Jetpack Compose Android uygulaması oluşturma/iskeletini 
 
 # Android Compose Uygulaması — Öğrenilenler
 
+## 0. HER UYGULAMADA ZORUNLU: İngilizce dil desteği (kullanıcı kuralı)
+Kullanıcı hangi uygulamayı yaparsa yapsın **Türkçe + İngilizce** dil desteği istenir; Ayarlar'da dil seçici olmalı.
+- **Yeni uygulamada (önerilen):** Metinleri baştan `res/values/strings.xml` (Türkçe, varsayılan) ve
+  `res/values-en/strings.xml` içine koy, Compose'ta `stringResource(R.string.x)` kullan. Dil seçimi için
+  `AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags("en"))` (appcompat + `AppCompatActivity`)
+  veya Android 13+ `LocaleManager`; `res/xml/locales_config.xml` + manifest `android:localeConfig` ekle.
+- **Var olan, metinleri koda gömülü uygulamada:** `i18n/I18n.kt` kalıbı — `AppLanguage.current` + `t("Türkçe metin")`
+  sözlüğü (bulamazsa Türkçeyi döndürür), dinamik metinler için regex kalıpları; dil değişince kök composable'ı
+  `key(language) { ... }` ile yeniden kur. Metinleri otomatik sarmak için `text = "..."`, `Text("...")`,
+  `title = / subtitle = / contentDescription =` desenlerini betikle `t(...)` içine al.
+- Dile özel içerik kuralları olabilir (ör. İngilizcede yalnızca Kur'an Radyo) — sor ve uygula.
+- Veri içeriği (meal, menü, sözler) ayrıca çevrilmelidir; çevrilmediyse kullanıcıya açıkça söyle.
+
 ## 1. Kod dökümünden proje çıkarma
 Dökümler genelde `### Dosya: \`yol\`` başlığı + kod bloğu biçimindedir.
 - Önce `grep -n '^### Dosya'` ile dosya sayısını, `grep '^```'` ile açılış/kapanış dengesini doğrula.
