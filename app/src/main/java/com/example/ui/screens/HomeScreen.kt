@@ -101,9 +101,12 @@ fun HomeScreen(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
       ) {
-        Column {
+        // İsim uzun olsa da sağdaki ikonlar her zaman görünsün: metin kalan alanı kullanır
+        Column(modifier = Modifier.weight(1f).padding(end = 8.dp)) {
           Text(
             text = "Merhaba, $greetingName 👋",
+            maxLines = 1,
+            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onBackground
@@ -126,6 +129,9 @@ fun HomeScreen(
             Spacer(modifier = Modifier.width(4.dp))
             Text(
               text = "${prefs.province} / ${prefs.district}",
+              maxLines = 1,
+              overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+              modifier = Modifier.weight(1f, fill = false),
               style = MaterialTheme.typography.bodySmall,
               fontWeight = FontWeight.SemiBold,
               color = MaterialTheme.colorScheme.primary
