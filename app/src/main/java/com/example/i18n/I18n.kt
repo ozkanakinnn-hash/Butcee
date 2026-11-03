@@ -191,6 +191,8 @@ private val dictionary: Map<String, String> = mapOf(
     "Canlı Yayın" to "Live",
     "Dil / Language" to "Language / Dil",
     "Akşam Ezanı" to "Maghrib Adhan",
+    "Kuzey" to "North", "Kuzeydoğu" to "Northeast", "Doğu" to "East", "Güneydoğu" to "Southeast",
+    "Güney" to "South", "Güneybatı" to "Southwest", "Batı" to "West", "Kuzeybatı" to "Northwest",
     "Akşam / iftar vakti bildiriminde çalar" to "Plays with the Maghrib / iftar notification",
     "⏹ Durdur" to "⏹ Stop",
     "▶ Ezanı Dinle" to "▶ Listen to the adhan",

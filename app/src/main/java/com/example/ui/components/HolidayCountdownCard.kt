@@ -133,7 +133,7 @@ private fun HolidayTimeBox(
       color = MaterialTheme.colorScheme.primary
     )
     Text(
-      text = label,
+      text = t(label),
       fontSize = 10.sp,
       fontWeight = FontWeight.Medium,
       color = MaterialTheme.colorScheme.onSurfaceVariant

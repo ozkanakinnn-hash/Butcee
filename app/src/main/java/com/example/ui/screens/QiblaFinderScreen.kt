@@ -745,7 +745,9 @@ fun QiblaFinderScreen(
   }
 }
 
-private fun getHeadingName(deg: Float): String {
+private fun getHeadingName(deg: Float): String = t(headingNameTr(deg))
+
+private fun headingNameTr(deg: Float): String {
   return when (((deg + 22.5f) % 360f) / 45f) {
     in 0f..1f -> "Kuzey"
     in 1f..2f -> "Kuzeydoğu"

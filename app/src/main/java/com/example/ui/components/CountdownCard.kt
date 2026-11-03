@@ -208,7 +208,7 @@ private fun TimeUnitBox(
       color = MaterialTheme.colorScheme.primary
     )
     Text(
-      text = label,
+      text = t(label),
       fontSize = 10.sp,
       fontWeight = FontWeight.Medium,
       color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -354,7 +354,7 @@ private fun MiniTimeUnitBox(value: String, label: String, modifier: Modifier = M
       color = MaterialTheme.colorScheme.primary
     )
     Text(
-      text = label,
+      text = t(label),
       fontSize = 8.sp,
       fontWeight = FontWeight.Medium,
       color = MaterialTheme.colorScheme.onSurfaceVariant,
