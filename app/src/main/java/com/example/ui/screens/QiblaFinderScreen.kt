@@ -1,6 +1,16 @@
 package com.example.ui.screens
 
 import android.content.Context
+import androidx.compose.foundation.clickable
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.core.content.ContextCompat
+import android.view.WindowManager
+import android.view.Surface
+import android.location.LocationManager
+import android.hardware.GeomagneticField
+import android.content.pm.PackageManager
+import android.Manifest
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
@@ -87,92 +97,122 @@ fun QiblaFinderScreen(
   val context = LocalContext.current
   val isDark = com.example.ui.theme.isAppInDarkTheme()
 
-  // Exact mathematically calculated Qibla bearing based on user's province/district (e.g. Saruhanlı ~145.2° GD)
-  val qiblaBearing = remember(prefs.country, prefs.province, prefs.district) {
-    calculateExactQiblaBearing(prefs.country, prefs.province, prefs.district)
+  // Konum: izin varsa cihazın son bilinen GPS/ağ konumu, yoksa seçili ilçe/il merkezi
+  var locationRefresh by remember { mutableStateOf(0) }
+  val locationPermissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
+    locationRefresh++
+  }
+  val location = remember(prefs.country, prefs.province, prefs.district, locationRefresh) {
+    resolveQiblaLocation(context, prefs.country, prefs.province, prefs.district)
+  }
+  val qiblaBearing = remember(location) { qiblaBearingFrom(location.lat, location.lon) }
+
+  // Manyetik sapma: pusula manyetik kuzeyi gösterir, Kıble açısı coğrafi (gerçek) kuzeye göredir.
+  // Türkiye'de bu fark ~5-7° doğudur; düzeltilmezse ibre bu kadar kayar.
+  val declination = remember(location) {
+    GeomagneticField(location.lat.toFloat(), location.lon.toFloat(), 0f, System.currentTimeMillis()).declination
   }
 
   var currentAzimuth by remember { mutableFloatStateOf(0f) }
-  var sensorAccuracy by remember { mutableStateOf("Yüksek") }
+  var sensorAccuracy by remember { mutableStateOf("Ölçülüyor") }
+  var needsCalibration by remember { mutableStateOf(false) }
+  var isUpright by remember { mutableStateOf(false) }
+  var hasCompass by remember { mutableStateOf(true) }
   var showCalibrationDialog by remember { mutableStateOf(false) }
 
-  // Hardware sensors (Rotation Vector primary with sensor-fusion, Accel + Magnetometer fallback)
-  // Uses trigonometric smoothing to eliminate 0/360 wrap-around jumps and lag.
   DisposableEffect(Unit) {
     val sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as? SensorManager
     val rotationSensor = sensorManager?.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
     val accelSensor = sensorManager?.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
     val magnetSensor = sensorManager?.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD)
+    hasCompass = magnetSensor != null
 
     val listener = object : SensorEventListener {
       val rotationMatrix = FloatArray(9)
+      val remapped = FloatArray(9)
       val orientationValues = FloatArray(3)
-      val filteredAccel = FloatArray(3)
-      val filteredMagnet = FloatArray(3)
+      val gravity = FloatArray(3)
+      val geomagnetic = FloatArray(3)
       var hasAccel = false
       var hasMagnet = false
-      val filterAlpha = 0.35f // Crisp, responsive low-pass filter (instant reaction without jitter)
-
+      val lowPass = 0.25f
       var smoothSin = 0.0
       var smoothCos = 1.0
+      var initialized = false
 
       override fun onSensorChanged(event: SensorEvent?) {
         if (event == null) return
-
-        var rawAzimuthDeg: Float? = null
-
-        if (event.sensor.type == Sensor.TYPE_ROTATION_VECTOR) {
-          SensorManager.getRotationMatrixFromVector(rotationMatrix, event.values)
-          SensorManager.getOrientation(rotationMatrix, orientationValues)
-          rawAzimuthDeg = ((Math.toDegrees(orientationValues[0].toDouble()) + 360.0) % 360.0).toFloat()
-        } else if (event.sensor.type == Sensor.TYPE_ACCELEROMETER) {
-          for (i in 0..2) {
-            filteredAccel[i] += filterAlpha * (event.values[i] - filteredAccel[i])
+        var gotMatrix = false
+        when (event.sensor.type) {
+          Sensor.TYPE_ROTATION_VECTOR -> {
+            SensorManager.getRotationMatrixFromVector(rotationMatrix, event.values)
+            gotMatrix = true
           }
-          hasAccel = true
-        } else if (event.sensor.type == Sensor.TYPE_MAGNETIC_FIELD) {
-          for (i in 0..2) {
-            filteredMagnet[i] += filterAlpha * (event.values[i] - filteredMagnet[i])
+          Sensor.TYPE_ACCELEROMETER -> {
+            for (i in 0..2) gravity[i] += lowPass * (event.values[i] - gravity[i]); hasAccel = true
           }
-          hasMagnet = true
-        }
-
-        if (rawAzimuthDeg == null && rotationSensor == null && hasAccel && hasMagnet) {
-          if (SensorManager.getRotationMatrix(rotationMatrix, null, filteredAccel, filteredMagnet)) {
-            SensorManager.getOrientation(rotationMatrix, orientationValues)
-            rawAzimuthDeg = ((Math.toDegrees(orientationValues[0].toDouble()) + 360.0) % 360.0).toFloat()
+          Sensor.TYPE_MAGNETIC_FIELD -> {
+            for (i in 0..2) geomagnetic[i] += lowPass * (event.values[i] - geomagnetic[i]); hasMagnet = true
           }
         }
-
-        rawAzimuthDeg?.let { deg ->
-          val rad = Math.toRadians(deg.toDouble())
-          smoothSin += filterAlpha * (sin(rad) - smoothSin)
-          smoothCos += filterAlpha * (cos(rad) - smoothCos)
-          val filteredDeg = ((Math.toDegrees(atan2(smoothSin, smoothCos)) + 360.0) % 360.0).toFloat()
-          currentAzimuth = filteredDeg
+        if (!gotMatrix && rotationSensor == null && hasAccel && hasMagnet) {
+          gotMatrix = SensorManager.getRotationMatrix(rotationMatrix, null, gravity, geomagnetic)
         }
+        if (!gotMatrix) return
+
+        // Telefon dik tutuluyorsa (60°'den fazla eğik) eksenleri yeniden eşle; aksi halde
+        // azimut kararsızlaşır ve yanlış yön gösterir. Ekran yatay dönmüşse de düzelt.
+        val upright = abs(rotationMatrix[8]) < 0.5f
+        isUpright = upright
+        @Suppress("DEPRECATION")
+        val displayRotation = (context.getSystemService(Context.WINDOW_SERVICE) as WindowManager).defaultDisplay.rotation
+        val (axisX, axisY) = if (upright) {
+          SensorManager.AXIS_X to SensorManager.AXIS_Z
+        } else when (displayRotation) {
+          Surface.ROTATION_90 -> SensorManager.AXIS_Y to SensorManager.AXIS_MINUS_X
+          Surface.ROTATION_180 -> SensorManager.AXIS_MINUS_X to SensorManager.AXIS_MINUS_Y
+          Surface.ROTATION_270 -> SensorManager.AXIS_MINUS_Y to SensorManager.AXIS_X
+          else -> SensorManager.AXIS_X to SensorManager.AXIS_Y
+        }
+        SensorManager.remapCoordinateSystem(rotationMatrix, axisX, axisY, remapped)
+        SensorManager.getOrientation(remapped, orientationValues)
+
+        // Manyetik → gerçek kuzey
+        val trueHeading = Math.toDegrees(orientationValues[0].toDouble()) + declination
+        val rad = Math.toRadians(trueHeading)
+        if (!initialized) {
+          smoothSin = sin(rad); smoothCos = cos(rad); initialized = true
+        } else {
+          // Açısal düzleştirme (0°/360° sıçraması olmadan)
+          smoothSin += 0.2 * (sin(rad) - smoothSin)
+          smoothCos += 0.2 * (cos(rad) - smoothCos)
+        }
+        currentAzimuth = ((Math.toDegrees(atan2(smoothSin, smoothCos)) + 360.0) % 360.0).toFloat()
       }
 
       override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
+        // Doğruluk bilgisini manyetometreden okuyoruz: asıl hata kaynağı odur
+        if (sensor?.type != Sensor.TYPE_MAGNETIC_FIELD) return
+        needsCalibration = accuracy <= SensorManager.SENSOR_STATUS_ACCURACY_LOW
         sensorAccuracy = when (accuracy) {
-          SensorManager.SENSOR_STATUS_ACCURACY_HIGH -> "Yüksek (Güvenilir)"
-          SensorManager.SENSOR_STATUS_ACCURACY_MEDIUM -> "Normal"
-          SensorManager.SENSOR_STATUS_ACCURACY_LOW -> "Düşük (Kalibre Edin)"
-          else -> "Hazır"
+          SensorManager.SENSOR_STATUS_ACCURACY_HIGH -> "Yüksek"
+          SensorManager.SENSOR_STATUS_ACCURACY_MEDIUM -> "Orta"
+          SensorManager.SENSOR_STATUS_ACCURACY_LOW -> "Düşük"
+          else -> "Güvenilmez"
         }
       }
     }
 
     if (rotationSensor != null) {
-      sensorManager.registerListener(listener, rotationSensor, SensorManager.SENSOR_DELAY_UI)
+      sensorManager.registerListener(listener, rotationSensor, SensorManager.SENSOR_DELAY_GAME)
+      // Yalnızca doğruluk takibi için manyetometreyi de dinle
+      magnetSensor?.let { sensorManager.registerListener(listener, it, SensorManager.SENSOR_DELAY_NORMAL) }
     } else {
-      accelSensor?.let { sensorManager.registerListener(listener, it, SensorManager.SENSOR_DELAY_UI) }
-      magnetSensor?.let { sensorManager.registerListener(listener, it, SensorManager.SENSOR_DELAY_UI) }
+      accelSensor?.let { sensorManager.registerListener(listener, it, SensorManager.SENSOR_DELAY_GAME) }
+      magnetSensor?.let { sensorManager.registerListener(listener, it, SensorManager.SENSOR_DELAY_GAME) }
     }
 
-    onDispose {
-      sensorManager?.unregisterListener(listener)
-    }
+    onDispose { sensorManager?.unregisterListener(listener) }
   }
 
   // Angular difference between phone heading and target Qibla bearing
@@ -241,7 +281,8 @@ fun QiblaFinderScreen(
           color = MaterialTheme.colorScheme.onBackground
         )
         Text(
-          text = "${prefs.province} / ${prefs.district} • Kıble: ${qiblaBearing.toInt()}° GD",
+          text = (if (location.fromDevice) "📍 Cihaz konumu" else "${prefs.province} / ${prefs.district}") +
+            " • Kıble: ${qiblaBearing.toInt()}° (gerçek kuzey)",
           style = MaterialTheme.typography.bodySmall,
           color = MaterialTheme.colorScheme.primary,
           fontWeight = FontWeight.SemiBold
@@ -296,6 +337,40 @@ fun QiblaFinderScreen(
             color = statusTextColor.copy(alpha = 0.95f)
           )
         }
+      }
+    }
+
+    // Ölçüm doğruluğunu etkileyen durumlar için uyarılar
+    val warning = when {
+      !hasCompass -> "Cihazınızda pusula (manyetometre) sensörü bulunmuyor; yön ölçülemez."
+      needsCalibration -> "Pusula doğruluğu düşük: telefonu havada 8 çizerek kalibre edin ve metal eşyalardan uzaklaşın."
+      isUpright -> "Telefonu yere paralel (yatay) tutun; dik tutulduğunda ölçüm daha az hassastır."
+      else -> null
+    }
+    if (warning != null) {
+      Spacer(modifier = Modifier.height(10.dp))
+      Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(14.dp),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFFC77700).copy(alpha = 0.18f))
+      ) {
+        Text(
+          text = "⚠️ $warning",
+          fontSize = 12.sp,
+          color = MaterialTheme.colorScheme.onSurface,
+          modifier = Modifier
+            .fillMaxWidth()
+            .clickable(enabled = needsCalibration) { showCalibrationDialog = true }
+            .padding(12.dp)
+        )
+      }
+    }
+    if (!location.fromDevice) {
+      Spacer(modifier = Modifier.height(8.dp))
+      TextButton(onClick = {
+        locationPermissionLauncher.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION))
+      }) {
+        Text("📍 Daha hassas ölçüm için konumumu kullan", fontSize = 12.sp)
       }
     }
 
@@ -511,7 +586,7 @@ fun QiblaFinderScreen(
         ) {
           Text("Hedef Kıble", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
           Text("${qiblaBearing.toInt()}°", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color(0xFF9E6B20))
-          Text("Güneydoğu (GD)", fontSize = 10.sp, color = Color(0xFF2D5A43), fontWeight = FontWeight.SemiBold)
+          Text(getHeadingName(qiblaBearing), fontSize = 10.sp, color = Color(0xFF2D5A43), fontWeight = FontWeight.SemiBold)
         }
       }
 
@@ -525,7 +600,7 @@ fun QiblaFinderScreen(
           horizontalAlignment = Alignment.CenterHorizontally
         ) {
           Text("Sensör Durumu", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-          Text(sensorAccuracy.take(8), fontSize = 16.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+          Text(sensorAccuracy, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
           Text("Manyetometre", fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
       }
@@ -557,7 +632,7 @@ fun QiblaFinderScreen(
         }
         Spacer(modifier = Modifier.height(6.dp))
         Text(
-          text = "• Telefonunuzu yere paralel (avucunuzun içinde düz) tutunuz.\n• Çevredeki metal aksam, kılıf mıknatısı veya prizlerden uzak durunuz.\n• İbre 🕋 Kâbe yönüne kilitlendiğinde ekran yeşile döner ve cihaz hafifçe titrer.",
+          text = "• Telefonunuzu yere paralel (avucunuzun içinde düz) tutunuz.\n• Mıknatıslı kılıf, metal masa, araç içi, priz ve hoparlörlerden uzak durunuz.\n• Sensör durumu \"Düşük\" ise havada 8 çizerek kalibre edin.\n• Manyetik sapma düzeltmesi: ${"%+.1f".format(declination)}° (otomatik)\n• Konum: " + (if (location.fromDevice) "cihazın konumu kullanılıyor" else "il/ilçe merkezi kullanılıyor (konum izni verirseniz daha hassas)") + ".",
           fontSize = 11.sp,
           lineHeight = 16.sp,
           color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -625,20 +700,37 @@ private fun getHeadingName(deg: Float): String {
 
 // Great-Circle Spherical Trigonometry calculation to Kaaba (21.422487 N, 39.826206 E)
 // For Saruhanlı/Manisa this yields ~145.2° GD
-private fun calculateExactQiblaBearing(country: String, province: String, district: String): Float {
+private data class QiblaLocation(val lat: Double, val lon: Double, val fromDevice: Boolean)
+
+/** İzin verilmişse cihazın son bilinen konumunu (en fazla 1 gün önceki), yoksa il/ilçe merkezini kullanır. */
+private fun resolveQiblaLocation(context: Context, country: String, province: String, district: String): QiblaLocation {
+  val hasPermission = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
+    ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
+  if (hasPermission) {
+    try {
+      val lm = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+      val best = lm.getProviders(true)
+        .mapNotNull { runCatching { lm.getLastKnownLocation(it) }.getOrNull() }
+        .filter { System.currentTimeMillis() - it.time < 24 * 3600_000L }
+        .minByOrNull { it.accuracy }
+      if (best != null) return QiblaLocation(best.latitude, best.longitude, fromDevice = true)
+    } catch (_: SecurityException) {
+    }
+  }
+  val c = getCoordinatesForLocation(country, province, district)
+  return QiblaLocation(c.first, c.second, fromDevice = false)
+}
+
+/** Büyük çember (ortodromi) formülüyle gerçek kuzeye göre Kâbe açısı. */
+private fun qiblaBearingFrom(lat: Double, lon: Double): Float {
   val kaabaLat = 21.422487
   val kaabaLon = 39.826206
-
-  val coords = getCoordinatesForLocation(country, province, district)
-  val phi1 = Math.toRadians(coords.first)
+  val phi1 = Math.toRadians(lat)
   val phi2 = Math.toRadians(kaabaLat)
-  val deltaLambda = Math.toRadians(kaabaLon - coords.second)
-
+  val deltaLambda = Math.toRadians(kaabaLon - lon)
   val y = sin(deltaLambda) * cos(phi2)
   val x = cos(phi1) * sin(phi2) - sin(phi1) * cos(phi2) * cos(deltaLambda)
-  val bearingRad = atan2(y, x)
-  val bearingDeg = Math.toDegrees(bearingRad)
-  return ((bearingDeg + 360.0) % 360.0).toFloat()
+  return ((Math.toDegrees(atan2(y, x)) + 360.0) % 360.0).toFloat()
 }
 
 private fun getCoordinatesForLocation(country: String, province: String, district: String): Pair<Double, Double> {

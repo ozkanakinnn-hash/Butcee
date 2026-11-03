@@ -1,0 +1,45 @@
+name: Radio Stream Probe
+
+on:
+  push:
+    paths: [ ".github/workflows/stream-probe.yml" ]
+  workflow_dispatch:
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Probe Diyanet radio streams
+        run: |
+          UA="Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124 Mobile Safari/537.36"
+          probe () {
+            url="$1"; shift
+            echo "=================================================="
+            echo "URL: $url  HEADERS: $*"
+            curl -sS -m 15 -L -o /tmp/body -D /tmp/hdr -w "HTTP %{http_code} | type %{content_type} | size %{size_download}\n" "$@" "$url" || echo "CURL FAILED"
+            grep -iE '^(location|access-control|server|content-type)' /tmp/hdr | head -5
+            head -c 600 /tmp/body | strings | head -12
+            # Alt oynatma listesi / segment kontrolü
+            child=$(grep -v '^#' /tmp/body 2>/dev/null | grep -E '\.(m3u8|ts|aac|m4s)' | head -1)
+            if [ -n "$child" ]; then
+              case "$child" in http*) curl_url="$child";; *) curl_url="$(dirname "$url")/$child";; esac
+              echo "  -> child: $curl_url"
+              curl -sS -m 15 -L -o /tmp/child -w "  child HTTP %{http_code} | type %{content_type} | size %{size_download}\n" "$@" "$curl_url" || echo "  child CURL FAILED"
+              grep -v '^#' /tmp/child | grep -E '\.(ts|aac|m4s|mp4)' | head -1 | while read seg; do
+                case "$seg" in http*) s="$seg";; *) s="$(dirname "$curl_url")/$seg";; esac
+                curl -sS -m 15 -L -o /dev/null -w "  segment HTTP %{http_code} | size %{size_download}\n" "$@" "$s" || echo "  segment FAILED"
+              done
+            fi
+          }
+          for u in \
+            https://diyanetradyo-live.daioncdn.net/diyanetradyo/diyanetradyo.m3u8 \
+            https://diyanetkuran-live.daioncdn.net/diyanetkuran/diyanetkuran.m3u8 \
+            https://diyanetrisalet-live.daioncdn.net/diyanetrisalet/diyanetrisalet.m3u8 \
+            http://5.44.154.13:8000/diyanetradyo.aac ; do
+            probe "$u"
+            probe "$u" -A "$UA"
+            probe "$u" -A "$UA" -H "Referer: https://www.diyanetradyo.com/" -H "Origin: https://www.diyanetradyo.com"
+          done
+          echo "== diyanetradyo.com live page stream references =="
+          curl -sS -m 20 -L -A "$UA" https://www.diyanetradyo.com/Canli-Dinle | grep -oE 'https?://[^"'"'"' <>]+' | grep -iE 'm3u8|aac|mp3|stream|daion|live' | sort -u | head -20 || true
+          curl -sS -m 20 -L -A "$UA" https://www.diyanetkuranradyo.com/canli-dinle | grep -oE 'https?://[^"'"'"' <>]+' | grep -iE 'm3u8|aac|mp3|stream|daion|live' | sort -u | head -20 || true
