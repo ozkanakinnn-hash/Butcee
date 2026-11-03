@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <!-- Açık mushaf: iki sayfa + ortada sırt -->
+    <path
+        android:fillColor="#FF000000"
+        android:pathData="M12,5.5C10.3,4.3 7.9,3.7 5,3.7C3.9,3.7 2.9,3.8 2,4v14.6c0.9,-0.2 1.9,-0.3 3,-0.3c2.9,0 5.3,0.7 7,1.9c1.7,-1.2 4.1,-1.9 7,-1.9c1.1,0 2.1,0.1 3,0.3V4c-0.9,-0.2 -1.9,-0.3 -3,-0.3C16.1,3.7 13.7,4.3 12,5.5zM11,17.6c-1.6,-0.8 -3.6,-1.3 -6,-1.3c-0.4,0 -0.7,0 -1,0V5.7C4.3,5.7 4.6,5.7 5,5.7c2.4,0 4.4,0.6 6,1.5V17.6zM20,16.3c-0.3,0 -0.6,0 -1,0c-2.4,0 -4.4,0.5 -6,1.3V7.2c1.6,-0.9 3.6,-1.5 6,-1.5c0.4,0 0.7,0 1,0V16.3z" />
+    <!-- Sayfa üzerinde hilal süsü -->
+    <path
+        android:fillColor="#FF000000"
+        android:pathData="M17.2,8.2a1.9,1.9 0,1 0,0.9 3.5a1.5,1.5 0,1 1,-0.9 -3.5z" />
+    <path
+        android:fillColor="#FF000000"
+        android:pathData="M5.5,9h4v1h-4zM5.5,11h4v1h-4zM5.5,13h4v1h-4z" />
+</vector>

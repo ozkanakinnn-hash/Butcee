@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Hilal -->
+    <path android:fillColor="#FFE5B869"
+        android:pathData="M50,30 a24,24 0,1 0,20 40 a19,19 0,1 1,-20 -40z" />
+    <!-- Yıldız -->
+    <path android:fillColor="#FFE5B869"
+        android:pathData="M68,38 L70.6,44.2 L77.3,44.6 L72.1,48.9 L73.8,55.4 L68,51.8 L62.2,55.4 L63.9,48.9 L58.7,44.6 L65.4,44.2 Z" />
+</vector>
