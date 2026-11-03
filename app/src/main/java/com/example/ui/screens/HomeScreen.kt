@@ -145,6 +145,24 @@ fun HomeScreen(
               modifier = Modifier.size(24.dp)
             )
           }
+          Spacer(modifier = Modifier.width(8.dp))
+          // Yakınımdaki Camiler kısayolu (cami ikonu)
+          Box(
+            modifier = Modifier
+              .size(40.dp)
+              .clip(CircleShape)
+              .background(MaterialTheme.colorScheme.primaryContainer)
+              .clickable { onOpenMosques() }
+              .testTag("shortcut_mosques_button"),
+            contentAlignment = Alignment.Center
+          ) {
+            Icon(
+              imageVector = Icons.Default.Mosque,
+              contentDescription = "Yakınımdaki Camiler",
+              tint = MaterialTheme.colorScheme.primary,
+              modifier = Modifier.size(22.dp)
+            )
+          }
           Spacer(modifier = Modifier.width(4.dp))
           IconButton(
             onClick = onOpenSettings,
@@ -192,63 +210,14 @@ fun HomeScreen(
       )
     }
 
-    // 4. YAKINDAKİ CAMİLER kısayolu
-    item {
-      Card(
-        modifier = Modifier
-          .fillMaxWidth()
-          .padding(horizontal = 16.dp, vertical = 4.dp)
-          .clickable { onOpenMosques() }
-          .testTag("shortcut_mosques_button"),
-        shape = RoundedCornerShape(18.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-      ) {
-        Row(
-          modifier = Modifier
-            .fillMaxWidth()
-            .padding(14.dp),
-          verticalAlignment = Alignment.CenterVertically,
-          horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-          Row(verticalAlignment = Alignment.CenterVertically) {
-            Box(
-              modifier = Modifier
-                .size(42.dp)
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.surfaceVariant),
-              contentAlignment = Alignment.Center
-            ) {
-              Text("🕌", fontSize = 20.sp)
-            }
-            Spacer(modifier = Modifier.width(12.dp))
-            Column {
-              Text(
-                text = "Yakınımdaki Camiler",
-                fontWeight = FontWeight.Bold,
-                fontSize = 14.sp,
-                color = MaterialTheme.colorScheme.onSurface
-              )
-              Text(
-                text = "${prefs.province} / ${prefs.district} mescitleri ve canlı navigasyon",
-                fontSize = 11.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-              )
-            }
-          }
-          Text("Gör ›", fontWeight = FontWeight.Bold, fontSize = 13.sp, color = MaterialTheme.colorScheme.primary)
-        }
-      }
-    }
-
-    // 7. Smart Holiday Countdown (Ramazan'a / Ramazan Bayramı'na / Kurban Bayramı'na)
+    // 4. Smart Holiday Countdown (Ramazan'a / Ramazan Bayramı'na / Kurban Bayramı'na)
     item {
       HolidayCountdownCard(
         info = holidayInfo
       )
     }
 
-    // 8. Günün İftar Menüsü (Text-only 4 categories)
+    // 5. Günün İftar Menüsü (Text-only 4 categories)
     item {
       IftarMenuCard(
         menu = menu,
@@ -256,19 +225,19 @@ fun HomeScreen(
       )
     }
 
-    // 9. Günün Ayeti / Hadisi / Duası
+    // 6. Günün Ayeti / Hadisi / Duası
     item {
       DailySpiritualCard(
         item = spiritualItem
       )
     }
 
-    // 10. Google AdMob Banner
+    // 7. Google AdMob Banner
     item {
       AdBannerComponent()
     }
 
-    // 11. Local Privacy Statement
+    // 8. Local Privacy Statement
     item {
       PrivacyFooter()
     }
