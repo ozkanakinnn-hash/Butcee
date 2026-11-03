@@ -1,0 +1,56 @@
+name: App Screenshots
+
+on:
+  workflow_dispatch:
+  push:
+    paths: [ ".github/workflows/screenshots.yml", "scripts/take_screenshots.sh" ]
+
+permissions:
+  contents: write
+
+jobs:
+  screenshots:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+      - name: Android SDK
+        run: |
+          SDKM="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          yes | "$SDKM" --licenses > /dev/null || true
+          "$SDKM" "platforms;android-36.1" "platform-tools" || true
+      - uses: gradle/actions/setup-gradle@v5
+      - name: APK derle
+        run: ./gradlew --no-daemon assembleDebug
+      - name: KVM etkinleştir
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules && sudo udevadm trigger --name-match=kvm
+      - name: Emülatörde ekran görüntüleri
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          script: ./scripts/take_screenshots.sh
+      - uses: actions/upload-artifact@v5
+        with:
+          name: screenshots
+          path: screenshots/
+      - name: Ekran görüntülerini dala yükle
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git fetch origin ${{ github.ref_name }}
+          git checkout -B shots origin/${{ github.ref_name }}
+          rm -rf docs/screenshots && mkdir -p docs && cp -r screenshots docs/screenshots
+          git add docs/screenshots
+          git commit -m "Ekran görüntüleri [skip ci]" || exit 0
+          git push origin HEAD:${{ github.ref_name }}
