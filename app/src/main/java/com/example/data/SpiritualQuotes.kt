@@ -245,11 +245,23 @@ object SpiritualQuotes {
   fun forToday(cal: java.util.Calendar = java.util.Calendar.getInstance()): SpiritualItem {
     val ramadanDay = RamadanCalendar.dayOfRamadan(cal)
     return if (ramadanDay != null) getForDay(ramadanDay)
-    else generalList[cal.get(java.util.Calendar.DAY_OF_YEAR) % generalList.size]
+    else localized(generalList[cal.get(java.util.Calendar.DAY_OF_YEAR) % generalList.size])
+  }
+
+  /** Uygulama dili İngilizce ise metinleri İngilizce karşılıklarıyla değiştirir. */
+  fun localized(item: SpiritualItem): SpiritualItem {
+    if (!com.example.i18n.AppLanguage.isEnglish) return item
+    val en = EnglishContent.spiritual[item.day] ?: return item
+    return item.copy(
+      verseTurkish = en.verse, verseSource = en.verseSource,
+      hadithTurkish = en.hadith, hadithSource = en.hadithSource,
+      prayerTurkish = en.prayer, prayerSource = en.prayerSource,
+      esmaMeaning = en.esmaMeaning
+    )
   }
 
   fun getForDay(dayIndex: Int): SpiritualItem {
     val safeDay = ((dayIndex - 1) % list.size + list.size) % list.size
-    return list[safeDay]
+    return localized(list[safeDay])
   }
 }

@@ -261,12 +261,12 @@ object StoryImageGenerator {
       color = pal.text
       letterSpacing = 0.02f
     }
-    canvas.drawText("Günün Manevi İklimi", cx, 560f, centered)
+    canvas.drawText(com.example.i18n.t("Günün Manevi İklimi"), cx, 560f, centered)
 
     val categoryTitle = when (selectedTab) {
-      0 -> "ÂYET-İ KERÎME"
-      1 -> "HADÎS-İ ŞERÎF"
-      else -> "GÜNÜN DUASI"
+      0 -> if (com.example.i18n.AppLanguage.isEnglish) "VERSE OF THE DAY" else "ÂYET-İ KERÎME"
+      1 -> if (com.example.i18n.AppLanguage.isEnglish) "HADITH OF THE DAY" else "HADÎS-İ ŞERÎF"
+      else -> if (com.example.i18n.AppLanguage.isEnglish) "DUA OF THE DAY" else "GÜNÜN DUASI"
     }
     centered.apply {
       textSize = 30f

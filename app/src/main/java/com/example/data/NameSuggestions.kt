@@ -84,7 +84,9 @@ object NameSuggestions {
   /** Bugünün önerileri: 3 kız, 3 erkek (yılın gününe göre döner). */
   fun forToday(cal: Calendar = Calendar.getInstance()): Pair<List<NameSuggestion>, List<NameSuggestion>> {
     val d = cal.get(Calendar.DAY_OF_YEAR)
-    fun pick(list: List<NameSuggestion>) = (0 until 3).map { list[(d * 3 + it) % list.size] }
+    fun pick(list: List<NameSuggestion>) = (0 until 3).map { list[(d * 3 + it) % list.size] }.map { n ->
+      if (com.example.i18n.AppLanguage.isEnglish) n.copy(meaning = EnglishContent.nameMeanings[n.name] ?: n.meaning) else n
+    }
     return pick(girls) to pick(boys)
   }
 }

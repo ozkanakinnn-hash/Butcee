@@ -114,7 +114,7 @@ fun MenusScreen(
           )
           Spacer(modifier = Modifier.width(8.dp))
           Text(
-            text = if (com.example.i18n.AppLanguage.isEnglish) (if (com.example.data.RamadanCalendar.dayOfRamadan() != null) "Ramadan Guide & Daily Menu" else "Fasting Guide & Daily Menu") else (if (com.example.data.RamadanCalendar.dayOfRamadan() != null) "Ramazan Rehberi & Günlük Menü" else "Oruç Rehberi & Günlük Menü"),
+            text = if (com.example.i18n.AppLanguage.isEnglish) (if (com.example.data.RamadanCalendar.dayOfRamadan() != null) "Ramadan Guide & Daily Menu" else "Guide & Daily Menu") else (if (com.example.data.RamadanCalendar.dayOfRamadan() != null) "Ramazan Rehberi & Günlük Menü" else "Oruç Rehberi & Günlük Menü"),
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onBackground

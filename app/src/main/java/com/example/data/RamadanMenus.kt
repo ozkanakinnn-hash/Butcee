@@ -44,6 +44,11 @@ object RamadanMenus {
 
   fun getMenuForDay(dayIndex: Int): RamadanMenu {
     val safeDay = ((dayIndex - 1) % menus.size + menus.size) % menus.size
-    return menus[safeDay]
+    val m = menus[safeDay]
+    if (!com.example.i18n.AppLanguage.isEnglish) return m
+    return m.copy(
+      soup = EnglishContent.dish(m.soup), mainDish = EnglishContent.dish(m.mainDish),
+      sideDish = EnglishContent.dish(m.sideDish), dessert = EnglishContent.dish(m.dessert)
+    )
   }
 }

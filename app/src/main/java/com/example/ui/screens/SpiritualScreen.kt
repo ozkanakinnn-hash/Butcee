@@ -1,5 +1,6 @@
 package com.example.ui.screens
 
+import com.example.i18n.t
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -85,13 +86,13 @@ fun SpiritualScreen(
         Row(verticalAlignment = Alignment.CenterVertically) {
           Icon(
             painter = painterResource(R.drawable.ic_quran_mushaf),
-            contentDescription = "Ayet ve Dua",
+            contentDescription = t("Ayet ve Dua"),
             tint = MaterialTheme.colorScheme.primary,
             modifier = Modifier.size(26.dp)
           )
           Spacer(modifier = Modifier.width(10.dp))
           Text(
-            text = "Günün Ayet & Hadisi",
+            text = t("Günün Ayet & Hadisi"),
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onBackground
@@ -99,7 +100,7 @@ fun SpiritualScreen(
         }
         Spacer(modifier = Modifier.height(4.dp))
         Text(
-          text = "Gününüzü aydınlatacak ayet-i kerime, hadis-i şerif ve dua.",
+          text = t("Gününüzü aydınlatacak ayet-i kerime, hadis-i şerif ve dua."),
           style = MaterialTheme.typography.bodySmall,
           color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -123,7 +124,7 @@ fun SpiritualScreen(
         ) {
           Image(
             painter = painterResource(R.drawable.ic_quran_rahle),
-            contentDescription = "Kur'an-ı Kerim ve Rahle",
+            contentDescription = t("Kur'an-ı Kerim ve Rahle"),
             modifier = Modifier
               .size(64.dp)
               .clip(RoundedCornerShape(14.dp)),
@@ -132,14 +133,14 @@ fun SpiritualScreen(
           Spacer(modifier = Modifier.width(14.dp))
           Column {
             Text(
-              text = "Mübarek Kur'an İklimi",
+              text = t("Mübarek Kur'an İklimi"),
               fontWeight = FontWeight.Bold,
               fontSize = 14.sp,
               color = MaterialTheme.colorScheme.primary
             )
             Spacer(modifier = Modifier.height(2.dp))
             Text(
-              text = "“Kur'an okuyunuz; zira o, kıyamet gününde okuyanlarına şefaatçi olarak gelecektir.”",
+              text = t("“Kur'an okuyunuz; zira o, kıyamet gününde okuyanlarına şefaatçi olarak gelecektir.”"),
               fontSize = 11.sp,
               fontStyle = FontStyle.Italic,
               color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -190,7 +191,7 @@ fun SpiritualScreen(
               ) {
                 Icon(
                   imageVector = Icons.Default.Share,
-                  contentDescription = "Hikaye Olarak Paylaş",
+                  contentDescription = t("Hikaye Olarak Paylaş"),
                   tint = MaterialTheme.colorScheme.primary,
                   modifier = Modifier.size(18.dp)
                 )
@@ -214,7 +215,7 @@ fun SpiritualScreen(
               ) {
                 Icon(
                   imageVector = Icons.Default.ContentCopy,
-                  contentDescription = "Kopyala",
+                  contentDescription = t("Kopyala"),
                   tint = MaterialTheme.colorScheme.primary,
                   modifier = Modifier.size(18.dp)
                 )
@@ -226,7 +227,7 @@ fun SpiritualScreen(
 
           // 1. Ayet
           Text(
-            text = "📖 GÜNÜN AYETİ",
+            text = t("📖 GÜNÜN AYETİ"),
             fontSize = 11.sp,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.primary
@@ -264,7 +265,7 @@ fun SpiritualScreen(
 
           // 2. Hadis
           Text(
-            text = "💬 GÜNÜN HADİSİ",
+            text = t("💬 GÜNÜN HADİSİ"),
             fontSize = 11.sp,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.secondary
@@ -292,7 +293,7 @@ fun SpiritualScreen(
 
           // 3. Dua
           Text(
-            text = "🤲 GÜNÜN DUASI",
+            text = t("🤲 GÜNÜN DUASI"),
             fontSize = 11.sp,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.primary

@@ -237,6 +237,21 @@ object QuranData {
   }
 
   fun getSurahDetailContent(surahNumber: Int, surahName: String): SurahDetailContent {
+    val tr = getSurahDetailContentTr(surahNumber, surahName)
+    if (!com.example.i18n.AppLanguage.isEnglish) return tr
+    val en = EnglishContent.surahTexts[surahNumber]
+    return if (en != null) tr.copy(fullPronunciation = en.first, fullTranslation = en.second)
+    else tr.copy(
+      fullPronunciation = "English transliteration for this surah will be added soon.",
+      fullTranslation = "The English meaning of this surah will be added soon."
+    )
+  }
+
+  /** İngilizce sure adı anlamı (dil English ise), aksi halde Türkçe anlam. */
+  fun meaningOf(surah: SurahInfo): String =
+    if (com.example.i18n.AppLanguage.isEnglish) EnglishContent.surahMeaning(surah.number) ?: surah.meaningTurkish else surah.meaningTurkish
+
+  private fun getSurahDetailContentTr(surahNumber: Int, surahName: String): SurahDetailContent {
     return when (surahNumber) {
       1 -> SurahDetailContent(
         fullArabic = "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ ﴿١﴾ الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ ﴿٢﴾ الرَّحْمَٰنِ الرَّحِيمِ ﴿٣﴾ مَالِكِ يَوْمِ الدِّينِ ﴿٤﴾ إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ ﴿٥﴾ اهْدِنَا الصِّرَاطَ الْمُسْتَقِيمَ ﴿٦﴾ صِرَاطَ الَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ الْمَغْضُوبِ عَلَيْهِمْ وَلَا الضَّالِّينَ ﴿٧﴾",

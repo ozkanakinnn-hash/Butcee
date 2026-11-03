@@ -1,5 +1,6 @@
 package com.example.ui.screens
 
+import com.example.i18n.t
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -62,6 +63,7 @@ fun QuranScreen(
     else QuranData.surahs.filter {
       it.nameTurkish.contains(searchQuery, ignoreCase = true) ||
         it.meaningTurkish.contains(searchQuery, ignoreCase = true) ||
+        com.example.data.QuranData.meaningOf(it).contains(searchQuery, ignoreCase = true) ||
         it.juzRangeStr.contains(searchQuery, ignoreCase = true) ||
         it.number.toString() == searchQuery.trim()
     }
@@ -82,7 +84,7 @@ fun QuranScreen(
         verticalAlignment = Alignment.CenterVertically
       ) {
         IconButton(onClick = onNavigateBack) {
-          Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Geri")
+          Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = t("Geri"))
         }
         Spacer(modifier = Modifier.width(4.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -95,13 +97,13 @@ fun QuranScreen(
           Spacer(modifier = Modifier.width(8.dp))
           Column {
             Text(
-              text = "Kur'an-ı Kerîm",
+              text = t("Kur'an-ı Kerîm"),
               style = MaterialTheme.typography.titleLarge,
               fontWeight = FontWeight.Bold,
               color = MaterialTheme.colorScheme.onBackground
             )
             Text(
-              text = "114 Sure • 30 Cüz • Orijinal Sıralama",
+              text = t("114 Sure • 30 Cüz • Orijinal Sıralama"),
               style = MaterialTheme.typography.bodySmall,
               color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -115,14 +117,14 @@ fun QuranScreen(
       OutlinedTextField(
         value = searchQuery,
         onValueChange = { searchQuery = it },
-        placeholder = { Text("Sure adı, cüz no veya anlam ara (Örn: Yasin, 30. Cüz)...") },
+        placeholder = { Text(t("Sure adı, cüz no veya anlam ara (Örn: Yasin, 30. Cüz)...")) },
         leadingIcon = {
           Icon(imageVector = Icons.Default.Search, contentDescription = null)
         },
         trailingIcon = {
           if (searchQuery.isNotBlank()) {
             IconButton(onClick = { searchQuery = "" }) {
-              Icon(imageVector = Icons.Default.Clear, contentDescription = "Temizle")
+              Icon(imageVector = Icons.Default.Clear, contentDescription = t("Temizle"))
             }
           }
         },
@@ -214,7 +216,8 @@ fun QuranScreen(
 
               Spacer(modifier = Modifier.height(2.dp))
               Text(
-                text = "${surah.meaningTurkish} • ${surah.totalVerses} Ayet • ${surah.revelationType}",
+                text = if (com.example.i18n.AppLanguage.isEnglish) "${com.example.data.QuranData.meaningOf(surah)} • ${surah.totalVerses} verses • ${if (surah.revelationType.startsWith("Mek")) "Meccan" else "Medinan"}"
+                  else "${surah.meaningTurkish} • ${surah.totalVerses} Ayet • ${surah.revelationType}",
                 fontSize = 11.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
               )
