@@ -101,7 +101,7 @@ fun SurahDetailScreen(
               color = MaterialTheme.colorScheme.onBackground
             )
             Text(
-              text = "${surah.juzRangeStr} • ${surah.revelationType} • ${surah.totalVerses} Ayet",
+              text = "${com.example.data.QuranData.juzLabel(surah)} • ${com.example.data.QuranData.revelationLabel(surah)} • ${surah.totalVerses} " + (if (com.example.i18n.AppLanguage.isEnglish) "verses" else "Ayet"),
               style = MaterialTheme.typography.bodySmall,
               color = MaterialTheme.colorScheme.primary,
               fontWeight = FontWeight.SemiBold
@@ -183,7 +183,7 @@ fun SurahDetailScreen(
           )
           Spacer(modifier = Modifier.height(2.dp))
           Text(
-            text = "Kur'an-ı Kerim ${surah.juzRangeStr} • Sıra No: ${surah.number}",
+            text = if (com.example.i18n.AppLanguage.isEnglish) "The Holy Quran • ${com.example.data.QuranData.juzLabel(surah)} • No. ${surah.number}" else "Kur'an-ı Kerim ${surah.juzRangeStr} • Sıra No: ${surah.number}",
             fontSize = 11.sp,
             color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
           )

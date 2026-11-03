@@ -29,6 +29,10 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.drawscope.clipPath
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.draw.blur
+import androidx.compose.foundation.layout.BoxWithConstraints
 import com.example.R
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.layout.ContentScale
@@ -185,61 +189,82 @@ fun WelcomeBanner(
         )
       }
 
-      // 2. Metnin okunması için alttan koyulaşan perde
+      // 2. Alt kısımda isim okunsun diye hafif koyulaşma
       Box(
         modifier = Modifier
           .fillMaxSize()
           .background(
             Brush.verticalGradient(
-              0.0f to Color.Black.copy(alpha = 0.15f),
-              0.45f to Color.Transparent,
-              1.0f to Color.Black.copy(alpha = 0.82f)
+              0.0f to Color.Transparent,
+              0.6f to Color.Transparent,
+              1.0f to Color.Black.copy(alpha = 0.65f)
             )
           )
       )
 
-      // 3. ÖN PLAN METİNLERİ
-      Column(
-        modifier = Modifier
-          .fillMaxSize()
-          .padding(12.dp)
-      ) {
-        Row(
-          modifier = Modifier
-            .clip(RoundedCornerShape(10.dp))
-            .background(Color.Black.copy(alpha = 0.35f))
-            .border(1.dp, Color(0xFFE5B869).copy(alpha = 0.6f), RoundedCornerShape(10.dp))
-            .padding(horizontal = 8.dp, vertical = 3.dp),
-          verticalAlignment = Alignment.CenterVertically
-        ) {
-          Text("🕌", fontSize = 11.sp)
-          Spacer(modifier = Modifier.width(4.dp))
-          Text(
-            text = t("Tarihi Camiler"),
-            fontSize = 10.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color(0xFFE5B869)
+      // 3. Orta-altta buzlu cam (şeffaf, bulanık) panel üzerinde günün mesajı
+      val message = remember(com.example.i18n.AppLanguage.current) {
+        com.example.data.DailyMessages.today(com.example.i18n.AppLanguage.isEnglish)
+      }
+      BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+        val panelTop = maxHeight * 0.50f
+        val panelBottom = maxHeight * 0.84f
+        val side = 10.dp
+        // Fotoğrafın bulanık kopyası yalnızca panel alanında çizilir (Android 12+ gerçek bulanıklık)
+        if (photo != null) {
+          Image(
+            painter = painterResource(photo),
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+              .fillMaxSize()
+              .drawWithContent {
+                val l = side.toPx(); val r = size.width - side.toPx()
+                val tp = panelTop.toPx(); val bt = panelBottom.toPx()
+                val path = androidx.compose.ui.graphics.Path().apply {
+                  addRoundRect(androidx.compose.ui.geometry.RoundRect(l, tp, r, bt, androidx.compose.ui.geometry.CornerRadius(16.dp.toPx())))
+                }
+                clipPath(path) { this@drawWithContent.drawContent() }
+              }
+              .blur(18.dp)
           )
         }
-
-        Spacer(modifier = Modifier.weight(1f))
-
+        Box(
+          modifier = Modifier
+            .padding(start = side, end = side, top = panelTop)
+            .fillMaxWidth()
+            .height(panelBottom - panelTop)
+            .clip(RoundedCornerShape(16.dp))
+            .background(Color.White.copy(alpha = 0.16f))
+            .border(1.dp, Color.White.copy(alpha = 0.28f), RoundedCornerShape(16.dp))
+            .padding(horizontal = 10.dp, vertical = 8.dp),
+          contentAlignment = Alignment.Center
+        ) {
+          Text(
+            text = "“$message”",
+            fontSize = 12.sp,
+            lineHeight = 16.sp,
+            fontWeight = FontWeight.SemiBold,
+            fontStyle = FontStyle.Italic,
+            color = Color.White,
+            textAlign = TextAlign.Center,
+            maxLines = 4,
+            overflow = TextOverflow.Ellipsis
+          )
+        }
+        // 4. En altta küçük yazıyla cami adı
         Text(
           text = todayMosque.mosqueName,
-          fontSize = 15.sp,
-          lineHeight = 18.sp,
-          fontWeight = FontWeight.Bold,
-          color = Color.White,
-          maxLines = 2,
-          overflow = TextOverflow.Ellipsis
-        )
-        Text(
-          text = t(todayMosque.titleDesc),
-          fontSize = 10.sp,
+          fontSize = 9.sp,
           fontWeight = FontWeight.Medium,
-          color = Color(0xFFFFD56B),
-          maxLines = 2,
-          overflow = TextOverflow.Ellipsis
+          color = Color.White.copy(alpha = 0.85f),
+          maxLines = 1,
+          overflow = TextOverflow.Ellipsis,
+          textAlign = TextAlign.Center,
+          modifier = Modifier
+            .align(Alignment.BottomCenter)
+            .fillMaxWidth()
+            .padding(horizontal = 8.dp, vertical = 7.dp)
         )
       }
     }

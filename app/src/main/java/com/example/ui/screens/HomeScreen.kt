@@ -74,6 +74,7 @@ fun HomeScreen(
   onOpenAllMenus: () -> Unit,
   onOpenQibla: () -> Unit,
   onOpenMosques: () -> Unit,
+  onOpenZikirmatik: () -> Unit = {},
   onFireCannon: () -> Unit,
   modifier: Modifier = Modifier
 ) {
@@ -139,6 +140,24 @@ fun HomeScreen(
             }
           }
         Row(verticalAlignment = Alignment.CenterVertically) {
+          // Zikirmatik kısayolu (tesbih ikonu)
+          Box(
+            modifier = Modifier
+              .size(40.dp)
+              .clip(CircleShape)
+              .background(MaterialTheme.colorScheme.primaryContainer)
+              .clickable { onOpenZikirmatik() }
+              .testTag("shortcut_zikirmatik_button"),
+            contentAlignment = Alignment.Center
+          ) {
+            Icon(
+              painter = painterResource(R.drawable.ic_tasbih),
+              contentDescription = if (com.example.i18n.AppLanguage.isEnglish) "Tasbih counter" else "Zikirmatik",
+              tint = MaterialTheme.colorScheme.primary,
+              modifier = Modifier.size(22.dp)
+            )
+          }
+          Spacer(modifier = Modifier.width(8.dp))
           // Kıble Bulucu kısayolu (Kâbe ikonu)
           Box(
             modifier = Modifier

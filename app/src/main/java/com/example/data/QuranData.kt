@@ -247,6 +247,13 @@ object QuranData {
     )
   }
 
+  /** "1 - 3. Cüz" -> İngilizcede "Juz 1 - 3" */
+  fun juzLabel(surah: SurahInfo): String =
+    if (com.example.i18n.AppLanguage.isEnglish) "Juz " + surah.juzRangeStr.removeSuffix(". Cüz") else surah.juzRangeStr
+
+  fun revelationLabel(surah: SurahInfo): String =
+    if (com.example.i18n.AppLanguage.isEnglish) (if (surah.revelationType.startsWith("Mek")) "Meccan" else "Medinan") else surah.revelationType
+
   /** İngilizce sure adı anlamı (dil English ise), aksi halde Türkçe anlam. */
   fun meaningOf(surah: SurahInfo): String =
     if (com.example.i18n.AppLanguage.isEnglish) EnglishContent.surahMeaning(surah.number) ?: surah.meaningTurkish else surah.meaningTurkish

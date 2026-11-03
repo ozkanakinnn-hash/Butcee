@@ -58,6 +58,8 @@ fun MoreHubScreen(
   onOpenNotes: () -> Unit,
   onOpenSettings: () -> Unit,
   onOpenRadioTv: () -> Unit = {},
+  onOpenZikirmatik: () -> Unit = {},
+  onOpenEsma: () -> Unit = {},
   modifier: Modifier = Modifier
 ) {
   LazyColumn(
@@ -157,6 +159,31 @@ fun MoreHubScreen(
           subtitle = t("Mescid-i Haram\nCanlı Yayın"),
           emoji = "🕋",
           onClick = onOpenRadioTv,
+          modifier = Modifier.weight(1f)
+        )
+      }
+    }
+
+    // Zikirmatik & Esmâü'l-Hüsnâ
+    item {
+      Row(
+        modifier = Modifier
+          .fillMaxWidth()
+          .padding(horizontal = 16.dp, vertical = 6.dp),
+        horizontalArrangement = Arrangement.spacedBy(10.dp)
+      ) {
+        HubCard(
+          title = t("Zikirmatik"),
+          subtitle = t("Serbest • 33 • 99\nTesbihat"),
+          emoji = "📿",
+          onClick = onOpenZikirmatik,
+          modifier = Modifier.weight(1f)
+        )
+        HubCard(
+          title = t("Esmâü'l-Hüsnâ"),
+          subtitle = t("Allah'ın 99 ismi\nAnlamlarıyla"),
+          emoji = "✨",
+          onClick = onOpenEsma,
           modifier = Modifier.weight(1f)
         )
       }

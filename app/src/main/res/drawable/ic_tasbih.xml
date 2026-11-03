@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Tesbih (zikirmatik) ikonu: boncuk halkası ve püskül -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp" android:height="24dp" android:viewportWidth="24" android:viewportHeight="24">
+    <path android:fillColor="#FF000000" android:pathData="M12,2.2a1.6,1.6 0 1,1 -0.01,0z" />
+    <path android:fillColor="#FF000000" android:pathData="M16.4,3.6a1.6,1.6 0 1,1 -0.01,0z" />
+    <path android:fillColor="#FF000000" android:pathData="M19.2,7.3a1.6,1.6 0 1,1 -0.01,0z" />
+    <path android:fillColor="#FF000000" android:pathData="M19.4,11.9a1.6,1.6 0 1,1 -0.01,0z" />
+    <path android:fillColor="#FF000000" android:pathData="M7.6,3.6a1.6,1.6 0 1,1 -0.01,0z" />
+    <path android:fillColor="#FF000000" android:pathData="M4.8,7.3a1.6,1.6 0 1,1 -0.01,0z" />
+    <path android:fillColor="#FF000000" android:pathData="M4.6,11.9a1.6,1.6 0 1,1 -0.01,0z" />
+    <path android:fillColor="#FF000000" android:pathData="M6.9,15.6a1.6,1.6 0 1,1 -0.01,0z" />
+    <path android:fillColor="#FF000000" android:pathData="M17.1,15.6a1.6,1.6 0 1,1 -0.01,0z" />
+    <!-- İmame ve püskül -->
+    <path android:fillColor="#FF000000" android:pathData="M10.6,16.6 L13.4,16.6 L13,18.8 L11,18.8 Z" />
+    <path android:strokeColor="#FF000000" android:strokeWidth="1.2" android:strokeLineCap="round" android:pathData="M12,18.8 L12,22.2 M12,19.5 L10.4,22 M12,19.5 L13.6,22" />
+</vector>

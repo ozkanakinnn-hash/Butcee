@@ -140,7 +140,7 @@ fun QuranScreen(
     // Surahs count subtitle
     item {
       Text(
-        text = "Kur'an Sırasına Göre Sureler (${filteredSurahs.size})",
+        text = if (com.example.i18n.AppLanguage.isEnglish) "Surahs in Quran order (${filteredSurahs.size})" else "Kur'an Sırasına Göre Sureler (${filteredSurahs.size})",
         style = MaterialTheme.typography.titleSmall,
         fontWeight = FontWeight.Bold,
         color = MaterialTheme.colorScheme.primary,
@@ -206,7 +206,7 @@ fun QuranScreen(
                     .padding(horizontal = 6.dp, vertical = 2.dp)
                 ) {
                   Text(
-                    text = surah.juzRangeStr,
+                    text = com.example.data.QuranData.juzLabel(surah),
                     fontSize = 10.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.primary
