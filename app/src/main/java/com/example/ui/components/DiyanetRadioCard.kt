@@ -125,11 +125,12 @@ fun DiyanetRadioCard(modifier: Modifier = Modifier) {
     c.play()
   }
 
-  fun stop() {
-    controller?.run {
-      stop()
-      clearMediaItems()
-    }
+  // DİKKAT: `controller?.run { stop() }` yazılmamalı — run bloğu içinde `stop()` bu yerel
+  // fonksiyona çözülür ve kendini sonsuza dek çağırır (StackOverflowError ile çökme).
+  fun stopPlayback() {
+    val c = controller ?: return
+    c.stop()
+    c.clearMediaItems()
   }
 
   val active = isPlaying || isBuffering
@@ -151,7 +152,7 @@ fun DiyanetRadioCard(modifier: Modifier = Modifier) {
             .size(54.dp)
             .clip(CircleShape)
             .background(MaterialTheme.colorScheme.primary)
-            .clickable(enabled = controller != null) { if (active) stop() else play(selected) }
+            .clickable(enabled = controller != null) { if (active) stopPlayback() else play(selected) }
             .testTag("radio_play_button"),
           contentAlignment = Alignment.Center
         ) {

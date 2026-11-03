@@ -53,3 +53,7 @@ gradle/actions/setup-gradle@v5 → `./gradlew assembleDebug` → upload-artifact
 - **Alt menü hizası**: tüm ikonlar aynı boyut (24dp), etiketler `maxLines = 1, softWrap = false`.
 - **Instagram Hikâyesi**: `com.instagram.share.ADD_TO_STORY` Meta App ID ister; yoksa `ACTION_SEND` + `setPackage("com.instagram.android")`. Manifest'e `<queries>` ekle.
 - **Ramazan tarihleri** yıla göre değişir; sabit tarih yerine yıl tablosu (`RamadanCalendar`) kullan.
+- **Kotlin tuzağı — yerel fonksiyon gölgelemesi**: Composable içinde `fun stop()` tanımlayıp `controller?.run { stop() }` yazmak, `run` bloğunda bile YEREL `stop()`'u çağırır → sonsuz özyineleme, `StackOverflowError`. Yerel fonksiyonlara alıcı üyeleriyle aynı adı verme (`stopPlayback`), alıcıyı açık yaz (`c.stop()`).
+- **Gerçek cihaz testi olmadan doğrulama**: GitHub Actions'ta `reactivecircus/android-emulator-runner` ile emülatör aç, `adb` ile tıkla (uiautomator dump + metne göre dokunma), `screencap` ile ekran görüntüsü ve `logcat -b crash` ile çökme izi al; sonuçları `[skip ci]` commit'iyle dala yaz (scripts/take_screenshots.sh).
+- **Kullanıcıdaki çökmeler için**: `Thread.setDefaultUncaughtExceptionHandler` ile yığın izini dosyaya yaz, sonraki açılışta "Raporu Kopyala" diyaloğu göster (util/CrashReporter.kt).
+- **Canlı yayın adresi doğrulama**: sandbox çoğu alana erişemez; CI'da curl ile playlist → alt playlist → segment zincirini test et, resmi sitenin HTML'indeki `live_stream_url` değerini oku.
