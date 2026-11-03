@@ -1,53 +1,42 @@
---------- beginning of crash
-11-03 16:23:36.937  1756  2266 F libc    : Fatal signal 4 (SIGILL), code 2 (ILL_ILLOPN), fault addr 0x7b4e775b8573 in tid 2266 (BG Thread #2), pid 1756 (earchbox:search)
-11-03 16:23:43.229  3268  3268 F DEBUG   : *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** ***
-11-03 16:23:43.229  3268  3268 F DEBUG   : Build fingerprint: 'google/sdk_gphone64_x86_64/emu64xa:14/UE1A.230829.050/12077443:userdebug/dev-keys'
-11-03 16:23:43.230  3268  3268 F DEBUG   : Revision: '0'
-11-03 16:23:43.230  3268  3268 F DEBUG   : ABI: 'x86_64'
-11-03 16:23:43.230  3268  3268 F DEBUG   : Timestamp: 2026-11-03 16:23:37.393909848+0000
-11-03 16:23:43.230  3268  3268 F DEBUG   : Process uptime: 11s
-11-03 16:23:43.230  3268  3268 F DEBUG   : Cmdline: com.google.android.googlequicksearchbox:search
-11-03 16:23:43.230  3268  3268 F DEBUG   : pid: 1756, tid: 2266, name: BG Thread #2  >>> com.google.android.googlequicksearchbox:search <<<
-11-03 16:23:43.230  3268  3268 F DEBUG   : uid: 10132
-11-03 16:23:43.230  3268  3268 F DEBUG   : signal 4 (SIGILL), code 2 (ILL_ILLOPN), fault addr 0x00007b4e775b8573
-11-03 16:23:43.230  3268  3268 F DEBUG   :     rax 0000000000000000  rbx 0000000000000003  rcx ea8ee05b18e52e7a  rdx 0000000000000000
-11-03 16:23:43.230  3268  3268 F DEBUG   :     r8  ffffffffffffffff  r9  00007fff3f7ce0a0  r10 00000000000049a6  r11 0000000000000217
-11-03 16:23:43.230  3268  3268 F DEBUG   :     r12 00007b4e663424aa  r13 00007b4e6d20a344  r14 00007b4fdde539b0  r15 0000000000000000
-11-03 16:23:43.230  3268  3268 F DEBUG   :     rdi 00007b4e7c049f20  rsi 0000000000000000
-11-03 16:23:43.230  3268  3268 F DEBUG   :     rbp 00007b4e6d20a230  rsp 00007b4e6d20a080  rip 00007b4e775b8573
-11-03 16:23:43.230  3268  3268 F DEBUG   : 34 total frames
-11-03 16:23:43.230  3268  3268 F DEBUG   : backtrace:
-11-03 16:23:43.230  3268  3268 F DEBUG   :       #00 pc 00000000028a2573  /data/app/~~A6571UVXAvoES4OpjoABPQ==/com.google.android.trichromelibrary_567263637-f5GGwvhvAKu_pc1DxFXfbQ==/TrichromeLibrary.apk!libmonochrome_64.so (offset 0x89b000) (BuildId: 0808498ff97b3353fd7cdb68725c85232b4ce202)
-11-03 16:23:43.230  3268  3268 F DEBUG   :       #01 pc 00000000028a0377  /data/app/~~A6571UVXAvoES4OpjoABPQ==/com.google.android.trichromelibrary_567263637-f5GGwvhvAKu_pc1DxFXfbQ==/TrichromeLibrary.apk!libmonochrome_64.so (offset 0x89b000) (Java_J_N_M81WqFvs+87) (BuildId: 0808498ff97b3353fd7cdb68725c85232b4ce202)
-11-03 16:23:43.230  3268  3268 F DEBUG   :       #02 pc 0000000000391a4b  /apex/com.android.art/lib64/libart.so (art_quick_generic_jni_trampoline+219) (BuildId: b6dc79e02101ea00827a35a55ab6597a)
-11-03 16:23:43.230  3268  3268 F DEBUG   :       #03 pc 000000000036ec95  /apex/com.android.art/lib64/libart.so (nterp_helper+165) (BuildId: b6dc79e02101ea00827a35a55ab6597a)
-11-03 16:23:43.230  3268  3268 F DEBUG   :       #04 pc 00000000001824aa  /data/app/~~DU_3WdEEr_EMY-MXg12pLQ==/com.google.android.webview-BZosW14pqG9e6ICHarVg0A==/WebViewGoogle.apk (gP.d+210)
-11-03 16:23:43.230  3268  3268 F DEBUG   :       #05 pc 000000000036fa88  /apex/com.android.art/lib64/libart.so (nterp_helper+3736) (BuildId: b6dc79e02101ea00827a35a55ab6597a)
-11-03 16:23:43.230  3268  3268 F DEBUG   :       #06 pc 000000000018239e  /data/app/~~DU_3WdEEr_EMY-MXg12pLQ==/com.google.android.webview-BZosW14pqG9e6ICHarVg0A==/WebViewGoogle.apk (gP.b+38)
-11-03 16:23:43.230  3268  3268 F DEBUG   :       #07 pc 000000000036fa88  /apex/com.android.art/lib64/libart.so (nterp_helper+3736) (BuildId: b6dc79e02101ea00827a35a55ab6597a)
-11-03 16:23:43.230  3268  3268 F DEBUG   :       #08 pc 00000000000f05ee  /data/app/~~DU_3WdEEr_EMY-MXg12pLQ==/com.google.android.webview-BZosW14pqG9e6ICHarVg0A==/WebViewGoogle.apk (ta.<init>+18)
-11-03 16:23:43.230  3268  3268 F DEBUG   :       #09 pc 000000000036fa88  /apex/com.android.art/lib64/libart.so (nterp_helper+3736) (BuildId: b6dc79e02101ea00827a35a55ab6597a)
-11-03 16:23:43.230  3268  3268 F DEBUG   :       #10 pc 000000000026df8a  /data/app/~~DU_3WdEEr_EMY-MXg12pLQ==/com.google.android.webview-BZosW14pqG9e6ICHarVg0A==/WebViewGoogle.apk (com.android.webview.chromium.WebViewChromiumFactoryProvider.getCookieManager+26)
-11-03 16:23:43.230  3268  3268 F DEBUG   :       #11 pc 00000000007acc5a  /system/framework/x86_64/boot-framework.oat (android.webkit.CookieManager.getInstance+74) (BuildId: e4c2202f7e80276bcdbfa046249d896342205aa9)
-11-03 16:23:43.230  3268  3268 F DEBUG   :       #12 pc 000000000036ec95  /apex/com.android.art/lib64/libart.so (nterp_helper+165) (BuildId: b6dc79e02101ea00827a35a55ab6597a)
-11-03 16:23:43.230  3268  3268 F DEBUG   :       #13 pc 0000000000437b1a  /product/priv-app/Velvet/Velvet.apk (com.google.android.libraries.web.webview.i.a.a.a.invokeSuspend+10)
-11-03 16:23:43.230  3268  3268 F DEBUG   :       #14 pc 000000000036fa88  /apex/com.android.art/lib64/libart.so (nterp_helper+3736) (BuildId: b6dc79e02101ea00827a35a55ab6597a)
-11-03 16:23:43.230  3268  3268 F DEBUG   :       #15 pc 00000000000da95e  /product/priv-app/Velvet/Velvet.apk (i.c.b.a.a.resumeWith+26)
-11-03 16:23:43.230  3268  3268 F DEBUG   :       #16 pc 00000000003707e5  /apex/com.android.art/lib64/libart.so (nterp_helper+7157) (BuildId: b6dc79e02101ea00827a35a55ab6597a)
-11-03 16:23:43.230  3268  3268 F DEBUG   :       #17 pc 0000000000147c9c  /product/priv-app/Velvet/Velvet.apk (kotlinx.coroutines.bk.run+216)
-11-03 16:23:43.230  3268  3268 F DEBUG   :       #18 pc 00000000003707e5  /apex/com.android.art/lib64/libart.so (nterp_helper+7157) (BuildId: b6dc79e02101ea00827a35a55ab6597a)
-11-03 16:23:43.230  3268  3268 F DEBUG   :       #19 pc 0000000000504188  /product/priv-app/Velvet/Velvet.apk (com.google.apps.tiktok.coroutines.f.run+4)
-11-03 16:23:43.230  3268  3268 F DEBUG   :       #20 pc 00000000003707e5  /apex/com.android.art/lib64/libart.so (nterp_helper+7157) (BuildId: b6dc79e02101ea00827a35a55ab6597a)
-11-03 16:23:43.230  3268  3268 F DEBUG   :       #21 pc 00000000003bcef0  /product/priv-app/Velvet/Velvet.apk (com.google.android.libraries.i.ae.run+4)
-11-03 16:23:43.230  3268  3268 F DEBUG   :       #22 pc 00000000002f2a29  /system/framework/x86_64/boot.oat (java.util.concurrent.ThreadPoolExecutor.runWorker+857) (BuildId: c78b6b6270062f2e659e76e5f8dac6d757f47ca6)
-11-03 16:23:43.230  3268  3268 F DEBUG   :       #23 pc 00000000002ef4f4  /system/framework/x86_64/boot.oat (java.util.concurrent.ThreadPoolExecutor$Worker.run+68) (BuildId: c78b6b6270062f2e659e76e5f8dac6d757f47ca6)
-11-03 16:23:43.230  3268  3268 F DEBUG   :       #24 pc 000000000037084a  /apex/com.android.art/lib64/libart.so (nterp_helper+7258) (BuildId: b6dc79e02101ea00827a35a55ab6597a)
-11-03 16:23:43.230  3268  3268 F DEBUG   :       #25 pc 00000000003c058a  /product/priv-app/Velvet/Velvet.apk (com.google.android.libraries.i.k.run+14)
-11-03 16:23:43.230  3268  3268 F DEBUG   :       #26 pc 00000000003707e5  /apex/com.android.art/lib64/libart.so (nterp_helper+7157) (BuildId: b6dc79e02101ea00827a35a55ab6597a)
-11-03 16:23:43.230  3268  3268 F DEBUG   :       #27 pc 00000000003c0a5e  /product/priv-app/Velvet/Velvet.apk (com.google.android.libraries.i.p.run+46)
-11-03 16:23:43.230  3268  3268 F DEBUG   :       #28 pc 0000000000175324  /system/framework/x86_64/boot.oat (java.lang.Thread.run+84) (BuildId: c78b6b6270062f2e659e76e5f8dac6d757f47ca6)
-11-03 16:23:43.230  3268  3268 F DEBUG   :       #29 pc 00000000003784c4  /apex/com.android.art/lib64/libart.so (art_quick_invoke_stub+756) (BuildId: b6dc79e02101ea00827a35a55ab6597a)
-11-03 16:23:43.230  3268  3268 F DEBUG   :       #30 pc 00000000003c535c  /apex/com.android.art/lib64/libart.so (art::ArtMethod::Invoke(art::Thread*, unsigned int*, unsigned int, art::JValue*, char const*)+204) (BuildId: b6dc79e02101ea00827a35a55ab6597a)
-11-03 16:23:43.230  3268  3268 F DEBUG   :       #31 pc 0000000000853176  /apex/com.android.art/lib64/libart.so (art::Thread::CreateCallback(void*)+1510) (BuildId: b6dc79e02101ea00827a35a55ab6597a)
-11-03 16:23:43.230  3268  3268 F DEBUG   :       #32 pc 00000000000cd06a  /apex/com.android.runtime/lib64/bionic/libc.so (__pthread_start(void*)+58) (BuildId: fa337969c798946280caa45e2d71a2e7)
-11-03 16:23:43.230  3268  3268 F DEBUG   :       #33 pc 0000000000062d88  /apex/com.android.runtime/lib64/bionic/libc.so (__start_thread+56) (BuildId: fa337969c798946280caa45e2d71a2e7)
+  * ServiceRecord{9ef654e u0 com.abacusai.ramazanrehberi.t1793533738/com.example.radio.RadioPlaybackService}
+  * ServiceRecord{6571c1b u0 com.abacusai.ramazanrehberi.t1793533738/org.chromium.content.app.SandboxedProcessService0:0}
+11-03 16:36:51.555   522   921 I AppsFilter: interaction: PackageSetting{2311470 com.abacusai.ramazanrehberi.t1793533738/10192} -> PackageSetting{7709cec com.google.android.uwb.resources/10178} BLOCKED
+11-03 16:36:51.555   522   921 I AppsFilter: interaction: PackageSetting{2311470 com.abacusai.ramazanrehberi.t1793533738/10192} -> PackageSetting{b22f8da com.android.cts.ctsshim/10183} BLOCKED
+11-03 16:36:51.556   522   921 I AppsFilter: interaction: PackageSetting{2311470 com.abacusai.ramazanrehberi.t1793533738/10192} -> PackageSetting{54ae8b5 com.google.android.wifi.resources/10188} BLOCKED
+11-03 16:36:51.556   522   921 I AppsFilter: interaction: PackageSetting{2311470 com.abacusai.ramazanrehberi.t1793533738/10192} -> PackageSetting{4ca6b4a com.google.android.wifi.dialog/10189} BLOCKED
+11-03 16:36:51.556   522   921 I AppsFilter: interaction: PackageSetting{2311470 com.abacusai.ramazanrehberi.t1793533738/10192} -> PackageSetting{c1c6abb com.google.android.apps.wallpaper/10161} BLOCKED
+11-03 16:36:51.556   522   921 I AppsFilter: interaction: PackageSetting{2311470 com.abacusai.ramazanrehberi.t1793533738/10192} -> PackageSetting{8409bd8 com.google.android.odad/10122} BLOCKED
+11-03 16:36:51.556   522   921 I AppsFilter: interaction: PackageSetting{2311470 com.abacusai.ramazanrehberi.t1793533738/10192} -> PackageSetting{40e5b31 com.android.settings.auto_generated_rro_product__/10028} BLOCKED
+11-03 16:36:51.556   522   921 I AppsFilter: interaction: PackageSetting{2311470 com.abacusai.ramazanrehberi.t1793533738/10192} -> PackageSetting{2cbf216 com.android.internal.systemui.navbar.gestural/10051} BLOCKED
+11-03 16:36:51.556   522   921 I AppsFilter: interaction: PackageSetting{2311470 com.abacusai.ramazanrehberi.t1793533738/10192} -> PackageSetting{f4d5e0f com.google.android.apps.youtube.music/10156} BLOCKED
+11-03 16:36:51.556   522   921 I AppsFilter: interaction: PackageSetting{2311470 com.abacusai.ramazanrehberi.t1793533738/10192} -> PackageSetting{79cf797 com.android.bluetoothmidiservice/10106} BLOCKED
+11-03 16:36:51.556   522   921 I AppsFilter: interaction: PackageSetting{2311470 com.abacusai.ramazanrehberi.t1793533738/10192} -> PackageSetting{70f9d84 com.android.storagemanager.auto_generated_rro_product__/10026} BLOCKED
+11-03 16:36:51.556   522   921 I AppsFilter: interaction: PackageSetting{2311470 com.abacusai.ramazanrehberi.t1793533738/10192} -> PackageSetting{5286f70 com.google.android.cellbroadcastreceiver/10181} BLOCKED
+11-03 16:36:51.556   522   921 I AppsFilter: interaction: PackageSetting{2311470 com.abacusai.ramazanrehberi.t1793533738/10192} -> PackageSetting{bbc796d com.android.phone.auto_generated_rro_product__/10061} BLOCKED
+11-03 16:36:51.556   522   921 I AppsFilter: interaction: PackageSetting{2311470 com.abacusai.ramazanrehberi.t1793533738/10192} -> PackageSetting{38d19a2 android.auto_generated_rro_product__/10069} BLOCKED
+11-03 16:36:51.556   522   921 I AppsFilter: interaction: PackageSetting{2311470 com.abacusai.ramazanrehberi.t1793533738/10192} -> PackageSetting{62f7633 com.android.internal.systemui.navbar.gestural_narrow_back/10052} BLOCKED
+11-03 16:36:51.556   522   921 I AppsFilter: interaction: PackageSetting{2311470 com.abacusai.ramazanrehberi.t1793533738/10192} -> PackageSetting{4cbc2e9 com.google.android.inputmethod.latin/10142} BLOCKED
+11-03 16:36:51.556   522   921 I AppsFilter: interaction: PackageSetting{2311470 com.abacusai.ramazanrehberi.t1793533738/10192} -> PackageSetting{6ab0df0 android.auto_generated_rro_vendor__/10075} BLOCKED
+11-03 16:36:51.556   522   921 I AppsFilter: interaction: PackageSetting{2311470 com.abacusai.ramazanrehberi.t1793533738/10192} -> PackageSetting{cb43f69 com.google.android.apps.restore/10121} BLOCKED
+11-03 16:36:51.596  6412  6452 I cr_VariationsUtils: Failed reading seed file "/data/user/0/com.abacusai.ramazanrehberi.t1793533738/app_webview/variations_seed_new"
+11-03 16:36:51.598  6412  6452 I cr_VariationsUtils: Failed reading seed file "/data/user/0/com.abacusai.ramazanrehberi.t1793533738/app_webview/variations_seed"
+11-03 16:36:51.637   522   553 I ActivityManager: Start proc 6455:com.google.android.webview:sandboxed_process0:org.chromium.content.app.SandboxedProcessService0:0/u0i1 for  {com.abacusai.ramazanrehberi.t1793533738/org.chromium.content.app.SandboxedProcessService0:0}
+11-03 16:36:51.802  6412  6412 W FCM     : Firebase init: Default FirebaseApp is not initialized in this process com.abacusai.ramazanrehberi.t1793533738. Make sure to call FirebaseApp.initializeApp(Context) first.
+11-03 16:36:52.063   522   916 D CoreBackPreview: Window{f420188 u0 com.abacusai.ramazanrehberi.t1793533738/com.example.MainActivity}: Setting back callback OnBackInvokedCallbackInfo{mCallback=android.window.IOnBackInvokedCallback$Stub$Proxy@a9d391e, mPriority=0, mIsAnimationCallback=false}
+11-03 16:36:53.679   522   541 W ziparchive: Unable to open '/data/app/~~7WFbs99lGvPG6J7klPk-Tg==/com.abacusai.ramazanrehberi.t1793533738-xI9k1Hf7otWMtzWsKQSnQw==/base.dm': No such file or directory
+11-03 16:36:53.680   522   541 I ActivityTaskManager: Displayed com.abacusai.ramazanrehberi.t1793533738/com.example.MainActivity for user 0: +4s817ms
+11-03 16:36:53.721   522  2325 W InputManager-JNI: Input channel object '88fc1b5 Splash Screen com.abacusai.ramazanrehberi.t1793533738 (client)' was disposed without first being removed with the input manager!
+11-03 16:36:53.722   522   916 D CoreBackPreview: Window{88fc1b5 u0 Splash Screen com.abacusai.ramazanrehberi.t1793533738 EXITING}: Setting back callback null
+11-03 16:36:54.426   522  2327 D ConnectivityService: requestNetwork for uid/pid:10192/6412 activeRequest: null callbackRequest: 153 [NetworkRequest [ REQUEST id=154, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10192 RequestorUid: 10192 RequestorPkg: com.abacusai.ramazanrehberi.t1793533738 UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+11-03 16:36:54.432   522   759 D WifiNetworkFactory: got request NetworkRequest [ REQUEST id=154, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10192 RequestorUid: 10192 RequestorPkg: com.abacusai.ramazanrehberi.t1793533738 UnderlyingNetworks: Null] ]
+11-03 16:36:54.433   522   759 D UntrustedWifiNetworkFactory: got request NetworkRequest [ REQUEST id=154, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10192 RequestorUid: 10192 RequestorPkg: com.abacusai.ramazanrehberi.t1793533738 UnderlyingNetworks: Null] ]
+11-03 16:36:54.434   522   759 D OemPaidWifiNetworkFactory: got request NetworkRequest [ REQUEST id=154, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10192 RequestorUid: 10192 RequestorPkg: com.abacusai.ramazanrehberi.t1793533738 UnderlyingNetworks: Null] ]
+11-03 16:36:54.435   522   759 D MultiInternetWifiNetworkFactory: got request NetworkRequest [ REQUEST id=154, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10192 RequestorUid: 10192 RequestorPkg: com.abacusai.ramazanrehberi.t1793533738 UnderlyingNetworks: Null] ]
+11-03 16:36:54.682   522  2194 I MediaSessionStack: addSession to bottom of stack | record: com.abacusai.ramazanrehberi.t1793533738/androidx.media3.session.id. (userId=0)
+11-03 16:36:54.696  1027  1027 D MediaPlayerList: onActiveSessionsChanged: controller: com.abacusai.ramazanrehberi.t1793533738
+11-03 16:36:54.697  1027  1027 D MediaPlayerList: onActiveSessionsChanged: controller: com.abacusai.ramazanrehberi.t1793533738
+11-03 16:36:54.702   522   921 I ImeTracker: com.abacusai.ramazanrehberi.t1793533738:47c0a3f8: onRequestHide at ORIGIN_SERVER_HIDE_INPUT reason HIDE_UNSPECIFIED_WINDOW
+11-03 16:36:54.703   522   921 I ImeTracker: com.abacusai.ramazanrehberi.t1793533738:47c0a3f8: onCancelled at PHASE_SERVER_SHOULD_HIDE
+11-03 16:36:54.708  1562  1562 I GoogleInputMethodService: GoogleInputMethodService.onStartInput():1877 onStartInput(EditorInfo{inputType=0x0(NULL) imeOptions=0x0 privateImeOptions=null actionName=UNSPECIFIED actionLabel=null actionId=0 initialSelStart=-1 initialSelEnd=-1 initialCapsMode=0x0 hintText=null label=null packageName=com.abacusai.ramazanrehberi.t1793533738 fieldId=0 fieldName=null extras=null}, false)
+11-03 16:36:55.300   522   575 I AppsFilter: interaction: PackageSetting{2311470 com.abacusai.ramazanrehberi.t1793533738/10192} -> PackageSetting{6cfd814 com.google.android.contacts/10154} BLOCKED
+11-03 16:36:57.085  6412  6577 D ProfileInstaller: Installing profile for com.abacusai.ramazanrehberi.t1793533738
