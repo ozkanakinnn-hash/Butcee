@@ -59,6 +59,7 @@ data class IstanbulMosqueDay(
 @Composable
 fun WelcomeBanner(
   isRamadanSeason: Boolean = false,
+  mahya: List<String>? = null,
   modifier: Modifier = Modifier
 ) {
 
@@ -155,6 +156,7 @@ fun WelcomeBanner(
           else -> IstanbulMosques.fatih
         },
         glow = shimmerOffset,
+        mahya = mahya,
         modifier = Modifier.fillMaxSize()
       )
 

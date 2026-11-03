@@ -61,7 +61,8 @@ private data class RadioChannel(val id: String, val title: String, val urlRes: I
 
 private val channels = listOf(
   RadioChannel("diyanet", "Diyanet Radyo", R.string.radio_diyanet_url),
-  RadioChannel("kuran", "Diyanet Kur'an Radyo", R.string.radio_diyanet_kuran_url)
+  RadioChannel("kuran", "Kur'an Radyo", R.string.radio_diyanet_kuran_url),
+  RadioChannel("risalet", "Risalet Radyo", R.string.radio_risalet_url)
 )
 
 /** Ana sayfadaki canlı radyo kartı: oynat / durdur, arka planda çalmaya devam eder. */
@@ -84,7 +85,7 @@ fun DiyanetRadioCard(modifier: Modifier = Modifier) {
         if (state == Player.STATE_READY) error = null
       }
       override fun onPlayerError(e: PlaybackException) {
-        error = "Yayına bağlanılamadı. İnternet bağlantınızı kontrol edin."
+        error = "Yayına bağlanılamadı (${e.errorCodeName}). İnternet bağlantınızı kontrol edip tekrar deneyin."
         isBuffering = false
       }
     }

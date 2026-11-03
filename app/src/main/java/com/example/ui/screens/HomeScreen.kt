@@ -43,6 +43,7 @@ import com.example.R
 import androidx.compose.ui.unit.sp
 import com.example.data.AppPreferences
 import com.example.data.CountdownResult
+import com.example.data.FestivalCalendar
 import com.example.data.HolidayCountdownInfo
 import com.example.data.PrayerTimes
 import com.example.data.RamadanMenu
@@ -50,6 +51,8 @@ import com.example.data.SpiritualItem
 import com.example.ui.components.AdBannerComponent
 import com.example.ui.components.CompactCountdownCard
 import com.example.ui.components.DailySpiritualCard
+import com.example.ui.components.FestiveGarland
+import com.example.ui.components.FestiveGreetingCard
 import com.example.ui.components.DiyanetRadioCard
 import com.example.ui.components.HolidayCountdownCard
 import com.example.ui.components.IftarMenuCard
@@ -76,11 +79,19 @@ fun HomeScreen(
   val isRamadanSeason = holidayInfo.title.contains("Bayramı", ignoreCase = true)
   val greetingName = if (prefs.userName.isNotBlank()) prefs.userName else "Değerli Kardeşimiz"
 
+  // Bayram süslemesi ve mahya (her saniyelik yeniden çizimde ucuz: yıllık takvim önbellekte)
+  val festival = FestivalCalendar.today(prefs)
+  val mahya = FestivalCalendar.mahya(prefs)
+
   LazyColumn(
     modifier = modifier
       .fillMaxSize()
       .testTag("home_screen")
   ) {
+    if (festival != null) {
+      item { FestiveGarland(festival = festival) }
+    }
+
     // 1. Top Bar Greeting & Location Action
     item {
       Row(
@@ -179,6 +190,10 @@ fun HomeScreen(
       }
     }
 
+    if (festival != null) {
+      item { FestiveGreetingCard(festival = festival, name = greetingName) }
+    }
+
     // 2. Üst satır: iki eşit pano — (1) Günün İstanbul camisi, (2) İftara/İmsaka kalan vakit
     item {
       Row(
@@ -190,6 +205,7 @@ fun HomeScreen(
       ) {
         WelcomeBanner(
           isRamadanSeason = isRamadanSeason,
+          mahya = mahya,
           modifier = Modifier
             .weight(1f)
             .fillMaxHeight()

@@ -64,6 +64,11 @@ class AppPreferences(context: Context) {
     }
     set(value) = prefs.edit().putString("key_color_theme", value.name).apply()
 
+  /** Test için bayram süslemesi önizlemesi: "", "RAMAZAN" veya "KURBAN". */
+  var festivalPreview: String
+    get() = prefs.getString("key_festival_preview", "") ?: ""
+    set(value) = prefs.edit().putString("key_festival_preview", value).apply()
+
   var notificationsEnabled: Boolean
     get() = prefs.getBoolean("key_notif_enabled", false)
     set(value) = prefs.edit().putBoolean("key_notif_enabled", value).apply()
