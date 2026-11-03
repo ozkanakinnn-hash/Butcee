@@ -256,6 +256,11 @@ fun HomeScreen(
       )
     }
 
+    // İsim önerileri (Günün Menüsü'nün altında)
+    item {
+      com.example.ui.components.NameSuggestionsCard()
+    }
+
     // 6. Günün Ayeti / Hadisi / Duası
     item {
       DailySpiritualCard(

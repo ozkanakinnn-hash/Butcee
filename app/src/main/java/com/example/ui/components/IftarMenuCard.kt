@@ -1,38 +1,58 @@
 package com.example.ui.components
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.GenericShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.RestaurantMenu
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Divider
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.RamadanMenu
+
+/** Üstü kemerli (yarım daire) menü kartı biçimi — restoran menü kartlarından esinlenildi. */
+private val ArchShape = GenericShape { size, _ ->
+  val r = size.width / 2f
+  moveTo(0f, r)
+  arcTo(Rect(0f, 0f, size.width, size.width), 180f, 180f, false)
+  lineTo(size.width, size.height - 24f)
+  quadraticBezierTo(size.width, size.height, size.width - 24f, size.height)
+  lineTo(24f, size.height)
+  quadraticBezierTo(0f, size.height, 0f, size.height - 24f)
+  close()
+}
 
 @Composable
 fun IftarMenuCard(
@@ -41,138 +61,142 @@ fun IftarMenuCard(
   ramadanDay: Int? = null, // Ramazan'da kaçıncı gün; Ramazan dışında null
   modifier: Modifier = Modifier
 ) {
-  Card(
+  val accent = MaterialTheme.colorScheme.primary
+  val paper = MaterialTheme.colorScheme.surface
+  val ink = MaterialTheme.colorScheme.onSurface
+  val leaf = MaterialTheme.colorScheme.secondary
+
+  Box(
     modifier = modifier
       .fillMaxWidth()
-      .padding(horizontal = 16.dp, vertical = 6.dp)
-      .testTag("iftar_menu_card"),
-    shape = RoundedCornerShape(24.dp),
-    colors = CardDefaults.cardColors(
-      containerColor = MaterialTheme.colorScheme.surface
-    ),
-    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+      .padding(horizontal = 40.dp, vertical = 10.dp)
+      .testTag("daily_menu_card"),
+    contentAlignment = Alignment.Center
   ) {
-    Column(
+    Box(
       modifier = Modifier
         .fillMaxWidth()
-        .padding(20.dp)
+        .shadow(4.dp, ArchShape)
+        .clip(ArchShape)
+        .background(paper)
+        .border(1.5.dp, accent.copy(alpha = 0.55f), ArchShape)
     ) {
-      Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-      ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-          Icon(
-            imageVector = Icons.Default.RestaurantMenu,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.size(20.dp)
-          )
-          Spacer(modifier = Modifier.width(8.dp))
-          Text(
-            text = if (ramadanDay != null) "Günün İftar Menüsü" else "Günün Menüsü",
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onSurface
-          )
-        }
-        Box(
-          modifier = Modifier
-            .clip(RoundedCornerShape(8.dp))
-            .background(MaterialTheme.colorScheme.primaryContainer)
-            .padding(horizontal = 8.dp, vertical = 4.dp)
-        ) {
-          Text(
-            text = if (ramadanDay != null) "$ramadanDay. Gün" else "Bugün",
-            style = MaterialTheme.typography.labelSmall,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.primary
-          )
-        }
+      // Köşe ve kenar süslemeleri (zeytin dalı yaprakları)
+      Canvas(modifier = Modifier.matchParentSize()) {
+        drawBranch(Offset(size.width * 0.06f, size.width * 0.62f), -35f, leaf)
+        drawBranch(Offset(size.width * 0.94f, size.width * 0.62f), 215f, leaf)
+        drawBranch(Offset(size.width * 0.10f, size.height - 30f), -70f, leaf.copy(alpha = 0.6f))
+        drawBranch(Offset(size.width * 0.90f, size.height - 30f), 250f, leaf.copy(alpha = 0.6f))
       }
 
-      Spacer(modifier = Modifier.height(14.dp))
-
-      // Text-only categories as specifically requested in brief (No images)
-      MenuCategoryRow(icon = "🥣", category = "Çorba", dish = menu.soup)
-      HorizontalDivider(
-        color = MaterialTheme.colorScheme.outlineVariant,
-        thickness = 0.5.dp,
-        modifier = Modifier.padding(vertical = 8.dp)
-      )
-      MenuCategoryRow(icon = "🍲", category = "Ana Yemek", dish = menu.mainDish)
-      HorizontalDivider(
-        color = MaterialTheme.colorScheme.outlineVariant,
-        thickness = 0.5.dp,
-        modifier = Modifier.padding(vertical = 8.dp)
-      )
-      MenuCategoryRow(icon = "🥗", category = "Yan Yemek & Salata", dish = menu.sideDish)
-      HorizontalDivider(
-        color = MaterialTheme.colorScheme.outlineVariant,
-        thickness = 0.5.dp,
-        modifier = Modifier.padding(vertical = 8.dp)
-      )
-      MenuCategoryRow(icon = "🍮", category = "Tatlı", dish = menu.dessert)
-
-      Spacer(modifier = Modifier.height(14.dp))
-
-      OutlinedButton(
-        onClick = onViewAllMenus,
+      Column(
         modifier = Modifier
           .fillMaxWidth()
-          .testTag("view_all_menus_button"),
-        shape = RoundedCornerShape(12.dp),
-        colors = ButtonDefaults.outlinedButtonColors(
-          contentColor = MaterialTheme.colorScheme.primary
-        )
+          .padding(top = 26.dp, bottom = 18.dp, start = 22.dp, end = 22.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
       ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-          Icon(
-            imageVector = Icons.Default.Star,
-            contentDescription = null,
-            modifier = Modifier.size(16.dp)
-          )
-          Spacer(modifier = Modifier.width(6.dp))
-          Text(
-            text = if (ramadanDay != null) "Ramazan Rehberi & Günlük Menüyü Gör ›" else "Tüm Menüleri Gör ›",
-            fontSize = 13.sp,
-            fontWeight = FontWeight.SemiBold
-          )
+        // "Menü" madalyonu
+        Box(
+          modifier = Modifier
+            .size(118.dp)
+            .clip(CircleShape)
+            .background(MaterialTheme.colorScheme.primaryContainer)
+            .border(1.dp, accent.copy(alpha = 0.7f), CircleShape)
+            .padding(6.dp)
+            .border(0.5.dp, accent.copy(alpha = 0.4f), CircleShape),
+          contentAlignment = Alignment.Center
+        ) {
+          Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(
+              text = if (ramadanDay != null) "İftar" else "Günün",
+              fontSize = 11.sp,
+              letterSpacing = 2.sp,
+              color = accent,
+              fontWeight = FontWeight.SemiBold
+            )
+            Text(
+              text = "Menü",
+              fontFamily = FontFamily.Cursive,
+              fontSize = 34.sp,
+              fontWeight = FontWeight.Bold,
+              color = ink
+            )
+            Text(
+              text = if (ramadanDay != null) "$ramadanDay. Gün" else "Bugün",
+              fontSize = 10.sp,
+              color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+          }
         }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        MenuCourse("ÇORBA", menu.soup, accent, ink)
+        MenuCourse("ANA YEMEK", menu.mainDish, accent, ink)
+        MenuCourse("YAN YEMEK & SALATA", menu.sideDish, accent, ink)
+        MenuCourse("TATLI", menu.dessert, accent, ink)
+
+        Spacer(modifier = Modifier.height(6.dp))
+        Text(
+          text = if (ramadanDay != null) "Ramazan Rehberi & tüm menüler ›" else "Tüm menüleri gör ›",
+          fontSize = 12.sp,
+          fontWeight = FontWeight.Bold,
+          color = accent,
+          modifier = Modifier
+            .clip(RoundedCornerShape(10.dp))
+            .clickable { onViewAllMenus() }
+            .padding(horizontal = 12.dp, vertical = 8.dp)
+            .testTag("view_all_menus")
+        )
       }
     }
   }
 }
 
 @Composable
-private fun MenuCategoryRow(
-  icon: String,
-  category: String,
-  dish: String
-) {
-  Row(
-    modifier = Modifier.fillMaxWidth(),
-    verticalAlignment = Alignment.CenterVertically
+private fun MenuCourse(label: String, dish: String, accent: Color, ink: Color) {
+  Column(
+    modifier = Modifier
+      .fillMaxWidth()
+      .padding(vertical = 6.dp),
+    horizontalAlignment = Alignment.CenterHorizontally
   ) {
     Text(
-      text = icon,
-      fontSize = 18.sp,
-      modifier = Modifier.padding(end = 12.dp)
+      text = label,
+      fontSize = 11.sp,
+      letterSpacing = 1.5.sp,
+      fontWeight = FontWeight.Bold,
+      fontStyle = FontStyle.Italic,
+      color = accent
     )
-    Column(modifier = Modifier.weight(1f)) {
-      Text(
-        text = category,
-        fontSize = 11.sp,
-        fontWeight = FontWeight.Medium,
-        color = MaterialTheme.colorScheme.onSurfaceVariant
-      )
-      Text(
-        text = dish,
-        fontSize = 14.sp,
-        fontWeight = FontWeight.SemiBold,
-        color = MaterialTheme.colorScheme.onSurface
-      )
+    Text(
+      text = dish,
+      fontSize = 16.sp,
+      fontFamily = FontFamily.Serif,
+      fontStyle = FontStyle.Italic,
+      color = ink,
+      textAlign = TextAlign.Center
+    )
+  }
+}
+
+/** Yapraklı küçük dal (zeytin dalı) süsü. */
+private fun DrawScope.drawBranch(origin: Offset, angle: Float, color: Color) {
+  val len = size.width * 0.16f
+  rotate(degrees = angle, pivot = origin) {
+    drawLine(color, origin, Offset(origin.x + len, origin.y), strokeWidth = 2f)
+    for (i in 1..4) {
+      val x = origin.x + len * i / 5f
+      val leafLen = len * 0.22f
+      listOf(-1f, 1f).forEach { side ->
+        val path = Path().apply {
+          moveTo(x, origin.y)
+          quadraticBezierTo(x + leafLen * 0.5f, origin.y + side * leafLen * 0.55f, x + leafLen, origin.y + side * leafLen * 0.15f)
+          quadraticBezierTo(x + leafLen * 0.4f, origin.y + side * leafLen * 0.05f, x, origin.y)
+          close()
+        }
+        drawPath(path, color.copy(alpha = color.alpha * 0.85f))
+      }
     }
   }
 }
