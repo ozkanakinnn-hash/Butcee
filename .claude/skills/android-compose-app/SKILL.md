@@ -86,3 +86,11 @@ gradle/actions/setup-gradle@v5 → `./gradlew assembleDebug` → upload-artifact
 - Paylaşım: cache/shared_images → `FileProvider` Uri → `ACTION_SEND` chooser; Instagram için `com.instagram.share.ADD_TO_STORY` (facebook_app_id gerekir), yoksa genel paylaşıma düş.
 - Tasarım onayı için önce HTML/SVG ile örnek kart çiz, Playwright ile PNG al ve kullanıcıya göster. Onaydan sonra aynı sahneleri **metinsiz** 1080x1920 render edip `drawable-nodpi/*.webp` (quality ~86, kart başı 25–100 KB) olarak göm; metni uygulamada Canvas ile çiz (çok dilli ve çok mesajlı kalır). Yazı tiplerini `res/font` içine göm (Google Fonts TTF, OFL; `ResourcesCompat.getFont`). `StaticLayout` için `BREAK_STRATEGY_BALANCED` başlıkları dengeli böler.
 - CI emülatöründe "Pixel Launcher isn't responding" uyarısı çıkabilir: betikte `tap_text "Wait"` ile kapat.
+
+## Yayın öncesi reklam/güvenlik kontrol listesi (her uygulamada)
+- AdMob: Google UMP onay formu (`com.google.android.ump:user-messaging-platform`), izin yoksa reklam yükleme; Ayarlar'a "Reklam gizlilik seçenekleri".
+- `MobileAds.initialize` arka plan iş parçacığında; dini/aile içerikli uygulamada `MAX_AD_CONTENT_RATING_PG` + AdMob panelinde hassas kategorileri (kumar, alkol, flört, faiz) engelle.
+- Reklam kimlikleri koda gömülmez: debug'da test kimlikleri, release'de `manifestPlaceholders` + `buildConfigField` ortam değişkeninden.
+- `AndroidView` reklamında `onRelease = { it.destroy() }`.
+- Kullanılmayan SDK'ları (ör. firebase-ai, App Check debug sağlayıcısı) kaldır; debug sağlayıcısı asla release'e girmesin.
+- Logo görselinden simge: kare içini kırp → kenarları yumuşat → 1024 ön plan PNG (sanat ~%60) + gradyan arka plan XML; `drawable-*dpi/ic_launcher_foreground.png`, `mipmap-*dpi/ic_launcher(_round).png`, Play Store 512px.
