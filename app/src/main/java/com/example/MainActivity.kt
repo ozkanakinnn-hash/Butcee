@@ -110,7 +110,12 @@ class MainActivity : ComponentActivity() {
     super.onCreate(savedInstanceState)
     AppHolder.context = applicationContext
     // Kur'an metnini (6236 ayet) arka planda yükle
-    Thread { com.example.data.QuranText.preload(applicationContext) }.start()
+    Thread {
+      // Açılışı yavaşlatmasın: düşük öncelikli ve biraz gecikmeli yükle
+      android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND)
+      try { Thread.sleep(2500) } catch (_: InterruptedException) { }
+      com.example.data.QuranText.preload(applicationContext)
+    }.start()
     com.example.util.CrashReporter.install(this)
     val lastCrash = com.example.util.CrashReporter.consumeLastCrash(this)
     enableEdgeToEdge()

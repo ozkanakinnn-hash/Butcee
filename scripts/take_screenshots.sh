@@ -24,7 +24,13 @@ XML
   adb shell "run-as $PKG sh -c 'cat /data/local/tmp/p.xml > shared_prefs/ramazan_rehberi_prefs.xml'"
 }
 
-shot () { sleep "${2:-3}"; adb exec-out screencap -p > "$OUT/$1.png"; }
+shot () {
+  sleep "${2:-3}"
+  # "... isn't responding" uyarısı varsa kapat (yavaş emülatörde ilk açılışta çıkabiliyor)
+  adb shell uiautomator dump /sdcard/ui.xml >/dev/null 2>&1; adb pull /sdcard/ui.xml /tmp/ui.xml >/dev/null 2>&1
+  if grep -q "isn&apos;t responding\|isn't responding" /tmp/ui.xml 2>/dev/null; then echo "ANR uyarısı: $1" >> $OUT/crash_log.txt; tap_text "Wait"; sleep 2; fi
+  adb exec-out screencap -p > "$OUT/$1.png"
+}
 
 tap_text () { # ekrandaki metne dokun
   adb shell uiautomator dump /sdcard/ui.xml >/dev/null; adb pull /sdcard/ui.xml /tmp/ui.xml >/dev/null
