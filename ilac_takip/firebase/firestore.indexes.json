@@ -1,0 +1,22 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "doseLogs",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "graceUntil", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "careLinks",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "patientId", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "permissions.canReceiveAlerts", "order": "ASCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

@@ -6,6 +6,7 @@ description: Flutter + Firebase ile hatırlatıcı/alarm, paylaşım ve sağlık
 # Flutter + Firebase Sağlık/Hatırlatıcı Uygulaması — Öğrenilenler
 
 Ayrıntılı referans tasarım: `docs/ilac-takip/01-ileri-ozellikler.md` ve `02-rakip-analizi-ve-mimari.md`.
+Çalışan iskelet (kopyalanabilir kalıplar): `ilac_takip/` — bkz. §8.
 
 ## 0. Kullanıcının kalıcı kuralları
 - Her uygulamada **Türkçe + İngilizce** (Flutter: `flutter_localizations` + `intl` + `app_tr.arb`/`app_en.arb`; sunucu bildirimleri alıcının `locale` alanına göre).
@@ -59,3 +60,18 @@ Ayrıntılı referans tasarım: `docs/ilac-takip/01-ileri-ozellikler.md` ve `02-
 
 ## 7. Test kontrol listesi
 `adb shell dumpsys deviceidle force-idle`, yeniden başlatma, saat dilimi değişimi, zorla durdurma, ertele ×max, uçak modu, iOS ≤64 bekleyen, OEM cihaz matrisi, kurallar için `@firebase/rules-unit-testing`, alarm gecikmesi telemetrisi.
+
+## 8. Flutter iskeleti kurarken öğrenilenler (ilac_takip/)
+- **Bulut ortamında Flutter**: `storage.googleapis.com` açık → SDK'yı `/opt/flutter-sdk` altına `releases_linux.json`'dan en son stable ile indir; `pub.dev` açık. `dl.google.com` kapalı → yerel APK derlenemez, APK'yı CI üretir (`subosito/flutter-action@v2`, `flutter-version` sabitle).
+- **Paket sürümleri hızlı değişir — yazmadan önce pub-cache'teki kaynağa bak** (`~/.pub-cache/hosted/pub.dev/<paket>/lib`):
+  - `flutter_local_notifications` 22: TÜM metodlar adlandırılmış parametre (`initialize(settings:)`, `zonedSchedule(id:, scheduledDate:, notificationDetails:, androidScheduleMode:)`, `cancel(id:)`, `show(id:)`). compileSdk ≥ 35 + `coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")` zorunlu.
+  - `flutter_timezone` 5 → `TimezoneInfo.identifier`. Riverpod 3 → `AsyncValue.value` (valueOrNull yok), `StateProvider` legacy; `Notifier` kullan.
+  - `mobile_scanner` 7: `MobileScannerController(formats:, detectionSpeed: DetectionSpeed.noDuplicates)`, `errorBuilder: (context, error)`.
+  - Yeni `flutter create` iOS şablonu UIScene kullanır → eklenti kaydı `didInitializeImplicitFlutterEngine` içinde (`FlutterLocalNotificationsPlugin.setPluginRegistrantCallback`).
+- **drift yerine sqflite** (codegen/build_runner gerektirmez, iskelet hemen derlenir); testlerde `sqflite_common_ffi` + `inMemoryDatabasePath`, her testte `db.close()`.
+- **Test edilebilirlik**: `AlarmScheduler` arayüzü + `FakeAlarmScheduler`; saat `Clock = DateTime Function()` olarak enjekte (`TestClock`). Servisleri `AppServices` kabında topla; aynı kurulum arka plan izolatında da çalışsın; testler için `@visibleForTesting AppServices.forTest(...)`.
+- **Bildirim kimlikleri**: test alarmı ve doz dışı bildirimler için ayrılmış blok (`reservedFrom`) — yoksa `reconcile()` "istenmeyen" diye iptal eder.
+- **l10n**: `l10n.yaml` (template `app_tr.arb`, `nullable-getter: false`) + `pubspec: flutter: generate: true`. ARB'leri Python sözlüğünden üret (TR/EN tek kaynaktan, placeholder tipleriyle). Arka plan izolatında `lookupAppLocalizations(Locale(code))` ile metin üret; dil değişince kanal adlarını yeniden oluştur ve alarmları yeniden kur.
+- **TUZAK — `textTheme.apply(fontSizeFactor:)`**: `ThemeData().textTheme` stillerinde fontSize yoktur → assertion ile çöker. `Typography.material2021().englishLike.merge(black/white).apply(...)` kullan.
+- **Ekran duman testleri gerçek hataları yakalar**: 360×780 dp görünümde (`tester.view.physicalSize = 1080×2340, dpr 3`) tüm ekranları gerçek veriyle çiz, `tester.takeException()` kontrol et. ListTile `trailing` içinde metinli `Row` taşar → durumu `subtitle` içine al. DB G/Ç'si `tester.runAsync` içinde beklenir. ListView tembeldir: ekran dışı öğeyi `dragUntilVisible` ile bul.
+- Bash heredoc içinde `$` ve `remove(` içeren Dart kodu güvenlik denetimine takılabilir → bu tür dosyaları Write aracıyla yaz.

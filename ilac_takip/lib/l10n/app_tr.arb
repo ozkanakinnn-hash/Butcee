@@ -1,0 +1,283 @@
+{
+  "@@locale": "tr",
+  "appTitle": "İlaç Takip",
+  "today": "Bugün",
+  "nothingToday": "Bugün planlanmış ilaç yok.",
+  "pendingTitle": "{count, plural, =1{1 ilaç bekliyor} other{{count} ilaç bekliyor}}",
+  "@pendingTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "snoozedUntil": "⏸ {time} saatine ertelendi ({count}/{max})",
+  "@snoozedUntil": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "missedAt": "✖ {time} kaçırıldı",
+  "@missedAt": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "dueSince": "⏰ {time}'dan beri bekliyor",
+  "@dueSince": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "take": "Aldım",
+  "takeBig": "ALDIM",
+  "takeNow": "Şimdi aldım",
+  "snooze10": "10 dk sonra",
+  "skip": "Atla",
+  "wontTake": "Almayacağım",
+  "undo": "Geri al",
+  "takenToast": "Kaydedildi: alındı ✓",
+  "snoozedToast": "10 dakika sonra tekrar hatırlatacağım",
+  "skippedToast": "Doz atlandı olarak kaydedildi",
+  "snoozeLimitReached": "Erteleme hakkı doldu",
+  "addMedicine": "İlaç ekle",
+  "scanBox": "Kutuyu tara",
+  "addManually": "Elle ekle",
+  "medicines": "İlaçlarım",
+  "settings": "Ayarlar",
+  "noMedicines": "Henüz ilaç eklemediniz.",
+  "stockLeft": "Stok: {amount}",
+  "@stockLeft": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "lowStockBadge": "Stok azaldı",
+  "delete": "Sil",
+  "deleteMedicineConfirm": "{name} ve tüm planları silinsin mi?",
+  "@deleteMedicineConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "cancel": "Vazgeç",
+  "save": "Kaydet",
+  "ok": "Tamam",
+  "mealNone": "Fark etmez",
+  "afterMeal": "Tok karnına",
+  "beforeMeal": "Yemekten önce",
+  "withMeal": "Yemekle birlikte",
+  "emptyStomach": "Aç karnına",
+  "statusPending": "Bekliyor",
+  "statusSnoozed": "Ertelendi",
+  "statusTaken": "Alındı",
+  "statusSkipped": "Atlandı",
+  "statusMissed": "Kaçırıldı",
+  "medicineName": "İlaç adı",
+  "nickname": "Takma ad (isteğe bağlı)",
+  "nicknameHint": "Ör. Beyaz küçük hap — kalp ilacı",
+  "form": "Form",
+  "formTablet": "Tablet",
+  "formCapsule": "Kapsül",
+  "formSyrup": "Şurup",
+  "formDrops": "Damla",
+  "formInjection": "İğne",
+  "formOther": "Diğer",
+  "stock": "Mevcut stok",
+  "criticalStock": "Uyarı verilecek stok",
+  "packageSize": "Kutu içeriği",
+  "criticalMedicine": "Kritik ilaç",
+  "criticalMedicineHint": "Sessiz modda da alarm sesiyle çalar, kilit ekranında açılır",
+  "persistentAlarm": "Israrcı alarm",
+  "persistentAlarmHint": "\"Aldım\" diyene kadar 3 dakikada bir tekrar çalar",
+  "frequency": "Ne sıklıkla?",
+  "freqFixedTimes": "Belirli saatlerde",
+  "freqInterval": "Saat aralığıyla",
+  "freqAsNeeded": "Gerektiğinde",
+  "doseTimes": "Doz saatleri",
+  "addTime": "Saat ekle",
+  "everyDay": "Her gün",
+  "everyNDaysLabel": "{n, plural, =1{Her gün} =2{Gün aşırı} other{{n} günde bir}}",
+  "@everyNDaysLabel": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "onlyTheseDays": "Yalnızca şu günler",
+  "intervalEvery": "{n} saatte bir",
+  "@intervalEvery": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "firstDose": "İlk doz saati",
+  "quantityPerDose": "Doz başına miktar",
+  "mealRelation": "Aç / tok",
+  "maxPerDay": "Günde en fazla",
+  "requiredField": "Bu alan zorunlu",
+  "atLeastOneTime": "En az bir saat ekleyin",
+  "saved": "Kaydedildi",
+  "scanTitle": "İlaç tara",
+  "scanHint": "Kutunun üzerindeki karekodu veya barkodu çerçeveye alın",
+  "scanManualEntry": "Barkodu elle gir",
+  "barcodeDigits": "13 haneli barkod",
+  "duplicatePack": "Bu kutu zaten eklenmiş",
+  "addStockQuestion": "{name} listenizde var. Stoğa {qty} eklensin mi?",
+  "@addStockQuestion": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "qty": {
+        "type": "String"
+      }
+    }
+  },
+  "addStockDone": "Stok güncellendi",
+  "notFoundInCatalog": "Bu ilacı henüz tanımıyoruz. Bilgileri elle girebilirsiniz.",
+  "expiryLabel": "Son kullanma: {date}",
+  "@expiryLabel": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "invalidCode": "Kod okunamadı",
+  "doseQuantity": "{qty} {form}",
+  "@doseQuantity": {
+    "placeholders": {
+      "qty": {
+        "type": "String"
+      },
+      "form": {
+        "type": "String"
+      }
+    }
+  },
+  "skipReasonTitle": "Neden almayacaksınız?",
+  "reasonFeelingUnwell": "Kendimi kötü hissediyorum",
+  "reasonOutOfStock": "İlacım bitti",
+  "reasonDoctorAdvice": "Doktorum kesti",
+  "reasonOther": "Diğer",
+  "notifTitle": "💊 {name} zamanı",
+  "@notifTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "notifRepeatTitle": "⏰ Hâlâ bekliyor: {name}",
+  "@notifRepeatTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "lowStockTitle": "📦 Stok azaldı",
+  "lowStockBody": "{name} için {amount} kaldı. Reçetenizi ve eczaneyi düşünün.",
+  "@lowStockBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "channelCritical": "Kritik ilaç alarmları",
+  "channelCriticalDesc": "\"Aldım\" diyene kadar çalan alarmlar",
+  "channelNormal": "İlaç hatırlatmaları",
+  "channelInfo": "Bilgilendirme",
+  "testAlarmTitle": "🔔 Test alarmı",
+  "testAlarmBody": "Bu bildirimi gördüyseniz alarmlarınız çalışıyor.",
+  "language": "Dil",
+  "languageSystem": "Sistem dili",
+  "seniorMode": "Basit Mod",
+  "seniorModeHint": "Büyük yazı, yüksek kontrast, tek ekran",
+  "textScale": "Yazı büyüklüğü",
+  "ttsOnAlarm": "Alarmda sesli oku",
+  "caregiverPhone": "Yakınımın telefonu",
+  "seniorPin": "Ayar kilidi PIN'i (4 hane)",
+  "seniorPinHint": "Basit Mod'dan çıkmak için gerekir",
+  "enterPin": "PIN girin",
+  "wrongPin": "PIN hatalı",
+  "reliability": "Alarm güvenilirliği",
+  "reliabilityIntro": "Alarmlarınızın her zaman çalması için aşağıdaki maddelerin hepsi yeşil olmalı.",
+  "relNotifications": "Bildirim izni",
+  "relExactAlarms": "Tam zamanlı alarm izni",
+  "relBatteryOpt": "Pil kısıtlaması kaldırıldı",
+  "relFullScreen": "Kilit ekranında tam ekran alarm",
+  "relOemAutostart": "Üretici ayarı: otomatik başlatma / arka plan",
+  "relOemHint": "{brand} telefonlar uygulamaları agresif kapatabilir. Açılan ekranda bu uygulamaya izin verin.",
+  "@relOemHint": {
+    "placeholders": {
+      "brand": {
+        "type": "String"
+      }
+    }
+  },
+  "fix": "Düzelt",
+  "open": "Aç",
+  "testAlarm": "Test alarmı kur (1 dk sonra)",
+  "testAlarmScheduled": "Test alarmı 1 dakika sonra çalacak. Uygulamayı kapatıp ekranı kilitleyin.",
+  "goodMorning": "Günaydın",
+  "goodAfternoon": "İyi günler",
+  "goodEvening": "İyi akşamlar",
+  "callCaregiver": "📞 YAKINIMI ARA",
+  "nextDoses": "SIRADAKİ",
+  "todayProgress": "Bugün: {total} ilacın {taken} tanesi alındı",
+  "@todayProgress": {
+    "placeholders": {
+      "taken": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "allDoneToday": "Bugünkü ilaçlarınızın hepsini aldınız 👏",
+  "longPressForSettings": "Ayarlar için başlığa uzun basın",
+  "ttsDose": "Saat {time} ilacınız: {name}. {meal}. {qty}.",
+  "@ttsDose": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      },
+      "meal": {
+        "type": "String"
+      },
+      "qty": {
+        "type": "String"
+      }
+    }
+  },
+  "alarmNotFound": "Bu doz bulunamadı"
+}

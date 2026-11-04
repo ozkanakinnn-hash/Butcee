@@ -1,0 +1,62 @@
+// Kaynak: docs/ilac-takip/01-ileri-ozellikler.md §2.2
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{db}/documents {
+
+    function signedIn() { return request.auth != null; }
+    function isSelf(uid) { return signedIn() && request.auth.uid == uid; }
+    function link(patientId) {
+      return get(/databases/$(db)/documents/careLinks/$(patientId + '_' + request.auth.uid)).data;
+    }
+    function hasPerm(patientId, perm) {
+      return signedIn()
+        && exists(/databases/$(db)/documents/careLinks/$(patientId + '_' + request.auth.uid))
+        && link(patientId).status == 'active'
+        && link(patientId).permissions[perm] == true;
+    }
+
+    match /users/{uid} {
+      allow read, write: if isSelf(uid);
+
+      match /medicines/{id} {
+        allow read:  if isSelf(uid) || hasPerm(uid, 'canViewLogs');
+        allow write: if isSelf(uid) || hasPerm(uid, 'canEditSchedules');
+      }
+      match /schedules/{id} {
+        allow read:  if isSelf(uid) || hasPerm(uid, 'canViewLogs');
+        allow write: if isSelf(uid) || hasPerm(uid, 'canEditSchedules');
+      }
+      match /doseLogs/{id} {
+        allow read: if isSelf(uid) || hasPerm(uid, 'canViewLogs');
+        allow create, update: if isSelf(uid)
+          || (hasPerm(uid, 'canMarkDoses')
+              && request.resource.data.markedBy == request.auth.uid);
+        allow delete: if false;   // geçmiş silinmez (rapor güvenilirliği)
+      }
+      match /devices/{id}       { allow read, write: if isSelf(uid); }
+      match /scannedPacks/{id}  { allow read, write: if isSelf(uid); }
+      match /prescriptions/{id} { allow read, write: if isSelf(uid); }
+    }
+
+    match /careLinks/{linkId} {
+      allow read: if signedIn()
+        && (resource.data.patientId == request.auth.uid || resource.data.caregiverId == request.auth.uid);
+      // Sadece hasta izinleri/durumu güncelleyebilir; bakım veren yalnızca kendini "revoked" yapabilir
+      allow update: if signedIn() && (
+        resource.data.patientId == request.auth.uid
+        || (resource.data.caregiverId == request.auth.uid
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'updatedAt'])
+            && request.resource.data.status == 'revoked'));
+      allow create, delete: if false;   // yalnızca Cloud Functions (Admin SDK)
+    }
+
+    match /drugCatalog/{id}   { allow read: if signedIn(); allow write: if false; }
+    match /catalogMeta/{id}   { allow read: if signedIn(); allow write: if false; }
+    match /drugSubmissions/{id} {
+      allow create: if signedIn() && request.resource.data.submittedBy == request.auth.uid;
+    }
+    match /careInvites/{id}   { allow read, write: if false; }  // Cloud Functions
+    match /reportShares/{id}  { allow read, write: if false; }  // Cloud Functions
+    match /pharmacyCache/{id} { allow read: if signedIn(); allow write: if false; }
+  }
+}
