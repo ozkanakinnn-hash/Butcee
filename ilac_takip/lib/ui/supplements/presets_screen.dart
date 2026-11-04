@@ -5,6 +5,7 @@ import '../../data/supplement_catalog.dart';
 import '../../services/localized_texts.dart';
 import '../../state/providers.dart';
 import '../widgets/common.dart';
+import '../widgets/visuals.dart';
 
 class PresetsScreen extends ConsumerWidget {
   const PresetsScreen({super.key});
@@ -33,7 +34,15 @@ class PresetsScreen extends ConsumerWidget {
               padding: const EdgeInsets.all(16),
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Row(children: [
-                  Text(p.emoji, style: const TextStyle(fontSize: 32)),
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.primaryContainer,
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Icon(presetIcon(p.id), color: Theme.of(context).colorScheme.onPrimaryContainer, size: 28),
+                  ),
                   const SizedBox(width: 12),
                   Expanded(child: Text(p.name.of(t.localeName), style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800))),
                 ]),
@@ -44,7 +53,7 @@ class PresetsScreen extends ConsumerWidget {
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 2),
                     child: Row(children: [
-                      Text(catalogById(i.catalogId)?.emoji ?? '•'),
+                      SupplementIcon(catalogId: i.catalogId, size: 28),
                       const SizedBox(width: 8),
                       Expanded(child: Text(catalogById(i.catalogId)?.name.of(t.localeName) ?? i.catalogId)),
                       Text('${slotLabel(t, i.slot)} ${ref.watch(settingsProvider).slotTime(i.slot)}',
@@ -74,3 +83,11 @@ class PresetsScreen extends ConsumerWidget {
     );
   }
 }
+
+IconData presetIcon(String id) => switch (id) {
+      'balanced' => Icons.balance_rounded,
+      'bone' => Icons.accessibility_new_rounded,
+      'immune' => Icons.health_and_safety_rounded,
+      'energy' => Icons.bolt_rounded,
+      _ => Icons.auto_awesome_rounded,
+    };

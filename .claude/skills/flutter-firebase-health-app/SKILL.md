@@ -98,3 +98,9 @@ Ayrıntılı referans tasarım: `docs/ilac-takip/01-ileri-ozellikler.md` ve `02-
 - PDF fontu: `pip install fonttools` → `pyftsubset --unicodes=U+0020-007E,U+00A0-017F,U+2010-2027,...` (Türkçe dahil) ≈ 75 KB/font.
 - Atıl kod tespiti: tanımlı public adların lib içinde tek geçtiği yerleri betikle bul; kullanılmayan ARB anahtarlarını `\.key\b` aramasıyla bul ve iki dilden sil.
 - Cihazda büyüyen tablolar (outbox, geçmiş) için açılışta `pruneOldData` + gerektiğinde `VACUUM`; uygulamaya gömülü örnek/uydurma veriyi bir DB geçişiyle sil.
+
+## 11. Simgeler (emoji yerine)
+- Emoji simgeleri cihaza göre değişir (Samsung/Google), profesyonel durmaz. Takviyelerde **degrade yuvarlak kare + kod** (D3, B12, Fe, Mg, Zn, Ω3, Q10, A–Z) kullan; kodu olmayanlarda Material `*_rounded` simgesi; katalog dışında baş harfler.
+- Renk: kategoriye göre, vitaminlerde aileye göre (yağda çözünen altın, B grubu yakut, C turuncu, mineraller çivit); beyaz metin + hafif üst parlaklık + düşük alfa gölge.
+- Ruh hâli için `Icons.sentiment_*_rounded`, seri için `local_fire_department_rounded`.
+- **Görsel kontrol CI'sız**: geçici bir widget testinde `FontLoader` ile `$FLUTTER/bin/cache/artifacts/material_fonts/Roboto-*.ttf` ve `MaterialIcons-Regular.otf` yükle, `RepaintBoundary.toImage()` → PNG yaz ve incele (testte varsayılan Ahem fontu kutu çizer). İş bitince geçici testi sil.

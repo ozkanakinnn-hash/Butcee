@@ -99,17 +99,6 @@ String categoryLabel(AppLocalizations t, ItemCategory c) => switch (c) {
       ItemCategory.other => t.catOther,
     };
 
-String categoryEmoji(ItemCategory c) => switch (c) {
-      ItemCategory.vitamin => '💊',
-      ItemCategory.mineral => '🪨',
-      ItemCategory.fattyAcid => '🐟',
-      ItemCategory.herbal => '🌿',
-      ItemCategory.probiotic => '🦠',
-      ItemCategory.protein => '✨',
-      ItemCategory.multi => '🌈',
-      ItemCategory.medicine => '💊',
-      ItemCategory.other => '🔹',
-    };
 
 const supplementUnits = ['mg', 'mcg', 'IU', 'g', 'ml', 'tablet', 'capsule', 'drop', 'scoop'];
 

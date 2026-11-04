@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../data/supplement_catalog.dart';
 import '../widgets/common.dart';
 import '../../services/localized_texts.dart';
+import '../widgets/visuals.dart';
 
 /// Öğren: Temel bilgiler · Semptomlar · Emilim.
 class LearnScreen extends StatelessWidget {
@@ -101,7 +102,7 @@ class _SymptomsState extends State<_Symptoms> {
               Text(t.selectedSummary, style: TextStyle(fontWeight: FontWeight.w700, color: cs.onPrimaryContainer)),
               const SizedBox(height: 8),
               Wrap(spacing: 6, runSpacing: 6, children: [
-                for (final id in picked) Chip(avatar: Text(catalogById(id)?.emoji ?? ''), label: Text(catalogById(id)?.name.of(t.localeName) ?? id)),
+                for (final id in picked) Chip(avatar: SupplementIcon(catalogId: id, size: 22), label: Text(catalogById(id)?.name.of(t.localeName) ?? id)),
               ]),
             ]),
           ),

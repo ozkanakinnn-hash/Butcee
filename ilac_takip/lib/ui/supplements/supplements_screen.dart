@@ -42,7 +42,7 @@ class SupplementsScreen extends ConsumerWidget {
           margin: const EdgeInsets.fromLTRB(12, 8, 12, 4),
           color: Theme.of(context).colorScheme.secondaryContainer,
           child: ListTile(
-            leading: const Text('✨', style: TextStyle(fontSize: 24)),
+            leading: Icon(Icons.auto_awesome_rounded, color: Theme.of(context).colorScheme.onSecondaryContainer),
             title: Text(t.browsePresets, style: const TextStyle(fontWeight: FontWeight.w700)),
             trailing: const Icon(Icons.chevron_right),
             onTap: () => context.push('/presets'),

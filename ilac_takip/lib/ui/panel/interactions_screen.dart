@@ -33,7 +33,7 @@ class InteractionsScreen extends ConsumerWidget {
         margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
         child: ListTile(
           leading: Icon(icon, color: color, size: 30),
-          title: Text('${a.info?.emoji ?? ''} ${a.medicine.displayName}  ↔  ${b.info?.emoji ?? ''} ${b.medicine.displayName}',
+          title: Text('${a.medicine.displayName}  ↔  ${b.medicine.displayName}',
               style: const TextStyle(fontWeight: FontWeight.w700)),
           subtitle: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text(status, style: TextStyle(color: color, fontWeight: FontWeight.w600)),

@@ -18,7 +18,7 @@ class SupplementInfo {
     required this.id,
     required this.name,
     required this.category,
-    required this.emoji,
+    this.code,
     this.unit = 'mg',
     this.defaultAmount,
     this.meal = MealRelation.none,
@@ -35,7 +35,9 @@ class SupplementInfo {
   final String id;
   final L name;
   final ItemCategory category;
-  final String emoji;
+  /// Simgede gösterilen kısa kod: vitamin harfi ya da kimyasal sembol (D3, B12, Fe, Mg…).
+  /// null → kategori simgesi kullanılır.
+  final String? code;
   final String unit;
 
   /// Formu önceden doldurmak için yaygın etiket dozu — öneri DEĞİLDİR, kullanıcı etiketten girer.
@@ -64,60 +66,60 @@ const _fatSoluble = L(
 
 const supplementCatalog = <SupplementInfo>[
   SupplementInfo(
-    id: 'vitD', name: L('D Vitamini', 'Vitamin D'), category: ItemCategory.vitamin, emoji: '☀️',
+    id: 'vitD', name: L('D Vitamini', 'Vitamin D'), category: ItemCategory.vitamin, code: 'D3',
     unit: 'IU', defaultAmount: 1000, meal: MealRelation.withMeal, defaultSlot: 'earlyMorning',
     rdaMale: 600, rdaFemale: 600, ul: 4000, note: L('1 mcg = 40 IU. Yağda çözünür; yemekle alın.', '1 mcg = 40 IU. Fat-soluble; take with a meal.'),
     keywords: ['d3', 'kolekalsiferol', 'cholecalciferol'],
   ),
   SupplementInfo(
-    id: 'vitC', name: L('C Vitamini', 'Vitamin C'), category: ItemCategory.vitamin, emoji: '🍊',
+    id: 'vitC', name: L('C Vitamini', 'Vitamin C'), category: ItemCategory.vitamin, code: 'C',
     defaultAmount: 500, defaultSlot: 'earlyMorning', rdaMale: 90, rdaFemale: 75, ul: 2000,
     note: L('Bitkisel kaynaklı demirin emilimini artırabilir.', 'May increase absorption of plant-based iron.'),
     keywords: ['askorbik', 'ascorbic'],
   ),
   SupplementInfo(
-    id: 'vitB12', name: L('B12 Vitamini', 'Vitamin B12'), category: ItemCategory.vitamin, emoji: '🧬',
+    id: 'vitB12', name: L('B12 Vitamini', 'Vitamin B12'), category: ItemCategory.vitamin, code: 'B12',
     unit: 'mcg', defaultAmount: 1000, defaultSlot: 'earlyMorning', rdaMale: 2.4, rdaFemale: 2.4,
     note: L('Belirlenmiş üst sınırı yoktur. Vegan beslenmede ve ileri yaşta eksiklik daha sık görülür.',
         'No established upper limit. Deficiency is more common with vegan diets and older age.'),
     keywords: ['kobalamin', 'cobalamin', 'b 12'],
   ),
   SupplementInfo(
-    id: 'folate', name: L('Folat (B9)', 'Folate (B9)'), category: ItemCategory.vitamin, emoji: '🥬',
+    id: 'folate', name: L('Folat (B9)', 'Folate (B9)'), category: ItemCategory.vitamin, code: 'B9',
     unit: 'mcg', defaultAmount: 400, defaultSlot: 'earlyMorning', rdaMale: 400, rdaFemale: 400, ul: 1000,
     ulNote: L('Üst sınır yalnızca takviye/folik asit içindir.', 'Upper limit applies to supplemental folic acid only.'),
     keywords: ['folik asit', 'folic acid', 'b9'],
   ),
   SupplementInfo(
-    id: 'vitB1', name: L('B1 Vitamini (Tiamin)', 'Vitamin B1 (Thiamine)'), category: ItemCategory.vitamin, emoji: '🌾',
+    id: 'vitB1', name: L('B1 Vitamini (Tiamin)', 'Vitamin B1 (Thiamine)'), category: ItemCategory.vitamin, code: 'B1',
     defaultAmount: 100, rdaMale: 1.2, rdaFemale: 1.1, keywords: ['tiamin', 'thiamine'],
   ),
   SupplementInfo(
-    id: 'vitB6', name: L('B6 Vitamini', 'Vitamin B6'), category: ItemCategory.vitamin, emoji: '🍌',
+    id: 'vitB6', name: L('B6 Vitamini', 'Vitamin B6'), category: ItemCategory.vitamin, code: 'B6',
     defaultAmount: 25, rdaMale: 1.3, rdaFemale: 1.3, ul: 100,
     note: L('Uzun süreli yüksek doz sinir hasarına yol açabilir.', 'Long-term high doses can cause nerve damage.'),
     keywords: ['piridoksin', 'pyridoxine'],
   ),
   SupplementInfo(
-    id: 'biotin', name: L('Biyotin (B7)', 'Biotin (B7)'), category: ItemCategory.vitamin, emoji: '💇',
+    id: 'biotin', name: L('Biyotin (B7)', 'Biotin (B7)'), category: ItemCategory.vitamin, code: 'B7',
     unit: 'mcg', defaultAmount: 5000, rdaMale: 30, rdaFemale: 30, isAi: true,
     note: L('Yüksek doz biyotin bazı kan testlerinin sonucunu bozabilir; test öncesi doktorunuza söyleyin.',
         'High-dose biotin can interfere with some blood tests; tell your doctor before testing.'),
   ),
   SupplementInfo(
-    id: 'vitA', name: L('A Vitamini', 'Vitamin A'), category: ItemCategory.vitamin, emoji: '🥕',
+    id: 'vitA', name: L('A Vitamini', 'Vitamin A'), category: ItemCategory.vitamin, code: 'A',
     unit: 'mcg', defaultAmount: 750, meal: MealRelation.withMeal, rdaMale: 900, rdaFemale: 700, ul: 3000,
     ulNote: L('Üst sınır hazır (retinol) A vitamini içindir. Gebelikte fazlası zararlıdır.',
         'Upper limit applies to preformed vitamin A (retinol). Excess is harmful in pregnancy.'),
     note: _fatSoluble, keywords: ['retinol'],
   ),
   SupplementInfo(
-    id: 'vitE', name: L('E Vitamini', 'Vitamin E'), category: ItemCategory.vitamin, emoji: '🌻',
+    id: 'vitE', name: L('E Vitamini', 'Vitamin E'), category: ItemCategory.vitamin, code: 'E',
     defaultAmount: 15, meal: MealRelation.withMeal, rdaMale: 15, rdaFemale: 15, ul: 1000,
     note: _fatSoluble, keywords: ['tokoferol', 'tocopherol'],
   ),
   SupplementInfo(
-    id: 'vitK', name: L('K Vitamini (K2)', 'Vitamin K (K2)'), category: ItemCategory.vitamin, emoji: '🥦',
+    id: 'vitK', name: L('K Vitamini (K2)', 'Vitamin K (K2)'), category: ItemCategory.vitamin, code: 'K2',
     unit: 'mcg', defaultAmount: 100, meal: MealRelation.withMeal, defaultSlot: 'earlyMorning',
     rdaMale: 120, rdaFemale: 90, isAi: true,
     note: L('Kan sulandırıcı (ör. varfarin) kullanıyorsanız doktorunuza danışmadan başlamayın.',
@@ -125,76 +127,76 @@ const supplementCatalog = <SupplementInfo>[
     keywords: ['mk7', 'mk-7', 'menakinon'],
   ),
   SupplementInfo(
-    id: 'calcium', name: L('Kalsiyum', 'Calcium'), category: ItemCategory.mineral, emoji: '🦴',
+    id: 'calcium', name: L('Kalsiyum', 'Calcium'), category: ItemCategory.mineral, code: 'Ca',
     defaultAmount: 500, meal: MealRelation.withMeal, defaultSlot: 'noon', rdaMale: 1000, rdaFemale: 1000, ul: 2500,
     note: L('Bir seferde en fazla ~500 mg daha iyi emilir. Demir ve tiroid ilacından ayrı saatte alın.',
         'Absorbed best in doses of ~500 mg or less. Take apart from iron and thyroid medicine.'),
   ),
   SupplementInfo(
-    id: 'magnesium', name: L('Magnezyum', 'Magnesium'), category: ItemCategory.mineral, emoji: '🌙',
+    id: 'magnesium', name: L('Magnezyum', 'Magnesium'), category: ItemCategory.mineral, code: 'Mg',
     defaultAmount: 200, defaultSlot: 'evening', rdaMale: 420, rdaFemale: 320, ul: 350,
     ulNote: L('Üst sınır yalnızca takviyeden alınan magnezyum içindir; fazlası ishal yapabilir.',
         'Upper limit applies to supplemental magnesium only; excess may cause diarrhoea.'),
   ),
   SupplementInfo(
-    id: 'iron', name: L('Demir', 'Iron'), category: ItemCategory.mineral, emoji: '🧲',
+    id: 'iron', name: L('Demir', 'Iron'), category: ItemCategory.mineral, code: 'Fe',
     defaultAmount: 18, meal: MealRelation.emptyStomach, defaultSlot: 'lateMorning',
     rdaMale: 8, rdaFemale: 18, ul: 45,
     note: L('Aç karnına daha iyi emilir; mideyi rahatsız ederse az bir yemekle alınabilir. Kahve/çay ve kalsiyumdan ayrı alın.',
         'Absorbed best on an empty stomach; take with a little food if it upsets your stomach. Keep apart from coffee/tea and calcium.'),
   ),
   SupplementInfo(
-    id: 'zinc', name: L('Çinko', 'Zinc'), category: ItemCategory.mineral, emoji: '🛡️',
+    id: 'zinc', name: L('Çinko', 'Zinc'), category: ItemCategory.mineral, code: 'Zn',
     defaultAmount: 15, meal: MealRelation.withMeal, defaultSlot: 'noon', rdaMale: 11, rdaFemale: 8, ul: 40,
     note: L('Aç karnına mide bulantısı yapabilir. Uzun süre yüksek doz bakır eksikliğine yol açabilir.',
         'May cause nausea on an empty stomach. Long-term high doses can lead to copper deficiency.'),
   ),
   SupplementInfo(
-    id: 'selenium', name: L('Selenyum', 'Selenium'), category: ItemCategory.mineral, emoji: '🌰',
+    id: 'selenium', name: L('Selenyum', 'Selenium'), category: ItemCategory.mineral, code: 'Se',
     unit: 'mcg', defaultAmount: 55, meal: MealRelation.withMeal, rdaMale: 55, rdaFemale: 55, ul: 400,
   ),
   SupplementInfo(
-    id: 'iodine', name: L('İyot', 'Iodine'), category: ItemCategory.mineral, emoji: '🌊',
+    id: 'iodine', name: L('İyot', 'Iodine'), category: ItemCategory.mineral, code: 'I',
     unit: 'mcg', defaultAmount: 150, rdaMale: 150, rdaFemale: 150, ul: 1100,
     note: L('Tiroid hastalığınız varsa doktorunuza danışın.', 'Talk to your doctor if you have a thyroid condition.'),
   ),
   SupplementInfo(
-    id: 'copper', name: L('Bakır', 'Copper'), category: ItemCategory.mineral, emoji: '🟠',
+    id: 'copper', name: L('Bakır', 'Copper'), category: ItemCategory.mineral, code: 'Cu',
     unit: 'mcg', defaultAmount: 900, meal: MealRelation.withMeal, rdaMale: 900, rdaFemale: 900, ul: 10000,
   ),
   SupplementInfo(
-    id: 'potassium', name: L('Potasyum', 'Potassium'), category: ItemCategory.mineral, emoji: '🥑',
+    id: 'potassium', name: L('Potasyum', 'Potassium'), category: ItemCategory.mineral, code: 'K',
     defaultAmount: 99, meal: MealRelation.withMeal, rdaMale: 3400, rdaFemale: 2600, isAi: true,
     note: L('Böbrek hastalığında ve bazı tansiyon ilaçlarıyla tehlikeli olabilir; doktorunuza danışın.',
         'Can be dangerous with kidney disease and some blood-pressure medicines; ask your doctor.'),
   ),
   SupplementInfo(
-    id: 'omega3', name: L('Omega-3 (Balık yağı)', 'Omega-3 (Fish oil)'), category: ItemCategory.fattyAcid, emoji: '🐟',
+    id: 'omega3', name: L('Omega-3 (Balık yağı)', 'Omega-3 (Fish oil)'), category: ItemCategory.fattyAcid, code: 'Ω3',
     defaultAmount: 1000, meal: MealRelation.withMeal, defaultSlot: 'earlyMorning',
     note: L('EPA/DHA için resmî RDA yoktur. Yemekle almak balık tadı geri dönüşünü azaltır. Kan sulandırıcı kullanıyorsanız doktorunuza danışın.',
         'There is no official RDA for EPA/DHA. Taking it with food reduces fishy burps. Ask your doctor if you take blood thinners.'),
     keywords: ['epa', 'dha', 'balık yağı', 'fish oil'],
   ),
   SupplementInfo(
-    id: 'multi', name: L('Multivitamin', 'Multivitamin'), category: ItemCategory.multi, emoji: '🌈',
+    id: 'multi', name: L('Multivitamin', 'Multivitamin'), category: ItemCategory.multi, code: 'A–Z',
     unit: 'tablet', defaultAmount: 1, meal: MealRelation.withMeal, defaultSlot: 'earlyMorning',
     note: L('İçeriğindeki vitamin ve mineraller diğer takviyelerinizle toplanır; üst sınırları kontrol edin.',
         'Its vitamins and minerals add up with your other supplements; check upper limits.'),
   ),
   SupplementInfo(
-    id: 'probiotic', name: L('Probiyotik', 'Probiotic'), category: ItemCategory.probiotic, emoji: '🦠',
+    id: 'probiotic', name: L('Probiyotik', 'Probiotic'), category: ItemCategory.probiotic,
     unit: 'capsule', defaultAmount: 1, defaultSlot: 'earlyMorning',
   ),
   SupplementInfo(
-    id: 'collagen', name: L('Kolajen', 'Collagen'), category: ItemCategory.protein, emoji: '✨',
+    id: 'collagen', name: L('Kolajen', 'Collagen'), category: ItemCategory.protein,
     unit: 'g', defaultAmount: 10, defaultSlot: 'earlyMorning',
   ),
   SupplementInfo(
-    id: 'coq10', name: L('Koenzim Q10', 'Coenzyme Q10'), category: ItemCategory.other, emoji: '⚡',
+    id: 'coq10', name: L('Koenzim Q10', 'Coenzyme Q10'), category: ItemCategory.other, code: 'Q10',
     defaultAmount: 100, meal: MealRelation.withMeal, note: _fatSoluble, keywords: ['q10', 'ubikinon'],
   ),
   SupplementInfo(
-    id: 'ashwagandha', name: L('Ashwagandha', 'Ashwagandha'), category: ItemCategory.herbal, emoji: '🌿',
+    id: 'ashwagandha', name: L('Ashwagandha', 'Ashwagandha'), category: ItemCategory.herbal,
     defaultAmount: 300, defaultSlot: 'evening',
     note: L('Bitkisel üründür; gebelikte, tiroid ve otoimmün hastalıklarda ve ilaç kullanıyorsanız doktorunuza danışın.',
         'Herbal product; ask your doctor if pregnant, if you have thyroid or autoimmune disease, or take medicines.'),
@@ -344,36 +346,35 @@ class PresetItem {
 }
 
 class SupplementPreset {
-  const SupplementPreset({required this.id, required this.name, required this.description, required this.emoji, required this.items});
+  const SupplementPreset({required this.id, required this.name, required this.description, required this.items});
   final String id;
   final L name;
   final L description;
-  final String emoji;
   final List<PresetItem> items;
 }
 
 /// Örnek düzenler — "ayrı alın" kurallarına uyacak şekilde dilimlere dağıtılmıştır.
 const supplementPresets = <SupplementPreset>[
   SupplementPreset(
-    id: 'balanced', emoji: '⚖️',
+    id: 'balanced',
     name: L('Dengeli başlangıç', 'Balanced start'),
     description: L('Multivitamin, D vitamini, omega-3 ve akşam magnezyumu.', 'Multivitamin, vitamin D, omega-3 and evening magnesium.'),
     items: [PresetItem('multi', 'earlyMorning'), PresetItem('vitD', 'earlyMorning'), PresetItem('omega3', 'earlyMorning'), PresetItem('magnesium', 'evening')],
   ),
   SupplementPreset(
-    id: 'bone', emoji: '🦴',
+    id: 'bone',
     name: L('Kemik sağlığı', 'Bone health'),
     description: L('Kalsiyum öğle yemeğiyle; D ve K vitamini sabah; magnezyum akşam.', 'Calcium with lunch; vitamins D and K in the morning; magnesium in the evening.'),
     items: [PresetItem('vitD', 'earlyMorning'), PresetItem('vitK', 'earlyMorning'), PresetItem('calcium', 'noon'), PresetItem('magnesium', 'evening')],
   ),
   SupplementPreset(
-    id: 'immune', emoji: '🛡️',
+    id: 'immune',
     name: L('Bağışıklık', 'Immune support'),
     description: L('C ve D vitamini sabah, çinko öğle yemeğiyle.', 'Vitamins C and D in the morning, zinc with lunch.'),
     items: [PresetItem('vitC', 'earlyMorning'), PresetItem('vitD', 'earlyMorning'), PresetItem('zinc', 'noon')],
   ),
   SupplementPreset(
-    id: 'energy', emoji: '🔋',
+    id: 'energy',
     name: L('Enerji (B12 + demir)', 'Energy (B12 + iron)'),
     description: L('B12 ve folat sabah; demir C vitaminiyle geç sabah, aç karnına.', 'B12 and folate in the morning; iron with vitamin C late morning, on an empty stomach.'),
     items: [PresetItem('vitB12', 'earlyMorning'), PresetItem('folate', 'earlyMorning'), PresetItem('iron', 'lateMorning'), PresetItem('vitC', 'lateMorning')],

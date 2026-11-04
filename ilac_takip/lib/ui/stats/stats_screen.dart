@@ -13,8 +13,6 @@ import '../../services/localized_texts.dart';
 class StatsScreen extends ConsumerWidget {
   const StatsScreen({super.key});
 
-  static const _moodEmojis = ['😣', '😕', '😐', '🙂', '😄'];
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final t = context.l10n;
@@ -96,10 +94,9 @@ class StatsScreen extends ConsumerWidget {
                       for (final d in value.days30)
                         Tooltip(
                           message: DateFormat.MMMd(t.localeName).format(d.day),
-                          child: Text(
-                            value.moods[dayKey(d.day)] == null ? '·' : _moodEmojis[value.moods[dayKey(d.day)]! - 1],
-                            style: const TextStyle(fontSize: 18),
-                          ),
+                          child: value.moods[dayKey(d.day)] == null
+                              ? Icon(Icons.circle, size: 6, color: Theme.of(context).colorScheme.outlineVariant)
+                              : Icon(moodIcons[value.moods[dayKey(d.day)]! - 1], size: 20, color: moodColors[value.moods[dayKey(d.day)]! - 1]),
                         ),
                     ]),
             ),

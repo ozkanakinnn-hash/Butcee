@@ -46,7 +46,7 @@ class TodayScreen extends ConsumerWidget {
               padding: const EdgeInsets.only(right: 4),
               child: Chip(
                 key: const Key('streakChip'),
-                avatar: const Text('🔥'),
+                avatar: const Icon(Icons.local_fire_department_rounded, color: Color(0xFFF57C00)),
                 label: Text('$streak'),
                 visualDensity: VisualDensity.compact,
               ),
@@ -247,7 +247,6 @@ class _ConflictCard extends StatelessWidget {
 
 class _MoodRow extends ConsumerWidget {
   const _MoodRow();
-  static const emojis = ['😣', '😕', '😐', '🙂', '😄'];
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -261,7 +260,7 @@ class _MoodRow extends ConsumerWidget {
           Text(t.moodQuestion, style: Theme.of(context).textTheme.titleSmall),
           const SizedBox(height: 8),
           Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
-            for (var i = 0; i < emojis.length; i++)
+            for (var i = 0; i < moodIcons.length; i++)
               InkWell(
                 customBorder: const CircleBorder(),
                 onTap: () => ref.read(servicesProvider).db.setMood(DateTime.now(), i + 1),
@@ -272,7 +271,7 @@ class _MoodRow extends ConsumerWidget {
                     shape: BoxShape.circle,
                     color: mood == i + 1 ? Theme.of(context).colorScheme.primaryContainer : null,
                   ),
-                  child: Text(emojis[i], style: TextStyle(fontSize: mood == i + 1 ? 32 : 26)),
+                  child: Icon(moodIcons[i], size: mood == i + 1 ? 36 : 30, color: mood == i + 1 ? moodColors[i] : Theme.of(context).colorScheme.outline),
                 ),
               ),
           ]),
@@ -292,7 +291,7 @@ class _EmptyToday extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(32),
         child: Column(mainAxisSize: MainAxisSize.min, children: [
-          const Text('🌱', style: TextStyle(fontSize: 64)),
+          Icon(Icons.spa_outlined, size: 72, color: Theme.of(context).colorScheme.primary),
           const SizedBox(height: 12),
           Text(t.emptyTodayTitle, style: Theme.of(context).textTheme.titleLarge, textAlign: TextAlign.center),
           const SizedBox(height: 8),

@@ -125,7 +125,7 @@ class SupplementDetailScreen extends ConsumerWidget {
       final clash = conflicts.any((c) => c.rule == r);
       return ListTile(
         contentPadding: EdgeInsets.zero,
-        leading: Text(other?.emoji ?? '•', style: const TextStyle(fontSize: 24)),
+        leading: SupplementIcon(catalogId: otherId, size: 36),
         title: Text.rich(TextSpan(children: [
           TextSpan(text: other?.name.of(t.localeName) ?? otherId, style: const TextStyle(fontWeight: FontWeight.w600)),
           if (inList) TextSpan(text: '  · ${t.inYourList}', style: TextStyle(color: Theme.of(context).colorScheme.primary, fontSize: 12)),

@@ -15,6 +15,7 @@ import '../../services/supplement_service.dart';
 import '../../state/providers.dart';
 import '../widgets/common.dart';
 import 'supplement_detail_screen.dart';
+import '../widgets/visuals.dart';
 
 /// Ekleme ekranına ön doldurma verisi: katalog takviyesi, taranan kutu veya elle ad.
 class AddSupplementArgs {
@@ -178,7 +179,7 @@ class _AddSupplementScreenState extends ConsumerState<AddSupplementScreen> {
       body: Form(
         key: _formKey,
         child: ListView(padding: const EdgeInsets.fromLTRB(16, 8, 16, 32), children: [
-          if (_info != null) Center(child: Text(_info.emoji, style: const TextStyle(fontSize: 48))),
+          if (_info != null) Padding(padding: const EdgeInsets.only(bottom: 8), child: Center(child: SupplementIcon(catalogId: _info.id, size: 72))),
           TextFormField(controller: _name, decoration: InputDecoration(labelText: t.medicineName), validator: required),
           const SizedBox(height: 12),
           DropdownButtonFormField<ItemCategory>(

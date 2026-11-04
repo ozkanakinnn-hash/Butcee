@@ -6,6 +6,7 @@ import '../../domain/models.dart';
 import '../../services/localized_texts.dart';
 import '../widgets/common.dart';
 import 'add_supplement_screen.dart';
+import '../widgets/visuals.dart';
 
 /// Takviye seç: arama + kategori filtresi; listede yoksa elle ekle ya da kutuyu tara.
 class CatalogPickerScreen extends StatefulWidget {
@@ -60,7 +61,7 @@ class _CatalogPickerScreenState extends State<CatalogPickerScreen> {
           child: ListView(children: [
             for (final s in results)
               ListTile(
-                leading: Text(s.emoji, style: const TextStyle(fontSize: 28)),
+                leading: SupplementIcon(catalogId: s.id, size: 44),
                 title: Text(s.name.of(t.localeName)),
                 subtitle: Text(categoryLabel(t, s.category)),
                 trailing: const Icon(Icons.add_circle_outline),
