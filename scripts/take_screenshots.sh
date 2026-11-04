@@ -71,9 +71,10 @@ adb shell input keyevent KEYCODE_BACK; sleep 2
 tap_text "Özel Gün Kartları"; shot 06f_ozel_gun_kartlari 5
 tap_text "Kurban Bayramı"; shot 06g_kart_kurban 4
 adb shell input keyevent KEYCODE_BACK; sleep 2
-for opt in "🕌 Sonraki Namaz & Geri Sayım" "🗓️ Günün 5 Vakti" "📖 Günün Manevi İklimi"; do
-  tap_text "Ana Ekran Widget'ı"; sleep 2; tap_text "$opt"; sleep 3
-  adb exec-out screencap -p > $OUT/06h_widget_dialog.png
+# Seçenek satırları (1080x2400): y = 1074 / 1201 / 1327
+for y in 1074 1201 1327; do
+  tap_text "Ana Ekran Widget'ı"; sleep 2; adb shell input tap 540 $y; sleep 4
+  adb exec-out screencap -p > $OUT/06h_widget_pin_$y.png
   tap_text "Add to home screen" || tap_text "ADD TO HOME SCREEN" || tap_text "Add"
   sleep 3; adb shell am start -n $PKG/com.example.MainActivity; sleep 3
 done
