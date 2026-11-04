@@ -44,6 +44,8 @@ PY
 launch () {
   adb logcat -c
   adb shell am start -n $PKG/com.example.MainActivity; sleep 15
+  # Emülatördeki "Pixel Launcher isn't responding" uyarısını kapat
+  tap_text "Wait" || true
   # Çökme olursa yığın izini kaydet
   adb logcat -d -b crash >> $OUT/crash_log.txt
   adb logcat -d | grep -B2 -A60 "FATAL EXCEPTION" >> $OUT/crash_log.txt || true
@@ -68,7 +70,9 @@ tap_text "Ramazan Rehberi"; shot 06c_ramazan_rehberi 3
 adb shell input swipe 540 1800 540 600 500; shot 06d_rehber_faydalar 2
 adb shell input swipe 540 1800 540 600 500; shot 06e_rehber_iftar_sahur 2
 adb shell input keyevent KEYCODE_BACK; sleep 2
+tap_text "Wait" || true
 tap_text "Özel Gün Kartları"; shot 06f_ozel_gun_kartlari 5
+tap_text "Wait" || true; shot 06f_ozel_gun_kartlari 2
 tap_text "Kurban Bayramı"; shot 06g_kart_kurban 4
 adb shell input keyevent KEYCODE_BACK; sleep 2
 # Seçenek satırları (1080x2400): y = 1074 / 1201 / 1327
