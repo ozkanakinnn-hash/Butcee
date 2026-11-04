@@ -106,9 +106,9 @@ fun Onboarding() {
         )
         2 -> Welcome(
           Icons.Filled.Bedtime,
-          t("Ne kadar dinlendiğinizi bilin.", "Know how rested you really are."),
-          t("Uykunuzu ve enerjinizi takip edin, vardiyanıza uygun nazik hatırlatmalar alın.",
-            "Track sleep and energy, and get gentle reminders that fit your shifts."),
+          t("Her vardiyadan sonra nasıl toparlandığınızı görün.", "See how well you recover after every shift."),
+          t("Her vardiyanın ardından dört kısa soru, zamanla nazik içgörüler ve vardiyanıza uygun hatırlatmalar.",
+            "Four quick questions after each shift, gentle insights over time and reminders that fit your shifts."),
         )
         3 -> {
           Title(t("Dilinizi seçin", "Choose your language"))
@@ -198,14 +198,14 @@ fun Onboarding() {
           }
         }
         8 -> {
-          Title(t("Kendinizi iyi hissetmek için ne kadar uykuya ihtiyacınız var?", "How much sleep do you need to feel good?"))
+          Title(t("Genellikle ne kadar uyku sizi dinlenmiş hissettirir? (isteğe bağlı)", "How much sleep usually helps you feel rested? (optional)"))
           Text(fmtDur(Store.sleepGoalMin), style = MaterialTheme.typography.displaySmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
           Slider(
             value = Store.sleepGoalMin.toFloat(),
             onValueChange = { Store.sleepGoalMin = ((it / 15f).toInt() * 15) },
             valueRange = 300f..600f,
           )
-          Text(t("Çoğu yetişkinin 7–9 saate ihtiyacı vardır.", "Most adults need 7–9 hours."), color = MaterialTheme.colorScheme.onSurfaceVariant)
+          Text(t("Yalnızca toparlanma puanınızda kullanılır; hedef olarak gösterilmez. Atlarsanız 7 sa 30 dk varsayılır.", "Only used for your recovery score; never shown as a target. If you skip, 7 h 30 m is assumed."), color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         9 -> {
           Welcome(
@@ -236,7 +236,7 @@ fun Onboarding() {
             },
           )
           Text(
-            t("İpucu: Uyku borcu puanınızı başlatmak için son uykunuzu kaydedin.", "Tip: log last night's sleep to start your sleep-debt score."),
+            t("Bir sonraki vardiyanızdan sonra nasıl toparlandığınızı görmek için dört kısa soru soracağız.", "After your next shift we'll ask four quick questions to see how you're recovering."),
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth(),
@@ -250,6 +250,13 @@ fun Onboarding() {
       in 0..2 -> {
         BigButton(if (page == 2) t("Başlayalım", "Get started") else t("İleri", "Next")) { page++ }
         TextButton(onClick = { page = 3 }, modifier = Modifier.fillMaxWidth()) { Text(t("Atla", "Skip")) }
+      }
+      8 -> {
+        BigButton(t("Devam", "Continue")) { page++ }
+        TextButton(onClick = {
+          Store.sleepGoalMin = 450
+          page++
+        }, modifier = Modifier.fillMaxWidth()) { Text(t("Atla", "Skip")) }
       }
       4 -> {
         BigButton(t("Devam", "Continue")) { page++ }
@@ -266,11 +273,7 @@ fun Onboarding() {
         TextButton(onClick = { page = LAST }, modifier = Modifier.fillMaxWidth()) { Text(t("Şimdi değil", "Not now")) }
       }
       LAST -> {
-        BigButton(t("Son uykumu kaydet", "Log my last sleep")) {
-          finish()
-          Nav.dialog = "sleeplog"
-        }
-        TextButton(onClick = { finish() }, modifier = Modifier.fillMaxWidth()) { Text(t("Bugün ekranına git", "Go to Today")) }
+        BigButton(t("Bugün ekranına git", "Go to Today")) { finish() }
       }
       else -> BigButton(t("Devam", "Continue")) { page++ }
     }

@@ -200,36 +200,6 @@ fun HBar(label: String, value: Float, max: Float, valueText: String, color: Colo
   }
 }
 
-/** Uyku borcu halkası (0 → maxMin). */
-@Composable
-fun DebtRing(debtMin: Int, maxMin: Int = 600, size: Dp = 96.dp, center: @Composable () -> Unit) {
-  val frac = (debtMin.toFloat() / maxMin).coerceIn(0f, 1f)
-  val c = debtColor(debtMin)
-  val track = MaterialTheme.colorScheme.surfaceVariant
-  Box(Modifier.size(size), contentAlignment = Alignment.Center) {
-    Canvas(Modifier.size(size)) {
-      val sw = this.size.minDimension * 0.1f
-      val inset = sw / 2
-      val s = Size(this.size.width - sw, this.size.height - sw)
-      drawArc(track, 135f, 270f, false, topLeft = Offset(inset, inset), size = s, style = Stroke(sw, cap = StrokeCap.Round))
-      drawArc(c, 135f, 270f * frac.coerceAtLeast(0.02f), false, topLeft = Offset(inset, inset), size = s, style = Stroke(sw, cap = StrokeCap.Round))
-    }
-    center()
-  }
-}
-
-fun debtColor(debtMin: Int): Color = when {
-  debtMin <= 180 -> Success
-  debtMin <= 420 -> Warning
-  else -> Alert
-}
-
-fun debtLabel(debtMin: Int): String = when {
-  debtMin <= 180 -> t("İyi dinlenmiş", "Well rested")
-  debtMin <= 420 -> t("Hafif uyku borcu", "Mild sleep debt")
-  else -> t("Yüksek uyku borcu", "High sleep debt")
-}
-
 @Composable
 fun TimePickDialog(title: String, initialMin: Int, onDismiss: () -> Unit, onPick: (Int) -> Unit) {
   val st = rememberTimePickerState(initialHour = (initialMin / 60) % 24, initialMinute = initialMin % 60, is24Hour = true)

@@ -40,16 +40,14 @@ import java.time.LocalDate
 
 @Composable
 fun StatsScreen() {
-  val ctx = LocalContext.current
   var month by rememberSaveable { mutableStateOf(false) }
   val today = Store.today()
   val n = if (month) 30 else 7
   val days = (n - 1 downTo 0).map { today.minusDays(it.toLong()) }
 
-  val sleepVals = days.map { Store.sleepMinOn(it) }
-  val dataDays = days.count { Store.hasSleep(it) }
-  val totalSleep = sleepVals.sum()
-  val avgSleep = if (dataDays == 0) 0 else totalSleep / dataDays
+  val scores = days.map { com.nobet.data.Recovery.scoreOn(it) }
+  val scored = scores.filterNotNull()
+  val avgRec = if (scored.isEmpty()) null else scored.average().toInt()
   val works = days.mapNotNull { Store.workOn(it) }
   val nights = works.count { it.type.isNight }
   val workMin = works.sumOf { it.type.durationMin }
@@ -71,42 +69,30 @@ fun StatsScreen() {
     }
 
     Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-      StatTile(t("Ort. uyku", "Avg sleep"), if (dataDays == 0) "–" else fmtDur(avgSleep), t("$dataDays gün veri", "$dataDays days of data"), Modifier.weight(1f))
-      StatTile(t("Toplam uyku", "Total sleep"), fmtHours(totalSleep), t("son $n gün", "last $n days"), Modifier.weight(1f))
+      StatTile(t("Ort. toparlanma", "Avg recovery"), avgRec?.toString() ?: "–", t("${scored.size} kontrol", "${scored.size} check-ins"), Modifier.weight(1f))
+      StatTile(t("Vardiya", "Shifts"), "${works.size}", t("$nights gece · ${fmtHours(workMin)}", "$nights nights · ${fmtHours(workMin)}"), Modifier.weight(1f))
     }
     Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-      StatTile(t("Gece vardiyası", "Night shifts"), "$nights", t("${works.size} çalışma günü", "${works.size} work days"), Modifier.weight(1f))
-      StatTile(t("Ort. enerji", "Avg energy"), avgEnergy?.let { fmtNum(it) } ?: "–", t("${fmtHours(workMin)} çalışma", "${fmtHours(workMin)} worked"), Modifier.weight(1f))
+      StatTile(t("Ort. enerji", "Avg energy"), avgEnergy?.let { fmtNum(it) } ?: "–", t("son $n gün", "last $n days"), Modifier.weight(1f))
+      val rem = Store.leaveRemaining()
+      StatTile(t("Kalan izin", "Leave left"), fmtNum(rem).removeSuffix(",0").removeSuffix(".0"), t("${fmtNum(Store.leaveUsed()).removeSuffix(",0").removeSuffix(".0")} gün kullanıldı", "${fmtNum(Store.leaveUsed()).removeSuffix(",0").removeSuffix(".0")} days used"), Modifier.weight(1f))
     }
 
     NCard(Modifier.fillMaxWidth()) {
-      Text(t("Uyku saatleri", "Sleep hours"), style = MaterialTheme.typography.titleMedium)
+      Text(t("Vardiya sonrası toparlanma", "Post-shift recovery"), style = MaterialTheme.typography.titleMedium)
       Gap(8.dp)
       BarChart(
-        values = sleepVals.map { it / 60f },
+        values = scores.map { (it ?: 0).toFloat() },
         labels = days.mapIndexed { i, d -> if (!month) dowShort(d.dayOfWeek) else if (i % 5 == 4) "${d.dayOfMonth}" else "" },
         color = MaterialTheme.colorScheme.primary,
-        goal = Store.sleepGoalMin / 60f,
+        goal = 75f,
       )
+      Text(t("Kesikli çizgi: 75 (iyi toparlanma)", "Dashed line: 75 (well recovered)"), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 
-    SleepShiftCard()
+    JournalCard()
 
     if (Store.premium) {
-      NCard(Modifier.fillMaxWidth()) {
-        Text(t("Vardiya türüne göre enerji", "Energy by shift type"), style = MaterialTheme.typography.titleMedium)
-        Text(t("Son 60 gün", "Last 60 days"), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        Gap(8.dp)
-        val byType = energyByType(today)
-        if (byType.isEmpty()) {
-          Text(t("Enerji kaydı ekledikçe burada görünecek.", "This fills in as you log energy."), style = MaterialTheme.typography.bodySmall)
-        } else {
-          byType.forEach { (id, avg) ->
-            val ty = Store.typeById(id)
-            HBar(ty?.let { typeName(it) } ?: t("Vardiyasız", "No shift"), avg, 10f, fmtNum(avg) + " / 10", ty?.let { shiftColor(it) } ?: MaterialTheme.colorScheme.secondary)
-          }
-        }
-      }
       NCard(Modifier.fillMaxWidth()) {
         Text(t("Vardiya dağılımı", "Shift distribution"), style = MaterialTheme.typography.titleMedium)
         Gap(8.dp)
@@ -121,83 +107,55 @@ fun StatsScreen() {
     } else {
       LockedCard(
         t("Detaylı istatistikler", "Detailed statistics"),
-        t("Vardiya türüne göre enerji, vardiya dağılımı, aylık eğilimler ve dışa aktarma.", "Energy by shift type, shift mix, monthly trends and export."),
+        t("Vardiya dağılımı ve aylık görünüm.", "Shift distribution and monthly view."),
       ) { Nav.paywall(t("Detaylı istatistikler", "Detailed statistics")) }
     }
 
-    SectionTitle(t("İçgörüler", "Insights"))
-    val ins = insights(today)
-    val shown = if (Store.premium) ins else ins.take(1)
-    if (shown.isEmpty()) {
-      Text(
-        t("Birkaç gün uyku ve enerji kaydettikten sonra kişisel içgörüler burada görünecek.", "Personal insights will appear after a few days of sleep and energy logs."),
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-      )
-    }
-    shown.forEach { s ->
-      NCard(Modifier.fillMaxWidth(), container = MaterialTheme.colorScheme.secondaryContainer) {
-        Text(s, color = MaterialTheme.colorScheme.onSecondaryContainer)
-      }
-    }
-    if (!Store.premium && ins.size > 1) {
-      Text(
-        t("+${ins.size - 1} içgörü daha Premium'da", "+${ins.size - 1} more insights with Premium"),
-        color = MaterialTheme.colorScheme.primary,
-        modifier = Modifier.padding(start = 4.dp),
-      )
-    }
-
-    BigButton(t("Verileri dışa aktar (CSV)", "Export data (CSV)") + if (Store.premium) "" else " 🔒", outlined = true) {
-      if (Store.premium) shareCsv(ctx) else Nav.paywall(t("Veri dışa aktarma", "Data export"))
-    }
     Spacer(Modifier.height(72.dp))
   }
 }
 
-fun categoryName(c: String): String = when (c) {
-  "postNight" -> t("Gece vardiyası sonrası", "After a night shift")
-  "preNight" -> t("Gece vardiyası günü", "Night-shift day")
-  "work" -> t("Gündüz/akşam çalışma günü", "Day/evening work day")
-  else -> t("İzin günü", "Day off")
-}
-
-/** Vardiya türlerinin uyku süresi ve kalitesine etkisi. */
+/** Vardiya günlüğü: son notlar, etikete göre filtre. */
 @Composable
-fun SleepShiftCard() {
-  val stats = Store.sleepByCategory(60)
+fun JournalCard() {
+  var filter by rememberSaveable { mutableStateOf("") }
+  val entries = Store.notes.entries.sortedByDescending { it.key }
+    .filter { filter.isEmpty() || filter in it.value.tags }
   NCard(Modifier.fillMaxWidth()) {
-    Text(t("Vardiyalar uykunuzu nasıl etkiliyor?", "How shifts affect your sleep"), style = MaterialTheme.typography.titleMedium)
-    Text(t("Son 60 gün · ortalama süre ve kalite", "Last 60 days · average duration and quality"), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    Text(t("Vardiya günlüğü", "Shift journal"), style = MaterialTheme.typography.titleMedium)
+    Text(t("Notlar yalnızca sizde kalır, paylaşılmaz.", "Notes stay with you and are never shared."), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
     Gap(8.dp)
-    if (stats.isEmpty()) {
-      Text(t("Uyku kaydettikçe vardiya türlerine göre karşılaştırma burada görünür.", "As you log sleep, a comparison by shift type appears here."), style = MaterialTheme.typography.bodySmall)
-      return@NCard
+    androidx.compose.foundation.layout.FlowRow(
+      horizontalArrangement = Arrangement.spacedBy(6.dp),
+      verticalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+      com.nobet.data.Recovery.journalTags.forEach { tg ->
+        androidx.compose.material3.FilterChip(
+          selected = filter == tg,
+          onClick = { filter = if (filter == tg) "" else tg },
+          label = { Text(com.nobet.data.Recovery.tagName(tg)) },
+        )
+      }
     }
-    val maxMin = maxOf(stats.values.maxOf { it.avgMin }, Store.sleepGoalMin).toFloat()
-    listOf("postNight", "preNight", "work", "off").forEach { c ->
-      val st = stats[c] ?: return@forEach
-      val q = if (st.avgQuality > 0f) " · " + com.nobet.i18n.qualityEmoji[(st.avgQuality.toInt() - 1).coerceIn(0, 4)] + " " + fmtNum(st.avgQuality) + "/5" else ""
-      HBar(
-        categoryName(c) + t(" (${st.days} gün)", " (${st.days} days)"),
-        st.avgMin.toFloat(),
-        maxMin,
-        fmtDur(st.avgMin) + q,
-        when (c) {
-          "postNight", "preNight" -> MaterialTheme.colorScheme.primary
-          "work" -> Warning
-          else -> Success
-        },
-      )
-    }
-    val pn = stats["postNight"]
-    val off = stats["off"]
-    if (pn != null) {
-      Gap(8.dp)
+    Gap(8.dp)
+    if (entries.isEmpty()) {
       Text(
-        t("Gece vardiyalarından sonra ortalama ${fmtHours(pn.avgMin)} uyuyorsunuz", "After night shifts, you sleep an average of ${fmtHours(pn.avgMin)}") +
-          if (off != null) t(" (izin günlerinde ${fmtHours(off.avgMin)}).", " (${fmtHours(off.avgMin)} on days off).") else ".",
-        fontWeight = FontWeight.SemiBold,
+        t("Takvimde bir güne dokunup vardiyanıza kısa bir not ekleyebilirsiniz.", "Tap a day in the calendar to add a short note to your shift."),
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
       )
+    }
+    entries.take(8).forEach { (k, n) ->
+      val d = runCatching { LocalDate.parse(k) }.getOrNull() ?: return@forEach
+      Column(Modifier.fillMaxWidth().padding(vertical = 6.dp)) {
+        Text(
+          com.nobet.i18n.relDay(d) + (Store.shiftOn(d)?.let { " · " + com.nobet.i18n.typeName(it) } ?: ""),
+          style = MaterialTheme.typography.labelMedium,
+          color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        if (n.tags.isNotEmpty()) Text(n.tags.joinToString(" · ") { com.nobet.data.Recovery.tagName(it) }, style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.SemiBold)
+        if (n.text.isNotBlank()) Text(n.text, style = MaterialTheme.typography.bodyMedium)
+      }
     }
   }
 }
@@ -220,53 +178,17 @@ private fun energyByType(today: LocalDate): List<Pair<String, Float>> {
   return m.map { (k, v) -> k to v.average().toFloat() }.sortedByDescending { it.second }
 }
 
-/** Yerel, kural tabanlı içgörüler — her biri yeterli veri varsa üretilir. */
+/** Yerel, kural tabanlı içgörüler — toparlanma kontrollerinden üretilir. */
 fun insights(today: LocalDate): List<String> {
   val out = mutableListOf<String>()
-  val range = (0 until 60).map { today.minusDays(it.toLong()) }.filter { Store.hasSleep(it) }
+  val hist = com.nobet.data.Recovery.history(90, today)
+  com.nobet.data.Recovery.basicInsight(hist)?.let { out += it }
+  out += com.nobet.data.Recovery.patternInsights(hist)
 
-  val post = range.filter { Store.isPostNight(it) }.map { Store.sleepMinOn(it) }
-  val other = range.filter { !Store.isPostNight(it) }.map { Store.sleepMinOn(it) }
-  if (post.size >= 2) {
-    out += t(
-      "Gece vardiyalarından sonra ortalama ${fmtHours(post.average().toInt())} uyuyorsunuz. (${post.size} gece)",
-      "After night shifts, you sleep an average of ${fmtHours(post.average().toInt())}. (${post.size} nights)",
-    )
-  }
-  val cat = Store.sleepByCategory(60, today)
-  val qn = cat["postNight"]
-  val qo = cat["off"]
-  if (qn != null && qo != null && qn.days >= 2 && qo.days >= 2 && qo.avgQuality - qn.avgQuality >= 0.5f) {
-    out += t(
-      "Gece sonrası uyku kaliteniz izin günlerine göre daha düşük (${fmtNum(qn.avgQuality)} vs ${fmtNum(qo.avgQuality)} / 5). Karartma perdesi ve kulak tıkacı yardımcı olabilir.",
-      "Your sleep quality after nights is lower than on days off (${fmtNum(qn.avgQuality)} vs ${fmtNum(qo.avgQuality)} / 5). Blackout curtains and earplugs can help.",
-    )
-  }
-  if (post.size >= 3 && other.size >= 3) {
-    val diff = other.average() - post.average()
-    if (diff > 20) {
-      out += t(
-        "Gece vardiyalarından sonra ortalama ${fmtDur(diff.toInt())} daha az uyuyorsunuz. (${post.size} gece verisi)",
-        "After night shifts you sleep ${fmtDur(diff.toInt())} less on average. (based on ${post.size} nights)",
-      )
-    }
-  }
-
-  val pairs = (0 until 60).map { today.minusDays(it.toLong()) }.mapNotNull { d ->
-    Store.energyOn(d)?.let { e -> if (Store.hasSleep(d)) Store.sleepMinOn(d) to e else null }
-  }
-  if (pairs.size >= 7) {
-    val good = pairs.filter { it.first >= Store.sleepGoalMin }.map { it.second }
-    val bad = pairs.filter { it.first < Store.sleepGoalMin }.map { it.second }
-    if (good.size >= 2 && bad.size >= 2) {
-      val d = good.average() - bad.average()
-      if (d >= 0.5) {
-        out += t(
-          "Hedefinize ulaştığınız günlerde enerjiniz ${fmtNum(d.toFloat())} puan daha yüksek. (${pairs.size} gün)",
-          "Your energy is ${fmtNum(d.toFloat())} points higher on days you meet your sleep goal. (${pairs.size} days)",
-        )
-      }
-    }
+  val pairs = hist.filter { it.c.energy > 0 }
+  if (pairs.size >= 5) {
+    val avg = pairs.map { it.c.energy }.average().toFloat()
+    out += t("Vardiya sonrası ortalama enerjiniz ${fmtNum(avg)}/10. (${pairs.size} kontrol)", "Your average post-shift energy is ${fmtNum(avg)}/10. (${pairs.size} check-ins)")
   }
 
   val thisMonth = (0 until 30).count { Store.workOn(today.minusDays(it.toLong()))?.type?.isNight == true }
@@ -277,11 +199,6 @@ fun insights(today: LocalDate): List<String> {
       "Son 30 günde $thisMonth gece vardiyası" + if (lastMonth > 0) " (önceki 30 güne göre ${if (delta >= 0) "+" else ""}$delta)." else ".",
       "Last 30 days: $thisMonth night shifts" + if (lastMonth > 0) " (${if (delta >= 0) "+" else ""}$delta vs the previous 30 days)." else ".",
     )
-  }
-
-  val naps = Store.sleeps.count { it.nap && Store.toDate(it.end).isAfter(today.minusDays(14)) }
-  if (naps >= 3) {
-    out += t("Son 2 haftada $naps şekerleme yaptınız — vardiya öncesi kısa uykular dikkati artırır.", "You took $naps naps in the last 2 weeks — pre-shift naps boost alertness.")
   }
   return out
 }

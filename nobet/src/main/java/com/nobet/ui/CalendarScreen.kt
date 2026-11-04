@@ -70,6 +70,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.nobet.data.Builtins
 import com.nobet.data.Pattern
 import com.nobet.data.ShiftType
@@ -162,6 +163,9 @@ fun CalendarScreen() {
       }
       Gap(8.dp)
       MonthSummary(ym)
+      Gap(8.dp)
+      LeaveCard()
+      MonthHolidays(ym)
     } else {
       val weekStart = today.with(DayOfWeek.MONDAY).plusWeeks(weekOffset.toLong())
       Row(verticalAlignment = Alignment.CenterVertically) {
@@ -183,6 +187,12 @@ fun CalendarScreen() {
 
     Gap()
     SectionTitle(t("Renkler", "Legend"))
+    Text(
+      t("Kırmızı gün: resmî tatil · 🏖 izin · alttaki nokta: toparlanma puanı", "Red date: public holiday · 🏖 leave · dot below: recovery score"),
+      style = MaterialTheme.typography.bodySmall,
+      color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
+    Gap(6.dp)
     FlowRow(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
       Store.types.forEach { ty ->
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -287,16 +297,25 @@ private fun DayCell(d: LocalDate, isToday: Boolean, isSelected: Boolean, onClick
     horizontalAlignment = Alignment.CenterHorizontally,
     verticalArrangement = Arrangement.SpaceBetween,
   ) {
+    val hol = com.nobet.data.Holidays.on(d)
+    val leave = Store.leaves[Store.key(d)]
     Text(
       "${d.dayOfMonth}",
       style = MaterialTheme.typography.labelMedium,
-      fontWeight = if (isToday) FontWeight.Bold else FontWeight.Normal,
-      color = if (isToday) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
+      fontWeight = if (isToday || hol != null) FontWeight.Bold else FontWeight.Normal,
+      color = when {
+        hol != null -> Alert
+        isToday -> MaterialTheme.colorScheme.primary
+        else -> MaterialTheme.colorScheme.onSurface
+      },
     )
-    if (ty != null) ShiftBadge(ty, 26.dp) else Spacer(Modifier.size(26.dp))
+    if (leave != null && leave != "annualHalf") {
+      Text("🏖", fontSize = 18.sp)
+    } else if (ty != null) ShiftBadge(ty, 26.dp) else Spacer(Modifier.size(26.dp))
+    val sc = com.nobet.data.Recovery.scoreOn(d)
     Box(
       Modifier.size(5.dp).clip(CircleShape)
-        .background(if (Store.hasSleep(d)) MaterialTheme.colorScheme.tertiary else Color.Transparent),
+        .background(if (sc != null) scoreColor(sc) else Color.Transparent),
     )
   }
 }
@@ -319,11 +338,20 @@ private fun WeekRow(d: LocalDate, isToday: Boolean, isSelected: Boolean, onClick
       if (ty != null) ShiftBadge(ty, 36.dp) else Spacer(Modifier.size(36.dp))
       Spacer(Modifier.width(12.dp))
       Column(Modifier.weight(1f)) {
-        Text(ty?.let { typeName(it) } ?: t("Vardiya yok", "No shift"), fontWeight = FontWeight.SemiBold)
+        val lv = Store.leaves[Store.key(d)]
+        Text(
+          when {
+            lv != null -> leaveName(lv)
+            else -> ty?.let { typeName(it) } ?: t("Vardiya yok", "No shift")
+          },
+          fontWeight = FontWeight.SemiBold,
+        )
+        com.nobet.data.Holidays.on(d)?.let { Text("🎌 " + com.nobet.data.Holidays.name(it), style = MaterialTheme.typography.labelSmall, color = Alert) }
         if (ty != null && !ty.isOff) Text("${fmtClock(ty.startMin)} – ${fmtClock(ty.endMin)} · ${fmtDur(ty.durationMin)}", style = MaterialTheme.typography.bodySmall)
       }
-      val mins = Store.sleepMinOn(d)
-      if (mins > 0) Text("🛏 ${fmtDur(mins)}", style = MaterialTheme.typography.bodySmall)
+      com.nobet.data.Recovery.scoreOn(d)?.let { sc ->
+        Text("$sc", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = scoreColor(sc))
+      }
       Store.partnerShiftOn(d)?.let { pt ->
         Spacer(Modifier.width(8.dp))
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -350,6 +378,88 @@ private fun MonthSummary(ym: YearMonth) {
     StatTile(t("Çalışma günü", "Work days"), "$work", modifier = Modifier.weight(1f))
     StatTile(t("Gece", "Nights"), "$nights", modifier = Modifier.weight(1f))
     StatTile(t("Saat", "Hours"), "${minutes / 60}", modifier = Modifier.weight(1f))
+  }
+}
+
+/** Yıllık izin bakiyesi. */
+@Composable
+private fun LeaveCard() {
+  var edit by remember { mutableStateOf(false) }
+  val rem = Store.leaveRemaining()
+  NCard(Modifier.fillMaxWidth(), onClick = { edit = true }) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+      Column(Modifier.weight(1f)) {
+        Text(t("Yıllık izin (${Store.today().year})", "Annual leave (${Store.today().year})"), style = MaterialTheme.typography.titleSmall)
+        Text(
+          t("Kalan ${fmtDays(rem)} gün · kullanılan ${fmtDays(Store.leaveUsed())} / ${fmtDays(Store.leaveAllowance + Store.leaveCarry)}",
+            "${fmtDays(rem)} days left · used ${fmtDays(Store.leaveUsed())} of ${fmtDays(Store.leaveAllowance + Store.leaveCarry)}"),
+          style = MaterialTheme.typography.bodySmall,
+          color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+      }
+      Text(fmtDays(rem), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+    }
+    Text(t("İzin eklemek için takvimde bir güne dokunun.", "Tap a day in the calendar to add leave."), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+  }
+  if (edit) LeaveSettingsDialog { edit = false }
+}
+
+fun fmtDays(v: Float): String = com.nobet.i18n.fmtNum(v).removeSuffix(",0").removeSuffix(".0")
+
+/** İzin hakkı ayarı; Türkiye için kıdeme göre öneri (4857 sayılı İş Kanunu md. 53). */
+@Composable
+fun LeaveSettingsDialog(onDone: () -> Unit) {
+  var allowance by remember { mutableStateOf(Store.leaveAllowance) }
+  var carry by remember { mutableStateOf(Store.leaveCarry) }
+  AlertDialog(
+    onDismissRequest = onDone,
+    title = { Text(t("Yıllık izin hakkı", "Annual leave allowance")) },
+    text = {
+      Column {
+        Text(t("Kıdeme göre öneri (Türkiye):", "Suggested by years of service (Turkey):"), style = MaterialTheme.typography.labelLarge)
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+          listOf(14f to t("1–5 yıl", "1–5 yrs"), 20f to t("5–15 yıl", "5–15 yrs"), 26f to t("15+ yıl", "15+ yrs")).forEach { (v, l) ->
+            FilterChip(selected = allowance == v, onClick = { allowance = v }, label = { Text("$l · ${fmtDays(v)}") })
+          }
+        }
+        Gap(8.dp)
+        Stepper(t("Yıllık hak", "Allowance"), allowance) { allowance = it }
+        Stepper(t("Devreden", "Carried over"), carry) { carry = it }
+      }
+    },
+    confirmButton = {
+      TextButton(onClick = {
+        Store.leaveAllowance = allowance
+        Store.leaveCarry = carry
+        Store.changed()
+        onDone()
+      }) { Text(t("Kaydet", "Save")) }
+    },
+    dismissButton = { TextButton(onClick = onDone) { Text(t("İptal", "Cancel")) } },
+  )
+}
+
+@Composable
+private fun Stepper(label: String, value: Float, onChange: (Float) -> Unit) {
+  Row(verticalAlignment = Alignment.CenterVertically) {
+    Text(label, Modifier.weight(1f))
+    TextButton(onClick = { onChange((value - 0.5f).coerceAtLeast(0f)) }) { Text("−") }
+    Text(fmtDays(value), fontWeight = FontWeight.Bold)
+    TextButton(onClick = { onChange((value + 0.5f).coerceAtMost(60f)) }) { Text("+") }
+  }
+}
+
+/** Bu aydaki resmî tatiller. */
+@Composable
+private fun MonthHolidays(ym: YearMonth) {
+  val list = (1..ym.lengthOfMonth()).mapNotNull { com.nobet.data.Holidays.on(ym.atDay(it)) }
+  if (list.isEmpty()) return
+  Gap(8.dp)
+  NCard(Modifier.fillMaxWidth()) {
+    Text(t("Bu ayki resmî tatiller", "Public holidays this month"), style = MaterialTheme.typography.titleSmall)
+    list.forEach { h ->
+      Text("${fmtDate(h.date, "d MMM EEE")} · ${com.nobet.data.Holidays.name(h)}", style = MaterialTheme.typography.bodySmall)
+    }
   }
 }
 

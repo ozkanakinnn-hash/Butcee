@@ -24,7 +24,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BarChart
-import androidx.compose.material.icons.filled.Bedtime
+import androidx.compose.material.icons.filled.Spa
 import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.EditCalendar
@@ -84,6 +84,14 @@ object Nav {
   var paywallReason by mutableStateOf("")
   var dialog by mutableStateOf<String?>(null)
   var daySheet by mutableStateOf<LocalDate?>(null)
+  var checkinDate by mutableStateOf<LocalDate?>(null)
+
+  fun openCheckin(d: LocalDate) {
+    checkinDate = d
+    daySheet = null
+    if (stack.lastOrNull() == "checkin") stack.removeAt(stack.size - 1)
+    open("checkin")
+  }
 
   fun open(o: String) {
     if (stack.lastOrNull() != o) stack.add(o)
@@ -109,7 +117,7 @@ fun AppRoot() {
     val items: List<Pair<ImageVector, String>> = listOf(
       Icons.Filled.Home to t("Bugün", "Today"),
       Icons.Filled.CalendarMonth to t("Takvim", "Calendar"),
-      Icons.Filled.Bedtime to t("Uyku", "Sleep"),
+      Icons.Filled.Spa to t("Toparlanma", "Recovery"),
       Icons.Filled.BarChart to t("İstatistik", "Stats"),
     )
     Scaffold(
@@ -131,7 +139,7 @@ fun AppRoot() {
         when (Nav.tab) {
           0 -> TodayScreen()
           1 -> CalendarScreen()
-          2 -> SleepScreen()
+          2 -> RecoveryScreen()
           else -> StatsScreen()
         }
       }
@@ -146,7 +154,7 @@ fun AppRoot() {
           "paywall" -> PaywallScreen()
           "templates" -> TemplatesScreen()
           "patterns" -> PatternScreen()
-          "sleepmode" -> SleepModeScreen()
+          "checkin" -> CheckInScreen()
           "share" -> ShareScreen()
           else -> Unit
         }
@@ -155,10 +163,7 @@ fun AppRoot() {
   }
 
   when (Nav.dialog) {
-    "quick" -> QuickSheet()
     "energy" -> EnergyDialog()
-    "sleeplog" -> SleepLogDialog()
-    "wake" -> WakeDialog()
     else -> Unit
   }
   Nav.daySheet?.let { DaySheet(listOf(it)) { Nav.daySheet = null } }
@@ -177,29 +182,6 @@ fun QuickRow(icon: ImageVector, title: String, sub: String, onClick: () -> Unit)
     Column {
       Text(title, style = MaterialTheme.typography.titleMedium)
       Text(sub, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-    }
-  }
-}
-
-@Composable
-fun QuickSheet() {
-  ModalBottomSheet(onDismissRequest = { Nav.dialog = null }) {
-    Column(Modifier.padding(horizontal = 12.dp).padding(bottom = 24.dp)) {
-      if (Store.sleepStart > 0L) {
-        QuickRow(Icons.Filled.WbSunny, t("Uyandım", "I'm awake"), t("Uyku kaydını bitir", "Finish the sleep log")) { Nav.dialog = "wake" }
-      } else {
-        QuickRow(Icons.Filled.Bedtime, t("Uyumaya başla", "Start sleep"), t("Tek dokunuşla uyku sayacı", "One-tap sleep timer")) {
-          Store.startSleep()
-          Nav.dialog = null
-          Nav.open("sleepmode")
-        }
-      }
-      QuickRow(Icons.Filled.EditNote, t("Uyku ekle", "Log sleep"), t("Geçmiş bir uykuyu elle gir", "Enter a past sleep manually")) { Nav.dialog = "sleeplog" }
-      QuickRow(Icons.Filled.Bolt, t("Enerji kaydı", "Energy check-in"), t("Bugün nasıl hissediyorsunuz?", "How do you feel today?")) { Nav.dialog = "energy" }
-      QuickRow(Icons.Filled.EditCalendar, t("Vardiya ekle", "Add shift"), t("Bugüne vardiya ata", "Assign a shift to today")) {
-        Nav.dialog = null
-        Nav.daySheet = Store.today()
-      }
     }
   }
 }
@@ -252,138 +234,12 @@ fun EnergyDialog() {
   )
 }
 
-@Composable
-fun QualityPicker(value: Int, onChange: (Int) -> Unit) {
-  Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-    qualityEmoji.forEachIndexed { i, e ->
-      val q = i + 1
-      val sel = q == value
-      Surface(
-        onClick = { onChange(q) },
-        shape = RoundedCornerShape(14.dp),
-        color = if (sel) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant,
-        modifier = Modifier.size(48.dp),
-      ) {
-        Box(contentAlignment = Alignment.Center) { Text(e, fontSize = 24.sp) }
-      }
-    }
-  }
-  Text(qualityLabel(value), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-}
-
-@Composable
-fun WakeDialog() {
-  val ctx = LocalContext.current
-  var q by remember { mutableIntStateOf(4) }
-  var nap by remember { mutableStateOf(false) }
-  val dur = ((System.currentTimeMillis() - Store.sleepStart) / 60000L).toInt()
-  AlertDialog(
-    onDismissRequest = { Nav.dialog = null },
-    title = { Text(t("Günaydın! Nasıl uyudunuz?", "Good morning! How did you sleep?")) },
-    text = {
-      Column {
-        Text(t("Süre: ", "Duration: ") + fmtDur(dur), style = MaterialTheme.typography.titleMedium)
-        Gap()
-        QualityPicker(q) { q = it }
-        Gap()
-        Row(verticalAlignment = Alignment.CenterVertically) {
-          Text(t("Bu bir şekerlemeydi", "This was a nap"), Modifier.weight(1f))
-          Switch(checked = nap, onCheckedChange = { nap = it })
-        }
-        if (dur < 5) Text(t("5 dakikadan kısa uykular kaydedilmez.", "Sleeps under 5 minutes are not saved."), style = MaterialTheme.typography.bodySmall)
-      }
-    },
-    confirmButton = {
-      TextButton(onClick = {
-        Store.stopSleep(q, nap)
-        Nav.dialog = null
-        if (Nav.stack.lastOrNull() == "sleepmode") Nav.pop()
-        Toast.makeText(ctx, t("Uyku kaydedildi", "Sleep saved"), Toast.LENGTH_SHORT).show()
-      }) { Text(t("Kaydet", "Save")) }
-    },
-    dismissButton = {
-      TextButton(onClick = {
-        Store.cancelSleep()
-        Nav.dialog = null
-        if (Nav.stack.lastOrNull() == "sleepmode") Nav.pop()
-      }) { Text(t("Kaydı sil", "Discard")) }
-    },
-  )
-}
-
-@Composable
-fun SleepLogDialog() {
-  val ctx = LocalContext.current
-  val today = Store.today()
-  var dayOffset by remember { mutableIntStateOf(1) } // yatış günü: 0 bugün, 1 dün, 2 önceki gün
-  var startMin by remember { mutableIntStateOf(23 * 60) }
-  var endMin by remember { mutableIntStateOf(7 * 60) }
-  var q by remember { mutableIntStateOf(4) }
-  var nap by remember { mutableStateOf(false) }
-  var pick by remember { mutableStateOf<String?>(null) }
-
-  val startDay = today.minusDays(dayOffset.toLong())
-  val start = startDay.atStartOfDay().plusMinutes(startMin.toLong())
-  var end = startDay.atStartOfDay().plusMinutes(endMin.toLong())
-  if (!end.isAfter(start)) end = end.plusDays(1)
-  val dur = java.time.Duration.between(start, end).toMinutes().toInt()
-  val inFuture = Store.toMs(end) > System.currentTimeMillis() + 60_000L
-
-  AlertDialog(
-    onDismissRequest = { Nav.dialog = null },
-    title = { Text(t("Uyku ekle", "Log sleep")) },
-    text = {
-      Column(Modifier.verticalScroll(rememberScrollState())) {
-        Text(t("Yattığınız gün", "Day you went to sleep"), style = MaterialTheme.typography.labelLarge)
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-          listOf(0 to t("Bugün", "Today"), 1 to t("Dün", "Yesterday"), 2 to t("2 gün önce", "2 days ago")).forEach { (o, l) ->
-            FilterChip(selected = dayOffset == o, onClick = { dayOffset = o }, label = { Text(l) })
-          }
-        }
-        Gap(8.dp)
-        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-          OutlinedButton(onClick = { pick = "s" }, modifier = Modifier.weight(1f).height(56.dp)) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-              Text(t("Yatış", "Bedtime"), style = MaterialTheme.typography.labelSmall)
-              Text(fmtClock(startMin), fontWeight = FontWeight.Bold)
-            }
-          }
-          OutlinedButton(onClick = { pick = "e" }, modifier = Modifier.weight(1f).height(56.dp)) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-              Text(t("Uyanış", "Wake up"), style = MaterialTheme.typography.labelSmall)
-              Text(fmtClock(endMin), fontWeight = FontWeight.Bold)
-            }
-          }
-        }
-        Gap(8.dp)
-        Text("${fmtDate(start.toLocalDate(), "d MMM")} ${fmtClock(startMin)} → ${fmtDate(end.toLocalDate(), "d MMM")} ${fmtClock(endMin)} · ${fmtDur(dur)}")
-        if (inFuture) Text(t("Uyanış zamanı gelecekte olamaz.", "Wake-up time can't be in the future."), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
-        if (dur > 18 * 60) Text(t("18 saatten uzun uyku kaydedilemez.", "Sleep longer than 18 hours can't be saved."), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
-        Gap()
-        QualityPicker(q) { q = it }
-        Row(verticalAlignment = Alignment.CenterVertically) {
-          Text(t("Şekerleme", "Nap"), Modifier.weight(1f))
-          Switch(checked = nap, onCheckedChange = { nap = it })
-        }
-      }
-    },
-    confirmButton = {
-      TextButton(
-        enabled = !inFuture && dur <= 18 * 60,
-        onClick = {
-          Store.addSleep(Store.toMs(start), Store.toMs(end), q, nap)
-          Nav.dialog = null
-          Toast.makeText(ctx, t("Uyku kaydedildi", "Sleep saved"), Toast.LENGTH_SHORT).show()
-        },
-      ) { Text(t("Kaydet", "Save")) }
-    },
-    dismissButton = { TextButton(onClick = { Nav.dialog = null }) { Text(t("İptal", "Cancel")) } },
-  )
-  when (pick) {
-    "s" -> TimePickDialog(t("Yatış saati", "Bedtime"), startMin, { pick = null }) { startMin = it; pick = null }
-    "e" -> TimePickDialog(t("Uyanış saati", "Wake-up time"), endMin, { pick = null }) { endMin = it; pick = null }
-    else -> Unit
-  }
+fun leaveName(k: String): String = when (k) {
+  "annual" -> t("Yıllık izin", "Annual leave")
+  "annualHalf" -> t("Yarım gün izin", "Half-day leave")
+  "sick" -> t("Rapor", "Sick leave")
+  "unpaid" -> t("Ücretsiz izin", "Unpaid leave")
+  else -> t("Diğer izin", "Other leave")
 }
 
 /** Bir veya birden çok güne vardiya türü atama. */
@@ -393,11 +249,16 @@ fun DaySheet(days: List<LocalDate>, onDismiss: () -> Unit) {
   val single = days.size == 1
   val d = days.first()
   ModalBottomSheet(onDismissRequest = onDismiss) {
-    Column(Modifier.padding(horizontal = 20.dp).padding(bottom = 24.dp).navigationBarsPadding()) {
+    Column(Modifier.verticalScroll(rememberScrollState()).padding(horizontal = 20.dp).padding(bottom = 24.dp).navigationBarsPadding()) {
       Text(
         if (single) fmtDate(d) else t("${days.size} gün seçildi", "${days.size} days selected"),
         style = MaterialTheme.typography.titleLarge,
       )
+      if (single) {
+        com.nobet.data.Holidays.on(d)?.let { h ->
+          Text("🎌 " + com.nobet.data.Holidays.name(h), color = Alert, fontWeight = FontWeight.SemiBold)
+        }
+      }
       val cur = if (single) Store.shiftOn(d) else null
       if (cur != null) {
         Text(
@@ -441,14 +302,80 @@ fun DaySheet(days: List<LocalDate>, onDismiss: () -> Unit) {
           Nav.open("templates")
         }) { Text(t("Vardiya türleri", "Shift types")) }
       }
+      // İzin (tek ya da çoklu gün)
+      Gap()
+      SectionTitle(t("İzin", "Leave"))
+      val curLeave = if (single) Store.leaves[Store.key(d)] else null
+      FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        listOf("annual", "annualHalf", "sick", "unpaid", "other").forEach { k ->
+          FilterChip(
+            selected = curLeave == k,
+            onClick = {
+              val v = if (curLeave == k) null else k
+              days.forEach { Store.setLeave(it, v) }
+              if (!single) onDismiss()
+            },
+            label = { Text(leaveName(k)) },
+          )
+        }
+        if (!single || curLeave != null) {
+          FilterChip(selected = false, onClick = {
+            days.forEach { Store.setLeave(it, null) }
+            if (!single) onDismiss()
+          }, label = { Text(t("İzni kaldır", "Remove leave")) })
+        }
+      }
       if (single) {
-        val mins = Store.sleepMinOn(d)
-        val en = Store.energyOn(d)
-        if (mins > 0 || en != null) {
+        // Toparlanma kontrolü
+        val w = Store.workOn(d)
+        val now = java.time.LocalDateTime.now(Store.zone)
+        if (w != null && !w.end.isAfter(now)) {
           Gap()
-          SectionTitle(t("Bu gün", "This day"))
-          if (mins > 0) Text("🛏 " + t("Uyku: ", "Sleep: ") + fmtDur(mins))
-          if (en != null) Text("⚡ " + t("Enerji: ", "Energy: ") + "${en.roundToInt()}/10")
+          SectionTitle(t("Toparlanma", "Recovery"))
+          val sc = com.nobet.data.Recovery.scoreOn(d)
+          Row(verticalAlignment = Alignment.CenterVertically) {
+            if (sc != null) {
+              ScoreRing(sc, 56.dp)
+              Spacer(Modifier.width(12.dp))
+              Text(com.nobet.data.Recovery.bandLabel(sc), Modifier.weight(1f), color = scoreColor(sc))
+            } else {
+              Text(t("Bu vardiya için kontrol yok", "No check-in for this shift"), Modifier.weight(1f), color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            OutlinedButton(onClick = { Nav.openCheckin(d) }) { Text(if (sc == null) t("Yanıtla", "Check in") else t("Düzenle", "Edit")) }
+          }
+        }
+        // Vardiya günlüğü
+        Gap()
+        SectionTitle(t("Vardiya notu", "Shift note"))
+        val old = Store.notes[Store.key(d)]
+        var text by remember(d) { mutableStateOf(old?.text ?: "") }
+        val tags = remember(d) { mutableStateListOf<String>().apply { addAll(old?.tags ?: emptyList()) } }
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+          com.nobet.data.Recovery.journalTags.forEach { tg ->
+            FilterChip(
+              selected = tg in tags,
+              onClick = {
+                if (tg in tags) tags.remove(tg) else tags.add(tg)
+                Store.saveNote(d, text, tags.toList())
+              },
+              label = { Text(com.nobet.data.Recovery.tagName(tg)) },
+            )
+          }
+        }
+        OutlinedTextField(
+          value = text,
+          onValueChange = {
+            text = it.take(280)
+            Store.saveNote(d, text, tags.toList())
+          },
+          label = { Text(t("Örn. Çok yoğun bir gündü", "e.g. Very busy day")) },
+          modifier = Modifier.fillMaxWidth(),
+          maxLines = 3,
+        )
+        val en = Store.energyOn(d)
+        if (en != null) {
+          Gap(8.dp)
+          Text("⚡ " + t("Enerji: ", "Energy: ") + "${en.roundToInt()}/10")
         }
       }
     }

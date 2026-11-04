@@ -88,6 +88,7 @@ fun SettingsScreen() {
   val ctx = LocalContext.current
   var pickCheckIn by remember { mutableStateOf(false) }
   var confirmDelete by remember { mutableStateOf(false) }
+  var editLeave by remember { mutableStateOf(false) }
   val permLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { ok ->
     if (!ok) Toast.makeText(ctx, t("Bildirim izni verilmedi", "Notification permission denied"), Toast.LENGTH_SHORT).show()
   }
@@ -129,7 +130,7 @@ fun SettingsScreen() {
         if (Store.premium) {
           TextButton(onClick = {
             Store.premium = false
-            if (Store.theme == "night") Store.theme = "dark"
+            if (Store.theme == "night" || Store.theme == "amber") Store.theme = "dark"
             Store.changed()
           }) { Text(t("Test Premium'u kapat", "Turn off test Premium")) }
         }
@@ -146,7 +147,12 @@ fun SettingsScreen() {
         Gap(8.dp)
         ProfileFields()
         Gap(8.dp)
-        Text(t("Uyku hedefi: ", "Sleep goal: ") + fmtDur(Store.sleepGoalMin), fontWeight = FontWeight.SemiBold)
+        Text(t("Genellikle ihtiyaç duyduğunuz uyku: ", "Usual sleep need: ") + fmtDur(Store.sleepGoalMin), fontWeight = FontWeight.SemiBold)
+        Text(
+          t("İsteğe bağlı. Yalnızca toparlanma puanında kullanılır; hedef olarak gösterilmez.", "Optional. Only used for your recovery score; never shown as a target."),
+          style = MaterialTheme.typography.bodySmall,
+          color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
         Slider(
           value = Store.sleepGoalMin.toFloat(),
           onValueChange = { Store.sleepGoalMin = (it / 15f).toInt() * 15 },
@@ -200,8 +206,8 @@ fun SettingsScreen() {
           Store.changed()
         }
         if (Store.remCheckIn) TextButton(onClick = { pickCheckIn = true }) { Text(t("Saati değiştir", "Change time")) }
-        SwitchRow(t("Unutulan uyku kaydı", "Forgotten sleep log"), t("Sayaç 14 saati geçerse", "If the timer runs over 14 h"), Store.remForgot) {
-          Store.remForgot = it
+        SwitchRow(t("Vardiya sonrası toparlanma kontrolü", "Post-shift recovery check-in"), t("Vardiya bitince ve dinlendikten sonra 4 kısa soru", "4 quick questions after your shift and after you've rested"), Store.remRecovery) {
+          Store.remRecovery = it
           Store.changed()
         }
         SwitchRow(
@@ -255,8 +261,9 @@ fun SettingsScreen() {
           "light" to t("Açık", "Light"),
           "dark" to t("Koyu", "Dark"),
           "night" to t("Gece (kırmızı, çok loş)", "Night (red, ultra-dim)"),
+          "amber" to t("Gece (amber, göz yormayan)", "Night (amber, easy on the eyes)"),
         ).forEach { (k, l) ->
-          val locked = k == "night" && !Store.premium
+          val locked = (k == "night" || k == "amber") && !Store.premium
           RadioRow(l, Store.theme == k, locked) {
             if (locked) Nav.paywall(t("Gece teması", "Night theme")) else {
               Store.theme = k
@@ -264,6 +271,21 @@ fun SettingsScreen() {
             }
           }
         }
+      }
+
+      // Tatiller ve izin
+      NCard(Modifier.fillMaxWidth()) {
+        SectionTitle(t("Resmî tatiller ve izin", "Holidays & leave"))
+        SwitchRow(t("Resmî tatilleri göster (Türkiye)", "Show public holidays (Turkey)"), t("Takvimde kırmızı gün ve tatil adı", "Red date and holiday name in the calendar"), Store.showHolidays) {
+          Store.showHolidays = it
+          Store.changed()
+        }
+        Text(
+          t("Yıllık izin hakkı: ${fmtDays(Store.leaveAllowance)} gün · devreden ${fmtDays(Store.leaveCarry)} · kalan ${fmtDays(Store.leaveRemaining())}",
+            "Annual leave: ${fmtDays(Store.leaveAllowance)} days · carried over ${fmtDays(Store.leaveCarry)} · left ${fmtDays(Store.leaveRemaining())}"),
+          style = MaterialTheme.typography.bodySmall,
+        )
+        TextButton(onClick = { editLeave = true }) { Text(t("İzin hakkını ayarla", "Set leave allowance")) }
       }
 
       // Dil
@@ -294,7 +316,7 @@ fun SettingsScreen() {
       // Hakkında
       NCard(Modifier.fillMaxWidth()) {
         SectionTitle(t("Hakkında", "About"))
-        Text("Nöbet 0.4.0 (test)", fontWeight = FontWeight.SemiBold)
+        Text("Nöbet 0.5.0 (test)", fontWeight = FontWeight.SemiBold)
         Text(
           t("Nöbet genel sağlıklı yaşam bilgisi sunar, tıbbi tavsiye değildir. Sağlık sorunlarınız için bir hekime danışın.",
             "Nöbet provides general wellness information, not medical advice. Consult a doctor about health concerns."),
@@ -313,6 +335,7 @@ fun SettingsScreen() {
       pickCheckIn = false
     }
   }
+  if (editLeave) LeaveSettingsDialog { editLeave = false }
   if (confirmDelete) {
     ConfirmDialog(
       t("Tüm veriler silinsin mi?", "Delete all data?"),
@@ -366,10 +389,10 @@ fun PaywallScreen() {
     Gap(16.dp)
     listOf(
       t("Akıllı, vardiyaya duyarlı hatırlatıcılar", "Smart, shift-aware reminders"),
-      t("Gelişmiş uyku borcu analizi ve toparlanma planı", "Advanced sleep debt analysis & recovery plan"),
-      t("Detaylı istatistikler ve içgörüler", "Detailed statistics & insights"),
+      t("Toparlanma örüntüleri ve nazik öneriler", "Recovery patterns & gentle suggestions"),
+      t("Kafein ve öğün zamanlaması, sınırsız geçmiş", "Caffeine & meal timing, unlimited history"),
       t("Tüm vardiya düzenleri, sınırsız şablon", "Full pattern library, unlimited templates"),
-      t("Veri dışa aktarma ve Gece teması", "Data export & Night theme"),
+      t("Veri dışa aktarma, kırmızı ve amber gece temaları", "Data export, red & amber night themes"),
     ).forEach {
       Row(Modifier.padding(vertical = 5.dp), verticalAlignment = Alignment.CenterVertically) {
         Icon(Icons.Filled.CheckCircle, null, tint = Success)

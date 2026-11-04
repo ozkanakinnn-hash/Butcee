@@ -93,6 +93,33 @@ val NightColors: ColorScheme = darkColorScheme(
   surfaceContainerHighest = Color(0xFF22130F),
 )
 
+/** Amber gece teması: mavi ışığı azaltan sıcak, loş tonlar (Premium). */
+val AmberColors: ColorScheme = darkColorScheme(
+  primary = Color(0xFFE8A84A),
+  onPrimary = Color(0xFF1C1205),
+  primaryContainer = Color(0xFF3A2A10),
+  onPrimaryContainer = Color(0xFFF2D3A0),
+  secondary = Color(0xFFC9964F),
+  onSecondary = Color(0xFF1C1205),
+  secondaryContainer = Color(0xFF2B1F0D),
+  onSecondaryContainer = Color(0xFFF2D3A0),
+  tertiary = Color(0xFFB8A15A),
+  background = Color(0xFF050402),
+  onBackground = Color(0xFFF2D3A0),
+  surface = Color(0xFF130E07),
+  onSurface = Color(0xFFF2D3A0),
+  surfaceVariant = Color(0xFF1E160B),
+  onSurfaceVariant = Color(0xFFA88C62),
+  outline = Color(0xFF4A3920),
+  outlineVariant = Color(0xFF2E2313),
+  error = Color(0xFFE09070),
+  surfaceContainerLowest = Color(0xFF050402),
+  surfaceContainerLow = Color(0xFF0C0904),
+  surfaceContainer = Color(0xFF130E07),
+  surfaceContainerHigh = Color(0xFF1A130A),
+  surfaceContainerHighest = Color(0xFF22190D),
+)
+
 val Success = Color(0xFF3E9B7A)
 val Warning = Color(0xFFD69A2D)
 val Alert = Color(0xFFC8605A)
@@ -104,13 +131,15 @@ val LocalMode = staticCompositionLocalOf { Mode(dark = false, night = false) }
 @Composable
 fun NobetTheme(content: @Composable () -> Unit) {
   val sys = isSystemInDarkTheme()
-  val night = Store.theme == "night" && Store.premium
+  val amber = Store.theme == "amber" && Store.premium
+  val night = (Store.theme == "night" && Store.premium) || amber
   val dark = night || when (Store.theme) {
     "light" -> false
     "dark" -> true
     else -> sys
   }
   val scheme = when {
+    amber -> AmberColors
     night -> NightColors
     dark -> DarkColors
     else -> LightColors

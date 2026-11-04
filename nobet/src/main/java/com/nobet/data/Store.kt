@@ -48,16 +48,19 @@ object Store {
   var role by mutableStateOf("") // meslek grubu; boş = belirtilmedi
   var jobTitle by mutableStateOf("") // serbest unvan (isteğe bağlı)
   var workType by mutableStateOf("") // çalışma şekli; boş = belirtilmedi
+  /** Genellikle ihtiyaç duyulan uyku (isteğe bağlı) — yalnızca toparlanma puanında Q1 için kullanılır. */
   var sleepGoalMin by mutableIntStateOf(450)
   var premium by mutableStateOf(false)
-  var sleepStart by mutableLongStateOf(0L)
+  var showHolidays by mutableStateOf(true)
+  var leaveAllowance by mutableStateOf(14f) // yıllık izin hakkı (gün)
+  var leaveCarry by mutableStateOf(0f) // önceki yıldan devreden (gün)
 
   // Hatırlatıcılar
   var remShiftStart by mutableStateOf(true)
   var remShiftLeadMin by mutableIntStateOf(60)
   var remCheckIn by mutableStateOf(true)
   var remCheckInMin by mutableIntStateOf(18 * 60)
-  var remForgot by mutableStateOf(true)
+  var remRecovery by mutableStateOf(true) // vardiya sonrası toparlanma kontrolü hatırlatması
   var remSmart by mutableStateOf(true)
   var lastFired by mutableLongStateOf(0L)
   /** Kapatılan akıllı hatırlatıcı kategorileri. */
@@ -76,7 +79,9 @@ object Store {
   // Veri
   val types = mutableStateListOf<ShiftType>()
   val shifts = mutableStateMapOf<String, String>() // ISO tarih -> tür kimliği
-  val sleeps = mutableStateListOf<SleepEntry>()
+  val checkins = mutableStateMapOf<String, CheckIn>() // vardiya günü -> toparlanma kontrolü
+  val notes = mutableStateMapOf<String, JournalNote>() // vardiya günü -> günlük notu
+  val leaves = mutableStateMapOf<String, String>() // gün -> annual / annualHalf / sick / unpaid / other
   val energies = mutableStateListOf<EnergyEntry>()
 
   val isEn: Boolean
@@ -104,12 +109,14 @@ object Store {
     workType = p.getString("workType", "") ?: ""
     sleepGoalMin = p.getInt("sleepGoal", 450)
     premium = p.getBoolean("premium", false)
-    sleepStart = p.getLong("sleepStart", 0L)
+    showHolidays = p.getBoolean("showHolidays", true)
+    leaveAllowance = p.getFloat("leaveAllowance", 14f)
+    leaveCarry = p.getFloat("leaveCarry", 0f)
     remShiftStart = p.getBoolean("remShiftStart", true)
     remShiftLeadMin = p.getInt("remShiftLead", 60)
     remCheckIn = p.getBoolean("remCheckIn", true)
     remCheckInMin = p.getInt("remCheckInMin", 18 * 60)
-    remForgot = p.getBoolean("remForgot", true)
+    remRecovery = p.getBoolean("remRecovery", true)
     remSmart = p.getBoolean("remSmart", true)
     lastFired = p.getLong("lastFired", 0L)
 
@@ -145,13 +152,27 @@ object Store {
       o.keys().forEach { k -> shifts[k] = o.getString(k) }
     }
 
-    sleeps.clear()
+    checkins.clear()
     runCatching {
-      val a = JSONArray(p.getString("sleeps", "[]") ?: "[]")
-      for (i in 0 until a.length()) {
-        val o = a.getJSONObject(i)
-        sleeps.add(SleepEntry(o.getLong("id"), o.getLong("start"), o.getLong("end"), o.getInt("q"), o.getBoolean("nap")))
+      val o = JSONObject(p.getString("checkins", "{}") ?: "{}")
+      o.keys().forEach { k ->
+        val c = o.getJSONObject(k)
+        checkins[k] = CheckIn(k, c.getInt("smooth"), c.optString("ss", ""), c.optInt("sm", 0), c.optInt("q", 0), c.optInt("e", 0), c.optLong("at", 0L))
       }
+    }
+    notes.clear()
+    runCatching {
+      val o = JSONObject(p.getString("notes", "{}") ?: "{}")
+      o.keys().forEach { k ->
+        val n = o.getJSONObject(k)
+        val tg = n.optJSONArray("tags") ?: JSONArray()
+        notes[k] = JournalNote(n.optString("text", ""), List(tg.length()) { tg.getString(it) })
+      }
+    }
+    leaves.clear()
+    runCatching {
+      val o = JSONObject(p.getString("leaves", "{}") ?: "{}")
+      o.keys().forEach { k -> leaves[k] = o.getString(k) }
     }
 
     energies.clear()
@@ -195,8 +216,14 @@ object Store {
     customPatterns.forEach { pa.put(JSONObject().put("id", it.id).put("name", it.nameTr).put("seq", JSONArray(it.seq))) }
     val so = JSONObject()
     shifts.forEach { (k, v) -> so.put(k, v) }
-    val sa = JSONArray()
-    sleeps.forEach { sa.put(JSONObject().put("id", it.id).put("start", it.start).put("end", it.end).put("q", it.quality).put("nap", it.nap)) }
+    val co = JSONObject()
+    checkins.forEach { (k, c) ->
+      co.put(k, JSONObject().put("smooth", c.smooth).put("ss", c.sleepStatus).put("sm", c.sleepMin).put("q", c.quality).put("e", c.energy).put("at", c.at))
+    }
+    val no = JSONObject()
+    notes.forEach { (k, n) -> no.put(k, JSONObject().put("text", n.text).put("tags", JSONArray(n.tags))) }
+    val lo = JSONObject()
+    leaves.forEach { (k, v) -> lo.put(k, v) }
     val ea = JSONArray()
     energies.forEach {
       ea.put(JSONObject().put("id", it.id).put("time", it.time).put("level", it.level).put("tags", JSONArray(it.tags)).put("note", it.note))
@@ -204,12 +231,14 @@ object Store {
     p.edit()
       .putString("lang", lang).putString("theme", theme).putBoolean("onboarded", onboarded)
       .putString("name", name).putString("role", role).putString("jobTitle", jobTitle).putString("workType", workType).putInt("sleepGoal", sleepGoalMin)
-      .putBoolean("premium", premium).putLong("sleepStart", sleepStart)
+      .putBoolean("premium", premium).putBoolean("showHolidays", showHolidays)
+      .putFloat("leaveAllowance", leaveAllowance).putFloat("leaveCarry", leaveCarry)
       .putBoolean("remShiftStart", remShiftStart).putInt("remShiftLead", remShiftLeadMin)
       .putBoolean("remCheckIn", remCheckIn).putInt("remCheckInMin", remCheckInMin)
-      .putBoolean("remForgot", remForgot).putBoolean("remSmart", remSmart).putLong("lastFired", lastFired)
+      .putBoolean("remRecovery", remRecovery).putBoolean("remSmart", remSmart).putLong("lastFired", lastFired)
       .putString("types", ta.toString()).putString("shifts", so.toString())
-      .putString("sleeps", sa.toString()).putString("energies", ea.toString())
+      .putString("checkins", co.toString()).putString("notes", no.toString()).putString("leaves", lo.toString())
+      .putString("energies", ea.toString())
       .putString("smartOff", smartOff.joinToString(",")).putString("patterns", pa.toString())
       .putString("partnerName", partnerName).putString("partnerStart", partnerStart)
       .putString("partnerSeq", partnerSeq).putLong("partnerUpdated", partnerUpdated)
@@ -238,7 +267,12 @@ object Store {
     return ShiftInstance(d, t, s, s.plusMinutes(t.durationMin.toLong()))
   }
 
-  fun workOn(d: LocalDate): ShiftInstance? = shiftOn(d)?.takeIf { !it.isOff }?.let { window(d, it) }
+  /** Çalışma vardiyası (izin türü ya da tam gün izinli günler hariç). */
+  fun workOn(d: LocalDate): ShiftInstance? {
+    val l = leaves[key(d)]
+    if (l != null && l != "annualHalf") return null
+    return shiftOn(d)?.takeIf { !it.isOff }?.let { window(d, it) }
+  }
 
   /** Şu an süren ya da sıradaki çalışma vardiyası. */
   fun nextShift(now: LocalDateTime = LocalDateTime.now(zone)): ShiftInstance? {
@@ -382,35 +416,43 @@ object Store {
   fun partnerLastDay(): LocalDate? =
     runCatching { LocalDate.parse(partnerStart).plusDays((partnerSeq.length - 1).toLong()) }.getOrNull()
 
-  // ---------- Uyku ----------
-  fun startSleep() {
-    sleepStart = System.currentTimeMillis()
+  // ---------- Toparlanma kontrolü ----------
+  fun saveCheckIn(c: CheckIn) {
+    checkins[c.shiftDate] = c
     changed()
   }
 
-  fun stopSleep(quality: Int, nap: Boolean) {
-    val s = sleepStart
-    if (s == 0L) return
-    val e = System.currentTimeMillis()
-    if (e - s >= 5 * 60_000L) sleeps.add(SleepEntry(e, s, e, quality, nap))
-    sleepStart = 0L
+  fun deleteCheckIn(d: LocalDate) {
+    checkins.remove(key(d))
     changed()
   }
 
-  fun cancelSleep() {
-    sleepStart = 0L
+  // ---------- Vardiya günlüğü ----------
+  fun saveNote(d: LocalDate, text: String, tags: List<String>) {
+    if (text.isBlank() && tags.isEmpty()) notes.remove(key(d)) else notes[key(d)] = JournalNote(text.trim().take(280), tags)
+    save()
+  }
+
+  // ---------- İzin ----------
+  fun setLeave(d: LocalDate, kind: String?) {
+    if (kind == null) leaves.remove(key(d)) else leaves[key(d)] = kind
     changed()
   }
 
-  fun addSleep(start: Long, end: Long, quality: Int, nap: Boolean) {
-    sleeps.add(SleepEntry(System.currentTimeMillis(), start, end, quality, nap))
-    changed()
-  }
+  /** Bu yıl kullanılan yıllık izin (yarım gün 0,5). İzin günü, düzen izni ya da resmî tatile denk geliyorsa düşülmez. */
+  fun leaveUsed(year: Int = today().year): Float = leaves.entries.sumOf { (k, v) ->
+    val d = runCatching { LocalDate.parse(k) }.getOrNull() ?: return@sumOf 0.0
+    if (d.year != year) return@sumOf 0.0
+    val off = shiftOn(d)?.isOff == true
+    val hol = Holidays.on(d)?.let { !it.half } == true
+    when {
+      v == "annual" && !off && !hol -> 1.0
+      v == "annualHalf" && !off && !hol -> 0.5
+      else -> 0.0
+    }
+  }.toFloat()
 
-  fun deleteSleep(id: Long) {
-    sleeps.removeAll { it.id == id }
-    changed()
-  }
+  fun leaveRemaining(): Float = leaveAllowance + leaveCarry - leaveUsed()
 
   fun addEnergy(level: Int, tags: List<String>, note: String) {
     val now = System.currentTimeMillis()
@@ -418,73 +460,9 @@ object Store {
     changed()
   }
 
-  /** Uyku, bittiği güne yazılır (gece vardiyasından sonraki gündüz uykusu doğru güne düşer). */
-  fun sleepMinOn(d: LocalDate): Int = sleeps.filter { toDate(it.end) == d }.sumOf { it.minutes }
-  fun hasSleep(d: LocalDate): Boolean = sleeps.any { toDate(it.end) == d }
-
-  /** Temel uyku borcu: son 7 gün, veri olmayan günler sayılmaz. (borç dk, veri olan gün) */
-  fun debt7(today: LocalDate = today()): Pair<Int, Int> {
-    var debt = 0
-    var days = 0
-    for (i in 0..6) {
-      val d = today.minusDays(i.toLong())
-      if (!hasSleep(d)) continue
-      days++
-      debt += (sleepMinOn(d) - sleepGoalMin).let { if (it < 0) -it else 0 }
-    }
-    return debt to days
-  }
-
-  /** Gelişmiş borç: 14 gün, fazla uyku günde en çok 2 saat borç kapatır. */
-  fun debt14(today: LocalDate = today()): Int {
-    var debt = 0
-    for (i in 13 downTo 0) {
-      val d = today.minusDays(i.toLong())
-      if (!hasSleep(d)) continue
-      val diff = sleepGoalMin - sleepMinOn(d)
-      debt = if (diff > 0) debt + diff else (debt - minOf(-diff, 120)).coerceAtLeast(0)
-    }
-    return debt
-  }
-
   fun energyOn(d: LocalDate): Float? {
     val l = energies.filter { toDate(it.time) == d }
     return if (l.isEmpty()) null else l.map { it.level }.average().toFloat()
-  }
-
-  /** Gece vardiyasının bittiği günler. */
-  fun isPostNight(d: LocalDate): Boolean {
-    val a = workOn(d.minusDays(1))
-    val b = workOn(d)
-    return (a != null && a.type.isNight && a.end.toLocalDate() == d) ||
-      (b != null && b.type.isNight && b.end.toLocalDate() == d)
-  }
-
-  /** Uyku günü kategorisi: vardiyanın uykuyu nasıl etkilediğini karşılaştırmak için. */
-  fun sleepCategory(d: LocalDate): String {
-    val w = workOn(d)
-    return when {
-      isPostNight(d) -> "postNight"
-      w != null && w.type.isNight -> "preNight"
-      w != null -> "work"
-      else -> "off"
-    }
-  }
-
-  data class SleepStat(val days: Int, val avgMin: Int, val avgQuality: Float)
-
-  /** Son [range] gün için kategori bazında ortalama uyku süresi ve kalitesi. */
-  fun sleepByCategory(range: Int = 60, today: LocalDate = today()): Map<String, SleepStat> {
-    val m = mutableMapOf<String, MutableList<LocalDate>>()
-    for (i in 0 until range) {
-      val d = today.minusDays(i.toLong())
-      if (!hasSleep(d)) continue
-      m.getOrPut(sleepCategory(d)) { mutableListOf() }.add(d)
-    }
-    return m.mapValues { (_, ds) ->
-      val q = sleeps.filter { toDate(it.end) in ds }.map { it.quality }
-      SleepStat(ds.size, ds.map { sleepMinOn(it) }.average().toInt(), if (q.isEmpty()) 0f else q.average().toFloat())
-    }
   }
 
   fun exportCsv(): String {
@@ -494,9 +472,11 @@ object Store {
       val t = typeById(shifts[k]) ?: return@forEach
       sb.append("shift,$k,,,${t.nameEn},\n")
     }
-    sleeps.sortedBy { it.start }.forEach {
-      sb.append("sleep,${toDate(it.end)},${toLdt(it.start)},${toLdt(it.end)},${it.minutes},q=${it.quality}${if (it.nap) ";nap" else ""}\n")
+    checkins.keys.sorted().forEach { k ->
+      val c = checkins[k] ?: return@forEach
+      sb.append("recovery,$k,,,${Recovery.score(c)},smooth=${c.smooth};sleep=${c.sleepStatus}:${c.sleepMin};q=${c.quality};energy=${c.energy}\n")
     }
+    leaves.keys.sorted().forEach { k -> sb.append("leave,$k,,,${leaves[k]},\n") }
     energies.sortedBy { it.time }.forEach {
       val note = it.note.replace("\"", "'").replace("\n", " ")
       sb.append("energy,${toDate(it.time)},${toLdt(it.time)},,${it.level},\"${it.tags.joinToString(";")} $note\"\n")

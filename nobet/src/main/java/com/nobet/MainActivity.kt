@@ -35,8 +35,13 @@ class MainActivity : ComponentActivity() {
     handleShare(intent)
   }
 
-  /** nobet://share?c=... bağlantısı veya paylaşılan metindeki kodu içe aktarır. */
+  /** nobet://share?c=... bağlantısı, paylaşılan metindeki kod veya bildirimden toparlanma kontrolü. */
   private fun handleShare(intent: Intent?) {
+    val ci = intent?.getStringExtra("checkin")
+    if (!ci.isNullOrEmpty() && Store.onboarded) {
+      runCatching { Nav.openCheckin(java.time.LocalDate.parse(ci)) }
+      return
+    }
     val text = when (intent?.action) {
       Intent.ACTION_VIEW -> intent.dataString
       Intent.ACTION_SEND -> intent.getStringExtra(Intent.EXTRA_TEXT)

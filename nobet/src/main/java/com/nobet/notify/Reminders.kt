@@ -30,7 +30,7 @@ import java.time.temporal.ChronoUnit
 object Reminders {
   const val CHANNEL = "nobet_reminders"
 
-  data class Event(val at: Long, val title: String, val body: String, val critical: Boolean)
+  data class Event(val at: Long, val title: String, val body: String, val critical: Boolean, val checkin: String = "")
 
   fun ensureChannel(ctx: Context) {
     val nm = ctx.getSystemService(NotificationManager::class.java) ?: return
@@ -44,7 +44,6 @@ object Reminders {
     val out = mutableListOf<Event>()
     val today = now.toLocalDate()
     val smart = Store.premium && Store.remSmart
-    val sleeping = Store.sleepStart > 0L
     fun on(kind: String) = smart && Store.smartOn(kind)
     fun clock(t: LocalDateTime) = fmtClock(t.hour * 60 + t.minute)
 
@@ -121,7 +120,7 @@ object Reminders {
         }
         if (on("afterNight")) {
           out += Event(
-            Store.toMs(w.end.plusMinutes(15)),
+            Store.toMs(w.end.plusMinutes(40)),
             t("Vardiya bitti 👏", "Shift done 👏"),
             t("Daha iyi uyumak için eve dönerken güneş gözlüğü takın, odanızı karanlık ve serin tutun.",
               "Keep your sunglasses on the way home and your room dark and cool for better sleep."),
@@ -179,18 +178,46 @@ object Reminders {
       }
     }
 
-    // Toparlanma: uyku borcu yüksekse ve yarın izinse
+    // Toparlanma: son kontroller düşükse ve yarın izinse
     if (on("recovery")) {
       val tomorrow = today.plusDays(1)
-      val (debt, days) = Store.debt7(today)
-      if (days > 0 && debt > 420 && Store.workOn(tomorrow) == null) {
+      val recent = com.nobet.data.Recovery.history(7, today).take(3)
+      if (recent.size >= 2 && recent.map { it.score }.average() < 50 && Store.workOn(tomorrow) == null) {
         out += Event(
           Store.toMs(today.atTime(21, 0)),
-          t("Yarın izinlisiniz — toparlanma fırsatı", "Day off tomorrow — time to recover"),
-          t("Uyku borcunuz ${fmtDur(debt)}. Bu gece alarmsız uyumayı ve gündüz kısa bir şekerleme yapmayı deneyin.",
-            "Your sleep debt is ${fmtDur(debt)}. Try sleeping without an alarm tonight and a short nap tomorrow."),
+          t("Yarın izinlisiniz — dinlenme fırsatı", "Day off tomorrow — a chance to rest"),
+          t("Son vardiyalar yorucu geçti. Bu gece alarmsız uyumayı ve yarın kısa bir şekerleme yapmayı deneyebilirsiniz.",
+            "Your recent shifts have been demanding. You could try sleeping without an alarm tonight and a short nap tomorrow."),
           critical = false,
         )
+      }
+    }
+
+    // Vardiya sonrası toparlanma kontrolü (ücretsiz): bitişten 15 dk sonra Q4, sonra tam kontrol
+    if (Store.remRecovery) {
+      for (i in -1..2) {
+        val w = Store.workOn(today.plusDays(i.toLong())) ?: continue
+        if (com.nobet.data.Recovery.checkIn(w.date) != null) continue
+        val name = typeName(w.type)
+        out += Event(
+          Store.toMs(w.end.plusMinutes(15)),
+          t("Vardiya bitti 👏", "Shift done 👏"),
+          t("$name vardiyanız ne kadar sorunsuz geçti? (1–10)", "How smoothly did your $name shift go? (1–10)"),
+          critical = true,
+          checkin = w.date.toString(),
+        )
+        val nextW = (1..2).map { w.date.plusDays(it.toLong()) }.firstNotNullOfOrNull { Store.workOn(it) }
+        var full = w.end.plusHours(10)
+        if (nextW != null && nextW.start.minusHours(2).isBefore(full)) full = nextW.start.minusHours(2)
+        if (full.isAfter(w.end.plusMinutes(30))) {
+          out += Event(
+            Store.toMs(full),
+            t("Nasıl toparlanıyorsunuz?", "How are you recovering?"),
+            t("$name vardiyası sonrası nasıl toparlanıyorsunuz? 4 kısa soru.", "How are you recovering after your $name shift? 4 quick questions."),
+            critical = true,
+            checkin = w.date.toString(),
+          )
+        }
       }
     }
 
@@ -200,18 +227,9 @@ object Reminders {
         out += Event(Store.toMs(at), t("Bugün enerjiniz nasıl?", "How's your energy today?"), t("Sadece 5 saniye sürer.", "It takes 5 seconds."), false)
       }
     }
-    if (Store.remForgot && sleeping) {
-      out += Event(
-        Store.sleepStart + 14 * 3600_000L,
-        t("Uyku kaydı hâlâ açık", "Sleep timer still running"),
-        t("Uyandığınızı kaydetmeyi unuttunuz mu?", "Did you forget to log that you woke up?"),
-        true,
-      )
-    }
     val nowMs = Store.toMs(now)
     return out
       .filter { it.at > nowMs && it.at > Store.lastFired }
-      .filter { it.critical || !sleeping }
       .sortedBy { it.at }
       .distinctBy { it.at to it.title }
   }
@@ -232,7 +250,7 @@ object Reminders {
     val intent = Intent(ctx, ReminderReceiver::class.java)
     val next = upcoming().firstOrNull()
     if (next != null) {
-      intent.putExtra("at", next.at).putExtra("title", next.title).putExtra("body", next.body)
+      intent.putExtra("at", next.at).putExtra("title", next.title).putExtra("body", next.body).putExtra("checkin", next.checkin)
     }
     val pi = PendingIntent.getBroadcast(ctx, 7, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
     am.cancel(pi)
@@ -252,11 +270,12 @@ object Reminders {
     Build.VERSION.SDK_INT < 33 ||
       ContextCompat.checkSelfPermission(ctx, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
 
-  fun show(ctx: Context, title: String, body: String, id: Int = (System.currentTimeMillis() % 100000).toInt()) {
+  fun show(ctx: Context, title: String, body: String, id: Int = (System.currentTimeMillis() % 100000).toInt(), checkin: String = "") {
     ensureChannel(ctx)
     if (!canNotify(ctx)) return
     val open = PendingIntent.getActivity(
-      ctx, 0, Intent(ctx, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP),
+      ctx, id, Intent(ctx, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+        .putExtra("checkin", checkin),
       PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
     )
     val n = NotificationCompat.Builder(ctx, CHANNEL)
@@ -293,7 +312,7 @@ class ReminderReceiver : BroadcastReceiver() {
     val at = intent.getLongExtra("at", 0L)
     val title = intent.getStringExtra("title")
     val body = intent.getStringExtra("body")
-    if (title != null && body != null) Reminders.show(context, title, body)
+    if (title != null && body != null) Reminders.show(context, title, body, checkin = intent.getStringExtra("checkin") ?: "")
     if (at > 0) Store.lastFired = at
     Store.save()
     Reminders.reschedule(context)

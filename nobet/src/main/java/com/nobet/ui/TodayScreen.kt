@@ -64,7 +64,6 @@ fun TodayScreen() {
   val now = rememberNow()
   val today = now.toLocalDate()
   val next = Store.nextShift(now)
-  val (debt, debtDays) = Store.debt7(today)
   var askName by remember { mutableStateOf(false) }
   if (askName) NameDialog { askName = false }
 
@@ -97,16 +96,20 @@ fun TodayScreen() {
       IconButton(onClick = { Nav.open("settings") }) { Icon(Icons.Filled.Settings, t("Ayarlar", "Settings")) }
     }
 
-    // Uyku sayacı açıksa
-    if (Store.sleepStart > 0L) {
-      val el = ((System.currentTimeMillis() - Store.sleepStart) / 60000L).toInt()
-      NCard(Modifier.fillMaxWidth(), onClick = { Nav.open("sleepmode") }, container = MaterialTheme.colorScheme.primaryContainer) {
-        Text(t("Uyku kaydı açık", "Sleep timer running"), color = MaterialTheme.colorScheme.onPrimaryContainer)
-        Text(fmtDur(el), style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimaryContainer)
-        Gap(8.dp)
-        Button(onClick = { Nav.dialog = "wake" }, modifier = Modifier.fillMaxWidth().height(52.dp)) { Text(t("Uyandım", "I'm awake")) }
+    // Resmî tatil / izin bilgisi
+    com.nobet.data.Holidays.on(today)?.let { h ->
+      NCard(Modifier.fillMaxWidth(), container = MaterialTheme.colorScheme.secondaryContainer) {
+        Text("🎌 " + t("Bugün resmî tatil: ", "Public holiday today: ") + com.nobet.data.Holidays.name(h), color = MaterialTheme.colorScheme.onSecondaryContainer)
       }
     }
+    Store.leaves[Store.key(today)]?.let { l ->
+      NCard(Modifier.fillMaxWidth(), container = MaterialTheme.colorScheme.secondaryContainer) {
+        Text("🏖 " + t("Bugün: ", "Today: ") + leaveName(l) + t(" — iyi dinlenmeler!", " — enjoy your time off!"), color = MaterialTheme.colorScheme.onSecondaryContainer)
+      }
+    }
+
+    // Bekleyen toparlanma kontrolü (en yeni vardiya)
+    com.nobet.data.Recovery.pending(now).firstOrNull()?.let { PendingCheckInCard(it) }
 
     // Sıradaki vardiya
     NCard(Modifier.fillMaxWidth(), onClick = { Nav.tab = 1 }) {
@@ -140,7 +143,7 @@ fun TodayScreen() {
     }
 
     // İpucu
-    val tip = tipFor(now, debt)
+    val tip = tipFor(now)
     if (tip != null) {
       NCard(Modifier.fillMaxWidth(), container = MaterialTheme.colorScheme.secondaryContainer) {
         Row {
@@ -151,20 +154,20 @@ fun TodayScreen() {
       }
     }
 
+    NutritionCard(now)
+
     Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
       NCard(Modifier.weight(1f), onClick = { Nav.tab = 2 }) {
-        Text(t("Uyku borcu", "Sleep debt"), style = MaterialTheme.typography.labelLarge)
+        Text(t("Toparlanma", "Recovery"), style = MaterialTheme.typography.labelLarge)
         Gap(8.dp)
+        val latest = com.nobet.data.Recovery.history(30, today).firstOrNull()
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
-          DebtRing(debt, size = 96.dp) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-              Text(if (debtDays == 0) "–" else fmtDur(debt), fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
-            }
-          }
+          ScoreRing(latest?.score, 96.dp, latest?.c?.provisional == true)
         }
         Gap(4.dp)
         Text(
-          if (debtDays == 0) t("Henüz uyku kaydı yok", "No sleep logged yet") else debtLabel(debt),
+          if (latest == null) t("Vardiya sonrası 4 kısa soru", "4 quick questions after a shift")
+          else com.nobet.data.Recovery.bandLabel(latest.score) + " · " + typeName(latest.w.type),
           style = MaterialTheme.typography.bodySmall,
           color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -234,8 +237,7 @@ private fun NameDialog(onDone: () -> Unit) {
   )
 }
 
-private fun tipFor(now: LocalDateTime, debt: Int): String? {
-  if (Store.sleepStart > 0L) return null
+private fun tipFor(now: LocalDateTime): String? {
   val next = Store.nextShift(now)
   val last = Store.lastEndedShift(now)
   if (last != null && last.type.isNight && Duration.between(last.end, now).toMinutes() in 0..240) {
@@ -245,18 +247,100 @@ private fun tipFor(now: LocalDateTime, debt: Int): String? {
   if (next != null && next.start.isAfter(now)) {
     val h = Duration.between(now, next.start).toMinutes() / 60.0
     if (next.type.isNight && h in 2.0..8.0) {
-      return t("Bu gece vardiyanız var. Şimdi 60–90 dakikalık bir kestirme dikkatinizi korumanıza yardımcı olur.",
-        "Night shift tonight. A 60–90 minute nap now helps you stay sharp.")
-    }
-    if (next.type.isNight && h in 8.0..30.0) {
-      return t("Gece vardiyasından önce sabah biraz geç kalkmaya çalışın; kafeini vardiyanın ilk yarısında tüketin.",
-        "Before a night shift, try to sleep in; keep caffeine to the first half of your shift.")
+      return t("Bu gece vardiyanız var. Vardiyadan önce kısa bir kestirme dikkatinizi korumanıza yardımcı olabilir.",
+        "Night shift tonight. A short nap beforehand can help you stay sharp.")
     }
   }
-  if (debt > 420) {
-    return t("Uyku borcunuz yüksek. İzin gününüzde 1–2 saat fazladan uyumayı planlayın.",
-      "Your sleep debt is high. Plan 1–2 extra hours of sleep on your next day off.")
+  val recent = com.nobet.data.Recovery.history(7, now.toLocalDate()).take(3)
+  if (recent.size >= 2 && recent.map { it.score }.average() < 50) {
+    return t("Son vardiyalar yorucu geçti. Fırsat buldukça kendinize dinlenme zamanı ayırın — bu da işin bir parçası.",
+      "Your recent shifts have been demanding. Make time to rest when you can — it's part of the job too.")
   }
-  return t("Her gün aynı saatlerde 3–4 saatlik bir 'çapa uykusu' vardiya değişimlerinde ritminizi korur.",
-    "A consistent 3–4 hour 'anchor sleep' at the same time every day helps your rhythm across shift changes.")
+  return professionTip(now.dayOfYear)
+}
+
+/** Mesleğe göre ipucu (profil boşsa genel ipuçları); her gün değişir. */
+private fun professionTip(seed: Int): String {
+  val general = listOf(
+    t("Her gün aynı saatlerde 3–4 saatlik bir 'çapa uykusu' vardiya değişimlerinde ritminizi korur.",
+      "A consistent 3–4 hour 'anchor sleep' at the same time every day helps your rhythm across shift changes."),
+    t("Vardiya boyunca küçük yudumlarla su için; susuzluk yorgunluk gibi hissettirebilir.",
+      "Sip water throughout your shift; dehydration can feel like tiredness."),
+  )
+  val byRole = when (Store.role) {
+    "nurse" -> listOf(
+      t("Uzun koğuş vardiyalarında mola anlarında omuz ve bacaklarınızı esnetin; kısa hareketler yorgunluğu azaltır.",
+        "On long ward shifts, stretch your shoulders and legs during breaks; short movement eases fatigue."),
+      t("İlaç hazırlama gibi dikkat isteyen işleri mümkünse vardiyanın ilk yarısına planlayın.",
+        "If you can, plan attention-heavy tasks like medication prep for the first half of the shift."),
+    )
+    "security" -> listOf(
+      t("Tek başına gece devriyesinde dikkat düştüğünde kısa bir yürüyüş ve parlak ışık uyanık kalmanıza yardımcı olur.",
+        "On solo night patrols, a short walk and bright light help when alertness drops."),
+      t("24 saatlik nöbetlerde izin veriliyorsa 20 dakikalık kısa kestirmeler planlayın.",
+        "On 24-hour duties, plan 20-minute naps if your role allows it."),
+    )
+    "factory" -> listOf(
+      t("Gece vardiyasından sonra eve araçla dönüyorsanız yorgunsanız kısa bir mola verin ya da toplu taşımayı düşünün.",
+        "Driving home after a night shift? If you feel drowsy, take a short break or consider public transport."),
+      t("Gürültülü ortamdan sonra uyumadan önce sessiz bir yarım saat zihninizi sakinleştirir.",
+        "After a noisy shift, a quiet half hour before bed helps your mind settle."),
+    )
+    "hospitality" -> listOf(
+      t("Gece resepsiyonunda ekran parlaklığını azaltıp ortamı aydınlık tutmak dikkatinizi korur.",
+        "On night reception, dim your screen and keep the room well lit to stay alert."),
+      t("Ayakta geçen vardiyalardan sonra bacaklarınızı birkaç dakika yukarı kaldırmak iyi gelir.",
+        "After shifts on your feet, raising your legs for a few minutes helps."),
+    )
+    else -> emptyList()
+  }
+  val all = byRole + general
+  return all[seed % all.size]
+}
+
+/** Kafein ve öğün zamanlaması önerileri (PRD Ek B.6) — genel sağlıklı yaşam bilgisi. */
+private fun nutritionAdvice(now: LocalDateTime): Pair<String, String>? {
+  val next = Store.nextShift(now) ?: return null
+  val hoursTo = Duration.between(now, next.start).toMinutes() / 60.0
+  fun clk(x: LocalDateTime) = com.nobet.i18n.fmtClock(x.hour * 60 + x.minute)
+  if (next.type.isNight) {
+    if (hoursTo > 14) {
+      return t("Yarın gece vardiyanız var — bu gece iyi uyuyabilmek için 14:00'ten sonra kafeini sınırlamaya çalışın.",
+        "Night shift tomorrow — try to limit caffeine after 14:00 so you sleep well tonight.") to
+        t("Öğünlerinizi normal saatlerde yiyin; akşam yemeğini hafif tutun.", "Eat at your usual times; keep dinner light.")
+    }
+    val sleepAfter = next.end.plusHours(1)
+    return t("Kafeini vardiyanın ilk yarısında tüketin; ${clk(sleepAfter.minusHours(6))} sonrası almamaya çalışın.",
+      "Keep caffeine to the first half of the shift; try to skip it after ${clk(sleepAfter.minusHours(6))}.") to
+      t("Ana öğünü ${clk(next.start.minusHours(3))}–${clk(next.start.minusHours(2))} arası yemeyi deneyin; 00:00–06:00 arası hafif atıştırmalık, uyumadan önce küçük bir kahvaltı.",
+        "Try to eat your main meal between ${clk(next.start.minusHours(3))} and ${clk(next.start.minusHours(2))}; keep it light between 00:00 and 06:00, and have a small breakfast before sleep.")
+  }
+  if (hoursTo > 30 || !next.start.isAfter(now)) return null
+  val bed = next.start.minusMinutes(90L + Store.sleepGoalMin)
+  return t("Uykunuzu korumak için yaklaşık ${clk(bed.minusHours(6))}'ten sonra kafein almamaya çalışın.",
+    "To protect your sleep, try to skip caffeine after about ${clk(bed.minusHours(6))}.") to
+    t("Akşam yemeğini ${clk(bed.minusHours(2))} öncesinde bitirmeye çalışın; uyandıktan sonraki bir saat içinde kahvaltı edin.",
+      "Try to finish dinner before ${clk(bed.minusHours(2))}; have breakfast within an hour of waking.")
+}
+
+@Composable
+private fun NutritionCard(now: LocalDateTime) {
+  val adv = nutritionAdvice(now) ?: return
+  if (!Store.premium) {
+    LockedCard(
+      t("Kafein ve öğün zamanlaması", "Caffeine & meal timing"),
+      t("Bir sonraki vardiyanıza göre kafein ve öğün saatleri önerisi.", "Caffeine and meal timing suggestions for your next shift."),
+    ) { Nav.paywall(t("Kafein ve öğün zamanlaması", "Caffeine & meal timing")) }
+    return
+  }
+  NCard(Modifier.fillMaxWidth()) {
+    Text(t("Kafein ve öğün", "Caffeine & meals"), style = MaterialTheme.typography.labelLarge)
+    Gap(6.dp)
+    Text("☕ " + adv.first, style = MaterialTheme.typography.bodyMedium)
+    Gap(4.dp)
+    Text("🍽 " + adv.second, style = MaterialTheme.typography.bodyMedium)
+    Gap(4.dp)
+    Text(t("Genel öneridir, tıbbi tavsiye değildir.", "General guidance, not medical advice."), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+  }
+
 }
