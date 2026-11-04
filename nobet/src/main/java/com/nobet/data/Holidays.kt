@@ -41,6 +41,29 @@ object Holidays {
 
   fun on(d: LocalDate): Holiday? = if (!Store.showHolidays) null else year(d.year)[d]
 
+  /** Ayar kapalı olsa bile resmî tatil (mesai hesabı için). */
+  fun official(d: LocalDate): Holiday? = year(d.year)[d]
+
+  /**
+   * Ayın resmî mesai hesabı: Pazartesi–Cuma iş günleri × 8 saat.
+   * Tam gün resmî tatiller düşülür; hafta içine denk gelen arifeler (yarım gün) 4 saat sayılır.
+   * Dönüş: (iş günü sayısı, azami mesai saati)
+   */
+  fun monthlyStandard(ym: java.time.YearMonth): Pair<Double, Int> {
+    var days = 0.0
+    for (i in 1..ym.lengthOfMonth()) {
+      val d = ym.atDay(i)
+      if (d.dayOfWeek == java.time.DayOfWeek.SATURDAY || d.dayOfWeek == java.time.DayOfWeek.SUNDAY) continue
+      val h = official(d)
+      days += when {
+        h == null -> 1.0
+        h.half -> 0.5
+        else -> 0.0
+      }
+    }
+    return days to (days * 8).toInt()
+  }
+
   fun name(h: Holiday): String = when (h.key) {
     "newYear" -> t("Yılbaşı", "New Year's Day")
     "sovereignty" -> t("Ulusal Egemenlik ve Çocuk Bayramı", "National Sovereignty and Children's Day")

@@ -366,6 +366,8 @@ private fun HomeCalendar(today: java.time.LocalDate) {
       Text(t("Altı çizili: resmî tatil", "Underlined: holiday"), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
   }
+  // Takvimin altında: bu ay azami mesai
+  MonthlyMaxCard(ym)
 }
 
 @Composable

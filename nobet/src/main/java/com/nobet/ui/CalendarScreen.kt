@@ -158,6 +158,8 @@ fun CalendarScreen() {
         IconButton(onClick = { monthOffset++ }) { Icon(Icons.Filled.ChevronRight, t("Sonraki ay", "Next month")) }
       }
       MonthGrid(ym, today, selected, onDay)
+      Gap(8.dp)
+      MonthlyMaxCard(ym)
       if (monthOffset != 0) {
         TextButton(onClick = { monthOffset = 0 }, modifier = Modifier.align(Alignment.CenterHorizontally)) { Text(t("Bugüne dön", "Back to today")) }
       }
@@ -381,6 +383,50 @@ private fun MonthSummary(ym: YearMonth) {
     StatTile(t("Çalışma günü", "Work days"), "$work", modifier = Modifier.weight(1f))
     StatTile(t("Gece", "Nights"), "$nights", modifier = Modifier.weight(1f))
     StatTile(t("Saat", "Hours"), "${minutes / 60}", modifier = Modifier.weight(1f))
+  }
+}
+
+/**
+ * Bu ay azami mesai: hafta içi resmî iş günleri × 8 saat (resmî tatiller düşülür, arifeler yarım gün).
+ * Altında takvimde planlanan çalışma saatiyle karşılaştırma.
+ */
+@Composable
+fun MonthlyMaxCard(ym: YearMonth) {
+  val (days, maxH) = com.nobet.data.Holidays.monthlyStandard(ym)
+  val plannedMin = (1..ym.lengthOfMonth()).mapNotNull { Store.workOn(ym.atDay(it)) }.sumOf { it.type.durationMin }
+  val planned = plannedMin / 60
+  val over = planned - maxH
+  NCard(Modifier.fillMaxWidth(), container = MaterialTheme.colorScheme.secondaryContainer) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+      Column(Modifier.weight(1f)) {
+        Text(t("Bu ay azami mesai", "Max working hours this month"), style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSecondaryContainer)
+        Text(
+          t("${fmtDays(days.toFloat())} hafta içi iş günü × 8 sa", "${fmtDays(days.toFloat())} weekday working days × 8 h"),
+          style = MaterialTheme.typography.bodySmall,
+          color = MaterialTheme.colorScheme.onSecondaryContainer,
+        )
+      }
+      Text(t("$maxH sa", "$maxH h"), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSecondaryContainer)
+    }
+    if (planned > 0) {
+      Gap(4.dp)
+      Text(
+        t("Takvimdeki çalışma: $planned sa", "Planned in calendar: $planned h") +
+          when {
+            over > 0 -> t(" · azaminin $over sa üstünde", " · $over h above the max")
+            over < 0 -> t(" · azaminin ${-over} sa altında", " · ${-over} h below the max")
+            else -> t(" · azamiye eşit", " · equal to the max")
+          },
+        style = MaterialTheme.typography.bodySmall,
+        color = if (over > 0) Alert else MaterialTheme.colorScheme.onSecondaryContainer,
+        fontWeight = if (over > 0) FontWeight.SemiBold else FontWeight.Normal,
+      )
+    }
+    Text(
+      t("Resmî tatiller düşülür, arifeler yarım gün sayılır. Bilgi amaçlıdır.", "Public holidays are excluded, holiday eves count as half days. For reference only."),
+      style = MaterialTheme.typography.labelSmall,
+      color = MaterialTheme.colorScheme.onSecondaryContainer,
+    )
   }
 }
 
