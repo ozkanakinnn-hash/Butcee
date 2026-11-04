@@ -273,9 +273,14 @@ fun HomeScreen(
       )
     }
 
-    // 4b. Zikirmatik (Günün Manevi İklimi'nin altında)
+    // 4b. Kısayollar: Yakındaki Camiler • Kıble • Zikirmatik (Günün Manevi İklimi'nin altında)
     item {
-      com.example.ui.components.HomeZikirCard(onOpenFull = onOpenZikirmatik, refreshKey = zikirRefreshKey)
+      com.example.ui.components.HomeShortcutsRow(
+        onOpenMosques = onOpenMosques,
+        onOpenQibla = onOpenQibla,
+        onOpenZikirmatik = onOpenZikirmatik,
+        refreshKey = zikirRefreshKey
+      )
     }
 
 
