@@ -84,3 +84,5 @@ gradle/actions/setup-gradle@v5 → `./gradlew assembleDebug` → upload-artifact
 - 1080x1920 Bitmap'e Canvas ile çiz; önizleme için aynı fonksiyonu `scale` (ör. 0.45) ile `Dispatchers.Default`'ta üret, `produceState` ile göster.
 - Fotoğrafı `inSampleSize` ile küçültüp kemer yoluna `clipPath` ederek centerCrop çiz; metinleri `StaticLayout` ile ortala, sığmazsa yazı boyutunu küçülterek tekrar ölç.
 - Paylaşım: cache/shared_images → `FileProvider` Uri → `ACTION_SEND` chooser; Instagram için `com.instagram.share.ADD_TO_STORY` (facebook_app_id gerekir), yoksa genel paylaşıma düş.
+- Tasarım onayı için önce HTML/SVG ile örnek kart çiz, Playwright ile PNG al ve kullanıcıya göster. Onaydan sonra aynı sahneleri **metinsiz** 1080x1920 render edip `drawable-nodpi/*.webp` (quality ~86, kart başı 25–100 KB) olarak göm; metni uygulamada Canvas ile çiz (çok dilli ve çok mesajlı kalır). Yazı tiplerini `res/font` içine göm (Google Fonts TTF, OFL; `ResourcesCompat.getFont`). `StaticLayout` için `BREAK_STRATEGY_BALANCED` başlıkları dengeli böler.
+- CI emülatöründe "Pixel Launcher isn't responding" uyarısı çıkabilir: betikte `tap_text "Wait"` ile kapat.
