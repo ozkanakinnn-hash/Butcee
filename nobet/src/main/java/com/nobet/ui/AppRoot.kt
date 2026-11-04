@@ -23,7 +23,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Bedtime
 import androidx.compose.material.icons.filled.Bolt
@@ -35,7 +34,6 @@ import androidx.compose.material.icons.filled.WbSunny
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -128,11 +126,6 @@ fun AppRoot() {
           }
         }
       },
-      floatingActionButton = {
-        FloatingActionButton(onClick = { Nav.dialog = "quick" }, containerColor = MaterialTheme.colorScheme.primary) {
-          Icon(Icons.Filled.Add, t("Hızlı ekle", "Quick add"), tint = MaterialTheme.colorScheme.onPrimary)
-        }
-      },
     ) { pad ->
       Box(Modifier.padding(pad).fillMaxSize()) {
         when (Nav.tab) {
@@ -172,7 +165,7 @@ fun AppRoot() {
 }
 
 @Composable
-private fun QuickRow(icon: ImageVector, title: String, sub: String, onClick: () -> Unit) {
+fun QuickRow(icon: ImageVector, title: String, sub: String, onClick: () -> Unit) {
   Row(
     Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).clickable(onClick = onClick).padding(horizontal = 12.dp, vertical = 14.dp),
     verticalAlignment = Alignment.CenterVertically,

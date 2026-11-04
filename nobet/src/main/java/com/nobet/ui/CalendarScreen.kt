@@ -34,11 +34,14 @@ import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.EditCalendar
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -93,6 +96,8 @@ fun CalendarScreen() {
   var bulkSheet by remember { mutableStateOf(false) }
   val today = Store.today()
 
+  var addSheet by remember { mutableStateOf(false) }
+  Box(Modifier.fillMaxSize()) {
   Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 12.dp, vertical = 8.dp)) {
     Row(verticalAlignment = Alignment.CenterVertically) {
       Text(t("Takvim", "Calendar"), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f).padding(start = 4.dp))
@@ -188,6 +193,39 @@ fun CalendarScreen() {
       }
     }
     Spacer(Modifier.height(88.dp))
+  }
+  // Artı düğmesi yalnızca takvimde: vardiya ekleme işlemleri
+  FloatingActionButton(
+    onClick = { addSheet = true },
+    containerColor = MaterialTheme.colorScheme.primary,
+    modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp),
+  ) {
+    Icon(Icons.Filled.Add, t("Vardiya ekle", "Add shift"), tint = MaterialTheme.colorScheme.onPrimary)
+  }
+  }
+
+  if (addSheet) {
+    ModalBottomSheet(onDismissRequest = { addSheet = false }) {
+      Column(Modifier.padding(horizontal = 12.dp).padding(bottom = 24.dp)) {
+        QuickRow(Icons.Filled.EditCalendar, t("Bugüne vardiya ekle", "Add a shift today"), fmtDate(today)) {
+          addSheet = false
+          Nav.daySheet = today
+        }
+        QuickRow(Icons.Filled.ChecklistRtl, t("Birden çok gün seç", "Select multiple days"), t("Seçtiğiniz günlere aynı vardiyayı atayın", "Assign one shift to the days you pick")) {
+          addSheet = false
+          selectMode = true
+          selected.clear()
+        }
+        QuickRow(Icons.Filled.AutoAwesome, t("Vardiya düzeni uygula", "Apply a rotation"), t("2-2-3, 4-4, sabit gece ve kendi şablonlarınız", "2-2-3, 4-on-4-off, permanent nights and your templates")) {
+          addSheet = false
+          Nav.open("patterns")
+        }
+        QuickRow(Icons.Filled.Edit, t("Vardiya türü ekle", "Add a shift type"), t("Özel saat ve renkle yeni tür", "A new type with custom times and color")) {
+          addSheet = false
+          Nav.open("templates")
+        }
+      }
+    }
   }
 
   if (bulkSheet) {
@@ -668,5 +706,3 @@ private fun letters(name: String): String {
   return s.uppercase(com.nobet.i18n.appLocale()).ifEmpty { "?" }
 }
 
-@Suppress("unused")
-private val unusedAdd = Icons.Filled.Add

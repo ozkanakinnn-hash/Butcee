@@ -14,7 +14,11 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -61,6 +65,8 @@ fun TodayScreen() {
   val today = now.toLocalDate()
   val next = Store.nextShift(now)
   val (debt, debtDays) = Store.debt7(today)
+  var askName by remember { mutableStateOf(false) }
+  if (askName) NameDialog { askName = false }
 
   Column(
     Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 12.dp),
@@ -75,8 +81,18 @@ fun TodayScreen() {
           else -> t("İyi geceler", "Good night")
         }
         val nm = Store.name.trim()
-        Text(if (nm.isEmpty()) greet else "$greet, $nm", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-        Text(fmtDate(today), color = MaterialTheme.colorScheme.onSurfaceVariant)
+        // Üst karşılama: "Merhaba, <ad> 👋" — ad yoksa eklemek için kısayol
+        Text(
+          if (nm.isEmpty()) t("Merhaba 👋", "Hello 👋") else t("Merhaba, $nm 👋", "Hello, $nm 👋"),
+          style = MaterialTheme.typography.headlineSmall,
+          fontWeight = FontWeight.Bold,
+        )
+        Text("$greet · ${fmtDate(today)}", color = MaterialTheme.colorScheme.onSurfaceVariant)
+        if (nm.isEmpty()) {
+          TextButton(onClick = { askName = true }, contentPadding = PaddingValues(0.dp)) {
+            Text(t("Adınızı ekleyin", "Add your name"))
+          }
+        }
       }
       IconButton(onClick = { Nav.open("settings") }) { Icon(Icons.Filled.Settings, t("Ayarlar", "Settings")) }
     }
@@ -191,6 +207,31 @@ fun TodayScreen() {
     }
     Spacer(Modifier.height(72.dp))
   }
+}
+
+@Composable
+private fun NameDialog(onDone: () -> Unit) {
+  var v by remember { mutableStateOf(Store.name) }
+  AlertDialog(
+    onDismissRequest = onDone,
+    title = { Text(t("Size nasıl hitap edelim?", "What should we call you?")) },
+    text = {
+      OutlinedTextField(
+        value = v,
+        onValueChange = { v = it.take(30) },
+        label = { Text(t("Ad veya takma ad", "Name or nickname")) },
+        singleLine = true,
+      )
+    },
+    confirmButton = {
+      TextButton(onClick = {
+        Store.name = v.trim()
+        Store.save()
+        onDone()
+      }) { Text(t("Kaydet", "Save")) }
+    },
+    dismissButton = { TextButton(onClick = onDone) { Text(t("İptal", "Cancel")) } },
+  )
 }
 
 private fun tipFor(now: LocalDateTime, debt: Int): String? {
