@@ -13,3 +13,5 @@
 .env
 /my-upload-key.jks
 app/google-services.json
+/nobet/build/
+/wear/build/

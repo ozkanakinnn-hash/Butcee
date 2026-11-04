@@ -27,3 +27,6 @@ rootProject.name = "Ramazan Rehberi"
 include(":app")
 // Wear OS (akıllı saat) uygulaması
 include(":wear")
+
+// Nöbet — vardiya çalışanları için uyku/enerji/takvim uygulaması (ayrı uygulama)
+include(":nobet")

@@ -50,3 +50,8 @@ jobs:
         with:
           name: ramazan-rehberi-wear-debug
           path: wear/build/outputs/apk/debug/*.apk
+
+      - uses: actions/upload-artifact@v5
+        with:
+          name: nobet-debug
+          path: nobet/build/outputs/apk/debug/*.apk
