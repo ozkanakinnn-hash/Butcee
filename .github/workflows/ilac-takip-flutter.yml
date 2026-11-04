@@ -7,6 +7,9 @@ on:
     paths: [ "ilac_takip/**" ]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 defaults:
   run:
     working-directory: ilac_takip
@@ -98,3 +101,18 @@ jobs:
           path: |
             ilac_takip/screenshots/
             ilac_takip/drive.log
+      - name: Ekran görüntülerini dala yükle
+        if: success() && github.event_name == 'push'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git fetch origin ${{ github.ref_name }}
+          git checkout -B shots origin/${{ github.ref_name }}
+          rm -rf ../docs/vitamin-takip/screenshots && mkdir -p ../docs/vitamin-takip
+          cp -r screenshots ../docs/vitamin-takip/screenshots
+          git add ../docs/vitamin-takip/screenshots
+          git commit -m "Vitamin Takip ekran görüntüleri [skip ci]" || exit 0
+          for i in 1 2 3 4; do
+            git pull --rebase origin ${{ github.ref_name }} && git push origin HEAD:${{ github.ref_name }} && break
+            sleep $((i * 5))
+          done
