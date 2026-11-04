@@ -96,6 +96,7 @@ private val dictionary: Map<String, String> = mapOf(
     "Uygulama Ayarları" to "App Settings",
     "Tema, Dil\nBildirim & Hatırlatıcı" to "Theme, Language\nNotifications",
     "Geri" to "Back",
+    "Reklam gizlilik seçenekleri" to "Ad privacy options",
     "Hatim Takibi" to "Khatm Tracker",
     "Cüz & Sure\nİlerleme" to "Juz & Surah\nProgress",
     "Kaldığın Yer" to "Continue Reading",

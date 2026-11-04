@@ -147,9 +147,15 @@ private fun PrayerColumnItem(
   isActive: Boolean,
   modifier: Modifier = Modifier
 ) {
+  val fastingToday = androidx.compose.runtime.remember {
+    val key = com.example.data.RamadanCalendar.dateKey(java.util.Calendar.getInstance())
+    com.example.data.RamadanCalendar.isRamadanDay(key) ||
+      com.example.data.AppPreferences(com.example.AppHolder.context).getFastingDates().contains(key)
+  }
+  val iftarStyle = item.isIftar && fastingToday
   val bgColor = if (isActive) {
     MaterialTheme.colorScheme.primary
-  } else if (item.isIftar) {
+  } else if (iftarStyle) {
     MaterialTheme.colorScheme.primaryContainer
   } else {
     MaterialTheme.colorScheme.surfaceVariant
@@ -163,7 +169,7 @@ private fun PrayerColumnItem(
 
   val iconTint = if (isActive) {
     MaterialTheme.colorScheme.onPrimary
-  } else if (item.isIftar) {
+  } else if (iftarStyle) {
     MaterialTheme.colorScheme.primary
   } else {
     MaterialTheme.colorScheme.onSurfaceVariant
@@ -184,9 +190,9 @@ private fun PrayerColumnItem(
     )
     Spacer(modifier = Modifier.height(6.dp))
     Text(
-      text = t(item.name),
+      text = if (iftarStyle) t("İftar") else t(item.name),
       fontSize = 11.sp,
-      fontWeight = if (isActive || item.isIftar) FontWeight.Bold else FontWeight.Medium,
+      fontWeight = if (isActive || iftarStyle) FontWeight.Bold else FontWeight.Medium,
       color = textColor
     )
     Spacer(modifier = Modifier.height(4.dp))
@@ -196,13 +202,5 @@ private fun PrayerColumnItem(
       fontWeight = FontWeight.Bold,
       color = textColor
     )
-    if (item.isIftar && !isActive) {
-      Text(
-        text = t("İFTAR"),
-        fontSize = 8.sp,
-        fontWeight = FontWeight.Bold,
-        color = MaterialTheme.colorScheme.primary
-      )
-    }
   }
 }

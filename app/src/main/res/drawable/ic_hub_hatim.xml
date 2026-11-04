@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Dahası menüsü ikonu (hatim): çizgi stili, tema rengine boyanır -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp" android:height="24dp" android:viewportWidth="24" android:viewportHeight="24">
+    <path android:pathData="M12.00,2.50 L14.69,5.51 L18.72,5.28 L18.49,9.31 L21.50,12.00 L18.49,14.69 L18.72,18.72 L14.69,18.49 L12.00,21.50 L9.31,18.49 L5.28,18.72 L5.51,14.69 L2.50,12.00 L5.51,9.31 L5.28,5.28 L9.31,5.51 Z M8.6,12.2 L11,14.6 L15.6,9.6" android:strokeColor="#FF000000" android:strokeWidth="1.6"
+        android:strokeLineCap="round" android:strokeLineJoin="round" android:fillColor="#00000000" />
+</vector>

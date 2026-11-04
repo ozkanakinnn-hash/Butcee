@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -25,8 +26,10 @@ fun AdBannerComponent(
   modifier: Modifier = Modifier
 ) {
   var adFailed by remember { mutableStateOf(false) }
+  // Reklam yalnızca kullanıcı onayı (UMP) alınıp SDK başlatıldıktan sonra yüklenir
+  val canShowAds by com.example.util.AdsConsent.canShowAds.collectAsState()
 
-  if (!adFailed) {
+  if (!adFailed && canShowAds) {
     Box(
       modifier = modifier
         .fillMaxWidth()
@@ -43,7 +46,7 @@ fun AdBannerComponent(
               ViewGroup.LayoutParams.WRAP_CONTENT
             )
             setAdSize(AdSize.BANNER)
-            adUnitId = "ca-app-pub-3940256099942544/6300978111"
+            adUnitId = com.example.util.AdsConsent.bannerUnitId
             adListener = object : AdListener() {
               override fun onAdFailedToLoad(loadAdError: LoadAdError) {
                 super.onAdFailedToLoad(loadAdError)
@@ -58,7 +61,9 @@ fun AdBannerComponent(
               adFailed = true
             }
           }
-        }
+        },
+        // Ekrandan çıkınca reklam görünümünü serbest bırak (bellek sızıntısı olmasın)
+        onRelease = { it.destroy() }
       )
     }
   }

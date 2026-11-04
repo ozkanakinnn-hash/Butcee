@@ -529,6 +529,20 @@ fun SettingsDialog(
 
           Spacer(modifier = Modifier.height(18.dp))
 
+          // Reklam gizlilik seçenekleri (GDPR/KVKK onayı gerekiyorsa)
+          val activity = run {
+            var c: android.content.Context? = context
+            while (c is android.content.ContextWrapper && c !is android.app.Activity) c = c.baseContext
+            c as? android.app.Activity
+          }
+          if (activity != null && com.example.util.AdsConsent.privacyOptionsRequired(context)) {
+            androidx.compose.material3.OutlinedButton(
+              onClick = { com.example.util.AdsConsent.showPrivacyOptions(activity) },
+              modifier = Modifier.fillMaxWidth()
+            ) { Text(t("Reklam gizlilik seçenekleri")) }
+            Spacer(modifier = Modifier.height(10.dp))
+          }
+
           // Privacy note
           Row(
             modifier = Modifier.fillMaxWidth(),

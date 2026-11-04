@@ -106,20 +106,20 @@ fun MoreHubScreen(
         if (isRamadan) HubCard(
           title = t("Kur'an-ı Kerîm"),
           subtitle = t("114 Sure • 30 Cüz\nArapça & Meâl"),
-          emoji = "📖",
+          iconRes = R.drawable.ic_hub_quran,
           onClick = onOpenQuran,
           modifier = Modifier.weight(1f)
         ) else HubCard(
           title = t("Ramazan Rehberi"),
           subtitle = t("Orucun Faydaları\nİftar & Sahur"),
-          emoji = "🌙",
+          iconRes = R.drawable.ic_hub_ramadan,
           onClick = onOpenFastingGuide,
           modifier = Modifier.weight(1f)
         )
         HubCard(
           title = t("Kıble Bulucu"),
           subtitle = t("Pusula Sensörü\nKâbe İstikameti"),
-          emoji = "🧭",
+          iconRes = R.drawable.ic_hub_qibla,
           onClick = onOpenQibla,
           modifier = Modifier.weight(1f)
         )
@@ -138,14 +138,14 @@ fun MoreHubScreen(
         HubCard(
           title = t("Hatim Takibi"),
           subtitle = t("Cüz & Sure\nİlerleme"),
-          emoji = "🏆",
+          iconRes = R.drawable.ic_hub_hatim,
           onClick = onOpenHatim,
           modifier = Modifier.weight(1f)
         )
         HubCard(
           title = t("Kaldığın Yer"),
           subtitle = if (com.example.i18n.AppLanguage.isEnglish) "Quran • Page $lastPage\nContinue reading" else "Kur'an • Sayfa $lastPage\nOkumaya devam et",
-          emoji = "📖",
+          iconRes = R.drawable.ic_hub_bookmark,
           onClick = onContinueReading,
           modifier = Modifier.weight(1f)
         )
@@ -163,14 +163,14 @@ fun MoreHubScreen(
         HubCard(
           title = t("Yakındaki Camiler"),
           subtitle = "${prefs.province} / ${prefs.district}\nHarita & Navigasyon",
-          emoji = "🕌",
+          iconRes = R.drawable.ic_hub_mosque,
           onClick = onOpenMosques,
           modifier = Modifier.weight(1f)
         )
         HubCard(
           title = t("Oruç Takibi"),
           subtitle = t("Bugünkü Durum\nKaza & Nafile Sayacı"),
-          emoji = "🤲",
+          iconRes = R.drawable.ic_hub_fasting,
           onClick = onOpenFastingTracker,
           modifier = Modifier.weight(1f)
         )
@@ -188,14 +188,14 @@ fun MoreHubScreen(
         HubCard(
           title = t("Zikirmatik"),
           subtitle = t("Serbest • 33 • 99\nTesbihat"),
-          emoji = "📿",
+          iconRes = R.drawable.ic_hub_tasbih,
           onClick = onOpenZikirmatik,
           modifier = Modifier.weight(1f)
         )
         HubCard(
           title = t("Esmâü'l-Hüsnâ"),
           subtitle = t("Allah'ın 99 ismi\nAnlamlarıyla"),
-          emoji = "✨",
+          iconRes = R.drawable.ic_hub_esma,
           onClick = onOpenEsma,
           modifier = Modifier.weight(1f)
         )
@@ -213,14 +213,14 @@ fun MoreHubScreen(
         HubCard(
           title = t("Özel Gün Kartları"),
           subtitle = t("Cuma • Kandil • Bayram\nSevdiklerinizle paylaşın"),
-          emoji = "💌",
+          iconRes = R.drawable.ic_hub_card,
           onClick = onOpenGreetingCards,
           modifier = Modifier.weight(1f)
         )
         HubCard(
           title = t("Ana Ekran Widget'ı"),
           subtitle = t("Namaz Vakitleri\nManevi İklim"),
-          emoji = "🧩",
+          iconRes = R.drawable.ic_hub_widget,
           onClick = onAddWidget,
           modifier = Modifier.weight(1f)
         )
@@ -238,14 +238,14 @@ fun MoreHubScreen(
         HubCard(
           title = t("Manevi Notlar"),
           subtitle = t("Kişisel Dualar\nRamazan Günlüğü"),
-          emoji = "📝",
+          iconRes = R.drawable.ic_hub_notes,
           onClick = onOpenNotes,
           modifier = Modifier.weight(1f)
         )
         HubCard(
           title = t("Uygulama Ayarları"),
           subtitle = t("Tema, Dil\nBildirim & Hatırlatıcı"),
-          emoji = "⚙️",
+          iconRes = R.drawable.ic_hub_settings,
           onClick = onOpenSettings,
           modifier = Modifier.weight(1f)
         )
@@ -268,45 +268,68 @@ fun MoreHubScreen(
 private fun HubCard(
   title: String,
   subtitle: String,
-  emoji: String,
+  iconRes: Int,
   onClick: () -> Unit,
   modifier: Modifier = Modifier
 ) {
+  val cs = MaterialTheme.colorScheme
   Card(
     modifier = modifier
       .clickable { onClick() }
       .testTag("hub_card_${title.lowercase()}"),
     shape = RoundedCornerShape(20.dp),
-    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+    colors = CardDefaults.cardColors(containerColor = cs.surface),
     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
   ) {
     Column(
       modifier = Modifier
         .fillMaxWidth()
-        .padding(16.dp)
+        .padding(horizontal = 12.dp, vertical = 16.dp),
+      horizontalAlignment = Alignment.CenterHorizontally
     ) {
-      Box(
-        modifier = Modifier
-          .size(44.dp)
-          .clip(CircleShape)
-          .background(MaterialTheme.colorScheme.primaryContainer),
-        contentAlignment = Alignment.Center
-      ) {
-        Text(emoji, fontSize = 22.sp)
+      // Sekiz köşeli yıldız madalyon içinde tema renginde çizgi ikon
+      Box(modifier = Modifier.size(58.dp), contentAlignment = Alignment.Center) {
+        val fill = cs.primaryContainer
+        val line = cs.primary.copy(alpha = 0.55f)
+        androidx.compose.foundation.Canvas(modifier = Modifier.fillMaxSize()) {
+          val c = center
+          val r = size.minDimension / 2f - 1.dp.toPx()
+          val path = androidx.compose.ui.graphics.Path().apply {
+            for (k in 0 until 16) {
+              val a = Math.PI / 8 * k - Math.PI / 2
+              val rr = if (k % 2 == 0) r else r * 0.82f
+              val x = c.x + rr * kotlin.math.cos(a).toFloat()
+              val y = c.y + rr * kotlin.math.sin(a).toFloat()
+              if (k == 0) moveTo(x, y) else lineTo(x, y)
+            }
+            close()
+          }
+          drawPath(path, fill)
+          drawPath(path, line, style = androidx.compose.ui.graphics.drawscope.Stroke(1.dp.toPx()))
+        }
+        Icon(
+          painter = painterResource(iconRes),
+          contentDescription = null,
+          tint = cs.primary,
+          modifier = Modifier.size(28.dp)
+        )
       }
-      Spacer(modifier = Modifier.height(12.dp))
+      Spacer(modifier = Modifier.height(10.dp))
       Text(
         text = title,
         fontWeight = FontWeight.Bold,
         fontSize = 15.sp,
-        color = MaterialTheme.colorScheme.onSurface
+        color = cs.onSurface,
+        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+        maxLines = 1
       )
       Spacer(modifier = Modifier.height(4.dp))
       Text(
         text = subtitle,
         fontSize = 11.sp,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-        lineHeight = 15.sp
+        color = cs.onSurfaceVariant,
+        lineHeight = 15.sp,
+        textAlign = androidx.compose.ui.text.style.TextAlign.Center
       )
     }
   }

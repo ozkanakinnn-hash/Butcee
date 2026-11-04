@@ -20,6 +20,12 @@ android {
     versionName = "1.0"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+    // AdMob kimlikleri: hata ayıklamada Google test kimlikleri; yayında ortam değişkeni/gradle özelliğinden
+    val testAppId = "ca-app-pub-3940256099942544~3347511713"
+    val testBannerId = "ca-app-pub-3940256099942544/6300978111"
+    manifestPlaceholders["admobAppId"] = testAppId
+    buildConfigField("String", "ADMOB_BANNER_ID", "\"$testBannerId\"")
   }
 
   // Do not remove or modify these signingConfigs. They are necessary for building, installing,
@@ -42,6 +48,10 @@ android {
 
   buildTypes {
     release {
+      val appId = (project.findProperty("ADMOB_APP_ID") as String?) ?: System.getenv("ADMOB_APP_ID")
+      val bannerId = (project.findProperty("ADMOB_BANNER_ID") as String?) ?: System.getenv("ADMOB_BANNER_ID")
+      if (!appId.isNullOrBlank()) manifestPlaceholders["admobAppId"] = appId
+      if (!bannerId.isNullOrBlank()) buildConfigField("String", "ADMOB_BANNER_ID", "\"$bannerId\"")
       isCrunchPngs = false
       isMinifyEnabled = true
       proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
@@ -114,9 +124,10 @@ dependencies {
   implementation(libs.androidx.room.runtime)
   // implementation(libs.coil.compose)
   implementation(libs.converter.moshi)
-  implementation(libs.firebase.ai)
   implementation(libs.firebase.messaging)
   implementation(libs.play.services.ads)
+  // Reklam onayı (GDPR/KVKK) — Google User Messaging Platform
+  implementation(libs.ump)
   // Akıllı saate namaz vakitlerini gönderme (Wear Data Layer)
   implementation(libs.play.services.wearable)
   // Uncomment to use Firestore:
@@ -128,8 +139,7 @@ dependencies {
   // implementation(libs.androidx.credentials)
   // implementation(libs.androidx.credentials.play.services)
   // implementation(libs.googleid)
-  implementation(libs.firebase.appcheck.recaptcha)
-  implementation(libs.firebase.appcheck.debug)
+  // Kullanılmayan App Check / AI kütüphaneleri kaldırıldı (yayın sürümünde debug sağlayıcısı olmasın)
   implementation(libs.kotlinx.coroutines.android)
   implementation(libs.kotlinx.coroutines.core)
   implementation(libs.logging.interceptor)

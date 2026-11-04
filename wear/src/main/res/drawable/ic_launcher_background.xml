@@ -1,25 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Uygulama ikonu arka planı: koyu turkuaz degrade + soluk arabesk desen -->
-<vector xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:aapt="http://schemas.android.com/aapt"
-    android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
-    <path android:pathData="M0,0h108v108h-108z">
-        <aapt:attr name="android:fillColor">
-            <gradient android:type="radial" android:centerX="54" android:centerY="48" android:gradientRadius="76"
-                android:startColor="#FF1F7480" android:endColor="#FF0B3740" />
-        </aapt:attr>
-    </path>
-    <path android:pathData="M8,30 C20,22 22,10 30,8" android:strokeColor="#297FD0D6" android:strokeWidth="1.1" android:fillColor="#00000000" />
-    <path android:pathData="M78,8 C86,10 88,22 100,30" android:strokeColor="#297FD0D6" android:strokeWidth="1.1" android:fillColor="#00000000" />
-    <path android:pathData="M8,78 C20,86 22,98 30,100" android:strokeColor="#297FD0D6" android:strokeWidth="1.1" android:fillColor="#00000000" />
-    <path android:pathData="M78,100 C86,98 88,86 100,78" android:strokeColor="#297FD0D6" android:strokeWidth="1.1" android:fillColor="#00000000" />
-    <path android:pathData="M14,40 C26,34 30,22 26,14" android:strokeColor="#297FD0D6" android:strokeWidth="1.1" android:fillColor="#00000000" />
-    <path android:pathData="M94,40 C82,34 78,22 82,14" android:strokeColor="#297FD0D6" android:strokeWidth="1.1" android:fillColor="#00000000" />
-    <path android:pathData="M14,68 C26,74 30,86 26,94" android:strokeColor="#297FD0D6" android:strokeWidth="1.1" android:fillColor="#00000000" />
-    <path android:pathData="M94,68 C82,74 78,86 82,94" android:strokeColor="#297FD0D6" android:strokeWidth="1.1" android:fillColor="#00000000" />
-    <path android:pathData="M30,8 C34,18 44,20 54,14 C64,20 74,18 78,8" android:strokeColor="#297FD0D6" android:strokeWidth="1.1" android:fillColor="#00000000" />
-    <path android:pathData="M30,100 C34,90 44,88 54,94 C64,88 74,90 78,100" android:strokeColor="#297FD0D6" android:strokeWidth="1.1" android:fillColor="#00000000" />
-    <path android:pathData="M8,30 C18,34 20,44 14,54 C20,64 18,74 8,78" android:strokeColor="#297FD0D6" android:strokeWidth="1.1" android:fillColor="#00000000" />
-    <path android:pathData="M100,30 C90,34 88,44 94,54 C88,64 90,74 100,78" android:strokeColor="#297FD0D6" android:strokeWidth="1.1" android:fillColor="#00000000" />
-    <path android:pathData="M26,21 H82 A5,5 0 0 1 87,26 V82 A5,5 0 0 1 82,87 H26 A5,5 0 0 1 21,82 V26 A5,5 0 0 1 26,21 Z" android:strokeColor="#387FD0D6" android:strokeWidth="0.8" android:fillColor="#00000000" />
-</vector>
+<!-- Uygulama simgesi arka planı: gece laciverti geçiş (yeni logo) -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <gradient android:angle="270" android:startColor="#FF24426C" android:endColor="#FF0A1C46" />
+</shape>

@@ -120,12 +120,8 @@ class MainActivity : ComponentActivity() {
     val lastCrash = com.example.util.CrashReporter.consumeLastCrash(this)
     enableEdgeToEdge()
 
-    // Initialize Google Mobile Ads SDK (AdMob)
-    try {
-      MobileAds.initialize(this) {}
-    } catch (e: Exception) {
-      // Ignored in test environment
-    }
+    // Reklam onayı (UMP) → izin varsa AdMob arka planda başlatılır
+    com.example.util.AdsConsent.gather(this)
 
     // Create Notification Channel for prayers and iftar
     NotificationHelper.createNotificationChannel(this)
@@ -136,7 +132,7 @@ class MainActivity : ComponentActivity() {
       com.google.firebase.messaging.FirebaseMessaging.getInstance().subscribeToTopic("all_users")
         .addOnCompleteListener { task ->
           if (task.isSuccessful) {
-            android.util.Log.d("FCM", "Subscribed to all_users topic successfully")
+            if (com.example.BuildConfig.DEBUG) android.util.Log.d("FCM", "Subscribed to all_users topic")
           }
         }
     } catch (e: Exception) {

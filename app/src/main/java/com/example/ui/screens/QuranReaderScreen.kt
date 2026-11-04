@@ -110,7 +110,7 @@ fun QuranReaderScreen(startPage: Int, onNavigateBack: () -> Unit) {
   Column(modifier = Modifier.fillMaxSize().background(cs.background).testTag("quran_reader")) {
     // Üst çubuk
     Row(modifier = Modifier.fillMaxWidth().padding(start = 4.dp, end = 8.dp, top = 6.dp), verticalAlignment = Alignment.CenterVertically) {
-      IconButton(onClick = onNavigateBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = t("Geri")) }
+      IconButton(onClick = onNavigateBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = t("Geri"), tint = cs.onBackground) }
       Column(modifier = Modifier.weight(1f)) {
         Text(
           text = surahInfo?.let { if (en) "Surah ${it.nameTurkish}" else "${it.nameTurkish} Sûresi" } ?: "",
