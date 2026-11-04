@@ -51,11 +51,4 @@ class DoseTransitions {
     if (!waiting || now.isBefore(log.graceUntil)) return null;
     return log.copyWith(status: DoseStatus.missed, snoozedUntil: () => null);
   }
-
-  /// "Geri al" — yalnızca kullanıcının az önce yaptığı işlemi geri döndürür.
-  static DoseLog revert(DoseLog log) => log.copyWith(
-        status: DoseStatus.pending,
-        snoozedUntil: () => null,
-        skipReason: () => null,
-      );
 }

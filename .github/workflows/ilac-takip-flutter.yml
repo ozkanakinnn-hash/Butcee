@@ -43,13 +43,23 @@ jobs:
       - name: Android SDK lisansları
         run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
 
-      - name: Debug APK
-        run: flutter build apk --debug
+      # Telefon için küçük APK: release + R8 küçültme + mimari başına ayrı dosya.
+      - name: Release APK (mimari başına)
+        run: flutter build apk --release --split-per-abi --obfuscate --split-debug-info=build/symbols
+
+      - name: APK boyutları
+        run: ls -la build/app/outputs/flutter-apk/*.apk | awk '{printf "%-60s %6.1f MB\n", $9, $5/1048576}'
+
+      # Telefonların neredeyse tamamı (Samsung dahil) arm64 kullanır.
+      - uses: actions/upload-artifact@v5
+        with:
+          name: vitamin-takip-arm64-apk
+          path: ilac_takip/build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
 
       - uses: actions/upload-artifact@v5
         with:
-          name: ilac-takip-debug-apk
-          path: ilac_takip/build/app/outputs/flutter-apk/app-debug.apk
+          name: vitamin-takip-eski-telefon-armv7-apk
+          path: ilac_takip/build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
 
   # Gerçek Android 14 emülatöründe: tam zamanlı alarm izni KAPALIYKEN açılış + alarm kurma
   # çökmeden çalışmalı; aynı test ekran görüntülerini alır.
@@ -75,6 +85,8 @@ jobs:
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
           sudo udevadm control --reload-rules && sudo udevadm trigger --name-match=kvm
+      - name: Release APK (emülatör için x86_64)
+        run: flutter build apk --release --target-platform android-x64 --split-per-abi
       - name: Entegrasyon testi (Android 14 emülatör)
         uses: reactivecircus/android-emulator-runner@v2
         with:
@@ -85,14 +97,19 @@ jobs:
           disable-animations: true
           working-directory: ilac_takip
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-          script: flutter drive --driver=test_driver/integration_test.dart --target=integration_test/app_test.dart 2>&1 | tee drive.log
+          script: |
+            ./tool/release_smoke.sh 2>&1 | tee release.log
+            flutter drive --driver=test_driver/integration_test.dart --target=integration_test/app_test.dart 2>&1 | tee drive.log
       - name: Sonuç kontrolü
         working-directory: ilac_takip
         run: |
+          echo "=== Release ==="
+          cat release.log || true
           echo "=== Özet ==="
           grep -E "Tam zamanlı|Kurulan bildirim|ADIM" drive.log || true
           echo "=== Hatalar (ilk satırlar) ==="
           grep -E -A4 "EXCEPTION CAUGHT|following (assertion|message|TestFailure)" drive.log | grep -v "^.*#[0-9]" | head -60 || true
+          grep -q "RELEASE_SMOKE: tamam" release.log
           grep -q "All tests passed" drive.log
       - uses: actions/upload-artifact@v5
         if: always()
@@ -101,6 +118,7 @@ jobs:
           path: |
             ilac_takip/screenshots/
             ilac_takip/drive.log
+            ilac_takip/release.log
       - name: Ekran görüntülerini dala yükle
         if: success() && github.event_name == 'push'
         run: |

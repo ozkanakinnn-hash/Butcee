@@ -16,9 +16,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get today => 'Today';
 
   @override
-  String get nothingToday => 'No medication scheduled today.';
-
-  @override
   String pendingTitle(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
@@ -81,12 +78,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get addMedicine => 'Add medicine';
 
   @override
-  String get scanBox => 'Scan the box';
-
-  @override
-  String get addManually => 'Add manually';
-
-  @override
   String get medicines => 'My medicines';
 
   @override
@@ -94,11 +85,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noMedicines => 'You haven\'t added any medicines yet.';
-
-  @override
-  String stockLeft(String amount) {
-    return 'Stock: $amount';
-  }
 
   @override
   String get lowStockBadge => 'Low stock';
@@ -157,9 +143,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get nickname => 'Nickname (optional)';
 
   @override
-  String get nicknameHint => 'E.g. Small white pill — heart';
-
-  @override
   String get form => 'Form';
 
   @override
@@ -204,25 +187,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Repeats every 3 minutes until you tap \"Taken\"';
 
   @override
-  String get frequency => 'How often?';
-
-  @override
-  String get freqFixedTimes => 'At set times';
-
-  @override
   String get freqInterval => 'Every N hours';
 
   @override
   String get freqAsNeeded => 'As needed';
-
-  @override
-  String get doseTimes => 'Dose times';
-
-  @override
-  String get addTime => 'Add time';
-
-  @override
-  String get everyDay => 'Every day';
 
   @override
   String everyNDaysLabel(int n) {
@@ -234,14 +202,6 @@ class AppLocalizationsEn extends AppLocalizations {
       one: 'Every day',
     );
     return '$_temp0';
-  }
-
-  @override
-  String get onlyTheseDays => 'Only on these days';
-
-  @override
-  String intervalEvery(int n) {
-    return 'Every $n hours';
   }
 
   @override
@@ -258,9 +218,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get requiredField => 'This field is required';
-
-  @override
-  String get atLeastOneTime => 'Add at least one time';
 
   @override
   String get saved => 'Saved';
@@ -511,11 +468,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get takenLabel => 'taken';
-
-  @override
-  String streakDays(int n) {
-    return '$n days';
-  }
 
   @override
   String interactionsFound(int count) {
@@ -972,12 +924,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dismiss => 'Close';
 
   @override
-  String get copied => 'Copied';
-
-  @override
-  String get startupError => 'The app could not start';
-
-  @override
   String get exactAlarmOff =>
       'Exact alarm permission is off — reminders may be a few minutes late.';
 
@@ -1008,7 +954,4 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get editSupplement => 'Edit';
-
-  @override
-  String get details => 'Details';
 }

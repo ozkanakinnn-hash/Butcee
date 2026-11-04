@@ -56,18 +56,6 @@ AdherenceStats computeAdherence(
   return AdherenceStats(planned: planned, onTime: onTime, late: late, skipped: skipped, missed: missed);
 }
 
-/// Plan ve son 14 günün gerçek tüketimine göre stok bitiş tahmini.
-DateTime? estimateRunOut({
-  required double stock,
-  required double plannedDaily,
-  required double actualDailyLast14,
-  required DateTime now,
-}) {
-  final daily = actualDailyLast14 > 0 ? 0.6 * plannedDaily + 0.4 * actualDailyLast14 : plannedDaily;
-  if (daily <= 0) return null;
-  return now.add(Duration(minutes: (stock / daily * 24 * 60).floor()));
-}
-
 /// Bir günün özeti (istatistik ekranındaki noktalar ve seri hesabı için).
 class DayAdherence {
   const DayAdherence(this.day, this.stats);

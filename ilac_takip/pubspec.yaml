@@ -42,6 +42,5 @@ dev_dependencies:
 flutter:
   generate: true
   assets:
-    - assets/catalog/
     - assets/fonts/
   uses-material-design: true

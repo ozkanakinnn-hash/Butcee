@@ -16,7 +16,7 @@ class AppDatabase {
   final Database _db;
   final _changes = StreamController<void>.broadcast();
 
-  static const _version = 2;
+  static const _version = 3;
 
   static Future<AppDatabase> open({DatabaseFactory? factory, String? path}) async {
     final f = factory ?? databaseFactory;
@@ -32,6 +32,7 @@ class AppDatabase {
         },
         onUpgrade: (db, from, to) async {
           if (from < 2) await _migrateV1toV2(db);
+          if (from < 3) await _migrateV2toV3(db);
         },
       ),
     );
@@ -131,6 +132,10 @@ class AppDatabase {
     await b.commit(noResult: true);
   }
 
+  /// v3: ilk sürümün uygulamaya gömdüğü uydurma örnek ilaç kataloğu satırlarını siler.
+  static Future<void> _migrateV2toV3(Database db) =>
+      db.delete('drug_catalog', where: 'barcode IN (?, ?)', whereArgs: ['0000000000017', '0000000000024']);
+
   /// Test için: v1 şemasıyla açılmış bir veritabanı oluşturur.
   static Future<void> createV1SchemaForTest(Database db) => _createSchemaV1(db);
 
@@ -208,11 +213,6 @@ class AppDatabase {
 
   Future<bool> isPackScanned(String serial) async =>
       (await _db.query('scanned_packs', where: 'serial = ?', whereArgs: [serial])).isNotEmpty;
-
-  Future<void> updateMedicine(Medicine m) async {
-    await _db.update('medicines', m.toRow()..remove('id'), where: 'id = ?', whereArgs: [m.id]);
-    notifyChanged();
-  }
 
   // ───────────── Ruh hâli (öz bildirim) ─────────────
 
@@ -355,6 +355,19 @@ class AppDatabase {
     return r.isEmpty ? null : r.first;
   }
 
-  Future<int> catalogCount() async =>
-      Sqflite.firstIntValue(await _db.rawQuery('SELECT COUNT(*) FROM drug_catalog')) ?? 0;
+  // ───────────── Bakım ─────────────
+
+  /// Senkron kuyruğu (Firebase bağlanana kadar kimse okumaz), ruh hâli ve doz geçmişi
+  /// sınırsız büyümesin diye eski kayıtları siler. Silinen satır sayısını döner.
+  Future<int> pruneOldData(DateTime now, {int outboxDays = 30, int historyDays = 400}) async {
+    final outboxCut = now.subtract(Duration(days: outboxDays)).millisecondsSinceEpoch;
+    final historyCut = now.subtract(Duration(days: historyDays));
+    var n = 0;
+    n += await _db.delete('outbox', where: 'created_at < ?', whereArgs: [outboxCut]);
+    n += await _db.delete('dose_logs',
+        where: "scheduled_time < ? AND status NOT IN ('pending','snoozed')", whereArgs: [historyCut.millisecondsSinceEpoch]);
+    n += await _db.delete('mood_logs', where: 'day < ?', whereArgs: [_day(historyCut)]);
+    if (n > 500) await _db.execute('VACUUM'); // dosyayı fiziksel olarak küçült
+    return n;
+  }
 }

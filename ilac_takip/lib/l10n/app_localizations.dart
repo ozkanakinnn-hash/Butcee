@@ -110,12 +110,6 @@ abstract class AppLocalizations {
   /// **'Bugün'**
   String get today;
 
-  /// No description provided for @nothingToday.
-  ///
-  /// In tr, this message translates to:
-  /// **'Bugün planlanmış ilaç yok.'**
-  String get nothingToday;
-
   /// No description provided for @pendingTitle.
   ///
   /// In tr, this message translates to:
@@ -212,18 +206,6 @@ abstract class AppLocalizations {
   /// **'İlaç ekle'**
   String get addMedicine;
 
-  /// No description provided for @scanBox.
-  ///
-  /// In tr, this message translates to:
-  /// **'Kutuyu tara'**
-  String get scanBox;
-
-  /// No description provided for @addManually.
-  ///
-  /// In tr, this message translates to:
-  /// **'Elle ekle'**
-  String get addManually;
-
   /// No description provided for @medicines.
   ///
   /// In tr, this message translates to:
@@ -241,12 +223,6 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Henüz ilaç eklemediniz.'**
   String get noMedicines;
-
-  /// No description provided for @stockLeft.
-  ///
-  /// In tr, this message translates to:
-  /// **'Stok: {amount}'**
-  String stockLeft(String amount);
 
   /// No description provided for @lowStockBadge.
   ///
@@ -356,12 +332,6 @@ abstract class AppLocalizations {
   /// **'Takma ad (isteğe bağlı)'**
   String get nickname;
 
-  /// No description provided for @nicknameHint.
-  ///
-  /// In tr, this message translates to:
-  /// **'Ör. Beyaz küçük hap — kalp ilacı'**
-  String get nicknameHint;
-
   /// No description provided for @form.
   ///
   /// In tr, this message translates to:
@@ -446,18 +416,6 @@ abstract class AppLocalizations {
   /// **'\"Aldım\" diyene kadar 3 dakikada bir tekrar çalar'**
   String get persistentAlarmHint;
 
-  /// No description provided for @frequency.
-  ///
-  /// In tr, this message translates to:
-  /// **'Ne sıklıkla?'**
-  String get frequency;
-
-  /// No description provided for @freqFixedTimes.
-  ///
-  /// In tr, this message translates to:
-  /// **'Belirli saatlerde'**
-  String get freqFixedTimes;
-
   /// No description provided for @freqInterval.
   ///
   /// In tr, this message translates to:
@@ -470,41 +428,11 @@ abstract class AppLocalizations {
   /// **'Gerektiğinde'**
   String get freqAsNeeded;
 
-  /// No description provided for @doseTimes.
-  ///
-  /// In tr, this message translates to:
-  /// **'Doz saatleri'**
-  String get doseTimes;
-
-  /// No description provided for @addTime.
-  ///
-  /// In tr, this message translates to:
-  /// **'Saat ekle'**
-  String get addTime;
-
-  /// No description provided for @everyDay.
-  ///
-  /// In tr, this message translates to:
-  /// **'Her gün'**
-  String get everyDay;
-
   /// No description provided for @everyNDaysLabel.
   ///
   /// In tr, this message translates to:
   /// **'{n, plural, =1{Her gün} =2{Gün aşırı} other{{n} günde bir}}'**
   String everyNDaysLabel(int n);
-
-  /// No description provided for @onlyTheseDays.
-  ///
-  /// In tr, this message translates to:
-  /// **'Yalnızca şu günler'**
-  String get onlyTheseDays;
-
-  /// No description provided for @intervalEvery.
-  ///
-  /// In tr, this message translates to:
-  /// **'{n} saatte bir'**
-  String intervalEvery(int n);
 
   /// No description provided for @firstDose.
   ///
@@ -535,12 +463,6 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Bu alan zorunlu'**
   String get requiredField;
-
-  /// No description provided for @atLeastOneTime.
-  ///
-  /// In tr, this message translates to:
-  /// **'En az bir saat ekleyin'**
-  String get atLeastOneTime;
 
   /// No description provided for @saved.
   ///
@@ -997,12 +919,6 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'alındı'**
   String get takenLabel;
-
-  /// No description provided for @streakDays.
-  ///
-  /// In tr, this message translates to:
-  /// **'{n} gün'**
-  String streakDays(int n);
 
   /// No description provided for @interactionsFound.
   ///
@@ -1796,18 +1712,6 @@ abstract class AppLocalizations {
   /// **'Kapat'**
   String get dismiss;
 
-  /// No description provided for @copied.
-  ///
-  /// In tr, this message translates to:
-  /// **'Kopyalandı'**
-  String get copied;
-
-  /// No description provided for @startupError.
-  ///
-  /// In tr, this message translates to:
-  /// **'Uygulama başlatılamadı'**
-  String get startupError;
-
   /// No description provided for @exactAlarmOff.
   ///
   /// In tr, this message translates to:
@@ -1861,12 +1765,6 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Düzenle'**
   String get editSupplement;
-
-  /// No description provided for @details.
-  ///
-  /// In tr, this message translates to:
-  /// **'Ayrıntılar'**
-  String get details;
 }
 
 class _AppLocalizationsDelegate

@@ -60,10 +60,3 @@ String statusLabel(AppLocalizations t, DoseStatus s) => switch (s) {
       DoseStatus.missed => t.statusMissed,
     };
 
-IconData statusIcon(DoseStatus s) => switch (s) {
-      DoseStatus.pending => Icons.schedule,
-      DoseStatus.snoozed => Icons.snooze,
-      DoseStatus.taken => Icons.check_circle,
-      DoseStatus.skipped => Icons.remove_circle_outline,
-      DoseStatus.missed => Icons.cancel,
-    };

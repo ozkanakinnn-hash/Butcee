@@ -2,7 +2,6 @@
   "@@locale": "tr",
   "appTitle": "Vitamin Takip",
   "today": "Bugün",
-  "nothingToday": "Bugün planlanmış ilaç yok.",
   "pendingTitle": "{count, plural, =1{1 ilaç bekliyor} other{{count} ilaç bekliyor}}",
   "@pendingTitle": {
     "placeholders": {
@@ -53,19 +52,9 @@
   "skippedToast": "Doz atlandı olarak kaydedildi",
   "snoozeLimitReached": "Erteleme hakkı doldu",
   "addMedicine": "İlaç ekle",
-  "scanBox": "Kutuyu tara",
-  "addManually": "Elle ekle",
   "medicines": "İlaçlarım",
   "settings": "Ayarlar",
   "noMedicines": "Henüz ilaç eklemediniz.",
-  "stockLeft": "Stok: {amount}",
-  "@stockLeft": {
-    "placeholders": {
-      "amount": {
-        "type": "String"
-      }
-    }
-  },
   "lowStockBadge": "Stok azaldı",
   "delete": "Sil",
   "deleteMedicineConfirm": "{name} ve tüm planları silinsin mi?",
@@ -91,7 +80,6 @@
   "statusMissed": "Kaçırıldı",
   "medicineName": "İlaç adı",
   "nickname": "Takma ad (isteğe bağlı)",
-  "nicknameHint": "Ör. Beyaz küçük hap — kalp ilacı",
   "form": "Form",
   "formTablet": "Tablet",
   "formCapsule": "Kapsül",
@@ -106,24 +94,10 @@
   "criticalMedicineHint": "Sessiz modda da alarm sesiyle çalar, kilit ekranında açılır",
   "persistentAlarm": "Israrcı alarm",
   "persistentAlarmHint": "\"Aldım\" diyene kadar 3 dakikada bir tekrar çalar",
-  "frequency": "Ne sıklıkla?",
-  "freqFixedTimes": "Belirli saatlerde",
   "freqInterval": "Saat aralığıyla",
   "freqAsNeeded": "Gerektiğinde",
-  "doseTimes": "Doz saatleri",
-  "addTime": "Saat ekle",
-  "everyDay": "Her gün",
   "everyNDaysLabel": "{n, plural, =1{Her gün} =2{Gün aşırı} other{{n} günde bir}}",
   "@everyNDaysLabel": {
-    "placeholders": {
-      "n": {
-        "type": "int"
-      }
-    }
-  },
-  "onlyTheseDays": "Yalnızca şu günler",
-  "intervalEvery": "{n} saatte bir",
-  "@intervalEvery": {
     "placeholders": {
       "n": {
         "type": "int"
@@ -135,7 +109,6 @@
   "mealRelation": "Aç / tok",
   "maxPerDay": "Günde en fazla",
   "requiredField": "Bu alan zorunlu",
-  "atLeastOneTime": "En az bir saat ekleyin",
   "saved": "Kaydedildi",
   "scanTitle": "İlaç tara",
   "scanHint": "Kutunun üzerindeki karekodu veya barkodu çerçeveye alın",
@@ -296,14 +269,6 @@
   "groupEvening": "Akşam",
   "groupNight": "Gece",
   "takenLabel": "alındı",
-  "streakDays": "{n} gün",
-  "@streakDays": {
-    "placeholders": {
-      "n": {
-        "type": "int"
-      }
-    }
-  },
   "interactionsFound": "{count, plural, =1{1 etkileşim uyarısı} other{{count} etkileşim uyarısı}}",
   "@interactionsFound": {
     "placeholders": {
@@ -521,8 +486,6 @@
   "crashBody": "Sorunu düzeltebilmemiz için raporu kopyalayıp geliştiriciye gönderebilirsiniz.",
   "copyReport": "Raporu kopyala",
   "dismiss": "Kapat",
-  "copied": "Kopyalandı",
-  "startupError": "Uygulama başlatılamadı",
   "exactAlarmOff": "Tam zamanlı alarm izni kapalı — hatırlatmalar birkaç dakika gecikebilir.",
   "unitTablet": "tablet",
   "unitCapsule": "kapsül",
@@ -548,6 +511,5 @@
       }
     }
   },
-  "editSupplement": "Düzenle",
-  "details": "Ayrıntılar"
+  "editSupplement": "Düzenle"
 }

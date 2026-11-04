@@ -86,12 +86,4 @@ void main() {
       expect(computeAdherence(const [], from: from, to: to, now: now).adherence, 0);
     });
   });
-
-  test('estimateRunOut plan + gerçek tüketim karışımı', () {
-    final now = DateTime(2026, 11, 4);
-    expect(estimateRunOut(stock: 30, plannedDaily: 3, actualDailyLast14: 0, now: now), DateTime(2026, 11, 14));
-    expect(estimateRunOut(stock: 10, plannedDaily: 0, actualDailyLast14: 0, now: now), isNull);
-    // 0.6*2 + 0.4*1 = 1.6/gün → 16 tablet = 10 gün
-    expect(estimateRunOut(stock: 16, plannedDaily: 2, actualDailyLast14: 1, now: now), DateTime(2026, 11, 14));
-  });
 }

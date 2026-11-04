@@ -16,9 +16,6 @@ class AppLocalizationsTr extends AppLocalizations {
   String get today => 'Bugün';
 
   @override
-  String get nothingToday => 'Bugün planlanmış ilaç yok.';
-
-  @override
   String pendingTitle(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
@@ -81,12 +78,6 @@ class AppLocalizationsTr extends AppLocalizations {
   String get addMedicine => 'İlaç ekle';
 
   @override
-  String get scanBox => 'Kutuyu tara';
-
-  @override
-  String get addManually => 'Elle ekle';
-
-  @override
   String get medicines => 'İlaçlarım';
 
   @override
@@ -94,11 +85,6 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get noMedicines => 'Henüz ilaç eklemediniz.';
-
-  @override
-  String stockLeft(String amount) {
-    return 'Stok: $amount';
-  }
 
   @override
   String get lowStockBadge => 'Stok azaldı';
@@ -157,9 +143,6 @@ class AppLocalizationsTr extends AppLocalizations {
   String get nickname => 'Takma ad (isteğe bağlı)';
 
   @override
-  String get nicknameHint => 'Ör. Beyaz küçük hap — kalp ilacı';
-
-  @override
   String get form => 'Form';
 
   @override
@@ -204,25 +187,10 @@ class AppLocalizationsTr extends AppLocalizations {
       '\"Aldım\" diyene kadar 3 dakikada bir tekrar çalar';
 
   @override
-  String get frequency => 'Ne sıklıkla?';
-
-  @override
-  String get freqFixedTimes => 'Belirli saatlerde';
-
-  @override
   String get freqInterval => 'Saat aralığıyla';
 
   @override
   String get freqAsNeeded => 'Gerektiğinde';
-
-  @override
-  String get doseTimes => 'Doz saatleri';
-
-  @override
-  String get addTime => 'Saat ekle';
-
-  @override
-  String get everyDay => 'Her gün';
 
   @override
   String everyNDaysLabel(int n) {
@@ -234,14 +202,6 @@ class AppLocalizationsTr extends AppLocalizations {
       one: 'Her gün',
     );
     return '$_temp0';
-  }
-
-  @override
-  String get onlyTheseDays => 'Yalnızca şu günler';
-
-  @override
-  String intervalEvery(int n) {
-    return '$n saatte bir';
   }
 
   @override
@@ -258,9 +218,6 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get requiredField => 'Bu alan zorunlu';
-
-  @override
-  String get atLeastOneTime => 'En az bir saat ekleyin';
 
   @override
   String get saved => 'Kaydedildi';
@@ -512,11 +469,6 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get takenLabel => 'alındı';
-
-  @override
-  String streakDays(int n) {
-    return '$n gün';
-  }
 
   @override
   String interactionsFound(int count) {
@@ -972,12 +924,6 @@ class AppLocalizationsTr extends AppLocalizations {
   String get dismiss => 'Kapat';
 
   @override
-  String get copied => 'Kopyalandı';
-
-  @override
-  String get startupError => 'Uygulama başlatılamadı';
-
-  @override
   String get exactAlarmOff =>
       'Tam zamanlı alarm izni kapalı — hatırlatmalar birkaç dakika gecikebilir.';
 
@@ -1008,7 +954,4 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get editSupplement => 'Düzenle';
-
-  @override
-  String get details => 'Ayrıntılar';
 }

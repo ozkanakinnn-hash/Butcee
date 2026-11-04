@@ -20,7 +20,6 @@ class ReliabilityStatus {
   final String manufacturer;
 
   bool get isAndroid => manufacturer != 'apple';
-  bool get allGood => notifications && exactAlarms && batteryUnrestricted;
 
   /// Uygulamaları agresif kapatan üreticiler (bkz. dontkillmyapp.com).
   bool get needsOemGuide => const {

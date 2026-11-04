@@ -95,12 +95,13 @@ void main() {
     });
   });
 
-  test('v1 veritabanı v2\'ye kayıpsız geçer', () async {
+  test('v1 veritabanı v3\'e kayıpsız geçer', () async {
     sqfliteFfiInit();
     final path = '${(await databaseFactoryFfi.getDatabasesPath())}/migration_test_${DateTime.now().microsecondsSinceEpoch}.db';
     final v1 = await databaseFactoryFfi.openDatabase(path,
         options: OpenDatabaseOptions(version: 1, onCreate: (d, _) => AppDatabase.createV1SchemaForTest(d)));
     await v1.insert('medicines', {'name': 'Eski ilaç', 'form': 'tablet', 'total_stock': 10});
+    await v1.insert('drug_catalog', {'barcode': '0000000000017', 'name': 'ÖRNEK', 'form': 'tablet'});
     await v1.close();
 
     db = await AppDatabase.open(factory: databaseFactoryFfi, path: path);
@@ -109,9 +110,29 @@ void main() {
     expect(m.name, 'Eski ilaç');
     expect(m.category, ItemCategory.vitamin);
     expect(m.totalStock, 10);
+    expect(await db.catalogEntry('0000000000017'), isNull, reason: 'v3 örnek kataloğu siler');
     await db.setMood(DateTime(2026, 11, 4), 5);
     expect((await db.moods(DateTime(2026, 11, 4), DateTime(2026, 11, 5))).values.single, 5);
     await databaseFactoryFfi.deleteDatabase(path);
+  });
+
+  test('bakım: eski kuyruk, geçmiş ve ruh hâli silinir; bekleyen dozlar korunur', () async {
+    await setUpWith();
+    await svc.addSupplement(
+      medicine: const Medicine(name: 'D', catalogId: 'vitD'),
+      rule: SupplementService.ruleFromSlots(slots: ['earlyMorning'], settings: settings, start: DateTime(2026, 11, 4)),
+      slots: ['earlyMorning'],
+    );
+    final s = (await db.allSchedules()).single;
+    final old = DateTime(2025, 1, 1, 7);
+    await db.insertDoseIfAbsent(DoseLog.planned(s, old).copyWith(status: DoseStatus.taken, actionTime: old));
+    await db.enqueueOutbox('doseLog', 'x', DateTime(2026, 9, 1));
+    await db.enqueueOutbox('doseLog', 'y', DateTime(2026, 11, 3));
+    await db.setMood(DateTime(2025, 1, 1), 3);
+    expect(await db.pruneOldData(DateTime(2026, 11, 4)), 3);
+    expect(await db.outboxCount(), 1);
+    expect(await db.dose(DoseLog.buildLogId(s.id, old)), isNull);
+    expect((await db.dosesBetween(DateTime(2026, 11, 4), DateTime(2026, 11, 5))).length, 1, reason: 'bugünkü doz kalır');
   });
 
   test('hazır set ekler, dozlara dilim yazar, ikinci kez eklemez', () async {

@@ -1,7 +1,3 @@
-import 'dart:convert';
-
-import 'package:flutter/services.dart';
-
 import '../domain/gs1_parser.dart';
 import '../domain/models.dart';
 import 'app_database.dart';
@@ -71,13 +67,6 @@ class DrugCatalogRepository {
 
   /// Firebase bağlandığında `drugCatalog/{barcode}` sorgusu buraya verilir.
   final Future<DrugCatalogEntry?> Function(String barcode)? remoteLookup;
-
-  /// Uygulamayla gelen örnek katalog paketini ilk açılışta yükler.
-  Future<void> seedFromAsset(AssetBundle bundle, {String path = 'assets/catalog/sample_catalog.json'}) async {
-    if (await _db.catalogCount() > 0) return;
-    final list = (jsonDecode(await bundle.loadString(path)) as List).cast<Map<String, Object?>>();
-    await _db.upsertCatalog(list);
-  }
 
   Future<DrugCatalogEntry?> lookup(String barcode) async {
     final local = await _db.catalogEntry(barcode);

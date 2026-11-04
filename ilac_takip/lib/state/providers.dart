@@ -88,11 +88,6 @@ final todayStatsProvider = Provider<AdherenceStats>((ref) {
   return AdherenceStats(planned: today.length, onTime: taken);
 });
 
-final medicinesProvider = FutureProvider<List<Medicine>>((ref) async {
-  ref.watch(dbTickProvider);
-  return ref.watch(servicesProvider).db.medicines();
-});
-
 final doseViewProvider = FutureProvider.family<DoseView?, String>((ref, logId) async {
   ref.watch(dbTickProvider);
   final s = ref.watch(servicesProvider);

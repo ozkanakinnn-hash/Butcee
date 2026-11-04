@@ -25,10 +25,11 @@ Future<void> main() async {
 
 /// Servisler kurulduktan sonra uygulamayı başlatır (entegrasyon testleri de bunu kullanır).
 Future<void> startApp(AppServices services) async {
+  // Bakım: biriken eski kayıtları temizle (açılışı engellemez).
   try {
-    await services.catalog.seedFromAsset(rootBundle);
+    await services.db.pruneOldData(DateTime.now());
   } on Object catch (e, st) {
-    CrashReporter.record(e, st, context: 'catalog seed');
+    CrashReporter.record(e, st, context: 'prune');
   }
 
   // Uygulama bir alarm bildirimine dokunularak açıldıysa doğrudan alarm ekranı.

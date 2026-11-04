@@ -20,7 +20,6 @@ Sıklık seçenekleri: her gün, gün aşırı, Pzt·Çar·Cum, yalnızca hafta 
 - Referans değerler: NIH Office of Dietary Supplements, 19–50 yaş yetişkin (`lib/data/supplement_catalog.dart`). Uygulama doz **önermez**; etiketteki doz girilir, toplam günlük üst sınırı (UL) aşarsa uyarır.
 - Etkileşim kuralları yaygın ve iyi bilinen takviye etkileşimlerini kapsar (kalsiyum–demir, çinko–demir, çinko–bakır, C vitamini–demir, D vitamini–kalsiyum…). İlaç etkileşimleri için eczacıya yönlendirilir.
 - Eczane araçları Google Haritalar aramasını açar; nöbetçi eczaneler için ulusal açık bir API yok.
-- `assets/catalog/sample_catalog.json` (ilaç barkodları) yalnızca **örnek** veridir.
 
 ## Mimari
 
@@ -49,6 +48,13 @@ flutter test        # alan, servis (sqflite_ffi), PDF ve 360×780 dp ekran duman
 flutter drive --driver=test_driver/integration_test.dart --target=integration_test/app_test.dart   # cihaz/emülatör
 ```
 
+## Boyut
+
+- Telefon için **release + R8 küçültme + mimari başına APK** (`app-arm64-v8a-release.apk`). 115 MB'lık dosya tüm mimarileri içeren *debug* derlemesiydi.
+- PDF yazı tipleri yalnızca Latin + Türkçe karakterlerle alt kümelendi: 1,1 MB → 149 KB (`pyftsubset`, OFL lisansı korunur).
+- Cihazda: senkron kuyruğu 30 günden, doz geçmişi ve ruh hâli 400 günden eski kayıtlar açılışta silinir (`pruneOldData`); çok silinirse `VACUUM`.
+- APK'lar depodaki sabit debug anahtarıyla imzalanır → güncellemeler eskisinin üzerine kurulur.
+
 CI (`.github/workflows/ilac-takip-flutter.yml`):
-- **build:** analiz, test ve debug APK (`ilac-takip-debug-apk`).
-- **emulator:** Android 14 emülatöründe entegrasyon testi ve ekran görüntüleri (`ilac-takip-ekran-goruntuleri`).
+- **build:** analiz, test, release APK'lar (`vitamin-takip-arm64-apk`, `vitamin-takip-eski-telefon-armv7-apk`) ve boyut raporu.
+- **emulator:** küçültülmüş release APK'nın açılış/çökme kontrolü (`tool/release_smoke.sh`), ardından entegrasyon testi ve ekran görüntüleri (`docs/vitamin-takip/screenshots`).

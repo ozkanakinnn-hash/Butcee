@@ -30,11 +30,39 @@ android {
         versionName = flutter.versionName
     }
 
+    // Depodaki sabit debug anahtarı (şifre: android). CI her çalışmada rastgele anahtar ürettiğinde
+    // yeni APK eskisinin üzerine kurulamıyordu; sabit anahtarla güncellemeler doğrudan kurulur.
+    // Mağaza yayını için kendi yükleme anahtarınızı KEYSTORE_PATH ile verin.
+    signingConfigs {
+        getByName("debug") {
+            storeFile = rootProject.file("../../debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
+        create("release") {
+            val ks = System.getenv("KEYSTORE_PATH")
+            if (ks != null) {
+                storeFile = file(ks)
+                storePassword = System.getenv("STORE_PASSWORD")
+                keyAlias = System.getenv("KEY_ALIAS") ?: "upload"
+                keyPassword = System.getenv("KEY_PASSWORD")
+            } else {
+                storeFile = rootProject.file("../../debug.keystore")
+                storePassword = "android"
+                keyAlias = "androiddebugkey"
+                keyPassword = "android"
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.getByName("release")
+            // Kod küçültme (R8) + kullanılmayan kaynakları silme → daha küçük APK.
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
 }

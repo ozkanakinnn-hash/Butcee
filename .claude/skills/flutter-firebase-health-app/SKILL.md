@@ -90,3 +90,11 @@ Ayrıntılı referans tasarım: `docs/ilac-takip/01-ileri-ozellikler.md` ve `02-
 - **Sağlık içeriği**: referans değerleri kaynağıyla (NIH ODS, yaş aralığı) ver; doz önerme, etiket dozunu girdir; UL aşımında uyar; semptom ekranında "teşhis değildir" + doktora yönlendir; hazır setlerin kendi içinde çakışmadığını testle doğrula.
 - **Hero etiket çakışması**: `StatefulShellRoute.indexedStack` sekmeleri canlı tutar; iki sekmede varsayılan `FloatingActionButton` varsa üstüne yeni sayfa açınca "multiple heroes share the same tag" hatası → her FAB'da `heroTag: null` (ya da benzersiz). Duman testine "sekmeden sayfa aç" senaryosu ekle — tek tek ekranları çizmek bunu yakalamaz.
 - **Emülatör testinde dil**: CI emülatörü İngilizce; Türkçe metinle bulan testler için `SettingsStore.write(languageCode:'tr')` ile dili sabitle. Emülatör bazen hiç açılmaz ("Timeout waiting for emulator to boot") → `rerun_failed_jobs`.
+
+## 10. Boyut ve temizlik
+- Kullanıcıya **debug APK verme** (tüm ABI'ler + JIT ≈ 100+ MB). `flutter build apk --release --split-per-abi --obfuscate --split-debug-info=build/symbols` → arm64 APK'yı ver.
+- Release'te `isMinifyEnabled`/`isShrinkResources` + `res/raw/keep.xml` (bildirim simgesi silinmesin); R8 eklentileri bozabilir → emülatörde **release APK'yı adb ile kur-aç-çökme kontrolü** (`tool/release_smoke.sh`: `pidof` + `logcat -b crash`).
+- **Sabit imza anahtarı**: CI her koşuda rastgele debug anahtarı üretir → kullanıcı yeni APK'yı eskisinin üzerine kuramaz ("paket çakışıyor"). Depodaki `debug.keystore`'u `signingConfigs` ile kullan.
+- PDF fontu: `pip install fonttools` → `pyftsubset --unicodes=U+0020-007E,U+00A0-017F,U+2010-2027,...` (Türkçe dahil) ≈ 75 KB/font.
+- Atıl kod tespiti: tanımlı public adların lib içinde tek geçtiği yerleri betikle bul; kullanılmayan ARB anahtarlarını `\.key\b` aramasıyla bul ve iki dilden sil.
+- Cihazda büyüyen tablolar (outbox, geçmiş) için açılışta `pruneOldData` + gerektiğinde `VACUUM`; uygulamaya gömülü örnek/uydurma veriyi bir DB geçişiyle sil.
