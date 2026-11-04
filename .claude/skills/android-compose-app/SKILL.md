@@ -18,6 +18,11 @@ Kullanıcı hangi uygulamayı yaparsa yapsın **Türkçe + İngilizce** dil dest
 - Dile özel içerik kuralları olabilir (ör. İngilizcede yalnızca Kur'an Radyo) — sor ve uygula.
 - Veri içeriği (meal, menü, sözler) ayrıca çevrilmelidir; çevrilmediyse kullanıcıya açıkça söyle.
 
+## 0.1 HER UYGULAMADA ZORUNLU: APK yalnızca komutla (kullanıcı kuralı)
+- Kullanıcı açıkça istemedikçe uygulama kodunu güncelleme, APK derletme/bekleme ve APK linki GÖNDERME.
+- Spesifikasyon/PRD istekleri yalnızca dokümanı değiştirir; uygulamaya otomatik yansıtma, sadece önerebilirsin.
+- "APK ver / güncelle / derle" gibi açık bir komut gelince: değişiklik → push → CI → link.
+
 ## 1. Kod dökümünden proje çıkarma
 Dökümler genelde `### Dosya: \`yol\`` başlığı + kod bloğu biçimindedir.
 - Önce `grep -n '^### Dosya'` ile dosya sayısını, `grep '^```'` ile açılış/kapanış dengesini doğrula.
