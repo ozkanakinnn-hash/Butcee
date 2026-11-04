@@ -27,7 +27,10 @@ void main() {
 
   Future<void> shot(WidgetTester tester, String name) async {
     await pumpFor(tester, 800);
+    final e = tester.takeException();
+    if (e != null) debugPrint('ADIM $name HATA: ${e.toString().split('\n').take(3).join(' | ')}');
     await binding.takeScreenshot(name);
+    debugPrint('ADIM $name tamam');
   }
 
   testWidgets('açılış, takviye ekleme ve alarm kurma çökmeden çalışır; ekran görüntüleri', (tester) async {
