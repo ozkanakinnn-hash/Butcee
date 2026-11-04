@@ -254,9 +254,14 @@ fun HomeScreen(
       }
     }
 
-    // 2b. Sevdiklerinizle Paylaşın: özel gün kartları
+    // 2b. Kısayollar: Yakındaki Camiler • Kıble • Zikirmatik (namaz vakitlerinin üstünde)
     item {
-      com.example.ui.components.ShareWithLovedOnesCard(onClick = onOpenGreetingCards)
+      com.example.ui.components.HomeShortcutsRow(
+        onOpenMosques = onOpenMosques,
+        onOpenQibla = onOpenQibla,
+        onOpenZikirmatik = onOpenZikirmatik,
+        refreshKey = zikirRefreshKey
+      )
     }
 
     // 3. Günlük Vakit Namazları tablosu (eski geri sayım panosunun yeri)
@@ -273,14 +278,9 @@ fun HomeScreen(
       )
     }
 
-    // 4b. Kısayollar: Yakındaki Camiler • Kıble • Zikirmatik (Günün Manevi İklimi'nin altında)
+    // 4b. Sevdiklerinizle Paylaşın (Günün Manevi İklimi'nin altında): özel gün kartları
     item {
-      com.example.ui.components.HomeShortcutsRow(
-        onOpenMosques = onOpenMosques,
-        onOpenQibla = onOpenQibla,
-        onOpenZikirmatik = onOpenZikirmatik,
-        refreshKey = zikirRefreshKey
-      )
+      com.example.ui.components.ShareWithLovedOnesCard(onClick = onOpenGreetingCards)
     }
 
 
