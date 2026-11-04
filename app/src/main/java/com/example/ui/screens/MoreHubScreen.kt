@@ -58,9 +58,7 @@ fun MoreHubScreen(
   onOpenHatim: () -> Unit = {},
   onOpenKaza: () -> Unit = {},
   onOpenKandil: () -> Unit = {},
-  onOpenHutbe: () -> Unit = {},
   onOpenWizard: () -> Unit = {},
-  onContinueReading: () -> Unit = {},
   onAddWidget: () -> Unit = {},
   onOpenQibla: () -> Unit,
   onOpenMosques: () -> Unit,
@@ -130,33 +128,7 @@ fun MoreHubScreen(
       }
     }
 
-    // Hatim Takibi & Kur'an'a devam
-    item {
-      val lastPage = androidx.compose.runtime.remember { com.example.data.HatimStore(com.example.AppHolder.context).lastPage }
-      Row(
-        modifier = Modifier
-          .fillMaxWidth()
-          .padding(horizontal = 16.dp, vertical = 6.dp),
-        horizontalArrangement = Arrangement.spacedBy(10.dp)
-      ) {
-        HubCard(
-          title = t("Hatim Takibi"),
-          subtitle = t("Cüz & Sure\nİlerleme"),
-          iconRes = R.drawable.ic_hub_hatim,
-          onClick = onOpenHatim,
-          modifier = Modifier.weight(1f)
-        )
-        HubCard(
-          title = t("Kaldığın Yer"),
-          subtitle = if (com.example.i18n.AppLanguage.isEnglish) "Quran • Page $lastPage\nContinue reading" else "Kur'an • Sayfa $lastPage\nOkumaya devam et",
-          iconRes = R.drawable.ic_hub_bookmark,
-          onClick = onContinueReading,
-          modifier = Modifier.weight(1f)
-        )
-      }
-    }
-
-    // Kaza namazı • Kandil duaları • Cuma hutbesi • Bildirim sihirbazı
+    // Kaza namazı • Kandil duaları • Hatim takibi • Bildirim sihirbazı
     item {
       Row(
         modifier = Modifier
@@ -188,10 +160,10 @@ fun MoreHubScreen(
         horizontalArrangement = Arrangement.spacedBy(10.dp)
       ) {
         HubCard(
-          title = t("Cuma Hutbesi"),
-          subtitle = t("Diyanet hutbesi\nKısa özet"),
-          iconRes = R.drawable.ic_hub_hutbe,
-          onClick = onOpenHutbe,
+          title = t("Hatim Takibi"),
+          subtitle = t("Cüz & Sure\nİlerleme"),
+          iconRes = R.drawable.ic_hub_hatim,
+          onClick = onOpenHatim,
           modifier = Modifier.weight(1f)
         )
         HubCard(

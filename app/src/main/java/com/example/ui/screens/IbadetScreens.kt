@@ -63,8 +63,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.R
 import com.example.data.Dua
-import com.example.data.HutbeItem
-import com.example.data.HutbeRepository
 import com.example.data.IslamicDays
 import com.example.data.KandilDualari
 import com.example.data.KazaStore
@@ -342,82 +340,6 @@ private fun DuaCard(d: Dua) {
     Text(d.meaning.text, fontSize = 13.sp, lineHeight = 19.sp, color = cs.onSurface)
     Spacer(modifier = Modifier.height(6.dp))
     Text("— ${d.source}", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = cs.onSurfaceVariant)
-  }
-}
-
-// ───────────────────────────── CUMA HUTBESİ ─────────────────────────────
-
-@Composable
-fun HutbeScreen(onNavigateBack: () -> Unit) {
-  BackHandler { onNavigateBack() }
-  val context = LocalContext.current
-  val cs = MaterialTheme.colorScheme
-  var items by remember { mutableStateOf(HutbeRepository.cached(context)) }
-  var loading by remember { mutableStateOf(true) }
-  var offline by remember { mutableStateOf(false) }
-  LaunchedEffect(Unit) {
-    val fresh = HutbeRepository.refresh(context)
-    if (fresh != null) items = fresh else offline = true
-    loading = false
-  }
-  fun open(url: String) {
-    try { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url))) } catch (_: Exception) {
-      Toast.makeText(context, tr("Bağlantı açılamadı", "Could not open link"), Toast.LENGTH_SHORT).show()
-    }
-  }
-
-  LazyColumn(modifier = Modifier.fillMaxSize().background(cs.background).testTag("hutbe_screen")) {
-    item { ScreenHeader(tr("Cuma Hutbesi", "Friday Sermon"), tr("Diyanet hutbesinin kısa özeti", "Short summary of the Diyanet sermon"), onNavigateBack) }
-    if (loading && items.isEmpty()) item {
-      Box(modifier = Modifier.fillMaxWidth().padding(24.dp), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
-    }
-    val latest = items.firstOrNull()
-    if (latest != null) {
-      item { HutbeCard(latest, highlight = true) { open(latest.source) } }
-      if (items.size > 1) {
-        item { Text(tr("Önceki hutbeler", "Previous sermons"), fontSize = 15.sp, fontWeight = FontWeight.Bold, color = cs.onBackground, modifier = Modifier.padding(start = 20.dp, top = 10.dp, bottom = 4.dp)) }
-        items(items.drop(1)) { h -> HutbeCard(h, highlight = false) { open(h.source) } }
-      }
-    } else if (!loading) {
-      item {
-        Panel {
-          Text(tr("Bu haftanın özeti henüz eklenmedi", "This week's summary isn't available yet"), fontSize = 15.sp, fontWeight = FontWeight.Bold, color = cs.onSurface)
-          Spacer(modifier = Modifier.height(6.dp))
-          Text(
-            if (offline) tr("İnternet bağlantısı olmadığı için özetler alınamadı.", "Summaries could not be loaded without internet.")
-            else tr("Diyanet hutbeyi genellikle perşembe günü yayımlar. Tam metne resmî sayfadan ulaşabilirsiniz.", "Diyanet usually publishes the sermon on Thursday. The full text is on the official page."),
-            fontSize = 13.sp, lineHeight = 19.sp, color = cs.onSurfaceVariant
-          )
-        }
-      }
-    }
-    item {
-      ActionChip(tr("📄 Diyanet resmî hutbe sayfası", "📄 Official Diyanet sermon page"), Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp), filled = true) {
-        open(HutbeRepository.OFFICIAL_URL)
-      }
-    }
-  }
-}
-
-@Composable
-private fun HutbeCard(h: HutbeItem, highlight: Boolean, onOpen: () -> Unit) {
-  val cs = MaterialTheme.colorScheme
-  val date = if (h.date.length >= 10) "${h.date.substring(8, 10)}.${h.date.substring(5, 7)}.${h.date.substring(0, 4)}" else h.date
-  Panel {
-    Text(date, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = cs.primary)
-    Text(h.title, fontSize = if (highlight) 19.sp else 15.sp, fontWeight = FontWeight.Bold, color = cs.onSurface)
-    if (highlight || h.summary.isNotEmpty()) Spacer(modifier = Modifier.height(8.dp))
-    (if (highlight) h.summary else h.summary.take(2)).forEach { line ->
-      Row(modifier = Modifier.padding(vertical = 3.dp)) {
-        Text("•", color = cs.primary, fontWeight = FontWeight.Bold, modifier = Modifier.padding(end = 8.dp))
-        Text(line, fontSize = 13.sp, lineHeight = 19.sp, color = cs.onSurface)
-      }
-    }
-    Spacer(modifier = Modifier.height(6.dp))
-    Text(
-      tr("Tam metni oku ›", "Read full text ›"), fontSize = 12.sp, fontWeight = FontWeight.Bold, color = cs.primary,
-      modifier = Modifier.clip(RoundedCornerShape(8.dp)).clickable { onOpen() }.padding(vertical = 6.dp)
-    )
   }
 }
 

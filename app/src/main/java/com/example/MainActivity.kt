@@ -94,7 +94,6 @@ sealed class ActiveSubScreen {
   data object GreetingCards : ActiveSubScreen()
   data object KazaNamazi : ActiveSubScreen()
   data object KandilDualari : ActiveSubScreen()
-  data object Hutbe : ActiveSubScreen()
   data object NotificationWizard : ActiveSubScreen()
   data object SpiritualNotes : ActiveSubScreen()
   data object Zikirmatik : ActiveSubScreen()
@@ -399,9 +398,7 @@ fun RamazanRehberiApp(
             onOpenHatim = { activeSubScreen = ActiveSubScreen.QuranList(tab = 1) },
             onOpenKaza = { activeSubScreen = ActiveSubScreen.KazaNamazi },
             onOpenKandil = { activeSubScreen = ActiveSubScreen.KandilDualari },
-            onOpenHutbe = { activeSubScreen = ActiveSubScreen.Hutbe },
             onOpenWizard = { activeSubScreen = ActiveSubScreen.NotificationWizard },
-            onContinueReading = { activeSubScreen = ActiveSubScreen.QuranReader(com.example.data.HatimStore(AppHolder.context).lastPage) },
             isRamadan = ramadanDay != null,
             onOpenFastingGuide = { activeSubScreen = ActiveSubScreen.FastingGuide },
             onOpenGreetingCards = { activeSubScreen = ActiveSubScreen.GreetingCards },
@@ -468,7 +465,6 @@ fun RamazanRehberiApp(
           )
           is ActiveSubScreen.KazaNamazi -> com.example.ui.screens.KazaNamaziScreen(onNavigateBack = { activeSubScreen = null })
           is ActiveSubScreen.KandilDualari -> com.example.ui.screens.KandilDualariScreen(onNavigateBack = { activeSubScreen = null })
-          is ActiveSubScreen.Hutbe -> com.example.ui.screens.HutbeScreen(onNavigateBack = { activeSubScreen = null })
           is ActiveSubScreen.NotificationWizard -> com.example.ui.screens.NotificationWizardScreen(onNavigateBack = { activeSubScreen = null })
           is ActiveSubScreen.GreetingCards -> com.example.ui.screens.GreetingCardsScreen(onNavigateBack = { activeSubScreen = null })
           is ActiveSubScreen.FastingGuide -> androidx.compose.foundation.layout.Column(Modifier.fillMaxSize()) {
