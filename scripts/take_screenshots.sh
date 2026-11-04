@@ -123,7 +123,7 @@ adb shell input swipe 540 1800 540 400 500; sleep 1
 tap_text "⏱️ 1 dakika sonra arka plan testi"; T0=$(date +%s)
 adb shell dumpsys alarm | grep -B2 -A8 "$PKG" | head -60 > $OUT/alarm_dump.txt
 adb shell input keyevent KEYCODE_HOME; sleep 2
-adb shell dumpsys battery unplug; adb shell dumpsys deviceidle force-idle
+adb shell dumpsys battery unplug; adb shell input keyevent KEYCODE_SLEEP; sleep 2; adb shell dumpsys deviceidle force-idle
 adb shell dumpsys deviceidle get deep >> $OUT/alarm_dump.txt
 FOUND=""
 for i in $(seq 1 30); do
@@ -131,7 +131,7 @@ for i in $(seq 1 30); do
   if adb shell dumpsys notification --noredact | grep -q "Arka plan testi"; then FOUND=$(( $(date +%s) - T0 )); break; fi
 done
 echo "DOZE_TEST: bildirim ${FOUND:-GELMEDI} saniyede geldi (hedef ~60 sn)" >> $OUT/alarm_dump.txt
-adb shell dumpsys deviceidle unforce; adb shell dumpsys battery reset
+adb shell dumpsys deviceidle unforce; adb shell dumpsys battery reset; adb shell input keyevent KEYCODE_WAKEUP; adb shell input keyevent 82; sleep 2
 adb exec-out screencap -p > $OUT/06l_doze_test_bildirim.png
 
 # 2) İngilizce + aydınlık tema
