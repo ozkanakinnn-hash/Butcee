@@ -54,6 +54,9 @@ object Store {
   var showHolidays by mutableStateOf(true)
   var leaveAllowance by mutableStateOf(14f) // yıllık izin hakkı (gün)
   var leaveCarry by mutableStateOf(0f) // önceki yıldan devreden (gün)
+  // Araçlar → Saatlik Ücret Hesaplayıcı (isteğe bağlı; yalnızca cihazda, paylaşılmaz/dışa aktarılmaz)
+  var toolSalary by mutableStateOf("")
+  var toolHours by mutableStateOf("")
 
   // Hatırlatıcılar
   var remShiftStart by mutableStateOf(true)
@@ -112,6 +115,8 @@ object Store {
     showHolidays = p.getBoolean("showHolidays", true)
     leaveAllowance = p.getFloat("leaveAllowance", 14f)
     leaveCarry = p.getFloat("leaveCarry", 0f)
+    toolSalary = p.getString("toolSalary", "") ?: ""
+    toolHours = p.getString("toolHours", "") ?: ""
     remShiftStart = p.getBoolean("remShiftStart", true)
     remShiftLeadMin = p.getInt("remShiftLead", 60)
     remCheckIn = p.getBoolean("remCheckIn", true)
@@ -233,6 +238,7 @@ object Store {
       .putString("name", name).putString("role", role).putString("jobTitle", jobTitle).putString("workType", workType).putInt("sleepGoal", sleepGoalMin)
       .putBoolean("premium", premium).putBoolean("showHolidays", showHolidays)
       .putFloat("leaveAllowance", leaveAllowance).putFloat("leaveCarry", leaveCarry)
+      .putString("toolSalary", toolSalary).putString("toolHours", toolHours)
       .putBoolean("remShiftStart", remShiftStart).putInt("remShiftLead", remShiftLeadMin)
       .putBoolean("remCheckIn", remCheckIn).putInt("remCheckInMin", remCheckInMin)
       .putBoolean("remRecovery", remRecovery).putBoolean("remSmart", remSmart).putLong("lastFired", lastFired)

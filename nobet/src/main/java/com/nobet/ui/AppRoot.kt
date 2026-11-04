@@ -155,6 +155,7 @@ fun AppRoot() {
           "templates" -> TemplatesScreen()
           "patterns" -> PatternScreen()
           "checkin" -> CheckInScreen()
+          "tools" -> HourlyRateScreen()
           "share" -> ShareScreen()
           else -> Unit
         }

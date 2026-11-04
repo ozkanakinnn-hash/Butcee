@@ -288,6 +288,12 @@ fun SettingsScreen() {
         TextButton(onClick = { editLeave = true }) { Text(t("İzin hakkını ayarla", "Set leave allowance")) }
       }
 
+      // Araçlar (isteğe bağlı)
+      NCard(Modifier.fillMaxWidth(), onClick = { Nav.open("tools") }) {
+        Text(t("Araçlar · Saatlik Ücret Hesaplayıcı", "Tools · Hourly Rate Calculator"), fontWeight = FontWeight.SemiBold)
+        Text(t("İsteğe bağlı: aylık net maaş ve toplam saatten saatlik ücret", "Optional: hourly wage from net monthly salary and total hours"), style = MaterialTheme.typography.bodySmall)
+      }
+
       // Dil
       NCard(Modifier.fillMaxWidth()) {
         SectionTitle(t("Dil / Language", "Language / Dil"))
@@ -316,7 +322,7 @@ fun SettingsScreen() {
       // Hakkında
       NCard(Modifier.fillMaxWidth()) {
         SectionTitle(t("Hakkında", "About"))
-        Text("Nöbet 0.8.0 (test)", fontWeight = FontWeight.SemiBold)
+        Text("Nöbet 0.9.0 (test)", fontWeight = FontWeight.SemiBold)
         Text(
           t("Nöbet genel sağlıklı yaşam bilgisi sunar, tıbbi tavsiye değildir. Sağlık sorunlarınız için bir hekime danışın.",
             "Nöbet provides general wellness information, not medical advice. Consult a doctor about health concerns."),
