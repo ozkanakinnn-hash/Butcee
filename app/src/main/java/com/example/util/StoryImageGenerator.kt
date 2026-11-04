@@ -364,7 +364,7 @@ object StoryImageGenerator {
   }
 
   /** Sivri (mihrap) kemerli kart yolu; alt köşeler yuvarlatılmış. */
-  private fun archPath(left: Float, right: Float, sideTop: Float, apex: Float, bottom: Float): Path {
+  internal fun archPath(left: Float, right: Float, sideTop: Float, apex: Float, bottom: Float): Path {
     val cx = (left + right) / 2f
     val r = 36f
     return Path().apply {
@@ -381,7 +381,7 @@ object StoryImageGenerator {
   }
 
   /** İki karenin 45° döndürülmüş birleşimi: sekiz köşeli yıldız. */
-  private fun eightPointStarPath(cx: Float, cy: Float, r: Float): Path {
+  internal fun eightPointStarPath(cx: Float, cy: Float, r: Float): Path {
     val path = Path()
     for (k in 0 until 16) {
       val angle = Math.PI / 8 * k - Math.PI / 2

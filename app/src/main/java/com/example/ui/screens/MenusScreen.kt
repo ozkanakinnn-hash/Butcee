@@ -70,7 +70,9 @@ fun MenusScreen(
   onOpenFastingTracker: () -> Unit = {},
   modifier: Modifier = Modifier
 ) {
-  var selectedDay by remember { mutableIntStateOf(1) }
+  // Yalnızca günün menüsü: Ramazan'da Ramazan'ın günü, diğer aylarda yılın günü
+  val ramadanDay = remember { com.example.data.RamadanCalendar.dayOfRamadan() }
+  val selectedDay = remember { ramadanDay ?: Calendar.getInstance().get(Calendar.DAY_OF_YEAR) }
   val currentMenu: RamadanMenu = remember(selectedDay) {
     RamadanMenus.getMenuForDay(selectedDay)
   }
@@ -114,7 +116,7 @@ fun MenusScreen(
           )
           Spacer(modifier = Modifier.width(8.dp))
           Text(
-            text = if (com.example.i18n.AppLanguage.isEnglish) (if (com.example.data.RamadanCalendar.dayOfRamadan() != null) "Ramadan Guide & Daily Menu" else "Guide & Daily Menu") else (if (com.example.data.RamadanCalendar.dayOfRamadan() != null) "Ramazan Rehberi & Günlük Menü" else "Oruç Rehberi & Günlük Menü"),
+            text = t("Ramazan Rehberi"),
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onBackground
@@ -122,7 +124,7 @@ fun MenusScreen(
         }
         Spacer(modifier = Modifier.height(4.dp))
         Text(
-          text = "${prefs.province} / ${prefs.district} • Günlük oruç istatistikleri ve dengeli iftar menüsü",
+          text = "${prefs.province} / ${prefs.district} • " + t("Orucun faydaları, iftar & sahur önerileri ve günün menüsü"),
           style = MaterialTheme.typography.bodySmall,
           color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -290,52 +292,48 @@ fun MenusScreen(
       }
     }
 
-    // 4. DAY SELECTOR & TITLE (ONLY TODAY'S MENU DISPLAYED, PREVENTING 30-DAY DUMP)
+    // 3b. ORUCUN FAYDALARI (Dini / Tıbbi)
+    item { com.example.ui.components.FastingBenefitsSection() }
+
+    // 3c. İFTAR & SAHUR'DA DİKKAT EDİLMESİ GEREKENLER
     item {
-      Card(
+      com.example.ui.components.TipsListSection(
+        title = t("İftarda Dikkat Edilmesi Gerekenler"),
+        emoji = "🍽️",
+        tips = com.example.data.FastingKnowledge.iftarTips,
+        testTag = "iftar_tips_card"
+      )
+    }
+    item {
+      com.example.ui.components.TipsListSection(
+        title = t("Sahurda Dikkat Edilmesi Gerekenler"),
+        emoji = "🌙",
+        tips = com.example.data.FastingKnowledge.sahurTips,
+        testTag = "sahur_tips_card"
+      )
+    }
+
+    // 4. GÜNÜN MENÜSÜ BAŞLIĞI (yalnızca bugünün menüsü)
+    item {
+      Column(
         modifier = Modifier
           .fillMaxWidth()
-          .padding(horizontal = 16.dp, vertical = 6.dp),
-        shape = RoundedCornerShape(18.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+          .padding(start = 20.dp, end = 20.dp, top = 14.dp, bottom = 2.dp)
       ) {
-        Row(
-          modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 8.dp, vertical = 6.dp),
-          horizontalArrangement = Arrangement.SpaceBetween,
-          verticalAlignment = Alignment.CenterVertically
-        ) {
-          IconButton(
-            onClick = { if (selectedDay > 1) selectedDay -= 1 },
-            enabled = selectedDay > 1
-          ) {
-            Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = t("Önceki Gün"))
-          }
-
-          Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(
-              text = "${currentMenu.day}. Gün İftar Menüsü",
-              style = MaterialTheme.typography.titleMedium,
-              fontWeight = FontWeight.Bold,
-              color = MaterialTheme.colorScheme.onSurface
-            )
-            Text(
-              text = if (selectedDay == 1) "Bugünün Özel Menüsü" else "${currentMenu.day} / 30 Ramazan",
-              fontSize = 11.sp,
-              color = MaterialTheme.colorScheme.primary,
-              fontWeight = FontWeight.SemiBold
-            )
-          }
-
-          IconButton(
-            onClick = { if (selectedDay < 30) selectedDay += 1 },
-            enabled = selectedDay < 30
-          ) {
-            Icon(imageVector = Icons.AutoMirrored.Filled.ArrowForward, contentDescription = t("Sonraki Gün"))
-          }
-        }
+        Text(
+          text = t("Günün Menüsü"),
+          style = MaterialTheme.typography.titleMedium,
+          fontWeight = FontWeight.Bold,
+          color = MaterialTheme.colorScheme.onBackground
+        )
+        Text(
+          text = if (ramadanDay != null) {
+            if (com.example.i18n.AppLanguage.isEnglish) "Iftar menu • Day $ramadanDay of Ramadan" else "İftar menüsü • Ramazan'ın $ramadanDay. günü"
+          } else t("Bugün için dengeli bir sofra önerisi"),
+          fontSize = 11.sp,
+          color = MaterialTheme.colorScheme.primary,
+          fontWeight = FontWeight.SemiBold
+        )
       }
     }
 

@@ -63,6 +63,22 @@ tap_text "Takvim"; shot 05_takvim
 tap_text "Ayet & Dua"; shot 06_ayet_dua
 tap_text "Dahası"; sleep 2; tap_text "Esmâü'l-Hüsnâ"; shot 06b_esma 2
 adb shell input keyevent KEYCODE_BACK; sleep 2
+# Ramazan Rehberi (Dahası) + özel gün kartları + widget'lar
+tap_text "Ramazan Rehberi"; shot 06c_ramazan_rehberi 3
+adb shell input swipe 540 1800 540 600 500; shot 06d_rehber_faydalar 2
+adb shell input swipe 540 1800 540 600 500; shot 06e_rehber_iftar_sahur 2
+adb shell input keyevent KEYCODE_BACK; sleep 2
+tap_text "Özel Gün Kartları"; shot 06f_ozel_gun_kartlari 5
+tap_text "Kurban Bayramı"; shot 06g_kart_kurban 4
+adb shell input keyevent KEYCODE_BACK; sleep 2
+for opt in "🕌 Sonraki Namaz & Geri Sayım" "🗓️ Günün 5 Vakti" "📖 Günün Manevi İklimi"; do
+  tap_text "Ana Ekran Widget'ı"; sleep 2; tap_text "$opt"; sleep 3
+  adb exec-out screencap -p > $OUT/06h_widget_dialog.png
+  tap_text "Add to home screen" || tap_text "ADD TO HOME SCREEN" || tap_text "Add"
+  sleep 3; adb shell am start -n $PKG/com.example.MainActivity; sleep 3
+done
+adb shell input keyevent KEYCODE_HOME; shot 06i_widgetlar 5
+adb shell am start -n $PKG/com.example.MainActivity; sleep 3
 tap_text "Ana Sayfa"; sleep 2
 tap_text "Kıble Bulucu"; shot 07_kible 4
 adb shell input keyevent KEYCODE_BACK; sleep 2

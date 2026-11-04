@@ -139,7 +139,7 @@ fun IftarMenuCard(
 
         Spacer(modifier = Modifier.height(6.dp))
         Text(
-          text = t(if (ramadanDay != null) "Ramazan Rehberi & tüm menüler ›" else "Tüm menüleri gör ›"),
+          text = t("Ramazan Rehberi") + " ›",
           fontSize = 12.sp,
           fontWeight = FontWeight.Bold,
           color = accent,

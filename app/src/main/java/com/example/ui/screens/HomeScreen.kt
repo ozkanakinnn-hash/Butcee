@@ -74,6 +74,7 @@ fun HomeScreen(
   onOpenQibla: () -> Unit,
   onOpenMosques: () -> Unit,
   onOpenZikirmatik: () -> Unit = {},
+  onOpenGreetingCards: () -> Unit = {},
   onFireCannon: () -> Unit,
   modifier: Modifier = Modifier
 ) {
@@ -245,6 +246,11 @@ fun HomeScreen(
             .fillMaxHeight()
         )
       }
+    }
+
+    // 2b. Sevdiklerinizle Paylaşın: özel gün kartları
+    item {
+      com.example.ui.components.ShareWithLovedOnesCard(onClick = onOpenGreetingCards)
     }
 
     // 3. Günlük Vakit Namazları tablosu (eski geri sayım panosunun yeri)

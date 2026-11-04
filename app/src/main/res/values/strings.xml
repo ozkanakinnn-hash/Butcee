@@ -2,4 +2,11 @@
     <string name="app_name">Ramazan Rehberi</string>
     <!-- Instagram Hikâyesine doğrudan paylaşım için Meta (Facebook) Uygulama Kimliği. Boşsa Instagram genel paylaşımı kullanılır. -->
     <string name="facebook_app_id" translatable="false"></string>
+    <!-- Ana ekran widget'ları -->
+    <string name="widget_label_next_prayer">Sonraki Namaz</string>
+    <string name="widget_label_prayer_times">Namaz Vakitleri</string>
+    <string name="widget_label_spiritual">Günün Manevi İklimi</string>
+    <string name="widget_desc_next_prayer">Sonraki namaz vakti ve geri sayım</string>
+    <string name="widget_desc_prayer_times">Günün 5 vakti, sıradaki vakit vurgulu</string>
+    <string name="widget_desc_spiritual">Günün ayeti, hadisi ve duası</string>
 </resources>

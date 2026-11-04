@@ -21,7 +21,15 @@ class ReminderReceiver : BroadcastReceiver() {
       val dayKey = RamadanCalendar.dateKey(targetDay)
       val isFastingDay = RamadanCalendar.isRamadanDay(dayKey) || prefs.getFastingDates().contains(dayKey)
 
-      if (type.name.startsWith("PRAYER_")) {
+      if (type == ReminderScheduler.Type.FASTING_TIP) {
+        val day = RamadanCalendar.dayOfRamadan(targetDay)
+        if (day != null) {
+          com.example.i18n.AppLanguage.current = prefs.language
+          val en = prefs.language == "en"
+          val title = if (en) "🌙 Ramadan Day $day • Daily Tip" else "🌙 Ramazan'ın $day. Günü • Günün Bilgisi"
+          NotificationHelper.sendNotification(context, title, com.example.data.FastingKnowledge.tipForDay(day).text, notificationId = type.requestCode)
+        }
+      } else if (type.name.startsWith("PRAYER_")) {
         val time = String.format(java.util.Locale.ROOT, "%02d:%02d", targetDay.get(Calendar.HOUR_OF_DAY), targetDay.get(Calendar.MINUTE))
         val place = "${prefs.province} / ${prefs.district}"
         // Şimdilik tüm vakitlerde aynı ezan sesi çalar

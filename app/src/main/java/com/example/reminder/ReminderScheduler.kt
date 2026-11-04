@@ -17,11 +17,14 @@ object ReminderScheduler {
     SAHUR(7101, "Sahur"), IFTAR(7102, "İftar"),
     // Vakit bildirimleri (Ayarlar > Namaz Vakitleri anahtarları)
     PRAYER_IMSAK(7201, "İmsak"), PRAYER_OGLE(7202, "Öğle"), PRAYER_IKINDI(7203, "İkindi"),
-    PRAYER_AKSAM(7204, "Akşam"), PRAYER_YATSI(7205, "Yatsı")
+    PRAYER_AKSAM(7204, "Akşam"), PRAYER_YATSI(7205, "Yatsı"),
+    // Ramazan boyunca her gün farklı faydalı oruç bilgisi
+    FASTING_TIP(7301, "Oruç Bilgisi")
   }
 
   const val EXTRA_TYPE = "reminder_type"
   const val EXTRA_TARGET_MILLIS = "reminder_target_millis"
+  private const val FASTING_TIP_TIME = "13:00"
 
   /** Namaz vakitleri yüklendiğinde çağrılır: vakitleri saklar ve alarmları yeniler. */
   fun onPrayerTimesLoaded(context: Context, prayerTimes: PrayerTimes) {
@@ -44,6 +47,10 @@ object ReminderScheduler {
     schedule(context, Type.PRAYER_IKINDI, on && prefs.notifyIkindi, prefs.lastIkindi, 0)
     schedule(context, Type.PRAYER_AKSAM, on && prefs.notifyIftar, prefs.lastAksam, 0)
     schedule(context, Type.PRAYER_YATSI, on && prefs.notifyYatsi, prefs.lastYatsi, 0)
+    // Her gün 13:00'te kurulur; yalnızca Ramazan günlerinde bildirim gösterilir
+    schedule(context, Type.FASTING_TIP, on, FASTING_TIP_TIME, 0)
+    // Ana ekran widget'larını da güncel tut
+    com.example.widget.WidgetUpdater.updateAll(context)
   }
 
   private fun schedule(context: Context, type: Type, enabled: Boolean, targetTime: String, minutesBefore: Int) {

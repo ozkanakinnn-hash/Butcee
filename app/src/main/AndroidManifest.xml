@@ -68,6 +68,43 @@
             </intent-filter>
         </receiver>
 
+        <receiver
+            android:name=".widget.NextPrayerWidget"
+            android:label="@string/widget_label_next_prayer"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_info_next_prayer" />
+        </receiver>
+        <receiver
+            android:name=".widget.PrayerTimesWidget"
+            android:label="@string/widget_label_prayer_times"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_info_prayer_times" />
+        </receiver>
+        <receiver
+            android:name=".widget.SpiritualWidget"
+            android:label="@string/widget_label_spiritual"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_info_spiritual" />
+        </receiver>
+        <receiver
+            android:name=".widget.WidgetRefreshReceiver"
+            android:exported="false" />
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"

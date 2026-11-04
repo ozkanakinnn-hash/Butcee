@@ -54,6 +54,8 @@ fun MoreHubScreen(
   onOpenQuran: () -> Unit,
   isRamadan: Boolean = false,
   onOpenFastingGuide: () -> Unit = {},
+  onOpenGreetingCards: () -> Unit = {},
+  onAddWidget: () -> Unit = {},
   onOpenQibla: () -> Unit,
   onOpenMosques: () -> Unit,
   onOpenFastingTracker: () -> Unit,
@@ -106,8 +108,8 @@ fun MoreHubScreen(
           onClick = onOpenQuran,
           modifier = Modifier.weight(1f)
         ) else HubCard(
-          title = t("Oruç Rehberi"),
-          subtitle = t("Günün Menüsü\nOruç Takibi"),
+          title = t("Ramazan Rehberi"),
+          subtitle = t("Orucun Faydaları\nİftar & Sahur"),
           emoji = "🌙",
           onClick = onOpenFastingGuide,
           modifier = Modifier.weight(1f)
@@ -167,6 +169,31 @@ fun MoreHubScreen(
           subtitle = t("Allah'ın 99 ismi\nAnlamlarıyla"),
           emoji = "✨",
           onClick = onOpenEsma,
+          modifier = Modifier.weight(1f)
+        )
+      }
+    }
+
+    // Özel Gün Kartları & Widget
+    item {
+      Row(
+        modifier = Modifier
+          .fillMaxWidth()
+          .padding(horizontal = 16.dp, vertical = 6.dp),
+        horizontalArrangement = Arrangement.spacedBy(10.dp)
+      ) {
+        HubCard(
+          title = t("Özel Gün Kartları"),
+          subtitle = t("Cuma • Kandil • Bayram\nSevdiklerinizle paylaşın"),
+          emoji = "💌",
+          onClick = onOpenGreetingCards,
+          modifier = Modifier.weight(1f)
+        )
+        HubCard(
+          title = t("Ana Ekran Widget'ı"),
+          subtitle = t("Namaz Vakitleri\nManevi İklim"),
+          emoji = "🧩",
+          onClick = onAddWidget,
           modifier = Modifier.weight(1f)
         )
       }

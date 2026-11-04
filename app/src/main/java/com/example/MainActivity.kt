@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
@@ -88,6 +89,7 @@ sealed class ActiveSubScreen {
   data object QuranList : ActiveSubScreen()
   data class SurahDetail(val surah: SurahInfo, val fromTab: Boolean = false) : ActiveSubScreen()
   data object FastingGuide : ActiveSubScreen()
+  data object GreetingCards : ActiveSubScreen()
   data object SpiritualNotes : ActiveSubScreen()
   data object Zikirmatik : ActiveSubScreen()
   data object Esma : ActiveSubScreen()
@@ -216,6 +218,7 @@ fun RamazanRehberiApp(
   // Dialog Visibility states
   var showLocationDialog by remember { mutableStateOf(false) }
   var showSettingsDialog by remember { mutableStateOf(false) }
+  var showWidgetPicker by remember { mutableStateOf(false) }
   var showCannonCelebration by remember { mutableStateOf(false) }
 
   // Dynamic Prayer Times State
@@ -358,6 +361,7 @@ fun RamazanRehberiApp(
             onOpenQibla = { activeSubScreen = ActiveSubScreen.Qibla },
             onOpenMosques = { activeSubScreen = ActiveSubScreen.Mosques },
             onOpenZikirmatik = { activeSubScreen = ActiveSubScreen.Zikirmatik },
+            onOpenGreetingCards = { activeSubScreen = ActiveSubScreen.GreetingCards },
             onFireCannon = {
               showCannonCelebration = true
               NotificationHelper.triggerCannonHaptics(AppHolder.context)
@@ -383,6 +387,8 @@ fun RamazanRehberiApp(
             onOpenQuran = { activeSubScreen = ActiveSubScreen.QuranList },
             isRamadan = ramadanDay != null,
             onOpenFastingGuide = { activeSubScreen = ActiveSubScreen.FastingGuide },
+            onOpenGreetingCards = { activeSubScreen = ActiveSubScreen.GreetingCards },
+            onAddWidget = { showWidgetPicker = true },
             onOpenQibla = { activeSubScreen = ActiveSubScreen.Qibla },
             onOpenMosques = { activeSubScreen = ActiveSubScreen.Mosques },
             onOpenFastingTracker = { activeSubScreen = ActiveSubScreen.FastingTracker },
@@ -437,6 +443,7 @@ fun RamazanRehberiApp(
             surah = subScreen.surah,
             onNavigateBack = { activeSubScreen = if (subScreen.fromTab) null else ActiveSubScreen.QuranList }
           )
+          is ActiveSubScreen.GreetingCards -> com.example.ui.screens.GreetingCardsScreen(onNavigateBack = { activeSubScreen = null })
           is ActiveSubScreen.FastingGuide -> androidx.compose.foundation.layout.Column(Modifier.fillMaxSize()) {
             androidx.compose.foundation.layout.Row(
               modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp),
@@ -450,7 +457,7 @@ fun RamazanRehberiApp(
                 )
               }
               Text(
-                text = t("Oruç Rehberi"),
+                text = t("Ramazan Rehberi"),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onBackground
@@ -496,6 +503,33 @@ fun RamazanRehberiApp(
     }
 
     // Settings Dialog
+    if (showWidgetPicker) {
+      androidx.compose.material3.AlertDialog(
+        onDismissRequest = { showWidgetPicker = false },
+        title = { Text(t("Ana Ekran Widget'ı")) },
+        text = {
+          androidx.compose.foundation.layout.Column {
+            listOf(
+              com.example.widget.WidgetUpdater.Kind.NEXT_PRAYER to t("🕌 Sonraki Namaz & Geri Sayım"),
+              com.example.widget.WidgetUpdater.Kind.PRAYER_TIMES to t("🗓️ Günün 5 Vakti"),
+              com.example.widget.WidgetUpdater.Kind.SPIRITUAL to t("📖 Günün Manevi İklimi")
+            ).forEach { (kind, label) ->
+              androidx.compose.material3.TextButton(
+                onClick = {
+                  showWidgetPicker = false
+                  com.example.widget.WidgetUpdater.requestPin(AppHolder.context, kind)
+                },
+                modifier = Modifier.fillMaxWidth()
+              ) { Text(label, modifier = Modifier.fillMaxWidth()) }
+            }
+          }
+        },
+        confirmButton = {
+          androidx.compose.material3.TextButton(onClick = { showWidgetPicker = false }) { Text(t("Kapat")) }
+        }
+      )
+    }
+
     if (showSettingsDialog) {
       SettingsDialog(
         prefs = prefs,

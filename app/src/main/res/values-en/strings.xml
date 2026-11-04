@@ -1,0 +1,8 @@
+<resources>
+    <string name="widget_label_next_prayer">Next Prayer</string>
+    <string name="widget_label_prayer_times">Prayer Times</string>
+    <string name="widget_label_spiritual">Daily Inspiration</string>
+    <string name="widget_desc_next_prayer">Next prayer time with countdown</string>
+    <string name="widget_desc_prayer_times">Today\'s 5 prayers, next one highlighted</string>
+    <string name="widget_desc_spiritual">Verse, hadith and dua of the day</string>
+</resources>
