@@ -1,56 +1,54 @@
-# İlaç Takip (Flutter)
+# Vitamin Takip (Flutter)
 
-`docs/ilac-takip/` altındaki tasarım dokümanlarının çalışan iskeleti. Android + iOS, Türkçe + İngilizce.
+Vitamin ve takviye takibi için Android + iOS uygulaması. Arayüz Türkçe ve İngilizce.
+İlk konseptten korunanlar: güvenilir alarmlar, erteleme ve "Bekleyenler" paneli, karekod/barkod okuma, Basit Mod ve doktor raporu.
 
-## Neler çalışıyor
+## Ekranlar
 
-| Alan | Durum |
+| Sekme | İçerik |
 |---|---|
-| Esnek dozaj: belirli saatler, gün aşırı / N günde bir, haftanın günleri, N saatte bir, döngüsel (21/7), gerektiğinde | ✅ `lib/domain/dose_rule.dart` |
-| Aç/tok karnına rozetleri (renk + ikon + kelime) | ✅ |
-| Güvenilir alarm: kritik ilaçta `alarmClock` modu, `FLAG_INSISTENT`, ısrarcı tekrar zinciri, yeniden başlatmada geri yükleme | ✅ `lib/services/local_notification_scheduler.dart` |
-| Bildirimden Aldım / 10 dk Ertele / Atla — uygulama kapalıyken de (arka plan izolatı) | ✅ `lib/bootstrap.dart` |
-| Erteleme durum makinesi + "Bekleyenler" paneli (veritabanından çizilir, kaybolmaz) | ✅ |
-| Kaçırılan doz tespiti (grace süresi), 10 sn "Geri al" | ✅ |
-| Kayan 48 saatlik alarm penceresi, iOS 64 bildirim bütçesi | ✅ `lib/services/alarm_planner.dart` |
-| Stok otomatik düşer, düşük stok bildirimi | ✅ |
-| Karekod (GS1 DataMatrix) + EAN-13 okuma, SKT/seri/lot ayrıştırma, aynı kutu iki kez eklenmez | ✅ `lib/domain/gs1_parser.dart`, `lib/ui/scan/` |
-| Basit Mod: büyük yazı, AAA kontrast, tek ekran, sesli okuma, "Yakınımı ara", PIN kilidi | ✅ `lib/ui/senior/` |
-| Alarm güvenilirliği ekranı: izinler, pil kısıtlaması, üretici (Xiaomi, Huawei…) ayarları, test alarmı | ✅ `lib/ui/settings/reliability_screen.dart` + `MainActivity.kt` |
-| Firestore senkronu, bakım veren paylaşımı, FCM, PDF rapor, eczane | ⏳ Sonraki adım — değişiklikler şimdiden `outbox` tablosuna yazılıyor; kurallar `firebase/` altında |
+| **Bugün** | İlerleme halkası (4/6 alındı), 🔥 seri, etkileşim uyarısı, bekleyenler, zaman dilimine (Erken sabah 07:00 …) ve aç/tok durumuna göre dozlar, "Bir doz daha kaydet", ruh hâli |
+| **Takviyeler** | Takviyelerim, hazır setler, program PDF'i, takviye ayrıntısı (RDA/AI/UL, günlük üst sınır uyarısı, uyumlu / ayrı al / dikkat listeleri, sonraki 14 gün) |
+| **Panel** | Tüm araçlar: karekod/barkod tara, takviye ara, etkileşim kontrolü, hazır setler, program PDF, doktor raporu, yakındaki ve nöbetçi eczaneler, yan etki bildir, hatırlatıcılar, alarm güvenilirliği, Basit Mod |
+| **İstatistik** | Denge puanı (uyum + öz bildirim), seri, bu hafta / bu ay, son 14 gün, takviye bazında 30 günlük uyum, ruh hâli |
+| **Öğren** | Temel bilgiler (RDA/AI/UL, birimler), Semptomlar (teşhis değildir), Emilim (artırır/azaltır) |
+
+Sıklık seçenekleri: her gün, gün aşırı, Pzt·Çar·Cum, yalnızca hafta sonları, N günde bir, belirli günler, kullanım/ara döngüsü (ör. 21/7), N saatte bir, gerektikçe.
+
+## Kaynaklar ve sınırlar
+
+- Referans değerler: NIH Office of Dietary Supplements, 19–50 yaş yetişkin (`lib/data/supplement_catalog.dart`). Uygulama doz **önermez**; etiketteki doz girilir, toplam günlük üst sınırı (UL) aşarsa uyarır.
+- Etkileşim kuralları yaygın ve iyi bilinen takviye etkileşimlerini kapsar (kalsiyum–demir, çinko–demir, çinko–bakır, C vitamini–demir, D vitamini–kalsiyum…). İlaç etkileşimleri için eczacıya yönlendirilir.
+- Eczane araçları Google Haritalar aramasını açar; nöbetçi eczaneler için ulusal açık bir API yok.
+- `assets/catalog/sample_catalog.json` (ilaç barkodları) yalnızca **örnek** veridir.
 
 ## Mimari
 
 ```
 lib/
-├── domain/      Saf Dart: dozaj kuralları, durum geçişleri, uyum hesabı, GS1 ayrıştırıcı
-├── data/        sqflite yerel veritabanı (doğruluk kaynağı), ilaç kataloğu
-├── services/    Alarm zamanlayıcı, planlayıcı, doz işlemleri, güvenilirlik, ayarlar
+├── domain/      Saf Dart: dozaj kuralları, durum geçişleri, uyum/seri/puan, GS1 ayrıştırıcı
+├── data/        sqflite (v2 şema + geçiş), takviye kataloğu ve içerik, ilaç kataloğu
+├── services/    Alarm zamanlayıcı/planlayıcı, doz işlemleri, takviye servisi, PDF, çökme raporlayıcı
 ├── state/       Riverpod sağlayıcıları
-├── ui/          Ekranlar (normal + Basit Mod)
-├── l10n/        app_tr.arb (şablon), app_en.arb + üretilen sınıflar
-├── bootstrap.dart  Servis kurulumu + arka plan bildirim girişi
-└── main.dart
+├── ui/          shell (alt gezinme), today, supplements, panel, stats, learn, settings, senior, alarm, scan
+└── l10n/        app_tr.arb (şablon), app_en.arb
 ```
 
-Altın kural: **alarm kararı yalnızca yerel veritabanından verilir**; ağ olmasa da çalar. Her işlem (aldım/ertele/atla) `DoseActionService` üzerinden geçer: DB güncellenir → alarmlar iptal edilir/yeniden kurulur → `outbox`'a senkron kaydı düşülür.
+## Çökme düzeltmeleri (v2)
+
+1. **Tam zamanlı alarm izni:** Android 12+ cihazlarda (14'te yeni kurulumlarda varsayılan) bu izin yoksa alarm kurmak `exact_alarms_not_permitted` hatası fırlatıyordu. Bu hata açılışta yakalanmıyordu. Artık izin yoksa birkaç dakika sapabilen moda (`inexactAllowWhileIdle`) düşülüyor ve Bugün ekranında uyarı gösteriliyor.
+2. **Türkçe tarih verisi:** `runApp` öncesinde ve bildirim aksiyonlarının arka plan izolatında `DateFormat('tr')` çağrısı `LocaleDataException` fırlatıyordu. Bunun için `initIntl()` eklendi.
+3. **Açılış koruması:** Açılış artık asla beyaz ekranda kalmıyor; hata olursa okunabilir bir hata ekranı çıkıyor. Yakalanmamış hatalar dosyaya yazılıyor ve sonraki açılışta "Raporu kopyala" seçeneği sunuluyor.
 
 ## Geliştirme
 
 ```bash
-flutter pub get        # l10n sınıfları otomatik üretilir (flutter gen-l10n)
+flutter pub get
 flutter analyze
-flutter test           # 47 test: alan, servis (sqflite_ffi) ve widget duman testleri
-flutter run
+flutter test        # alan, servis (sqflite_ffi), PDF ve 360×780 dp ekran duman testleri
+flutter drive --driver=test_driver/integration_test.dart --target=integration_test/app_test.dart   # cihaz/emülatör
 ```
 
-CI: `.github/workflows/ilac-takip-flutter.yml` her push'ta analiz + test + debug APK üretir (artifact: `ilac-takip-debug-apk`).
-
-## Yayın öncesi yapılacaklar
-
-- [ ] Paket adı `com.ilactakip.ilac_takip` → kendi alan adınız.
-- [ ] Gerçek cihazda alarm matrisi (Doze, yeniden başlatma, Xiaomi/Samsung/Huawei) — `docs/ilac-takip/02-…md` §6.
-- [ ] Play Console: `USE_FULL_SCREEN_INTENT` ve pil optimizasyonu beyanları.
-- [ ] iOS: Xcode'da "Time Sensitive Notifications" yeteneği; bildirim aksiyonlarını cihazda test.
-- [ ] `assets/catalog/sample_catalog.json` yalnızca **örnek** veridir; gerçek katalog TİTCK listelerinden içe aktarılmalı.
-- [ ] Firebase: `flutterfire configure`, `firebase/firestore.rules` dağıtımı, outbox → Firestore senkronu.
+CI (`.github/workflows/ilac-takip-flutter.yml`):
+- **build:** analiz, test ve debug APK (`ilac-takip-debug-apk`).
+- **emulator:** Android 14 emülatöründe entegrasyon testi ve ekran görüntüleri (`ilac-takip-ekran-goruntuleri`).
