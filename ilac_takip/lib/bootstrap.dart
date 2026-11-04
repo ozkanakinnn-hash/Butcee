@@ -12,6 +12,7 @@ import 'services/local_notification_scheduler.dart';
 import 'services/localized_texts.dart';
 import 'services/reliability_service.dart';
 import 'services/settings_store.dart';
+import 'services/supplement_service.dart';
 
 /// Uygulamanın tüm servisleri. Hem UI izolatında hem de bildirim aksiyonlarının
 /// çalıştığı arka plan izolatında aynı şekilde kurulur.
@@ -24,6 +25,7 @@ class AppServices {
     required this.actions,
     required this.catalog,
     required this.reliability,
+    required this.supplements,
   });
 
   final AppDatabase db;
@@ -33,6 +35,7 @@ class AppServices {
   final DoseActionService actions;
   final DrugCatalogRepository catalog;
   final ReliabilityService reliability;
+  final SupplementService supplements;
 
   /// Testlerde sahte zamanlayıcı/planlayıcı ile kurmak için.
   @visibleForTesting
@@ -54,10 +57,12 @@ class AppServices {
       actions: actions,
       catalog: DrugCatalogRepository(db),
       reliability: ReliabilityService(scheduler),
+      supplements: SupplementService(db: db, planner: planner, clock: planner.clock),
     );
   }
 
   static Future<AppServices> create() async {
+    await initIntl();
     await initTimeZone();
     final settings = await SettingsStore.load();
     final t = resolveLocalizations(settings.read().languageCode);
@@ -67,7 +72,13 @@ class AppServices {
       onForeground: _onForegroundResponse,
       onBackground: onBackgroundNotificationResponse,
     );
-    final planner = AlarmPlanner(db: db, scheduler: scheduler, texts: LocalizedDoseTexts(t), clock: DateTime.now);
+    final planner = AlarmPlanner(
+      db: db,
+      scheduler: scheduler,
+      texts: LocalizedDoseTexts(t),
+      clock: DateTime.now,
+      isSlotMuted: (slot) => settings.read().isSlotMuted(slot),
+    );
     final actions = DoseActionService(
       db: db,
       scheduler: scheduler,
@@ -83,6 +94,7 @@ class AppServices {
       actions: actions,
       catalog: DrugCatalogRepository(db),
       reliability: ReliabilityService(scheduler),
+      supplements: SupplementService(db: db, planner: planner, clock: DateTime.now),
     );
   }
 

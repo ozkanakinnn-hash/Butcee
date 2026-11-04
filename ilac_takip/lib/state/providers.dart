@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../bootstrap.dart';
+import '../data/supplement_catalog.dart';
+import '../services/supplement_service.dart';
 import '../domain/adherence.dart';
 import '../domain/dose_rule.dart';
 import '../domain/models.dart';
@@ -81,7 +83,7 @@ final todayDosesProvider = FutureProvider<List<DoseView>>((ref) async {
 });
 
 final todayStatsProvider = Provider<AdherenceStats>((ref) {
-  final today = ref.watch(todayDosesProvider).value ?? const [];
+  final today = (ref.watch(todayDosesProvider).value ?? const <DoseView>[]).where((v) => !v.dose.isExtra).toList();
   final taken = today.where((v) => v.dose.status == DoseStatus.taken).length;
   return AdherenceStats(planned: today.length, onTime: taken);
 });
@@ -98,4 +100,71 @@ final doseViewProvider = FutureProvider.family<DoseView?, String>((ref, logId) a
   if (d == null) return null;
   final v = await _views(s, [d]);
   return v.isEmpty ? null : v.first;
+});
+
+// ───────────── Takviye paneli ─────────────
+
+final plansProvider = FutureProvider<List<SupplementPlan>>((ref) async {
+  ref.watch(dbTickProvider);
+  return ref.watch(servicesProvider).supplements.plans();
+});
+
+final conflictsProvider = FutureProvider<List<Conflict>>((ref) async {
+  ref.watch(dbTickProvider);
+  return ref.watch(servicesProvider).supplements.conflicts();
+});
+
+class StatsData {
+  const StatsData({
+    required this.days30,
+    required this.week,
+    required this.month,
+    required this.streak,
+    required this.moods,
+    required this.perMedicine,
+    required this.score,
+  });
+
+  final List<DayAdherence> days30;
+  final AdherenceStats week;
+  final AdherenceStats month;
+  final int streak;
+
+  /// "yyyy-MM-dd" → 1..5
+  final Map<String, int> moods;
+  final Map<int, AdherenceStats> perMedicine;
+  final ({int total, int adherencePart, int moodPart}) score;
+}
+
+final statsProvider = FutureProvider<StatsData>((ref) async {
+  ref.watch(dbTickProvider);
+  final s = ref.watch(servicesProvider);
+  final now = DateTime.now();
+  final from30 = DateTime(now.year, now.month, now.day - 29);
+  final from7 = DateTime(now.year, now.month, now.day - 6);
+  final end = DateTime(now.year, now.month, now.day + 1);
+  final logs = await s.db.dosesBetween(from30, end);
+  final days = dailyBreakdown(logs, from: from30, days: 30, now: now);
+  final month = computeAdherence(logs, from: from30, to: end, now: now);
+  final moods = await s.db.moods(from30, end);
+  final avgMood = moods.isEmpty ? null : moods.values.reduce((a, b) => a + b) / moods.length;
+  return StatsData(
+    days30: days,
+    week: computeAdherence(logs, from: from7, to: end, now: now),
+    month: month,
+    streak: currentStreak(days, now),
+    moods: moods,
+    perMedicine: await s.supplements.perMedicineAdherence(),
+    score: balanceScore(month.adherence, avgMood),
+  );
+});
+
+String dayKey(DateTime d) =>
+    '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+
+final todayMoodProvider = FutureProvider<int?>((ref) async {
+  ref.watch(dbTickProvider);
+  final now = DateTime.now();
+  final m = await ref.watch(servicesProvider).db.moods(dateOnly(now), DateTime(now.year, now.month, now.day + 1));
+  return m[dayKey(now)];
 });

@@ -10,7 +10,7 @@ class AppLocalizationsTr extends AppLocalizations {
   AppLocalizationsTr([String locale = 'tr']) : super(locale);
 
   @override
-  String get appTitle => 'İlaç Takip';
+  String get appTitle => 'Vitamin Takip';
 
   @override
   String get today => 'Bugün';
@@ -464,4 +464,551 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get alarmNotFound => 'Bu doz bulunamadı';
+
+  @override
+  String get navToday => 'Bugün';
+
+  @override
+  String get navSupplements => 'Takviyeler';
+
+  @override
+  String get navPanel => 'Panel';
+
+  @override
+  String get navStats => 'İstatistik';
+
+  @override
+  String get navLearn => 'Öğren';
+
+  @override
+  String get slotEarlyMorning => 'Erken sabah';
+
+  @override
+  String get slotLateMorning => 'Geç sabah';
+
+  @override
+  String get slotNoon => 'Öğle';
+
+  @override
+  String get slotAfternoon => 'İkindi';
+
+  @override
+  String get slotEvening => 'Akşam';
+
+  @override
+  String get slotLateEvening => 'Gece';
+
+  @override
+  String get groupMorning => 'Sabah';
+
+  @override
+  String get groupAfternoon => 'Öğleden sonra';
+
+  @override
+  String get groupEvening => 'Akşam';
+
+  @override
+  String get groupNight => 'Gece';
+
+  @override
+  String get takenLabel => 'alındı';
+
+  @override
+  String streakDays(int n) {
+    return '$n gün';
+  }
+
+  @override
+  String interactionsFound(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count etkileşim uyarısı',
+      one: '1 etkileşim uyarısı',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get addAnotherDose => 'Bir doz daha kaydet';
+
+  @override
+  String get extraDoseLogged => 'Ek doz kaydedildi';
+
+  @override
+  String get moodQuestion => 'Bugün nasıl hissediyorsun?';
+
+  @override
+  String get emptyTodayTitle => 'Henüz takviye eklemediniz';
+
+  @override
+  String get emptyTodayBody =>
+      'Bir takviye ekleyin ya da hazır bir setle başlayın.';
+
+  @override
+  String get mySupplements => 'Takviyelerim';
+
+  @override
+  String supplementsCount(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n takviye',
+      one: '1 takviye',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get browsePresets => 'Hazır setlere göz at';
+
+  @override
+  String get shareProgram => 'Programı PDF olarak paylaş';
+
+  @override
+  String get paused => 'Duraklatıldı';
+
+  @override
+  String get searchSupplements => 'Takviye ara';
+
+  @override
+  String get notInList => 'Listede yok mu? Elle ekleyin';
+
+  @override
+  String get catAll => 'Tümü';
+
+  @override
+  String get catVitamin => 'Vitamin';
+
+  @override
+  String get catMineral => 'Mineral';
+
+  @override
+  String get catFattyAcid => 'Yağ asidi';
+
+  @override
+  String get catHerbal => 'Bitkisel';
+
+  @override
+  String get catProbiotic => 'Probiyotik';
+
+  @override
+  String get catProtein => 'Protein';
+
+  @override
+  String get catMulti => 'Multivitamin';
+
+  @override
+  String get catMedicine => 'İlaç';
+
+  @override
+  String get catOther => 'Diğer';
+
+  @override
+  String get categoryLabel => 'Kategori';
+
+  @override
+  String get amountLabel => 'Doz (etiketteki)';
+
+  @override
+  String get unitLabel => 'Birim';
+
+  @override
+  String get labelDoseHint =>
+      'Ürün etiketindeki dozu girin; uygulama doz önermez.';
+
+  @override
+  String get howOften => 'Ne sıklıkta?';
+
+  @override
+  String get freqDaily => 'Her gün';
+
+  @override
+  String get freqEveryOtherDay => 'Gün aşırı';
+
+  @override
+  String get freqMwf => 'Pzt · Çar · Cum';
+
+  @override
+  String get freqWeekends => 'Yalnızca hafta sonları';
+
+  @override
+  String get freqEveryNDays => 'Her N günde bir';
+
+  @override
+  String get freqSpecificDays => 'Belirli günler';
+
+  @override
+  String get freqCycle => 'Kullanım / ara döngüsü';
+
+  @override
+  String get whenToTake => 'Ne zaman?';
+
+  @override
+  String get nextDays14 => 'Sonraki 14 gün';
+
+  @override
+  String get cycleOnDays => 'Kullanım (gün)';
+
+  @override
+  String get cycleOffDays => 'Ara (gün)';
+
+  @override
+  String get nDaysLabel => 'Kaç günde bir?';
+
+  @override
+  String get advanced => 'Gelişmiş';
+
+  @override
+  String get pickAtLeastOneSlot => 'En az bir zaman seçin';
+
+  @override
+  String conflictWarning(String other, String reason) {
+    return '$other ile yakın saatte: $reason';
+  }
+
+  @override
+  String ulWarning(String total, String ul) {
+    return 'Günlük toplam $total, üst sınır (UL) $ul. Doktorunuza danışın.';
+  }
+
+  @override
+  String get dosePlan => 'Doz ve plan';
+
+  @override
+  String get referenceValues => 'Referans değerler';
+
+  @override
+  String rdaLine(String kind, String male, String female) {
+    return '$kind: Erkek $male · Kadın $female';
+  }
+
+  @override
+  String ulLine(String ul) {
+    return 'Üst sınır (UL): $ul';
+  }
+
+  @override
+  String get noUl => 'Belirlenmiş üst sınır yok';
+
+  @override
+  String get noReference => 'Resmî referans değeri yok';
+
+  @override
+  String get sourceNih =>
+      'Kaynak: NIH ODS, 19–50 yaş yetişkin değerleri. Gebelik, emzirme ve hastalıklarda farklıdır. Bilgi amaçlıdır.';
+
+  @override
+  String get compatibleWith => 'Birlikte iyi';
+
+  @override
+  String get takeSeparately => 'Ayrı alın';
+
+  @override
+  String get cautionLabel => 'Dikkat';
+
+  @override
+  String get inYourList => 'listenizde';
+
+  @override
+  String get pause => 'Duraklat';
+
+  @override
+  String get resume => 'Devam ettir';
+
+  @override
+  String dosesPerDay(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: 'günde $n kez',
+      one: 'günde 1 kez',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get panelSubtitle => 'Tüm araçlar tek yerde';
+
+  @override
+  String get toolScan => 'Karekod / barkod tara';
+
+  @override
+  String get toolCatalog => 'Takviye ara';
+
+  @override
+  String get toolInteractions => 'Etkileşim kontrolü';
+
+  @override
+  String get toolPresets => 'Hazır setler';
+
+  @override
+  String get toolProgramPdf => 'Program PDF';
+
+  @override
+  String get toolDoctorReport => 'Doktor raporu';
+
+  @override
+  String get toolNearbyPharmacy => 'Yakındaki eczaneler';
+
+  @override
+  String get toolDutyPharmacy => 'Nöbetçi eczaneler';
+
+  @override
+  String get toolSideEffect => 'Yan etki bildir';
+
+  @override
+  String get toolReminders => 'Hatırlatıcılar';
+
+  @override
+  String get sideEffectBody =>
+      'Bir ilaç veya takviyeden sonra beklenmeyen bir etki fark ederseniz kullanmayı bırakıp doktorunuza veya eczacınıza danışın. İlaç yan etkileri Türkiye\'de TİTCK bünyesindeki Türkiye Farmakovijilans Merkezi\'ne (TÜFAM) bildirilebilir.';
+
+  @override
+  String get openTitck => 'TİTCK sitesini aç';
+
+  @override
+  String get interactionsTitle => 'Etkileşim kontrolü';
+
+  @override
+  String get sameTimeConflict => 'Yakın saatte planlı — ayırın';
+
+  @override
+  String get separatedOk => 'Farklı saatlerde ✓';
+
+  @override
+  String get synergies => 'Birlikte iyi çalışanlar';
+
+  @override
+  String get noInteractions => 'Listenizde bilinen bir etkileşim yok.';
+
+  @override
+  String get interactionsDisclaimer =>
+      'Bu liste yaygın takviye etkileşimlerini kapsar. İlaçlarınızla etkileşim için eczacınıza danışın.';
+
+  @override
+  String get presetDisclaimer =>
+      'Örnek düzenlerdir, öneri değildir. Doz ve gereksinim için doktorunuza veya eczacınıza danışın.';
+
+  @override
+  String get addPreset => 'Seti ekle';
+
+  @override
+  String presetAdded(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n takviye eklendi',
+      one: '1 takviye eklendi',
+      zero: 'Bu setteki takviyelerin hepsi zaten listenizde',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get tabBasics => 'Temel bilgiler';
+
+  @override
+  String get tabSymptoms => 'Semptomlar';
+
+  @override
+  String get tabAbsorption => 'Emilim';
+
+  @override
+  String get basicsSubtitle => 'Günlük hedefler ve yüzdeler için kısa rehber.';
+
+  @override
+  String get symptomsSubtitle =>
+      'İlişkili besinleri görmek için seçin. Bu tıbbi bir teşhis değildir.';
+
+  @override
+  String get relatedNutrients => 'İlişkili besinler';
+
+  @override
+  String get selectedSummary => 'Doktorunuzla konuşabileceğiniz besinler';
+
+  @override
+  String get seeDoctorBanner =>
+      'Belirtileriniz sürüyorsa doktorunuza danışın. Kan testi yapılmadan takviyeye başlamayın.';
+
+  @override
+  String get absorptionSubtitle =>
+      'Emilimi artırabilecek veya azaltabilecek pratik örnekler.';
+
+  @override
+  String get increases => 'Artırır';
+
+  @override
+  String get decreases => 'Azaltır';
+
+  @override
+  String get tipLabel => 'İpucu';
+
+  @override
+  String get statsTitle => 'İstatistikler';
+
+  @override
+  String get balanceScore => 'Denge puanı';
+
+  @override
+  String get outOf100 => '100 üzerinden';
+
+  @override
+  String get adherencePart => 'Uyum';
+
+  @override
+  String get selfReportPart => 'Öz bildirim';
+
+  @override
+  String get streakTile => 'Günlük seri';
+
+  @override
+  String get streakSub => 'art arda eksiksiz gün';
+
+  @override
+  String get thisWeek => 'Bu hafta';
+
+  @override
+  String get thisMonth => 'Bu ay';
+
+  @override
+  String get takenRate => 'alınan doz oranı';
+
+  @override
+  String get last14Days => 'Son 14 gün';
+
+  @override
+  String get perSupplement => 'Takviye bazında (30 gün)';
+
+  @override
+  String get moodTitle => 'Ruh hâli';
+
+  @override
+  String get noDataYet => 'Henüz yeterli veri yok';
+
+  @override
+  String get reportTitle => 'Takviye Raporu';
+
+  @override
+  String get programTitle => 'Takviye Programı';
+
+  @override
+  String generatedAt(String date) {
+    return '$date tarihinde oluşturuldu';
+  }
+
+  @override
+  String get adherence30 => '30 günlük uyum';
+
+  @override
+  String plannedTaken(int taken, int planned) {
+    return 'Planlanan $planned dozdan $taken tanesi alındı';
+  }
+
+  @override
+  String get currentProgram => 'Mevcut program';
+
+  @override
+  String get colSupplement => 'Takviye';
+
+  @override
+  String get colPlan => 'Plan';
+
+  @override
+  String get colDose => 'Doz';
+
+  @override
+  String get colAdherence => 'Uyum';
+
+  @override
+  String get pdfDisclaimer =>
+      'Bu belge kullanıcının kendi kayıtlarına dayanır; tıbbi tavsiye veya teşhis yerine geçmez.';
+
+  @override
+  String get remindersTitle => 'Hatırlatıcılar';
+
+  @override
+  String get enableReminders => 'Hatırlatıcıları etkinleştir';
+
+  @override
+  String get enableRemindersHint =>
+      'Takviye alma zamanı geldiğinde bildirim al.';
+
+  @override
+  String get reminderSlots => 'Zaman dilimleri';
+
+  @override
+  String get productInfo => 'Ürün bilgisi';
+
+  @override
+  String get barcodeLabel => 'Barkod';
+
+  @override
+  String get serialLabel => 'Seri no';
+
+  @override
+  String get lotLabel => 'Parti no';
+
+  @override
+  String get addToMySupplements => 'Takviyelerime ekle';
+
+  @override
+  String get findPharmacy => 'Eczane bul';
+
+  @override
+  String get readLeaflet => 'Kullanma talimatı';
+
+  @override
+  String get crashTitle => 'Önceki oturumda bir hata oluştu';
+
+  @override
+  String get crashBody =>
+      'Sorunu düzeltebilmemiz için raporu kopyalayıp geliştiriciye gönderebilirsiniz.';
+
+  @override
+  String get copyReport => 'Raporu kopyala';
+
+  @override
+  String get dismiss => 'Kapat';
+
+  @override
+  String get copied => 'Kopyalandı';
+
+  @override
+  String get startupError => 'Uygulama başlatılamadı';
+
+  @override
+  String get exactAlarmOff =>
+      'Tam zamanlı alarm izni kapalı — hatırlatmalar birkaç dakika gecikebilir.';
+
+  @override
+  String get unitTablet => 'tablet';
+
+  @override
+  String get unitCapsule => 'kapsül';
+
+  @override
+  String get unitDrop => 'damla';
+
+  @override
+  String get unitScoop => 'ölçek';
+
+  @override
+  String get asNeededShort => 'Gerektikçe';
+
+  @override
+  String cycleLabel(int on, int off) {
+    return '$on gün kullan, $off gün ara';
+  }
+
+  @override
+  String everyNHoursShort(int n) {
+    return '$n saatte bir';
+  }
+
+  @override
+  String get editSupplement => 'Düzenle';
+
+  @override
+  String get details => 'Ayrıntılar';
 }

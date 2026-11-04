@@ -1,5 +1,7 @@
 import 'dart:io' show Platform;
-import 'dart:typed_data';
+
+import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
@@ -36,6 +38,14 @@ class NotificationActions {
   static const skip = 'skip';
   static const darwinCategory = 'dose';
   static const darwinCategoryNoSnooze = 'dose_no_snooze';
+}
+
+/// Android'de zamanlama modu seçimi. Android 12+ cihazlarda "tam zamanlı alarm" izni yoksa
+/// `alarmClock` ve `exact*` modları `exact_alarms_not_permitted` hatası fırlatır (Android 14'te
+/// bu izin yeni kurulumlarda varsayılan olarak KAPALIDIR) → izin yoksa inexact moda düşülür.
+AndroidScheduleMode chooseScheduleMode({required bool exactAllowed, required bool critical}) {
+  if (!exactAllowed) return AndroidScheduleMode.inexactAllowWhileIdle;
+  return critical ? AndroidScheduleMode.alarmClock : AndroidScheduleMode.exactAllowWhileIdle;
 }
 
 Future<void> initTimeZone() async {
@@ -120,38 +130,57 @@ class LocalNotificationAlarmScheduler implements AlarmScheduler {
     ));
   }
 
+  /// Son kontrolde tam zamanlı alarm izni var mıydı (Güvenilirlik ekranı ve uyarı şeridi için).
+  bool lastExactAllowed = true;
+
   @override
   Future<void> schedule(PlannedDose d) async {
     final when = tz.TZDateTime.from(d.fireAt, tz.local);
     final now = tz.TZDateTime.now(tz.local);
     final details = _details(d);
-    final mode = d.isCritical ? AndroidScheduleMode.alarmClock : AndroidScheduleMode.exactAllowWhileIdle;
+    final exact = await canScheduleExact();
+    lastExactAllowed = exact;
 
     if (when.isAfter(now)) {
-      await plugin.zonedSchedule(
-        id: AlarmIds.main(d.intId),
-        title: d.title,
-        body: d.body,
-        scheduledDate: when,
-        notificationDetails: details,
-        androidScheduleMode: mode,
-        payload: d.logId,
-      );
+      await _safeSchedule(AlarmIds.main(d.intId), d.title, d.body, when, details, d.logId,
+          chooseScheduleMode(exactAllowed: exact, critical: d.isCritical));
     }
     if (!d.persistent) return;
     final repeats = d.maxRepeats < repeatCap ? d.maxRepeats : repeatCap;
     for (var k = 1; k <= repeats; k++) {
       final at = when.add(Duration(minutes: d.repeatEveryMinutes * k));
       if (!at.isAfter(now)) continue;
-      await plugin.zonedSchedule(
-        id: AlarmIds.repeat(d.intId, k),
-        title: d.repeatTitle,
-        body: d.body,
-        scheduledDate: at,
-        notificationDetails: details,
-        androidScheduleMode: AndroidScheduleMode.alarmClock,
-        payload: d.logId,
-      );
+      await _safeSchedule(AlarmIds.repeat(d.intId, k), d.repeatTitle, d.body, at, details, d.logId,
+          chooseScheduleMode(exactAllowed: exact, critical: true));
+    }
+  }
+
+  /// İzin durumu kontrolle çağrı arasında değişebilir; hata olursa inexact modla yeniden dener.
+  /// Bir alarmın kurulamaması uygulamayı ASLA çökertmemeli.
+  Future<void> _safeSchedule(int id, String title, String body, tz.TZDateTime at, NotificationDetails details,
+      String payload, AndroidScheduleMode mode) async {
+    Future<void> go(AndroidScheduleMode m) => plugin.zonedSchedule(
+          id: id,
+          title: title,
+          body: body,
+          scheduledDate: at,
+          notificationDetails: details,
+          androidScheduleMode: m,
+          payload: payload,
+        );
+    try {
+      await go(mode);
+    } on PlatformException catch (e) {
+      if (mode == AndroidScheduleMode.inexactAllowWhileIdle) {
+        debugPrint('Alarm kurulamadı ($id): ${e.code}');
+        return;
+      }
+      lastExactAllowed = false;
+      try {
+        await go(AndroidScheduleMode.inexactAllowWhileIdle);
+      } on PlatformException catch (e2) {
+        debugPrint('Alarm kurulamadı ($id): ${e2.code}');
+      }
     }
   }
 
@@ -220,8 +249,14 @@ class LocalNotificationAlarmScheduler implements AlarmScheduler {
     return await _android?.areNotificationsEnabled() ?? false;
   }
 
-  Future<bool> canScheduleExact() async =>
-      Platform.isIOS || (await _android?.canScheduleExactNotifications() ?? false);
+  Future<bool> canScheduleExact() async {
+    if (!Platform.isAndroid) return true;
+    try {
+      return await _android?.canScheduleExactNotifications() ?? false;
+    } on PlatformException {
+      return false;
+    }
+  }
 
   Future<void> requestNotifications() async {
     await _android?.requestNotificationsPermission();

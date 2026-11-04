@@ -32,6 +32,12 @@ class SettingsScreen extends ConsumerWidget {
           ),
         ),
         ListTile(
+          leading: const Icon(Icons.alarm),
+          title: Text(t.remindersTitle),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => context.push('/reminders'),
+        ),
+        ListTile(
           leading: const Icon(Icons.verified_user_outlined),
           title: Text(t.reliability),
           trailing: const Icon(Icons.chevron_right),

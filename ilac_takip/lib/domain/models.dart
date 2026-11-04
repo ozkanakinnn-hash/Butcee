@@ -6,6 +6,9 @@ enum DoseStatus { pending, snoozed, taken, skipped, missed }
 
 enum SkipReason { unspecified, feelingUnwell, outOfStock, doctorAdvice, other }
 
+/// Takviye/ilaç kategorisi.
+enum ItemCategory { vitamin, mineral, fattyAcid, herbal, probiotic, protein, multi, medicine, other }
+
 class Medicine {
   const Medicine({
     this.id,
@@ -18,6 +21,10 @@ class Medicine {
     this.packageSize,
     this.isCritical = false,
     this.expiryDates = const [],
+    this.category = ItemCategory.vitamin,
+    this.catalogId,
+    this.doseAmount,
+    this.doseUnit,
   });
 
   final int? id;
@@ -32,21 +39,33 @@ class Medicine {
   final int? packageSize;
   final bool isCritical;
   final List<DateTime> expiryDates;
+  final ItemCategory category;
+
+  /// `SupplementCatalog` kimliği (ör. "vitD"); etkileşim ve RDA bilgisi buradan gelir.
+  final String? catalogId;
+
+  /// Etiket dozu (ör. 1000 IU, 500 mg) — doz başına adet [DoseLog.quantity] ile çarpılır.
+  final double? doseAmount;
+  final String? doseUnit;
 
   String get displayName => nickname?.isNotEmpty == true ? nickname! : name;
   bool get isLowStock => totalStock <= criticalStockLevel;
 
-  Medicine copyWith({int? id, double? totalStock, List<DateTime>? expiryDates}) => Medicine(
+  Medicine copyWith({int? id, double? totalStock, List<DateTime>? expiryDates, double? criticalStockLevel}) => Medicine(
         id: id ?? this.id,
         name: name,
         nickname: nickname,
         form: form,
         barcode: barcode,
         totalStock: totalStock ?? this.totalStock,
-        criticalStockLevel: criticalStockLevel,
+        criticalStockLevel: criticalStockLevel ?? this.criticalStockLevel,
         packageSize: packageSize,
         isCritical: isCritical,
         expiryDates: expiryDates ?? this.expiryDates,
+        category: category,
+        catalogId: catalogId,
+        doseAmount: doseAmount,
+        doseUnit: doseUnit,
       );
 
   Map<String, Object?> toRow() => {
@@ -60,6 +79,10 @@ class Medicine {
         'package_size': packageSize,
         'is_critical': isCritical ? 1 : 0,
         'expiry_dates': expiryDates.map(_ymd).join(','),
+        'category': category.name,
+        'catalog_id': catalogId,
+        'dose_amount': doseAmount,
+        'dose_unit': doseUnit,
       };
 
   factory Medicine.fromRow(Map<String, Object?> r) => Medicine(
@@ -77,6 +100,10 @@ class Medicine {
             .where((e) => e.isNotEmpty)
             .map(DateTime.parse)
             .toList(),
+        category: ItemCategory.values.asNameMap()[r['category']] ?? ItemCategory.vitamin,
+        catalogId: r['catalog_id'] as String?,
+        doseAmount: (r['dose_amount'] as num?)?.toDouble(),
+        doseUnit: r['dose_unit'] as String?,
       );
 }
 
@@ -102,6 +129,7 @@ class Schedule {
     this.graceMinutes = 60,
     this.maxSnoozes = 3,
     this.paused = false,
+    this.slots = const [],
   });
 
   final String id;
@@ -112,6 +140,21 @@ class Schedule {
   final int graceMinutes;
   final int maxSnoozes;
   final bool paused;
+
+  /// Hatırlatma dilimleri (ör. ["earlyMorning","evening"]). Dilim saati değişince kural yeniden yazılır.
+  final List<String> slots;
+
+  Schedule copyWith({DoseRule? rule, bool? paused, List<String>? slots}) => Schedule(
+        id: id,
+        medicineId: medicineId,
+        rule: rule ?? this.rule,
+        isCritical: isCritical,
+        persistent: persistent,
+        graceMinutes: graceMinutes,
+        maxSnoozes: maxSnoozes,
+        paused: paused ?? this.paused,
+        slots: slots ?? this.slots,
+      );
 
   Map<String, Object?> toRow() => {
         'id': id,
@@ -124,6 +167,7 @@ class Schedule {
         'grace_minutes': graceMinutes,
         'max_snoozes': maxSnoozes,
         'paused': paused ? 1 : 0,
+        'slots': slots.join(','),
       };
 
   factory Schedule.fromRow(Map<String, Object?> r) => Schedule(
@@ -139,6 +183,7 @@ class Schedule {
         graceMinutes: r['grace_minutes'] as int,
         maxSnoozes: r['max_snoozes'] as int,
         paused: r['paused'] == 1,
+        slots: ((r['slots'] as String?) ?? '').split(',').where((e) => e.isNotEmpty).toList(),
       );
 }
 
@@ -159,6 +204,8 @@ class DoseLog {
     this.snoozeCount = 0,
     this.skipReason,
     this.note,
+    this.slot,
+    this.isExtra = false,
   });
 
   /// Yerel otomatik artan kimlik — bildirim kimliklerinin tabanı.
@@ -177,6 +224,12 @@ class DoseLog {
   final SkipReason? skipReason;
   final String? note;
 
+  /// Dozun ait olduğu hatırlatma dilimi (sessize alınmış dilimlerde alarm kurulmaz).
+  final String? slot;
+
+  /// Plan dışı ek kayıt ("Bir doz daha kaydet") — uyum hesabına girmez.
+  final bool isExtra;
+
   bool get isResolved => status == DoseStatus.taken || status == DoseStatus.skipped;
 
   /// Alarmın çalacağı an.
@@ -187,7 +240,7 @@ class DoseLog {
     return '${scheduleId}_${t.year}${two(t.month)}${two(t.day)}T${two(t.hour)}${two(t.minute)}';
   }
 
-  factory DoseLog.planned(Schedule s, DateTime t) => DoseLog(
+  factory DoseLog.planned(Schedule s, DateTime t, {String? slot}) => DoseLog(
         logId: buildLogId(s.id, t),
         scheduleId: s.id,
         medicineId: s.medicineId,
@@ -195,6 +248,21 @@ class DoseLog {
         graceUntil: t.add(Duration(minutes: s.graceMinutes)),
         quantity: s.rule.quantity,
         meal: s.rule.meal,
+        slot: slot,
+      );
+
+  /// "Bir doz daha kaydet": plan dışı, alınmış olarak kaydedilir.
+  factory DoseLog.extra(Schedule s, DateTime at) => DoseLog(
+        logId: '${s.id}_extra_${at.microsecondsSinceEpoch}',
+        scheduleId: s.id,
+        medicineId: s.medicineId,
+        scheduledTime: at,
+        graceUntil: at,
+        quantity: s.rule.quantity,
+        meal: s.rule.meal,
+        status: DoseStatus.taken,
+        actionTime: at,
+        isExtra: true,
       );
 
   DoseLog copyWith({
@@ -221,6 +289,8 @@ class DoseLog {
         snoozeCount: snoozeCount ?? this.snoozeCount,
         skipReason: skipReason != null ? skipReason() : this.skipReason,
         note: note ?? this.note,
+        slot: slot,
+        isExtra: isExtra,
       );
 
   Map<String, Object?> toRow() => {
@@ -238,6 +308,8 @@ class DoseLog {
         'snooze_count': snoozeCount,
         'skip_reason': skipReason?.name,
         'note': note,
+        'slot': slot,
+        'is_extra': isExtra ? 1 : 0,
       };
 
   factory DoseLog.fromRow(Map<String, Object?> r) {
@@ -257,6 +329,8 @@ class DoseLog {
       snoozeCount: r['snooze_count'] as int,
       skipReason: r['skip_reason'] == null ? null : SkipReason.values.byName(r['skip_reason'] as String),
       note: r['note'] as String?,
+      slot: r['slot'] as String?,
+      isExtra: r['is_extra'] == 1,
     );
   }
 }

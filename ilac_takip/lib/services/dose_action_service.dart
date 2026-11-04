@@ -72,7 +72,11 @@ class DoseActionService {
     if (log.intId != null) {
       await scheduler.cancelDose(log.intId!);
       final planned = await planner.plannedFor(updated);
-      if (planned != null) await scheduler.schedule(planned);
+      try {
+        if (planned != null) await scheduler.schedule(planned);
+      } on Exception catch (e) {
+        planner.lastError = e; // erteleme kaydedildi; alarm kurulamadıysa panelde yine görünür
+      }
     }
     return true;
   }
@@ -87,6 +91,17 @@ class DoseActionService {
     });
     if (log.intId != null) await scheduler.cancelDose(log.intId!);
     return log;
+  }
+
+  /// "Bir doz daha kaydet" — plan dışı alım; stok düşer, uyum hesabına girmez.
+  Future<DoseLog?> logExtra(int medicineId) async {
+    final schedules = await db.schedulesForMedicine(medicineId);
+    if (schedules.isEmpty) return null;
+    final now = clock();
+    final d = DoseLog.extra(schedules.first, now);
+    await db.insertExtraDose(d, now: now);
+    await _checkLowStock(medicineId);
+    return d;
   }
 
   /// "Geri al": [previous] hâline döndürür, alındıysa stoğu iade eder, alarmları yeniden kurar.

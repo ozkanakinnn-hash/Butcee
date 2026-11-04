@@ -1,4 +1,5 @@
 import '../data/app_database.dart';
+import '../domain/dose_rule.dart';
 import '../domain/dose_transitions.dart';
 import '../domain/models.dart';
 import 'alarm_scheduler.dart';
@@ -22,7 +23,12 @@ class AlarmPlanner {
     required this.clock,
     this.window = const Duration(hours: 48),
     this.materializeAhead = const Duration(days: 7),
+    this.isSlotMuted,
   });
+
+  /// Kullanıcı bir hatırlatma dilimini (veya tüm hatırlatmaları) kapattıysa `true`.
+  /// Doz listede görünmeye devam eder, yalnızca alarm kurulmaz.
+  bool Function(String? slot)? isSlotMuted;
 
   final AppDatabase db;
   final AlarmScheduler scheduler;
@@ -30,6 +36,9 @@ class AlarmPlanner {
   final Clock clock;
   final Duration window;
   final Duration materializeAhead;
+
+  /// Son uzlaştırmada yakalanan hata (tanılama için).
+  Object? lastError;
 
   /// Doz örneklerini üretir, süresi dolanları "kaçırıldı" yapar, pencere içindekileri kurar,
   /// artık istenmeyenleri iptal eder. Kurulan doz sayısını döner.
@@ -44,6 +53,7 @@ class AlarmPlanner {
     final pending = await scheduler.pendingIds();
 
     for (final d in await db.alarmableDoses(now.subtract(const Duration(hours: 1)), now.add(window))) {
+      if (isSlotMuted?.call(d.slot) ?? false) continue;
       final planned = await plannedFor(d);
       if (planned == null) continue;
       final cost = planned.notificationCount(repeatCap: scheduler.repeatCap);
@@ -53,8 +63,13 @@ class AlarmPlanner {
         wanted.add(d.intId! * AlarmIds.slots + k);
       }
       if (!pending.contains(AlarmIds.main(d.intId!))) {
-        await scheduler.schedule(planned);
-        scheduled++;
+        try {
+          await scheduler.schedule(planned);
+          scheduled++;
+        } on Exception catch (e) {
+          // Bir dozun alarmı kurulamasa bile diğerleri ve uygulama çalışmaya devam eder.
+          lastError = e;
+        }
       }
     }
 
@@ -92,7 +107,7 @@ class AlarmPlanner {
     for (final s in await db.activeSchedules()) {
       if (!s.rule.raisesAlarms) continue;
       for (final t in s.rule.occurrences(from, to)) {
-        await db.insertDoseIfAbsent(DoseLog.planned(s, t));
+        await db.insertDoseIfAbsent(DoseLog.planned(s, t, slot: slotFor(s, t)));
       }
     }
   }
@@ -105,6 +120,21 @@ class AlarmPlanner {
       if (d.intId != null) await scheduler.cancelDose(d.intId!);
       await db.enqueueOutbox('doseLog', d.logId, now);
     }
+  }
+
+  /// Plan dilimlerle kurulduysa doz zamanına karşılık gelen dilim.
+  static String? slotFor(Schedule s, DateTime t) {
+    final rule = s.rule;
+    final times = switch (rule) {
+      FixedTimesRule(:final times) => times,
+      CyclicRule(:final inner) => inner.times,
+      _ => const <TimeOfDayHM>[],
+    };
+    if (s.slots.length != times.length) return null;
+    for (var i = 0; i < times.length; i++) {
+      if (times[i].h == t.hour && times[i].m == t.minute) return s.slots[i];
+    }
+    return null;
   }
 
   Future<PlannedDose?> plannedFor(DoseLog d) async {

@@ -16,7 +16,7 @@ class AppDatabase {
   final Database _db;
   final _changes = StreamController<void>.broadcast();
 
-  static const _version = 1;
+  static const _version = 2;
 
   static Future<AppDatabase> open({DatabaseFactory? factory, String? path}) async {
     final f = factory ?? databaseFactory;
@@ -26,13 +26,19 @@ class AppDatabase {
       options: OpenDatabaseOptions(
         version: _version,
         onConfigure: (db) => db.execute('PRAGMA foreign_keys = ON'),
-        onCreate: (db, _) => _createSchema(db),
+        onCreate: (db, _) async {
+          await _createSchemaV1(db);
+          await _migrateV1toV2(db);
+        },
+        onUpgrade: (db, from, to) async {
+          if (from < 2) await _migrateV1toV2(db);
+        },
       ),
     );
     return AppDatabase._(db);
   }
 
-  static Future<void> _createSchema(Database db) async {
+  static Future<void> _createSchemaV1(Database db) async {
     final b = db.batch();
     b.execute('''
       CREATE TABLE medicines(
@@ -111,6 +117,23 @@ class AppDatabase {
     await b.commit(noResult: true);
   }
 
+  /// v2: takviye kategorisi/katalog/doz birimi, hatırlatma dilimleri, ek doz kaydı, ruh hâli.
+  static Future<void> _migrateV1toV2(Database db) async {
+    final b = db.batch();
+    b.execute("ALTER TABLE medicines ADD COLUMN category TEXT NOT NULL DEFAULT 'vitamin'");
+    b.execute('ALTER TABLE medicines ADD COLUMN catalog_id TEXT');
+    b.execute('ALTER TABLE medicines ADD COLUMN dose_amount REAL');
+    b.execute('ALTER TABLE medicines ADD COLUMN dose_unit TEXT');
+    b.execute("ALTER TABLE schedules ADD COLUMN slots TEXT NOT NULL DEFAULT ''");
+    b.execute('ALTER TABLE dose_logs ADD COLUMN slot TEXT');
+    b.execute('ALTER TABLE dose_logs ADD COLUMN is_extra INTEGER NOT NULL DEFAULT 0');
+    b.execute('CREATE TABLE mood_logs(day TEXT PRIMARY KEY, mood INTEGER NOT NULL)');
+    await b.commit(noResult: true);
+  }
+
+  /// Test için: v1 şemasıyla açılmış bir veritabanı oluşturur.
+  static Future<void> createV1SchemaForTest(Database db) => _createSchemaV1(db);
+
   Stream<void> get changes => _changes.stream;
   void notifyChanged() => _changes.add(null);
 
@@ -186,6 +209,26 @@ class AppDatabase {
   Future<bool> isPackScanned(String serial) async =>
       (await _db.query('scanned_packs', where: 'serial = ?', whereArgs: [serial])).isNotEmpty;
 
+  Future<void> updateMedicine(Medicine m) async {
+    await _db.update('medicines', m.toRow()..remove('id'), where: 'id = ?', whereArgs: [m.id]);
+    notifyChanged();
+  }
+
+  // ───────────── Ruh hâli (öz bildirim) ─────────────
+
+  Future<void> setMood(DateTime day, int mood) async {
+    await _db.insert('mood_logs', {'day': _day(day), 'mood': mood}, conflictAlgorithm: ConflictAlgorithm.replace);
+    notifyChanged();
+  }
+
+  Future<Map<String, int>> moods(DateTime from, DateTime to) async {
+    final r = await _db.query('mood_logs', where: 'day >= ? AND day < ?', whereArgs: [_day(from), _day(to)]);
+    return {for (final x in r) x['day'] as String: x['mood'] as int};
+  }
+
+  static String _day(DateTime d) =>
+      '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+
   // ───────────── Planlar ─────────────
 
   Future<void> upsertSchedule(Schedule s) async {
@@ -200,6 +243,9 @@ class AppDatabase {
 
   Future<List<Schedule>> activeSchedules() async =>
       (await _db.query('schedules', where: 'paused = 0')).map(Schedule.fromRow).toList();
+
+  Future<List<Schedule>> allSchedules() async =>
+      (await _db.query('schedules')).map(Schedule.fromRow).toList();
 
   Future<List<Schedule>> schedulesForMedicine(int medicineId) async =>
       (await _db.query('schedules', where: 'medicine_id = ?', whereArgs: [medicineId]))
@@ -219,6 +265,15 @@ class AppDatabase {
   Future<bool> insertDoseIfAbsent(DoseLog d) async {
     final id = await _db.insert('dose_logs', d.toRow(), conflictAlgorithm: ConflictAlgorithm.ignore);
     return id != 0;
+  }
+
+  Future<void> insertExtraDose(DoseLog d, {required DateTime now}) async {
+    await _db.transaction((txn) async {
+      await txn.insert('dose_logs', d.toRow());
+      await adjustStock(d.medicineId, -d.quantity, txn: txn);
+      await enqueueOutbox('doseLog', d.logId, now, txn: txn);
+    });
+    notifyChanged();
   }
 
   Future<DoseLog?> dose(String logId) async {

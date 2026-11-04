@@ -3,6 +3,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ilac_takip/domain/models.dart';
 import 'package:ilac_takip/l10n/app_localizations.dart';
+import 'package:ilac_takip/services/localized_texts.dart';
 import 'package:ilac_takip/ui/theme.dart';
 import 'package:ilac_takip/ui/widgets/common.dart';
 
@@ -40,6 +41,12 @@ void main() {
       senior: true,
     ));
     expect(tester.getSize(find.byType(FilledButton)).height, greaterThanOrEqualTo(72));
+  });
+
+  test('Türkçe büyük harf: i → İ', () {
+    expect(upper('Yemekle birlikte', 'tr'), 'YEMEKLE BİRLİKTE');
+    expect(upper('Ayrı alın', 'tr'), 'AYRI ALIN');
+    expect(upper('With meal', 'en'), 'WITH MEAL');
   });
 
   test('her iki dilde de tüm metinler mevcut ve çoğullar doğru', () {

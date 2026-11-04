@@ -4,8 +4,21 @@ import 'dart:math';
 import 'package:crypto/crypto.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+/// Hatırlatma dilimleri ve varsayılan saatleri.
+const defaultSlotTimes = <String, String>{
+  'earlyMorning': '07:00',
+  'lateMorning': '09:00',
+  'noon': '13:00',
+  'afternoon': '16:00',
+  'evening': '19:00',
+  'lateEvening': '22:00',
+};
+
 class AppSettings {
   const AppSettings({
+    this.remindersEnabled = true,
+    this.slotTimes = defaultSlotTimes,
+    this.mutedSlots = const {},
     this.languageCode,
     this.seniorMode = false,
     this.textScale = 1.3,
@@ -24,6 +37,15 @@ class AppSettings {
 
   bool get hasPin => pinHash != null;
 
+  final bool remindersEnabled;
+
+  /// dilim kimliği → "SS:dd"
+  final Map<String, String> slotTimes;
+  final Set<String> mutedSlots;
+
+  String slotTime(String slot) => slotTimes[slot] ?? defaultSlotTimes[slot] ?? '09:00';
+  bool isSlotMuted(String? slot) => !remindersEnabled || (slot != null && mutedSlots.contains(slot));
+
   AppSettings copyWith({
     String? Function()? languageCode,
     bool? seniorMode,
@@ -31,8 +53,14 @@ class AppSettings {
     bool? ttsOnAlarm,
     String? Function()? caregiverPhone,
     String? Function()? pinHash,
+    bool? remindersEnabled,
+    Map<String, String>? slotTimes,
+    Set<String>? mutedSlots,
   }) =>
       AppSettings(
+        remindersEnabled: remindersEnabled ?? this.remindersEnabled,
+        slotTimes: slotTimes ?? this.slotTimes,
+        mutedSlots: mutedSlots ?? this.mutedSlots,
         languageCode: languageCode != null ? languageCode() : this.languageCode,
         seniorMode: seniorMode ?? this.seniorMode,
         textScale: textScale ?? this.textScale,
@@ -56,6 +84,12 @@ class SettingsStore {
         ttsOnAlarm: _prefs.getBool('ttsOnAlarm') ?? true,
         caregiverPhone: _prefs.getString('caregiverPhone'),
         pinHash: _prefs.getString('pinHash'),
+        remindersEnabled: _prefs.getBool('remindersEnabled') ?? true,
+        slotTimes: {
+          ...defaultSlotTimes,
+          ...((jsonDecode(_prefs.getString('slotTimes') ?? '{}') as Map).cast<String, String>()),
+        },
+        mutedSlots: (_prefs.getStringList('mutedSlots') ?? const []).toSet(),
       );
 
   Future<void> write(AppSettings s) async {
@@ -65,6 +99,9 @@ class SettingsStore {
     await _prefs.setBool('ttsOnAlarm', s.ttsOnAlarm);
     await _setOrClear('caregiverPhone', s.caregiverPhone);
     await _setOrClear('pinHash', s.pinHash);
+    await _prefs.setBool('remindersEnabled', s.remindersEnabled);
+    await _prefs.setString('slotTimes', jsonEncode(s.slotTimes));
+    await _prefs.setStringList('mutedSlots', s.mutedSlots.toList());
   }
 
   Future<void> _setOrClear(String key, String? value) async {

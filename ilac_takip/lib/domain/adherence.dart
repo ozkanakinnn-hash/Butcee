@@ -30,6 +30,7 @@ AdherenceStats computeAdherence(
 }) {
   var planned = 0, onTime = 0, late = 0, skipped = 0, missed = 0;
   for (final l in logs) {
+    if (l.isExtra) continue;
     if (l.scheduledTime.isBefore(from) || !l.scheduledTime.isBefore(to)) continue;
     if (l.scheduledTime.isAfter(now)) continue;
     final waiting = l.status == DoseStatus.pending || l.status == DoseStatus.snoozed;
@@ -65,4 +66,56 @@ DateTime? estimateRunOut({
   final daily = actualDailyLast14 > 0 ? 0.6 * plannedDaily + 0.4 * actualDailyLast14 : plannedDaily;
   if (daily <= 0) return null;
   return now.add(Duration(minutes: (stock / daily * 24 * 60).floor()));
+}
+
+/// Bir günün özeti (istatistik ekranındaki noktalar ve seri hesabı için).
+class DayAdherence {
+  const DayAdherence(this.day, this.stats);
+  final DateTime day;
+  final AdherenceStats stats;
+
+  bool get hasPlan => stats.planned > 0;
+  bool get complete => hasPlan && stats.taken == stats.planned;
+}
+
+/// [from] gününden itibaren [days] günlük döküm.
+List<DayAdherence> dailyBreakdown(Iterable<DoseLog> logs, {required DateTime from, required int days, required DateTime now}) {
+  final list = logs.toList();
+  return List.generate(days, (i) {
+    final start = DateTime(from.year, from.month, from.day + i);
+    final end = DateTime(from.year, from.month, from.day + i + 1);
+    return DayAdherence(start, computeAdherence(list, from: start, to: end, now: now));
+  });
+}
+
+/// Art arda eksiksiz gün sayısı. Bugün henüz tamamlanmadıysa dünden geriye sayılır;
+/// planı olmayan günler seriyi bozmaz.
+int currentStreak(List<DayAdherence> days, DateTime now) {
+  final today = DateTime(now.year, now.month, now.day);
+  var streak = 0;
+  for (final d in days.reversed) {
+    if (d.day.isAfter(today)) continue;
+    final isToday = d.day == today;
+    if (!d.hasPlan) continue;
+    if (d.complete) {
+      streak++;
+    } else if (isToday) {
+      continue; // bugün hâlâ devam ediyor
+    } else {
+      break;
+    }
+  }
+  return streak;
+}
+
+/// Denge puanı (0–100): uyum en fazla 60, öz bildirim (ruh hâli 1–5) en fazla 40 puan.
+/// Ruh hâli kaydı yoksa yalnızca uyumdan hesaplanır.
+({int total, int adherencePart, int moodPart}) balanceScore(double adherence, double? averageMood) {
+  if (averageMood == null) {
+    final t = (adherence * 100).round();
+    return (total: t, adherencePart: t, moodPart: 0);
+  }
+  final a = (adherence * 60).round();
+  final m = ((averageMood.clamp(1, 5) - 1) / 4 * 40).round();
+  return (total: a + m, adherencePart: a, moodPart: m);
 }

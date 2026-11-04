@@ -2,13 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../data/drug_catalog.dart';
 import '../../domain/gs1_parser.dart';
 import '../../services/localized_texts.dart';
 import '../../state/providers.dart';
-import '../medicine/add_medicine_screen.dart';
+import '../supplements/add_supplement_screen.dart';
+import '../widgets/report_actions.dart';
 import '../widgets/common.dart';
 
 /// Karekod (GS1 DataMatrix) + EAN-13 + QR tarayıcı.
@@ -81,12 +84,71 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
           if (mounted) showSnack(context, added ? t.addStockDone : t.duplicatePack);
         }
       case NewFromCatalog(:final entry):
-        context.push('/medicines/add', extra: AddMedicineArgs(code: code, entry: entry));
+        await _productSheet(code, entry);
       case NotInCatalog():
-        showSnack(context, t.notFoundInCatalog);
-        context.push('/medicines/add', extra: AddMedicineArgs(code: code));
+        await _productSheet(code, null);
     }
   }
+
+  /// Ürün bilgisi: barkod, SKT, seri/parti no; ekle, eczane bul, kullanma talimatı.
+  Future<void> _productSheet(ScannedDrugCode code, DrugCatalogEntry? entry) {
+    final t = context.l10n;
+    final df = DateFormat.yMMMd(t.localeName);
+    return showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+          child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+            Text(upper(t.productInfo, t.localeName),
+                style: Theme.of(ctx).textTheme.labelLarge?.copyWith(letterSpacing: 1.1, color: Theme.of(ctx).colorScheme.primary)),
+            const SizedBox(height: 6),
+            Text(entry?.name ?? t.notFoundInCatalog, style: Theme.of(ctx).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800)),
+            const SizedBox(height: 12),
+            _row(ctx, Icons.qr_code_2, t.barcodeLabel, code.barcode13),
+            if (code.expiry != null) _row(ctx, Icons.event_available, t.expiryLabel('').replaceAll(':', '').trim(), df.format(code.expiry!)),
+            if (code.serial != null) _row(ctx, Icons.tag, t.serialLabel, code.serial!),
+            if (code.lot != null) _row(ctx, Icons.inventory_2_outlined, t.lotLabel, code.lot!),
+            const SizedBox(height: 16),
+            FilledButton.icon(
+              icon: const Icon(Icons.add),
+              label: Text(t.addToMySupplements),
+              onPressed: () {
+                Navigator.pop(ctx);
+                context.push('/supplements/add', extra: AddSupplementArgs(code: code, drugEntry: entry));
+              },
+            ),
+            const SizedBox(height: 8),
+            OutlinedButton.icon(
+              icon: const Icon(Icons.local_pharmacy_outlined),
+              label: Text(t.findPharmacy),
+              onPressed: () => ReportActions.nearbyPharmacies(context),
+            ),
+            if (entry?.leafletUrl != null) ...[
+              const SizedBox(height: 8),
+              OutlinedButton.icon(
+                icon: const Icon(Icons.description_outlined),
+                label: Text(t.readLeaflet),
+                onPressed: () => launchUrl(Uri.parse(entry!.leafletUrl!), mode: LaunchMode.externalApplication),
+              ),
+            ],
+          ]),
+        ),
+      ),
+    );
+  }
+
+  Widget _row(BuildContext ctx, IconData icon, String k, String v) => Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        child: Row(children: [
+          Icon(icon, size: 20, color: Theme.of(ctx).colorScheme.primary),
+          const SizedBox(width: 10),
+          SizedBox(width: 120, child: Text(k)),
+          Expanded(child: SelectableText(v, style: const TextStyle(fontWeight: FontWeight.w700))),
+        ]),
+      );
 
   Future<void> _manualEntry() async {
     final t = context.l10n;

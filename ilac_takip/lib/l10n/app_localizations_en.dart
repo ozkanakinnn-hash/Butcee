@@ -10,7 +10,7 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
-  String get appTitle => 'Medication Tracker';
+  String get appTitle => 'Vitamin Tracker';
 
   @override
   String get today => 'Today';
@@ -463,4 +463,552 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get alarmNotFound => 'Dose not found';
+
+  @override
+  String get navToday => 'Today';
+
+  @override
+  String get navSupplements => 'Supplements';
+
+  @override
+  String get navPanel => 'Panel';
+
+  @override
+  String get navStats => 'Stats';
+
+  @override
+  String get navLearn => 'Learn';
+
+  @override
+  String get slotEarlyMorning => 'Early morning';
+
+  @override
+  String get slotLateMorning => 'Late morning';
+
+  @override
+  String get slotNoon => 'Midday';
+
+  @override
+  String get slotAfternoon => 'Afternoon';
+
+  @override
+  String get slotEvening => 'Evening';
+
+  @override
+  String get slotLateEvening => 'Late evening';
+
+  @override
+  String get groupMorning => 'Morning';
+
+  @override
+  String get groupAfternoon => 'Afternoon';
+
+  @override
+  String get groupEvening => 'Evening';
+
+  @override
+  String get groupNight => 'Night';
+
+  @override
+  String get takenLabel => 'taken';
+
+  @override
+  String streakDays(int n) {
+    return '$n days';
+  }
+
+  @override
+  String interactionsFound(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count interaction warnings',
+      one: '1 interaction warning',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get addAnotherDose => 'Log another dose';
+
+  @override
+  String get extraDoseLogged => 'Extra dose logged';
+
+  @override
+  String get moodQuestion => 'How do you feel today?';
+
+  @override
+  String get emptyTodayTitle => 'You haven\'t added any supplements yet';
+
+  @override
+  String get emptyTodayBody =>
+      'Add a supplement or start with a ready-made set.';
+
+  @override
+  String get mySupplements => 'My supplements';
+
+  @override
+  String supplementsCount(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n supplements',
+      one: '1 supplement',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get browsePresets => 'Browse ready-made sets';
+
+  @override
+  String get shareProgram => 'Share program as PDF';
+
+  @override
+  String get paused => 'Paused';
+
+  @override
+  String get searchSupplements => 'Search supplements';
+
+  @override
+  String get notInList => 'Not listed? Add it manually';
+
+  @override
+  String get catAll => 'All';
+
+  @override
+  String get catVitamin => 'Vitamin';
+
+  @override
+  String get catMineral => 'Mineral';
+
+  @override
+  String get catFattyAcid => 'Fatty acid';
+
+  @override
+  String get catHerbal => 'Herbal';
+
+  @override
+  String get catProbiotic => 'Probiotic';
+
+  @override
+  String get catProtein => 'Protein';
+
+  @override
+  String get catMulti => 'Multivitamin';
+
+  @override
+  String get catMedicine => 'Medicine';
+
+  @override
+  String get catOther => 'Other';
+
+  @override
+  String get categoryLabel => 'Category';
+
+  @override
+  String get amountLabel => 'Dose (as on label)';
+
+  @override
+  String get unitLabel => 'Unit';
+
+  @override
+  String get labelDoseHint =>
+      'Enter the dose on the product label; the app does not recommend doses.';
+
+  @override
+  String get howOften => 'How often?';
+
+  @override
+  String get freqDaily => 'Every day';
+
+  @override
+  String get freqEveryOtherDay => 'Every other day';
+
+  @override
+  String get freqMwf => 'Mon · Wed · Fri';
+
+  @override
+  String get freqWeekends => 'Weekends only';
+
+  @override
+  String get freqEveryNDays => 'Every N days';
+
+  @override
+  String get freqSpecificDays => 'Specific days';
+
+  @override
+  String get freqCycle => 'On / off cycle';
+
+  @override
+  String get whenToTake => 'When?';
+
+  @override
+  String get nextDays14 => 'Next 14 days';
+
+  @override
+  String get cycleOnDays => 'On (days)';
+
+  @override
+  String get cycleOffDays => 'Off (days)';
+
+  @override
+  String get nDaysLabel => 'Every how many days?';
+
+  @override
+  String get advanced => 'Advanced';
+
+  @override
+  String get pickAtLeastOneSlot => 'Pick at least one time';
+
+  @override
+  String conflictWarning(String other, String reason) {
+    return 'Close in time to $other: $reason';
+  }
+
+  @override
+  String ulWarning(String total, String ul) {
+    return 'Daily total $total, upper limit (UL) $ul. Talk to your doctor.';
+  }
+
+  @override
+  String get dosePlan => 'Dose and plan';
+
+  @override
+  String get referenceValues => 'Reference values';
+
+  @override
+  String rdaLine(String kind, String male, String female) {
+    return '$kind: Men $male · Women $female';
+  }
+
+  @override
+  String ulLine(String ul) {
+    return 'Upper limit (UL): $ul';
+  }
+
+  @override
+  String get noUl => 'No established upper limit';
+
+  @override
+  String get noReference => 'No official reference value';
+
+  @override
+  String get sourceNih =>
+      'Source: NIH ODS, adults 19–50. Values differ in pregnancy, breastfeeding and illness. For information only.';
+
+  @override
+  String get compatibleWith => 'Works well with';
+
+  @override
+  String get takeSeparately => 'Take separately';
+
+  @override
+  String get cautionLabel => 'Caution';
+
+  @override
+  String get inYourList => 'in your list';
+
+  @override
+  String get pause => 'Pause';
+
+  @override
+  String get resume => 'Resume';
+
+  @override
+  String dosesPerDay(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n times a day',
+      one: 'once a day',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get panelSubtitle => 'All tools in one place';
+
+  @override
+  String get toolScan => 'Scan code / barcode';
+
+  @override
+  String get toolCatalog => 'Find a supplement';
+
+  @override
+  String get toolInteractions => 'Interaction check';
+
+  @override
+  String get toolPresets => 'Ready-made sets';
+
+  @override
+  String get toolProgramPdf => 'Program PDF';
+
+  @override
+  String get toolDoctorReport => 'Doctor report';
+
+  @override
+  String get toolNearbyPharmacy => 'Nearby pharmacies';
+
+  @override
+  String get toolDutyPharmacy => 'On-duty pharmacies';
+
+  @override
+  String get toolSideEffect => 'Report a side effect';
+
+  @override
+  String get toolReminders => 'Reminders';
+
+  @override
+  String get sideEffectBody =>
+      'If you notice an unexpected effect after a medicine or supplement, stop taking it and talk to your doctor or pharmacist. In Türkiye, medicine side effects can be reported to the national pharmacovigilance centre (TÜFAM) of TİTCK.';
+
+  @override
+  String get openTitck => 'Open TİTCK website';
+
+  @override
+  String get interactionsTitle => 'Interaction check';
+
+  @override
+  String get sameTimeConflict => 'Scheduled close together — separate them';
+
+  @override
+  String get separatedOk => 'At different times ✓';
+
+  @override
+  String get synergies => 'Good combinations';
+
+  @override
+  String get noInteractions => 'No known interactions in your list.';
+
+  @override
+  String get interactionsDisclaimer =>
+      'This list covers common supplement interactions. Ask your pharmacist about interactions with your medicines.';
+
+  @override
+  String get presetDisclaimer =>
+      'These are examples, not recommendations. Ask your doctor or pharmacist about doses and needs.';
+
+  @override
+  String get addPreset => 'Add set';
+
+  @override
+  String presetAdded(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n supplements added',
+      one: '1 supplement added',
+      zero: 'All supplements in this set are already in your list',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get tabBasics => 'Basics';
+
+  @override
+  String get tabSymptoms => 'Symptoms';
+
+  @override
+  String get tabAbsorption => 'Absorption';
+
+  @override
+  String get basicsSubtitle =>
+      'A short guide to daily targets and percentages.';
+
+  @override
+  String get symptomsSubtitle =>
+      'Select to see related nutrients. This is not a medical diagnosis.';
+
+  @override
+  String get relatedNutrients => 'Related nutrients';
+
+  @override
+  String get selectedSummary => 'Nutrients you could discuss with your doctor';
+
+  @override
+  String get seeDoctorBanner =>
+      'If symptoms persist, see your doctor. Don\'t start supplements without a blood test.';
+
+  @override
+  String get absorptionSubtitle =>
+      'Practical examples that may increase or decrease absorption.';
+
+  @override
+  String get increases => 'Increases';
+
+  @override
+  String get decreases => 'Decreases';
+
+  @override
+  String get tipLabel => 'Tip';
+
+  @override
+  String get statsTitle => 'Statistics';
+
+  @override
+  String get balanceScore => 'Balance score';
+
+  @override
+  String get outOf100 => 'out of 100';
+
+  @override
+  String get adherencePart => 'Adherence';
+
+  @override
+  String get selfReportPart => 'Self-report';
+
+  @override
+  String get streakTile => 'Day streak';
+
+  @override
+  String get streakSub => 'full days in a row';
+
+  @override
+  String get thisWeek => 'This week';
+
+  @override
+  String get thisMonth => 'This month';
+
+  @override
+  String get takenRate => 'doses taken';
+
+  @override
+  String get last14Days => 'Last 14 days';
+
+  @override
+  String get perSupplement => 'By supplement (30 days)';
+
+  @override
+  String get moodTitle => 'Mood';
+
+  @override
+  String get noDataYet => 'Not enough data yet';
+
+  @override
+  String get reportTitle => 'Supplement Report';
+
+  @override
+  String get programTitle => 'Supplement Program';
+
+  @override
+  String generatedAt(String date) {
+    return 'Generated on $date';
+  }
+
+  @override
+  String get adherence30 => '30-day adherence';
+
+  @override
+  String plannedTaken(int taken, int planned) {
+    return '$taken of $planned planned doses taken';
+  }
+
+  @override
+  String get currentProgram => 'Current program';
+
+  @override
+  String get colSupplement => 'Supplement';
+
+  @override
+  String get colPlan => 'Plan';
+
+  @override
+  String get colDose => 'Dose';
+
+  @override
+  String get colAdherence => 'Adherence';
+
+  @override
+  String get pdfDisclaimer =>
+      'This document is based on the user\'s own records and is not medical advice or a diagnosis.';
+
+  @override
+  String get remindersTitle => 'Reminders';
+
+  @override
+  String get enableReminders => 'Enable reminders';
+
+  @override
+  String get enableRemindersHint =>
+      'Get notified when it\'s time for a supplement.';
+
+  @override
+  String get reminderSlots => 'Time slots';
+
+  @override
+  String get productInfo => 'Product info';
+
+  @override
+  String get barcodeLabel => 'Barcode';
+
+  @override
+  String get serialLabel => 'Serial no';
+
+  @override
+  String get lotLabel => 'Batch no';
+
+  @override
+  String get addToMySupplements => 'Add to my supplements';
+
+  @override
+  String get findPharmacy => 'Find a pharmacy';
+
+  @override
+  String get readLeaflet => 'Patient leaflet';
+
+  @override
+  String get crashTitle => 'An error occurred in the previous session';
+
+  @override
+  String get crashBody =>
+      'You can copy the report and send it to the developer so we can fix it.';
+
+  @override
+  String get copyReport => 'Copy report';
+
+  @override
+  String get dismiss => 'Close';
+
+  @override
+  String get copied => 'Copied';
+
+  @override
+  String get startupError => 'The app could not start';
+
+  @override
+  String get exactAlarmOff =>
+      'Exact alarm permission is off — reminders may be a few minutes late.';
+
+  @override
+  String get unitTablet => 'tablet';
+
+  @override
+  String get unitCapsule => 'capsule';
+
+  @override
+  String get unitDrop => 'drop';
+
+  @override
+  String get unitScoop => 'scoop';
+
+  @override
+  String get asNeededShort => 'As needed';
+
+  @override
+  String cycleLabel(int on, int off) {
+    return '$on days on, $off days off';
+  }
+
+  @override
+  String everyNHoursShort(int n) {
+    return 'Every $n h';
+  }
+
+  @override
+  String get editSupplement => 'Edit';
+
+  @override
+  String get details => 'Details';
 }

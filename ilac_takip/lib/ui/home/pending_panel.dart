@@ -46,7 +46,7 @@ class PendingPanel extends ConsumerWidget {
                   if (large)
                     FilledButton(
                       onPressed: () => DoseUiActions.take(context, ref, v.dose.logId),
-                      child: Text('✓ ${t.takeNow.toUpperCase()}'),
+                      child: Text('✓ ${upper(t.takeNow, t.localeName)}'),
                     )
                   else
                     Align(

@@ -20,6 +20,9 @@ dependencies:
   intl: ^0.20.3
   mobile_scanner: ^7.5.0
   path: ^1.9.1
+  path_provider: ^2.1.6
+  pdf: ^3.13.1
+  printing: ^5.15.1
   shared_preferences: ^2.5.6
   sqflite: ^2.4.5
   timezone: ^0.11.2
@@ -31,9 +34,14 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^6.0.0
   sqflite_common_ffi: ^2.4.5
+  integration_test:
+    sdk: flutter
+  flutter_driver:
+    sdk: flutter
 
 flutter:
   generate: true
   assets:
     - assets/catalog/
+    - assets/fonts/
   uses-material-design: true

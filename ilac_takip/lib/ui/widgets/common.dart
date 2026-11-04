@@ -17,7 +17,7 @@ class MealBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (meal == MealRelation.none) return const SizedBox.shrink();
-    final label = mealLabel(context.l10n, meal).toUpperCase();
+    final label = upper(mealLabel(context.l10n, meal), context.l10n.localeName);
     return Semantics(
       label: label,
       excludeSemantics: true,

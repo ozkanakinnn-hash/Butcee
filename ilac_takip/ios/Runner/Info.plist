@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>İlaç Takip</string>
+	<string>Vitamin Takip</string>
 	<key>CFBundleLocalizations</key>
 	<array>
 		<string>tr</string>

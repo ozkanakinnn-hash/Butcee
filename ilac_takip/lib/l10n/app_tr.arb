@@ -1,6 +1,6 @@
 {
   "@@locale": "tr",
-  "appTitle": "İlaç Takip",
+  "appTitle": "Vitamin Takip",
   "today": "Bugün",
   "nothingToday": "Bugün planlanmış ilaç yok.",
   "pendingTitle": "{count, plural, =1{1 ilaç bekliyor} other{{count} ilaç bekliyor}}",
@@ -279,5 +279,275 @@
       }
     }
   },
-  "alarmNotFound": "Bu doz bulunamadı"
+  "alarmNotFound": "Bu doz bulunamadı",
+  "navToday": "Bugün",
+  "navSupplements": "Takviyeler",
+  "navPanel": "Panel",
+  "navStats": "İstatistik",
+  "navLearn": "Öğren",
+  "slotEarlyMorning": "Erken sabah",
+  "slotLateMorning": "Geç sabah",
+  "slotNoon": "Öğle",
+  "slotAfternoon": "İkindi",
+  "slotEvening": "Akşam",
+  "slotLateEvening": "Gece",
+  "groupMorning": "Sabah",
+  "groupAfternoon": "Öğleden sonra",
+  "groupEvening": "Akşam",
+  "groupNight": "Gece",
+  "takenLabel": "alındı",
+  "streakDays": "{n} gün",
+  "@streakDays": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "interactionsFound": "{count, plural, =1{1 etkileşim uyarısı} other{{count} etkileşim uyarısı}}",
+  "@interactionsFound": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "addAnotherDose": "Bir doz daha kaydet",
+  "extraDoseLogged": "Ek doz kaydedildi",
+  "moodQuestion": "Bugün nasıl hissediyorsun?",
+  "emptyTodayTitle": "Henüz takviye eklemediniz",
+  "emptyTodayBody": "Bir takviye ekleyin ya da hazır bir setle başlayın.",
+  "mySupplements": "Takviyelerim",
+  "supplementsCount": "{n, plural, =1{1 takviye} other{{n} takviye}}",
+  "@supplementsCount": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "browsePresets": "Hazır setlere göz at",
+  "shareProgram": "Programı PDF olarak paylaş",
+  "paused": "Duraklatıldı",
+  "searchSupplements": "Takviye ara",
+  "notInList": "Listede yok mu? Elle ekleyin",
+  "catAll": "Tümü",
+  "catVitamin": "Vitamin",
+  "catMineral": "Mineral",
+  "catFattyAcid": "Yağ asidi",
+  "catHerbal": "Bitkisel",
+  "catProbiotic": "Probiyotik",
+  "catProtein": "Protein",
+  "catMulti": "Multivitamin",
+  "catMedicine": "İlaç",
+  "catOther": "Diğer",
+  "categoryLabel": "Kategori",
+  "amountLabel": "Doz (etiketteki)",
+  "unitLabel": "Birim",
+  "labelDoseHint": "Ürün etiketindeki dozu girin; uygulama doz önermez.",
+  "howOften": "Ne sıklıkta?",
+  "freqDaily": "Her gün",
+  "freqEveryOtherDay": "Gün aşırı",
+  "freqMwf": "Pzt · Çar · Cum",
+  "freqWeekends": "Yalnızca hafta sonları",
+  "freqEveryNDays": "Her N günde bir",
+  "freqSpecificDays": "Belirli günler",
+  "freqCycle": "Kullanım / ara döngüsü",
+  "whenToTake": "Ne zaman?",
+  "nextDays14": "Sonraki 14 gün",
+  "cycleOnDays": "Kullanım (gün)",
+  "cycleOffDays": "Ara (gün)",
+  "nDaysLabel": "Kaç günde bir?",
+  "advanced": "Gelişmiş",
+  "pickAtLeastOneSlot": "En az bir zaman seçin",
+  "conflictWarning": "{other} ile yakın saatte: {reason}",
+  "@conflictWarning": {
+    "placeholders": {
+      "other": {
+        "type": "String"
+      },
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "ulWarning": "Günlük toplam {total}, üst sınır (UL) {ul}. Doktorunuza danışın.",
+  "@ulWarning": {
+    "placeholders": {
+      "total": {
+        "type": "String"
+      },
+      "ul": {
+        "type": "String"
+      }
+    }
+  },
+  "dosePlan": "Doz ve plan",
+  "referenceValues": "Referans değerler",
+  "rdaLine": "{kind}: Erkek {male} · Kadın {female}",
+  "@rdaLine": {
+    "placeholders": {
+      "kind": {
+        "type": "String"
+      },
+      "male": {
+        "type": "String"
+      },
+      "female": {
+        "type": "String"
+      }
+    }
+  },
+  "ulLine": "Üst sınır (UL): {ul}",
+  "@ulLine": {
+    "placeholders": {
+      "ul": {
+        "type": "String"
+      }
+    }
+  },
+  "noUl": "Belirlenmiş üst sınır yok",
+  "noReference": "Resmî referans değeri yok",
+  "sourceNih": "Kaynak: NIH ODS, 19–50 yaş yetişkin değerleri. Gebelik, emzirme ve hastalıklarda farklıdır. Bilgi amaçlıdır.",
+  "compatibleWith": "Birlikte iyi",
+  "takeSeparately": "Ayrı alın",
+  "cautionLabel": "Dikkat",
+  "inYourList": "listenizde",
+  "pause": "Duraklat",
+  "resume": "Devam ettir",
+  "dosesPerDay": "{n, plural, =1{günde 1 kez} other{günde {n} kez}}",
+  "@dosesPerDay": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "panelSubtitle": "Tüm araçlar tek yerde",
+  "toolScan": "Karekod / barkod tara",
+  "toolCatalog": "Takviye ara",
+  "toolInteractions": "Etkileşim kontrolü",
+  "toolPresets": "Hazır setler",
+  "toolProgramPdf": "Program PDF",
+  "toolDoctorReport": "Doktor raporu",
+  "toolNearbyPharmacy": "Yakındaki eczaneler",
+  "toolDutyPharmacy": "Nöbetçi eczaneler",
+  "toolSideEffect": "Yan etki bildir",
+  "toolReminders": "Hatırlatıcılar",
+  "sideEffectBody": "Bir ilaç veya takviyeden sonra beklenmeyen bir etki fark ederseniz kullanmayı bırakıp doktorunuza veya eczacınıza danışın. İlaç yan etkileri Türkiye'de TİTCK bünyesindeki Türkiye Farmakovijilans Merkezi'ne (TÜFAM) bildirilebilir.",
+  "openTitck": "TİTCK sitesini aç",
+  "interactionsTitle": "Etkileşim kontrolü",
+  "sameTimeConflict": "Yakın saatte planlı — ayırın",
+  "separatedOk": "Farklı saatlerde ✓",
+  "synergies": "Birlikte iyi çalışanlar",
+  "noInteractions": "Listenizde bilinen bir etkileşim yok.",
+  "interactionsDisclaimer": "Bu liste yaygın takviye etkileşimlerini kapsar. İlaçlarınızla etkileşim için eczacınıza danışın.",
+  "presetDisclaimer": "Örnek düzenlerdir, öneri değildir. Doz ve gereksinim için doktorunuza veya eczacınıza danışın.",
+  "addPreset": "Seti ekle",
+  "presetAdded": "{n, plural, =0{Bu setteki takviyelerin hepsi zaten listenizde} =1{1 takviye eklendi} other{{n} takviye eklendi}}",
+  "@presetAdded": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "tabBasics": "Temel bilgiler",
+  "tabSymptoms": "Semptomlar",
+  "tabAbsorption": "Emilim",
+  "basicsSubtitle": "Günlük hedefler ve yüzdeler için kısa rehber.",
+  "symptomsSubtitle": "İlişkili besinleri görmek için seçin. Bu tıbbi bir teşhis değildir.",
+  "relatedNutrients": "İlişkili besinler",
+  "selectedSummary": "Doktorunuzla konuşabileceğiniz besinler",
+  "seeDoctorBanner": "Belirtileriniz sürüyorsa doktorunuza danışın. Kan testi yapılmadan takviyeye başlamayın.",
+  "absorptionSubtitle": "Emilimi artırabilecek veya azaltabilecek pratik örnekler.",
+  "increases": "Artırır",
+  "decreases": "Azaltır",
+  "tipLabel": "İpucu",
+  "statsTitle": "İstatistikler",
+  "balanceScore": "Denge puanı",
+  "outOf100": "100 üzerinden",
+  "adherencePart": "Uyum",
+  "selfReportPart": "Öz bildirim",
+  "streakTile": "Günlük seri",
+  "streakSub": "art arda eksiksiz gün",
+  "thisWeek": "Bu hafta",
+  "thisMonth": "Bu ay",
+  "takenRate": "alınan doz oranı",
+  "last14Days": "Son 14 gün",
+  "perSupplement": "Takviye bazında (30 gün)",
+  "moodTitle": "Ruh hâli",
+  "noDataYet": "Henüz yeterli veri yok",
+  "reportTitle": "Takviye Raporu",
+  "programTitle": "Takviye Programı",
+  "generatedAt": "{date} tarihinde oluşturuldu",
+  "@generatedAt": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "adherence30": "30 günlük uyum",
+  "plannedTaken": "Planlanan {planned} dozdan {taken} tanesi alındı",
+  "@plannedTaken": {
+    "placeholders": {
+      "taken": {
+        "type": "int"
+      },
+      "planned": {
+        "type": "int"
+      }
+    }
+  },
+  "currentProgram": "Mevcut program",
+  "colSupplement": "Takviye",
+  "colPlan": "Plan",
+  "colDose": "Doz",
+  "colAdherence": "Uyum",
+  "pdfDisclaimer": "Bu belge kullanıcının kendi kayıtlarına dayanır; tıbbi tavsiye veya teşhis yerine geçmez.",
+  "remindersTitle": "Hatırlatıcılar",
+  "enableReminders": "Hatırlatıcıları etkinleştir",
+  "enableRemindersHint": "Takviye alma zamanı geldiğinde bildirim al.",
+  "reminderSlots": "Zaman dilimleri",
+  "productInfo": "Ürün bilgisi",
+  "barcodeLabel": "Barkod",
+  "serialLabel": "Seri no",
+  "lotLabel": "Parti no",
+  "addToMySupplements": "Takviyelerime ekle",
+  "findPharmacy": "Eczane bul",
+  "readLeaflet": "Kullanma talimatı",
+  "crashTitle": "Önceki oturumda bir hata oluştu",
+  "crashBody": "Sorunu düzeltebilmemiz için raporu kopyalayıp geliştiriciye gönderebilirsiniz.",
+  "copyReport": "Raporu kopyala",
+  "dismiss": "Kapat",
+  "copied": "Kopyalandı",
+  "startupError": "Uygulama başlatılamadı",
+  "exactAlarmOff": "Tam zamanlı alarm izni kapalı — hatırlatmalar birkaç dakika gecikebilir.",
+  "unitTablet": "tablet",
+  "unitCapsule": "kapsül",
+  "unitDrop": "damla",
+  "unitScoop": "ölçek",
+  "asNeededShort": "Gerektikçe",
+  "cycleLabel": "{on} gün kullan, {off} gün ara",
+  "@cycleLabel": {
+    "placeholders": {
+      "on": {
+        "type": "int"
+      },
+      "off": {
+        "type": "int"
+      }
+    }
+  },
+  "everyNHoursShort": "{n} saatte bir",
+  "@everyNHoursShort": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "editSupplement": "Düzenle",
+  "details": "Ayrıntılar"
 }
