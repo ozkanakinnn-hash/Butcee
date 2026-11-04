@@ -4,7 +4,7 @@
 |---|---|
 | **Working title** | Nöbet (recommended — see §1) |
 | **Document type** | Product Requirements Document (PRD) — MVP |
-| **Version** | 1.2 · 2026-11-04 |
+| **Version** | 1.3 · 2026-11-04 |
 | **Platforms** | iOS 15+ / Android 8.0+ (API 26) via Flutter |
 | **Languages** | Turkish (tr) and English (en), full parity |
 | **Status** | Draft for review |
@@ -101,7 +101,7 @@ Legend: **M** = Must-have (MVP), **N** = Nice-to-have (post-MVP / v1.x), **F** =
 
 Sections 2.1–2.6 cover the core MVP — with the **Post-Shift Recovery System (§2.2)** at its centre, replacing
 traditional sleep tracking and sleep-debt calculation; 2.7–2.11 add nutrition timing, journaling, holidays & leave,
-goals and widgets; 2.12 lists further nice-to-have ideas.
+goals and widgets; 2.12 lists further nice-to-have ideas; 2.13 adds optional Tools (Hourly Rate Calculator).
 
 ### 2.1 Shift Calendar
 | ID | Feature | Priority | Tier |
@@ -259,6 +259,38 @@ Replaces traditional sleep tracking and sleep-debt calculation. Instead of loggi
 | EXT-03 | Anonymous comparison: "People with similar shifts sleep an average of 6.4 h after night shifts." Strictly opt-in, aggregated only, minimum cohort size, no raw data leaves the device (needs a backend, see Appendix D) | N | P |
 
 ---
+### 2.13 Tools — Hourly Rate Calculator (optional)
+A small, **optional** utility that lives in a separate **Tools** section (Settings → Tools). It is not part of the
+core experience, never appears on the Today screen and is never required during onboarding or anywhere else.
+
+**How it works:** the user enters their **net monthly salary** and the **total hours worked that month**; the app
+immediately shows the **hourly wage** (net salary ÷ total hours). The hours field can be pre-filled from the
+calendar's working hours for the selected month, and the user can always overwrite it.
+
+| ID | Feature | Priority | Tier |
+|---|---|---|---|
+| TOOL-01 | **Tools** section in Settings that hosts optional utilities, starting with the Hourly Rate Calculator | N | F |
+| TOOL-02 | Two inputs only: net monthly salary (currency from device locale, e.g. ₺) and total hours worked that month | N | F |
+| TOOL-03 | Instant result: hourly wage = net monthly salary ÷ total hours, rounded to 2 decimals and formatted in the user's locale (e.g. "₺187,50 / saat") | N | F |
+| TOOL-04 | Optional pre-fill of total hours from the calendar (sum of worked shift durations for the chosen month); always editable | N | F |
+| TOOL-05 | Clear disclaimer under the result: "This is a simple calculator for your own reference. It is not official payroll information and does not include overtime, night-shift premiums, deductions or taxes." | N | F |
+| TOOL-06 | Privacy: entering a salary is never required or prompted; values stay on the device, are excluded from partner sharing, analytics and (by default) data export, and can be cleared with one tap ("Clear") | N | F |
+| TOOL-07 | Explicitly out of scope for the first version: overtime rates, night-shift or holiday premiums, gross-to-net or tax calculations, multiple jobs | — | — |
+
+**Validation:** salary > 0 and hours between 1 and 744 (the maximum hours in a month); otherwise the result shows
+"–" with a short hint instead of an error.
+
+**Copy (TR / EN):**
+| Element | EN | TR |
+|---|---|---|
+| Title | Hourly Rate Calculator | Saatlik Ücret Hesaplayıcı |
+| Input 1 | Net monthly salary | Aylık net maaş |
+| Input 2 | Total hours worked this month | Bu ay çalışılan toplam saat |
+| Pre-fill action | Use hours from my calendar | Saatleri takvimimden al |
+| Result | Your hourly wage: {amount} / hour | Saatlik ücretiniz: {amount} / saat |
+| Disclaimer | This is a simple calculator for your own reference, not official payroll information. | Bu yalnızca kişisel bilginiz için basit bir hesaplayıcıdır; resmî bordro bilgisi değildir. |
+
+---
 
 ## 3. User flows for the main screens
 
@@ -395,6 +427,7 @@ Any lock icon / premium card → Paywall (contextual headline for the feature ta
 | S-33 | Shift journal | Notes per shift | Note field + quick tags in the day sheet; journal list with search/filter | ✔ |
 | S-34 | Leave & holidays | Time off | Leave balance card, mark leave in calendar, allowance settings, holiday list | ✔ |
 | S-35 | Goals & streaks | Motivation | Goal templates, progress cards, streak counter | — (v1.1) |
+| S-36 | Tools → Hourly Rate Calculator | Optional utility | Salary field, hours field (+ "Use hours from my calendar"), result, disclaimer, Clear | — (v1.1) |
 
 ### Key screen wireframe — Today (S-09)
 ```
@@ -478,6 +511,7 @@ Nöbet
     ├── Language: System / Türkçe / English
     ├── Privacy & security: app lock, analytics opt-in
     ├── Data: backup, restore, export🔒, delete all
+    ├── Tools (optional): Hourly Rate Calculator
     └── About & help: FAQ, sources, disclaimer, contact, licenses
 ```
 🔒 = Premium
@@ -503,6 +537,7 @@ Nöbet
 | `LeaveYear` | startDate, allowanceDays, carriedOverDays |
 | `Goal` | id, templateKey / customText, metric, target, period (week/month), startDate, active |
 | `StreakState` | goalId, current, best, lastQualifiedDate, restPassesLeft |
+| `HourlyRateCalc` | netMonthlySalary? (decimal), totalHours? (decimal), month?, updatedAt — optional, local only, excluded from sharing/analytics/export by default |
 
 All timestamps stored in UTC + the device time-zone ID at creation, so travel/DST changes don't corrupt
 shift times.
@@ -639,6 +674,7 @@ ready").
 | Shift journal | Notes + quick tags | + journal-based insights |
 | Holidays & leave | TR holidays, leave days & balance | + leave planner, holiday-work stats |
 | Goals & streaks | 1 active goal | Unlimited goals |
+| Tools: Hourly Rate Calculator | ✔ | ✔ |
 | Export (CSV / PDF / .ics) | — | ✔ |
 | Night (red/amber) theme | — | ✔ |
 | Widgets | Small home widget | Medium + lock-screen widgets |
@@ -804,6 +840,13 @@ prescribes.
 
 Missed check-ins are never mentioned negatively; there are no "you forgot" messages.
 
+### B.10 Hourly Rate Calculator
+- `hourlyRate = netMonthlySalary / totalHours`, rounded half-up to 2 decimals; shown only when salary > 0 and
+  1 ≤ totalHours ≤ 744.
+- Calendar pre-fill: sum of `durationMin` of worked shifts (excluding off-days and full-day leave) in the selected
+  month, ÷ 60, rounded to 0.5 h.
+- No overtime, premiums, deductions or taxes are applied in this version; the disclaimer is always visible.
+
 ---
 
 ## Appendix C — Localization requirements
@@ -836,6 +879,8 @@ Missed check-ins are never mentioned negatively; there are no "you forgot" messa
 | Energy level | Enerji seviyesi |
 | Reminder | Hatırlatıcı |
 | Insights | İçgörüler |
+| Tools | Araçlar |
+| Hourly rate | Saatlik ücret |
 | Premium | Premium |
 
 Sample notification pairs:
@@ -881,7 +926,7 @@ Sample notification pairs:
 | Release | Scope |
 |---|---|
 | **MVP 1.0** (≈ 12–14 weeks) | All "M" items in §2: calendar + patterns, post-shift recovery system (check-in, score, insights), energy, basic + smart reminders, stats, onboarding, TR/EN, dark mode, paywall, caffeine & meal timing, shift journal, TR holidays & leave, partner sharing |
-| 1.1 | Home & lock-screen widgets, goals & streaks, profession-based tips, amber Night Mode, Apple Health / Health Connect pre-fill for recovery sleep duration, multi-shift days |
+| 1.1 | Home & lock-screen widgets, goals & streaks, Tools: Hourly Rate Calculator, profession-based tips, amber Night Mode, Apple Health / Health Connect pre-fill for recovery sleep duration, multi-shift days |
 | 1.2 | Encrypted cloud backup & sync, calendar .ics export/import, monthly shareable recap |
 | 2.0 | Anonymous comparison (opt-in, aggregated backend), team/workplace licenses, shift swap sharing with coworkers, wearable integrations, Apple Watch / Wear OS companion |
 
