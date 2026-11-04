@@ -78,10 +78,29 @@ object ReminderScheduler {
     }
 
     val pi = pendingIntent(context, type, target.timeInMillis)
+    if (type == Type.FASTING_TIP) {
+      // Günlük bilgi kritik değil: esnek pencere (pil dostu, ezan alarmlarının kotasını kullanmaz)
+      alarmManager.setWindow(AlarmManager.RTC_WAKEUP, triggerAt, 15 * 60_000L, pi)
+    } else {
+      setPrecise(context, alarmManager, triggerAt, pi)
+    }
+  }
+
+  /**
+   * Dakikası dakikasına alarm: setAlarmClock() Doze (uyku) modundan ve "9 dakikada bir" kotasından
+   * muaftır, cihazı uyandırır. Ezan ve sahur/iftar hatırlatıcıları bununla kurulur.
+   * Tam zamanlı alarm izni yoksa en iyi ihtimalle setAndAllowWhileIdle'a düşer.
+   */
+  private fun setPrecise(context: Context, alarmManager: AlarmManager, triggerAt: Long, pi: PendingIntent) {
     val canExact = Build.VERSION.SDK_INT < Build.VERSION_CODES.S || alarmManager.canScheduleExactAlarms()
     try {
       if (canExact) {
-        alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAt, pi)
+        val show = PendingIntent.getActivity(
+          context, 7999,
+          Intent(context, com.example.MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP),
+          PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        alarmManager.setAlarmClock(AlarmManager.AlarmClockInfo(triggerAt, show), pi)
       } else {
         alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAt, pi)
       }
@@ -94,14 +113,7 @@ object ReminderScheduler {
   fun scheduleTest(context: Context) {
     val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
     val at = System.currentTimeMillis() + 60_000L
-    val pi = pendingIntent(context, Type.TEST, at)
-    val canExact = Build.VERSION.SDK_INT < Build.VERSION_CODES.S || alarmManager.canScheduleExactAlarms()
-    try {
-      if (canExact) alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi)
-      else alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi)
-    } catch (e: SecurityException) {
-      alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi)
-    }
+    setPrecise(context, alarmManager, at, pendingIntent(context, Type.TEST, at))
   }
 
   private fun pendingIntent(context: Context, type: Type, targetMillis: Long): PendingIntent {

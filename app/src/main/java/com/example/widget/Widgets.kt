@@ -159,13 +159,8 @@ object WidgetUpdater {
       set(Calendar.HOUR_OF_DAY, 0); set(Calendar.MINUTE, 0); set(Calendar.SECOND, 5); set(Calendar.MILLISECOND, 0)
     }.timeInMillis
     val at = minOf(nextMillis + 2_000L, midnight)
-    val canExact = Build.VERSION.SDK_INT < Build.VERSION_CODES.S || alarm.canScheduleExactAlarms()
-    try {
-      if (canExact) alarm.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi)
-      else alarm.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi)
-    } catch (_: SecurityException) {
-      alarm.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi)
-    }
+    // Uyandırmayan, esnek alarm: ezan alarmlarının Doze kotasını tüketmesin (ekran açılınca güncellenir)
+    alarm.set(AlarmManager.RTC, at, pi)
   }
 
   enum class Kind { NEXT_PRAYER, PRAYER_TIMES, SPIRITUAL }

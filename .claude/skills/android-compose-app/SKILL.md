@@ -94,3 +94,11 @@ gradle/actions/setup-gradle@v5 → `./gradlew assembleDebug` → upload-artifact
 - `AndroidView` reklamında `onRelease = { it.destroy() }`.
 - Kullanılmayan SDK'ları (ör. firebase-ai, App Check debug sağlayıcısı) kaldır; debug sağlayıcısı asla release'e girmesin.
 - Logo görselinden simge: kare içini kırp → kenarları yumuşat → 1024 ön plan PNG (sanat ~%60) + gradyan arka plan XML; `drawable-*dpi/ic_launcher_foreground.png`, `mipmap-*dpi/ic_launcher(_round).png`, Play Store 512px.
+
+## Dakikası dakikasına bildirim (ezan, alarm, hatırlatıcı)
+- `setExactAndAllowWhileIdle` Doze'da **uygulama başına ~9 dakikada bir** çalışır; aynı anlarda başka "allow while idle" alarm (widget yenileme vb.) varsa bildirim 9–15 dk gecikir.
+- Kritik alarmlar için `AlarmManager.setAlarmClock(AlarmClockInfo(time, showPi), pi)` kullan: Doze ve kotadan muaf, cihazı uyandırır (durum çubuğunda alarm simgesi görünür).
+- İzin: `USE_EXACT_ALARM` (API 33+, otomatik verilir; Play Console'da "alarm" beyanı gerekir) + `SCHEDULE_EXACT_ALARM` `maxSdkVersion="32"`.
+- Kritik olmayanlar (günlük bilgi, widget yenileme): `setWindow` veya uyandırmayan `set(RTC, …)` — kritik alarmların kotasını yemesin.
+- Boot, paket güncellemesi, `TIME_SET`, `TIMEZONE_CHANGED`, `SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED` olaylarında alarmları yeniden kur.
+- FCM push gecikiyorsa sunucudan `priority: high` gönder (normal öncelik Doze'da bekletilir).
