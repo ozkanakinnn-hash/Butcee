@@ -41,6 +41,7 @@
 
         <TextView
             android:id="@+id/prayer_name"
+            android:text="İkindi"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="#FFF3EEE2"
@@ -49,6 +50,7 @@
 
         <TextView
             android:id="@+id/prayer_time"
+            android:text="15:10"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="2dp"
@@ -63,6 +65,7 @@
 
         <Chronometer
             android:id="@+id/countdown"
+            android:text="01:24:30"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="2dp"

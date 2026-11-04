@@ -79,6 +79,8 @@ for y in 1074 1201 1327; do
   sleep 3; adb shell am start -n $PKG/com.example.MainActivity; sleep 3
 done
 adb shell input keyevent KEYCODE_HOME; shot 06i_widgetlar 5
+adb shell input swipe 900 1200 150 1200 300; shot 06j_widgetlar_2 3
+adb shell input swipe 900 1200 150 1200 300; shot 06k_widgetlar_3 3
 adb shell am start -n $PKG/com.example.MainActivity; sleep 3
 tap_text "Ana Sayfa"; sleep 2
 tap_text "Kıble Bulucu"; shot 07_kible 4
