@@ -323,5 +323,6 @@ class BootReceiver : BroadcastReceiver() {
   override fun onReceive(context: Context, intent: Intent) {
     Store.init(context)
     Reminders.reschedule(context)
+    MedAlarms.reschedule(context)
   }
 }

@@ -100,6 +100,7 @@ object Store {
     val p = app.getSharedPreferences("nobet", Context.MODE_PRIVATE)
     prefs = p
     load(p)
+    Meds.init(app)
   }
 
   private fun load(p: SharedPreferences) {
@@ -256,6 +257,7 @@ object Store {
   fun changed() {
     save()
     runCatching { Reminders.reschedule(app) }
+    runCatching { com.nobet.notify.MedAlarms.reschedule(app) }
   }
 
   // ---------- Yardımcılar ----------
@@ -493,6 +495,8 @@ object Store {
   fun clearAll() {
     prefs?.edit()?.clear()?.apply()
     prefs?.let { load(it) }
+    Meds.clearAll()
     runCatching { Reminders.reschedule(app) }
+    runCatching { com.nobet.notify.MedAlarms.reschedule(app) }
   }
 }

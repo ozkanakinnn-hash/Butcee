@@ -147,6 +147,8 @@ fun SettingsScreen() {
         Gap(8.dp)
         ProfileFields()
         Gap(8.dp)
+        HealthFields()
+        Gap(8.dp)
         Text(t("Genellikle ihtiyaç duyduğunuz uyku: ", "Usual sleep need: ") + fmtDur(Store.sleepGoalMin), fontWeight = FontWeight.SemiBold)
         Text(
           t("İsteğe bağlı. Yalnızca toparlanma puanında kullanılır; hedef olarak gösterilmez.", "Optional. Only used for your recovery score; never shown as a target."),
@@ -322,7 +324,7 @@ fun SettingsScreen() {
       // Hakkında
       NCard(Modifier.fillMaxWidth()) {
         SectionTitle(t("Hakkında", "About"))
-        Text("Nöbet 0.10.0 (test)", fontWeight = FontWeight.SemiBold)
+        Text("Nöbet 0.11.0 (test)", fontWeight = FontWeight.SemiBold)
         Text(
           t("Nöbet genel sağlıklı yaşam bilgisi sunar, tıbbi tavsiye değildir. Sağlık sorunlarınız için bir hekime danışın.",
             "Nöbet provides general wellness information, not medical advice. Consult a doctor about health concerns."),

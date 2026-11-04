@@ -156,6 +156,7 @@ fun AppRoot() {
           "patterns" -> PatternScreen()
           "checkin" -> CheckInScreen()
           "tools" -> HourlyRateScreen()
+          "meds" -> MedsScreen()
           "share" -> ShareScreen()
           else -> Unit
         }
@@ -168,6 +169,8 @@ fun AppRoot() {
     else -> Unit
   }
   Nav.daySheet?.let { DaySheet(listOf(it)) { Nav.daySheet = null } }
+  // Zorunlu ilaç 3 ertelemeden sonra alınmadıysa: kapatılabilir kritik uyarı
+  CriticalMedAlert()
 }
 
 @Composable

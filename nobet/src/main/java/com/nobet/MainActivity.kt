@@ -20,6 +20,8 @@ class MainActivity : ComponentActivity() {
     Store.init(applicationContext)
     Reminders.ensureChannel(this)
     Reminders.reschedule(this)
+    com.nobet.notify.MedAlarms.ensureChannels(this)
+    com.nobet.notify.MedAlarms.reschedule(this)
     enableEdgeToEdge()
     if (savedInstanceState == null) handleShare(intent)
     setContent {

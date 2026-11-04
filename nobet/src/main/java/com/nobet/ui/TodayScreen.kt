@@ -163,6 +163,9 @@ fun TodayScreen() {
 
     // Aylık takvim: çalışma günleri ve izin günleri farklı renkte
     HomeCalendar(today)
+
+    // Pazartesi–Pazar günlük ilaç paneli
+    MedWeekPanel()
     Spacer(Modifier.height(72.dp))
   }
 }

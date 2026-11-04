@@ -132,6 +132,8 @@ fun Onboarding() {
             // Çalışma şekli tek bir düzene karşılık geliyorsa bir sonraki adımda onu önceden seç
             patternId = Builtins.suggestedFor("", w).firstOrNull() ?: patternId
           })
+          Gap()
+          HealthFields()
         }
         5 -> {
           Title(t("Vardiya düzeniniz nasıl?", "How does your rotation work?"))
