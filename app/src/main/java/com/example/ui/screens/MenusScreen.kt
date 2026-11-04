@@ -72,6 +72,9 @@ fun MenusScreen(
 ) {
   // Yalnızca günün menüsü: Ramazan'da Ramazan'ın günü, diğer aylarda yılın günü
   val ramadanDay = remember { com.example.data.RamadanCalendar.dayOfRamadan() }
+  val showIftarMenu = remember {
+    ramadanDay != null || prefs.getFastingDates().contains(com.example.data.RamadanCalendar.dateKey(Calendar.getInstance()))
+  }
   val selectedDay = remember { ramadanDay ?: Calendar.getInstance().get(Calendar.DAY_OF_YEAR) }
   val currentMenu: RamadanMenu = remember(selectedDay) {
     RamadanMenus.getMenuForDay(selectedDay)
@@ -313,15 +316,16 @@ fun MenusScreen(
       )
     }
 
+    // 4-5. GÜNÜN İFTAR MENÜ ÖNERİSİ: yalnızca Ramazan'da veya bugün oruç planlandıysa
     // 4. GÜNÜN MENÜSÜ BAŞLIĞI (yalnızca bugünün menüsü)
-    item {
+    if (showIftarMenu) item {
       Column(
         modifier = Modifier
           .fillMaxWidth()
           .padding(start = 20.dp, end = 20.dp, top = 14.dp, bottom = 2.dp)
       ) {
         Text(
-          text = t("Günün Menüsü"),
+          text = t("Günün İftar Menü Önerisi"),
           style = MaterialTheme.typography.titleMedium,
           fontWeight = FontWeight.Bold,
           color = MaterialTheme.colorScheme.onBackground
@@ -329,7 +333,7 @@ fun MenusScreen(
         Text(
           text = if (ramadanDay != null) {
             if (com.example.i18n.AppLanguage.isEnglish) "Iftar menu • Day $ramadanDay of Ramadan" else "İftar menüsü • Ramazan'ın $ramadanDay. günü"
-          } else t("Bugün için dengeli bir sofra önerisi"),
+          } else t("Bugün için planladığınız oruca iftar önerisi"),
           fontSize = 11.sp,
           color = MaterialTheme.colorScheme.primary,
           fontWeight = FontWeight.SemiBold
@@ -338,7 +342,7 @@ fun MenusScreen(
     }
 
     // 5. TODAY'S EXCLUSIVE MENU ITEMS (Clean, elegant 4 courses)
-    item {
+    if (showIftarMenu) item {
       Card(
         modifier = Modifier
           .fillMaxWidth()

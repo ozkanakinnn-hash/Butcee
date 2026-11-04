@@ -75,6 +75,9 @@ fun FastingCalendarScreen(
   var calendarYear by remember { mutableIntStateOf(Calendar.getInstance().get(Calendar.YEAR)) }
   var calendarMonth by remember { mutableIntStateOf(Calendar.getInstance().get(Calendar.MONTH)) } // 0-based
   var fastingDates by remember { mutableStateOf(prefs.getFastingDates()) }
+  val todayKey = remember { com.example.data.RamadanCalendar.dateKey(Calendar.getInstance()) }
+  // Dokunulan gün: (tarih anahtarı, gün, ay) → oruç planla / tuttum / kaldır seçenekleri
+  var dayDialog by remember { mutableStateOf<Triple<String, Int, Int>?>(null) }
   var selectedDaySpecialInfo by remember { mutableStateOf<SpecialCalendarDay?>(null) }
 
   val monthNames = if (com.example.i18n.AppLanguage.isEnglish) listOf(
@@ -128,6 +131,53 @@ fun FastingCalendarScreen(
   // Kaza borcu: Oruç Takibi'ndeki sayaç (tutamadım / bozuldu işaretleri)
   val kazaDebt = prefs.kazaDebtCount
 
+  dayDialog?.let { (dateKey, day, month) ->
+    val en = com.example.i18n.AppLanguage.isEnglish
+    val marked = fastingDates.contains(dateKey)
+    val future = dateKey > todayKey
+    val dateLabel = "$day ${monthNames[month]}"
+    val actionLabel = when {
+      future && !marked -> t("🌙 Oruç Planla")
+      future -> t("Planı Kaldır")
+      !marked -> t("✓ Oruç Tuttum")
+      else -> t("İşareti Kaldır")
+    }
+    androidx.compose.material3.AlertDialog(
+      onDismissRequest = { dayDialog = null },
+      title = { Text(dateLabel, fontWeight = FontWeight.Bold) },
+      text = {
+        Text(
+          when {
+            future && marked -> if (en) "A fast is planned for this day. Suhoor and iftar reminders and the iftar menu suggestion will be shown." else "Bu gün için oruç planlandı. Sahur ve iftar hatırlatmaları ile iftar menü önerisi gösterilir."
+            future -> if (en) "Plan a fast for this day? Suhoor/iftar countdown, reminders and the iftar menu suggestion will be enabled." else "Bu gün için oruç planlansın mı? Sahur/iftar sayacı, hatırlatıcılar ve iftar menü önerisi açılır."
+            marked -> if (en) "This day is marked as fasted." else "Bu gün oruç tutuldu olarak işaretli."
+            else -> if (en) "Mark this day as fasted?" else "Bu günü oruç tutuldu olarak işaretlemek ister misiniz?"
+          }
+        )
+      },
+      confirmButton = {
+        androidx.compose.material3.TextButton(onClick = {
+          val now = prefs.toggleFastingDate(dateKey)
+          fastingDates = prefs.getFastingDates()
+          com.example.reminder.ReminderScheduler.rescheduleAll(context)
+          Toast.makeText(
+            context,
+            when {
+              future && now -> if (en) "Fast planned for $dateLabel 🌙" else "$dateLabel için oruç planlandı 🌙"
+              now -> if (en) "$dateLabel marked as fasted ✓" else "$dateLabel oruç tutuldu olarak işaretlendi ✓"
+              else -> if (en) "Removed" else "$dateLabel işareti kaldırıldı"
+            },
+            Toast.LENGTH_SHORT
+          ).show()
+          dayDialog = null
+        }) { Text(actionLabel, fontWeight = FontWeight.Bold) }
+      },
+      dismissButton = {
+        androidx.compose.material3.TextButton(onClick = { dayDialog = null }) { Text(t("Vazgeç")) }
+      }
+    )
+  }
+
   LazyColumn(
     modifier = modifier
       .fillMaxSize()
@@ -149,7 +199,7 @@ fun FastingCalendarScreen(
           )
           Spacer(modifier = Modifier.width(8.dp))
           Text(
-            text = t("Oruç Takvimi & Dini Günler"),
+            text = t("Takvim"),
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onBackground
@@ -157,7 +207,7 @@ fun FastingCalendarScreen(
         }
         Spacer(modifier = Modifier.height(4.dp))
         Text(
-          text = t("Günlere dokunarak oruç işaretleyin; kandil, bayram ve dini günleri takip edin."),
+          text = t("Bir güne dokunarak oruç planlayın veya tuttuğunuz orucu işaretleyin; kandil, bayram ve dini günleri takip edin."),
           style = MaterialTheme.typography.bodySmall,
           color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -340,15 +390,9 @@ fun FastingCalendarScreen(
                     isFasted = isFasted,
                     isToday = isToday,
                     specialEmoji = specialDay?.badgeEmoji,
+                    isFuture = dateKey > todayKey,
                     onToggle = {
-                      val nowFasted = prefs.toggleFastingDate(dateKey)
-                      fastingDates = prefs.getFastingDates()
-                      Toast.makeText(
-                        context,
-                        if (nowFasted) "$dayNumber ${monthNames[calendarMonth]} oruç tutuldu olarak işaretlendi ✓"
-                        else "$dayNumber ${monthNames[calendarMonth]} işareti kaldırıldı",
-                        Toast.LENGTH_SHORT
-                      ).show()
+                      dayDialog = Triple(dateKey, dayNumber, calendarMonth)
                       if (specialDay != null) {
                         selectedDaySpecialInfo = specialDay
                       }
@@ -443,6 +487,7 @@ private fun CalendarDayCell(
   dayNumber: Int,
   isFasted: Boolean,
   isToday: Boolean,
+  isFuture: Boolean = false,
   specialEmoji: String?,
   onToggle: () -> Unit,
   modifier: Modifier = Modifier
@@ -454,6 +499,7 @@ private fun CalendarDayCell(
       .clip(RoundedCornerShape(10.dp))
       .background(
         when {
+          isFasted && isFuture -> MaterialTheme.colorScheme.primary.copy(alpha = 0.22f) // Planlanan oruç
           isFasted -> Color(0xFF2D5A43) // Green for fasted
           isToday -> MaterialTheme.colorScheme.primaryContainer
           specialEmoji != null -> MaterialTheme.colorScheme.surfaceVariant
@@ -473,10 +519,12 @@ private fun CalendarDayCell(
         text = "$dayNumber",
         fontSize = 12.sp,
         fontWeight = if (isToday || isFasted) FontWeight.Bold else FontWeight.Medium,
-        color = if (isFasted) Color.White else MaterialTheme.colorScheme.onSurface
+        color = if (isFasted && !isFuture) Color.White else MaterialTheme.colorScheme.onSurface
       )
       if (specialEmoji != null && !isFasted) {
         Text(specialEmoji, fontSize = 11.sp)
+      } else if (isFasted && isFuture) {
+        Text("🌙", fontSize = 9.sp)
       } else if (isFasted) {
         Text("✓", fontSize = 9.sp, color = Color(0xFFE8D39E), fontWeight = FontWeight.Bold)
       }

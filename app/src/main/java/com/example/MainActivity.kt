@@ -364,6 +364,7 @@ fun RamazanRehberiApp(
             onOpenMosques = { activeSubScreen = ActiveSubScreen.Mosques },
             onOpenZikirmatik = { activeSubScreen = ActiveSubScreen.Zikirmatik },
             onOpenGreetingCards = { activeSubScreen = ActiveSubScreen.GreetingCards },
+            zikirRefreshKey = activeSubScreen,
             onFireCannon = {
               showCannonCelebration = true
               NotificationHelper.triggerCannonHaptics(AppHolder.context)

@@ -109,7 +109,7 @@ fun IftarMenuCard(
         ) {
           Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
-              text = t(if (ramadanDay != null) "İftar" else "Günün"),
+              text = t("Günün İftar"),
               fontSize = 11.sp,
               letterSpacing = 2.sp,
               color = accent,
@@ -123,7 +123,7 @@ fun IftarMenuCard(
               color = ink
             )
             Text(
-              text = if (ramadanDay != null) (if (com.example.i18n.AppLanguage.isEnglish) "Day $ramadanDay" else "$ramadanDay. Gün") else t("Bugün"),
+              text = t("Önerisi") + if (ramadanDay != null) (if (com.example.i18n.AppLanguage.isEnglish) " • Day $ramadanDay" else " • $ramadanDay. Gün") else "",
               fontSize = 10.sp,
               color = MaterialTheme.colorScheme.onSurfaceVariant
             )

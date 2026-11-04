@@ -32,6 +32,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -75,6 +76,7 @@ fun HomeScreen(
   onOpenMosques: () -> Unit,
   onOpenZikirmatik: () -> Unit = {},
   onOpenGreetingCards: () -> Unit = {},
+  zikirRefreshKey: Any? = null,
   onFireCannon: () -> Unit,
   modifier: Modifier = Modifier
 ) {
@@ -83,6 +85,10 @@ fun HomeScreen(
 
   // Bayram süslemesi ve mahya (her saniyelik yeniden çizimde ucuz: yıllık takvim önbellekte)
   val festival = FestivalCalendar.today(prefs)
+  val showIftarMenu = remember {
+    com.example.data.RamadanCalendar.dayOfRamadan() != null ||
+      prefs.getFastingDates().contains(com.example.data.RamadanCalendar.dateKey(java.util.Calendar.getInstance()))
+  }
   val mahya = FestivalCalendar.mahya(prefs)
 
   LazyColumn(
@@ -267,6 +273,11 @@ fun HomeScreen(
       )
     }
 
+    // 4b. Zikirmatik (Günün Manevi İklimi'nin altında)
+    item {
+      com.example.ui.components.HomeZikirCard(onOpenFull = onOpenZikirmatik, refreshKey = zikirRefreshKey)
+    }
+
 
 
     // 4. Smart Holiday Countdown (Ramazan'a / Ramazan Bayramı'na / Kurban Bayramı'na)
@@ -276,8 +287,8 @@ fun HomeScreen(
       )
     }
 
-    // 5. Günün İftar Menüsü (Text-only 4 categories)
-    item {
+    // 5. Günün İftar Menü Önerisi: yalnızca Ramazan'da veya bugün oruç planlandıysa
+    if (showIftarMenu) item {
       IftarMenuCard(
         menu = menu,
         ramadanDay = com.example.data.RamadanCalendar.dayOfRamadan(),
