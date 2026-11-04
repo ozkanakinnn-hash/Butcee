@@ -4,7 +4,7 @@
 |---|---|
 | **Working title** | Nöbet (recommended — see §1) |
 | **Document type** | Product Requirements Document (PRD) — MVP |
-| **Version** | 1.0 · 2026-11-04 |
+| **Version** | 1.1 · 2026-11-04 |
 | **Platforms** | iOS 15+ / Android 8.0+ (API 26) via Flutter |
 | **Languages** | Turkish (tr) and English (en), full parity |
 | **Status** | Draft for review |
@@ -97,6 +97,9 @@ Tamamen çevrimdışı çalışır. Hesap gerekmez. Türkçe ve İngilizce.
 
 Legend: **M** = Must-have (MVP), **N** = Nice-to-have (post-MVP / v1.x), **F** = Free, **P** = Premium
 
+Sections 2.1–2.6 cover the core MVP; 2.7–2.12 add recovery, nutrition timing, journaling, holidays & leave,
+goals and widgets; 2.13 lists further nice-to-have ideas.
+
 ### 2.1 Shift Calendar
 | ID | Feature | Priority | Tier |
 |---|---|---|---|
@@ -111,8 +114,8 @@ Legend: **M** = Must-have (MVP), **N** = Nice-to-have (post-MVP / v1.x), **F** =
 | CAL-09 | "Today" card: current/next shift with countdown | M | F |
 | CAL-10 | Bulk edit (select multiple days → apply shift / clear) | M | F |
 | CAL-11 | Swap / override a single day without breaking the pattern | M | F |
-| CAL-12 | Notes on a day (e.g. "swapped with Elif") | N | F |
-| CAL-13 | Home-screen widget (next shift + sleep debt) | N | P |
+| CAL-12 | Notes on a day (e.g. "swapped with Elif") — superseded by the Shift Journal (§2.9) | M | F |
+| CAL-13 | Home-screen widget (next shift + sleep debt) — see §2.12 | N | F / P |
 | CAL-14 | Export calendar (.ics) / share month as image | N | P |
 | CAL-15 | Overtime / hours worked summary (for payroll check) | N | P |
 | CAL-16 | Import from device calendar | N | P |
@@ -188,6 +191,69 @@ Legend: **M** = Must-have (MVP), **N** = Nice-to-have (post-MVP / v1.x), **F** =
 | PLT-01 | Fully offline; no account required | M | F |
 | PLT-02 | Accessibility: dynamic type, screen reader labels, 48 dp targets | M | F |
 | PLT-03 | Privacy-friendly analytics (opt-in, anonymous) | M | F |
+| SHR-01 | Family / partner sharing: share shifts only (never sleep, energy or notes) with one person via a serverless code or link; read-only view of their schedule | M | F |
+
+
+### 2.7 Post-Shift Recovery Score
+| ID | Feature | Priority | Tier |
+|---|---|---|---|
+| REC-01 | Recovery score (0–100) for each completed work shift, from the sleep after the shift (duration vs. goal), sleep quality and the next energy check-in (formula in Appendix B.5) | M | F |
+| REC-02 | Gentle, non-judgmental feedback by score band, e.g. "You may need more rest after this shift" / "Nicely recovered — well done" | M | F |
+| REC-03 | Recovery card on Today after a shift ends; score shown on the shift in the calendar day sheet | M | F |
+| REC-04 | Recovery trends: average score by shift type, slowest-recovery shift type, 30/90-day trend line | M | P |
+| REC-05 | Recovery-aware suggestions (e.g. suggest a nap or an earlier night when the score is low and the next shift is soon) | N | P |
+
+### 2.8 Caffeine & Meal Timing Suggestions
+| ID | Feature | Priority | Tier |
+|---|---|---|---|
+| NUT-01 | Caffeine window per upcoming shift, e.g. "Limit caffeine after 14:00 before your night shift", "Caffeine only in the first half of tonight's shift" (rules in Appendix B.6) | M | P |
+| NUT-02 | Meal timing per shift type, e.g. "Try to eat your main meal between 17:00 and 19:00", "Keep it light between 00:00 and 06:00" | M | P |
+| NUT-03 | Suggestions shown on the Today card and as optional reminders (uses the Smart Reminders engine, §2.4) | M | P |
+| NUT-04 | Simple caffeine log (one tap: coffee / tea / energy drink) to sharpen the cut-off advice | N | P |
+| NUT-05 | General-wellness framing only: no calorie counting, diets or medical claims; sources listed in About & help | M | F |
+
+### 2.9 Quick Notes / Shift Journal
+| ID | Feature | Priority | Tier |
+|---|---|---|---|
+| JRN-01 | Short note per shift (max 280 chars) from the day sheet or right after a shift ends | M | F |
+| JRN-02 | Quick-tag chips for one-tap journaling: Very busy · Calm · Felt exhausted · Overtime · Short-staffed · Difficult patient/customer (TR/EN) | M | F |
+| JRN-03 | Journal list with search and filter by tag / shift type | M | F |
+| JRN-04 | Journal-based insights, e.g. "On 'Very busy' shifts your recovery score is 18 points lower" (Appendix B.4) | M | P |
+| JRN-05 | Notes stay private: never included in partner sharing; included in export only if the user opts in | M | F |
+
+### 2.10 Public Holidays & Leave Management
+| ID | Feature | Priority | Tier |
+|---|---|---|---|
+| HOL-01 | Public holidays shown automatically in the calendar (marker + name), **Turkey first**: national holidays and religious holidays incl. half-day eves (arife) — bundled offline (Appendix B.7) | M | F |
+| HOL-02 | Holiday filter in Settings (show/hide, choose country); additional countries added over time | N | F |
+| HOL-03 | Optional "worked on a holiday" flag on shifts, counted in statistics (useful for payroll checks) | N | P |
+| LV-01 | Mark leave days in the calendar: annual leave (full / half day), sick leave, unpaid leave, other | M | F |
+| LV-02 | Annual leave balance: allowance per leave year + carried-over days − used days = **remaining**, shown in Calendar and Stats | M | F |
+| LV-03 | Default allowance suggestion for Turkey based on years of service (Labour Law No. 4857, Art. 53: 14 / 20 / 26 days), always editable | M | F |
+| LV-04 | Leave planner: preview how many consecutive days off a leave request creates when combined with rotation off-days and holidays | N | P |
+
+### 2.11 Simple Goals & Streaks
+| ID | Feature | Priority | Tier |
+|---|---|---|---|
+| GOL-01 | Personal goals from templates or custom, e.g. "Sleep at least 6 hours after night shifts this month", "Log sleep 5 days a week", "Daily energy check-in", "No caffeine after my cut-off" | N | F (1 active) / P (unlimited) |
+| GOL-02 | Goal progress card (e.g. "4 of 6 night shifts done") with a monthly summary | N | F |
+| GOL-03 | Light streak system: counts qualifying days or shifts; off-days and leave days never break a shift-based streak; one "rest pass" per week | N | F |
+| GOL-04 | Supportive tone only: gentle milestones (3, 7, 14, 30), no shaming, no push notifications when a streak breaks | N | F |
+
+### 2.12 Home Screen Widgets
+| ID | Feature | Priority | Tier |
+|---|---|---|---|
+| WID-01 | Small home-screen widget: today's / next shift with countdown | N | F |
+| WID-02 | Medium widget: today's shift + current sleep debt + next 3 days | N | P |
+| WID-03 | Lock-screen widget (iOS 16+ accessory widgets; Android where the launcher/OS supports it): next shift + debt | N | P |
+| WID-04 | Widget privacy option: hide sleep debt on the lock screen; widgets follow the app language and dark/night theme | N | F |
+
+### 2.13 Additional nice-to-have features
+| ID | Feature | Priority | Tier |
+|---|---|---|---|
+| EXT-01 | Profession-based tips: curated TR/EN tips per profession from the optional profile (nurses, security, factory, hospitality), e.g. hydration on long ward shifts, alertness on solo night patrols, safe driving home after a factory night | N | F |
+| EXT-02 | Special Night Mode with an **amber** option next to the existing red Night theme (SET-02) to reduce eye strain on night shifts; optional auto-switch during night shifts | N | P |
+| EXT-03 | Anonymous comparison: "People with similar shifts sleep an average of 6.4 h after night shifts." Strictly opt-in, aggregated only, minimum cohort size, no raw data leaves the device (needs a backend, see Appendix D) | N | P |
 
 ---
 
@@ -316,7 +382,11 @@ Any lock icon / premium card → Paywall (contextual headline for the feature ta
 | S-28 | Data & privacy | Control | Backup, restore, export, delete all, analytics opt-in | ✔ |
 | S-29 | App lock | Security | Biometric toggle, PIN | ✔ |
 | S-30 | About / Help | Trust | FAQ, sleep-science sources, disclaimer, contact, version | ✔ |
-| S-31 | Home widget | Glanceable | Next shift + debt | — (v1.1) |
+| S-31 | Home & lock-screen widgets | Glanceable | Next shift + countdown, sleep debt, next 3 days (§2.12) | — (v1.1) |
+| S-32 | Recovery card & detail | Post-shift feedback | Score ring, breakdown (sleep, quality, energy), gentle message, trend🔒 | ✔ |
+| S-33 | Shift journal | Notes per shift | Note field + quick tags in the day sheet; journal list with search/filter | ✔ |
+| S-34 | Leave & holidays | Time off | Leave balance card, mark leave in calendar, allowance settings, holiday list | ✔ |
+| S-35 | Goals & streaks | Motivation | Goal templates, progress cards, streak counter | — (v1.1) |
 
 ### Key screen wireframe — Today (S-09)
 ```
@@ -356,13 +426,16 @@ Nöbet
 │   ├── Current / next shift card ──────────────► Day detail
 │   ├── Sleep debt summary ─────────────────────► Sleep tab
 │   ├── Energy card ────────────────────────────► Energy check-in
+│   ├── Recovery card (after a shift) ──────────► Recovery detail
+│   ├── Caffeine & meal timing tip🔒
 │   ├── Smart tip (contextual) ─────────────────► Insight detail
 │   ├── Upcoming days strip ────────────────────► Calendar (week)
 │   └── Settings (gear)
 │
 ├── Calendar
 │   ├── Month view ⇄ Week view
-│   ├── Day detail (sheet): shift · times · note · sleep · energy
+│   ├── Day detail (sheet): shift · times · journal note & tags · recovery score · sleep · energy · holiday/leave
+│   ├── Public holidays (markers) · Leave days & balance
 │   ├── Bulk edit mode
 │   ├── Apply pattern → Pattern library → Configurator
 │   └── Shift templates (manage types)
@@ -383,13 +456,17 @@ Nöbet
 │   ├── Week | Month🔒
 │   ├── Summary tiles
 │   ├── Charts: sleep hours · shift mix🔒 · energy by shift🔒 · debt trend🔒
-│   ├── Insight cards → Insight detail
+│   ├── Recovery by shift type🔒 · Leave used / remaining
+│   ├── Insight cards → Insight detail (incl. journal-based🔒)
+│   ├── Shift journal (list, search, filter)
+│   ├── Goals & streaks (v1.1)
 │   └── Export🔒 (CSV / PDF)
 │
 └── Settings
     ├── Premium (status / upgrade → Paywall)
     ├── Profile: name/nickname, profession / job title, work type, sleep goal (all editable, all optional)
     ├── Shifts: templates, default times, week start
+    ├── Holidays & leave: country, show holidays, leave year, allowance, carry-over
     ├── Reminders: basic · smart🔒
     ├── Appearance: System / Light / Dark / Night🔒
     ├── Language: System / Türkçe / English
@@ -414,6 +491,13 @@ Nöbet
 | `Settings` | locale, theme, timeFormat, weekStart, sleepGoalMinutes, onboardingDone, appLock, analyticsOptIn |
 | `Profile` | displayName?, professionKey? (nurse/factory/security/hospitality/other), jobTitle?, workType? (rotating/permanentNight/permanentDay/permanentEvening/223/4on4off/2448/other) — every field nullable |
 | `Entitlement` | isPremium, plan, expiresAt, lastVerifiedAt (cached for offline) |
+| `ShiftNote` | id, shiftDate, text (≤ 280), tags[], createdAt — private, never shared |
+| `RecoveryScore` | shiftDate, score (0–100), sleepComponent, qualityComponent, energyComponent, computedAt (derived, cached) |
+| `Holiday` | date, countryCode, nameKey, isHalfDay, type (national/religious) — bundled data file, versioned |
+| `LeaveDay` | date, kind (annual/sick/unpaid/other), isHalfDay, note? |
+| `LeaveYear` | startDate, allowanceDays, carriedOverDays |
+| `Goal` | id, templateKey / customText, metric, target, period (week/month), startDate, active |
+| `StreakState` | goalId, current, best, lastQualifiedDate, restPassesLeft |
 
 All timestamps stored in UTC + the device time-zone ID at creation, so travel/DST changes don't corrupt
 shift times.
@@ -545,8 +629,14 @@ sleep?"; day-3 first insight card ("Your first sleep-debt score is ready").
 | Energy check-ins | ✔ | ✔ + correlations |
 | Reminders | Shift start, daily check-in, forgot-to-log | Smart shift-aware engine (nap, wind-down, caffeine, transitions, per-type timing) |
 | Statistics | This-week summary + sleep chart | Monthly, trends, energy-by-shift, insights |
+| Recovery score | Per-shift score + gentle feedback | + trends by shift type, recovery suggestions |
+| Caffeine & meal timing | — | ✔ |
+| Shift journal | Notes + quick tags | + journal-based insights |
+| Holidays & leave | TR holidays, leave days & balance | + leave planner, holiday-work stats |
+| Goals & streaks | 1 active goal | Unlimited goals |
 | Export (CSV / PDF / .ics) | — | ✔ |
-| Night (red) theme, widgets | — | ✔ |
+| Night (red/amber) theme | — | ✔ |
+| Widgets | Small home widget | Medium + lock-screen widgets |
 | Backup | Local file | Local file (+ encrypted cloud sync, v1.2) |
 | Ads | **None** (trust for healthcare users) | None |
 
@@ -650,7 +740,45 @@ sleep goal − 1 h buffer. **Quiet hours:** no notification during a running sle
 - "Your energy is **{x} points** higher on days you sleep ≥ {goal}." (≥ 10 check-ins)
 - "This month: **{n}** night shifts — {delta} vs last month."
 - "Best recovery: you feel best on the **2nd off day**."
+- "On shifts tagged **'Very busy'** your recovery score is **{x} points** lower." (≥ 3 tagged shifts)
+- "You recover fastest after **{type}** shifts." (≥ 3 scored shifts per type)
 Minimum data thresholds prevent misleading insights; every insight shows "Based on {n} days".
+
+### B.5 Post-shift recovery score
+- **Window:** sleep blocks that start within 18 h after the shift ends (incl. naps) + the first energy check-in
+  within 24 h after the shift ends.
+- **Components (0–1):** sleep = min(total sleep / sleep goal, 1); quality = (avg quality − 1) / 4;
+  energy = (level − 1) / 9.
+- **Score** = 100 × (0.5 × sleep + 0.25 × quality + 0.25 × energy). If quality or energy is missing, the remaining
+  weights are rescaled; without any sleep log no score is shown ("Log your sleep to see your recovery").
+- **Bands & copy:** ≥ 75 *Well recovered* ("Nicely recovered — well done") · 50–74 *Partly recovered* ("Go easy
+  today if you can") · < 50 *Low recovery* ("You may need more rest after this shift — an early night or a short
+  nap can help").
+
+### B.6 Caffeine & meal timing rules (general wellness defaults, editable)
+| Context | Caffeine | Meals |
+|---|---|---|
+| Day before a night shift | Limit caffeine after 14:00 so tonight's sleep is good and a lie-in is possible | Normal meals; light dinner |
+| Night shift (e.g. 20:00–08:00) | Caffeine only in the first half of the shift; none in the last 6 h before planned sleep | Main meal 2–3 h before the shift; keep it light between 00:00 and 06:00; small breakfast before sleep |
+| Day shift (e.g. 08:00–20:00) | No caffeine in the 6 h before planned bedtime | Breakfast within 1 h of waking; regular lunch; dinner ≥ 2 h before bed |
+| Off day after nights | Morning caffeine only | Return to daytime meal times to reset the rhythm |
+
+Times are computed from the user's shift times and sleep goal; the copy always says "try" or "consider", never
+prescribes.
+
+### B.7 Public holidays & leave
+- **Turkey (bundled):** fixed national holidays (1 Jan, 23 Apr, 1 May, 19 May, 15 Jul, 30 Aug, 29 Oct; 28 Oct
+  afternoon) + Ramazan Bayramı and Kurban Bayramı with half-day eves, from a yearly table (lunar dates) shipped with
+  the app and refreshed with each release — works offline.
+- **Leave balance:** remaining = allowance + carried over − used (half days count 0.5). Leave days that fall on
+  rotation off-days or public holidays are not deducted (configurable).
+- **Leave year:** starts on the hire anniversary or 1 January (user choice).
+
+### B.8 Goals & streaks
+- A day or shift *qualifies* when the goal's metric is met (e.g. sleep ≥ 6 h in the B.5 window after a night shift).
+- Streaks count only relevant days: off-days and leave never break a shift-based streak; one weekly rest pass
+  covers a missed day.
+- Milestones at 3, 7, 14 and 30; no notification when a streak ends.
 
 ---
 
@@ -724,10 +852,10 @@ Sample notification pairs:
 ### D.3 Release roadmap
 | Release | Scope |
 |---|---|
-| **MVP 1.0** (≈ 10–12 weeks) | All "M" items in §2: calendar + patterns, sleep, energy, basic + smart reminders, stats, onboarding, TR/EN, dark mode, paywall |
-| 1.1 | Home widgets, Apple Health / Health Connect, multi-shift days, day notes, iOS Live Activity for running sleep |
+| **MVP 1.0** (≈ 12–14 weeks) | All "M" items in §2: calendar + patterns, sleep, energy, basic + smart reminders, stats, onboarding, TR/EN, dark mode, paywall, recovery score, caffeine & meal timing, shift journal, TR holidays & leave, partner sharing |
+| 1.1 | Home & lock-screen widgets, goals & streaks, profession-based tips, amber Night Mode, Apple Health / Health Connect, multi-shift days, iOS Live Activity for running sleep |
 | 1.2 | Encrypted cloud backup & sync, calendar .ics export/import, monthly shareable recap |
-| 2.0 | Team/workplace licenses, shift swap sharing with coworkers, wearable integrations, Apple Watch / Wear OS companion |
+| 2.0 | Anonymous comparison (opt-in, aggregated backend), team/workplace licenses, shift swap sharing with coworkers, wearable integrations, Apple Watch / Wear OS companion |
 
 ### D.4 Suggested MVP sprint plan (2-week sprints)
 1. Project setup, design system (themes, tokens, l10n scaffolding), DB schema
