@@ -76,6 +76,39 @@ fun StatsScreen() {
         color = MaterialTheme.colorScheme.onSurfaceVariant,
       )
     }
+    // Toparlanma skoru (dönem ortalaması)
+    val scores = generateSequence(from) { it.plusDays(1) }.takeWhile { !it.isAfter(to) }
+      .mapNotNull { com.nobet.data.Recovery.scoreOn(it) }.toList()
+    NCard(Modifier.fillMaxWidth()) {
+      Text(t("Toparlanma skoru", "Recovery score"), style = MaterialTheme.typography.titleMedium)
+      Text(t("Dönem ortalaması", "Average for the period"), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+      Gap(12.dp)
+      if (scores.isEmpty()) {
+        Text("–", style = MaterialTheme.typography.displaySmall, fontWeight = FontWeight.Bold)
+        Text(t("Bu dönemde toparlanma kontrolü yok", "No recovery check-ins in this period"), color = MaterialTheme.colorScheme.onSurfaceVariant)
+      } else {
+        val avg = scores.average().toInt()
+        Text("$avg", style = MaterialTheme.typography.displaySmall, fontWeight = FontWeight.Bold, color = scoreColor(avg))
+        Text(com.nobet.data.Recovery.bandLabel(avg) + t(" · ${scores.size} kontrol", " · ${scores.size} check-ins"), color = MaterialTheme.colorScheme.onSurfaceVariant)
+      }
+    }
+
+    // Yıllık kullanılan izin
+    NCard(Modifier.fillMaxWidth()) {
+      Text(t("Kullanılan yıllık izin (${today.year})", "Annual leave used (${today.year})"), style = MaterialTheme.typography.titleMedium)
+      Gap(12.dp)
+      Text(
+        fmtDays(Store.leaveUsed()) + t(" gün", " days"),
+        style = MaterialTheme.typography.displaySmall,
+        fontWeight = FontWeight.Bold,
+        color = MaterialTheme.colorScheme.primary,
+      )
+      Text(
+        t("Kalan ${fmtDays(Store.leaveRemaining())} / ${fmtDays(Store.leaveAllowance + Store.leaveCarry)} gün",
+          "${fmtDays(Store.leaveRemaining())} of ${fmtDays(Store.leaveAllowance + Store.leaveCarry)} days left"),
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+      )
+    }
     Spacer(Modifier.height(24.dp))
   }
 }

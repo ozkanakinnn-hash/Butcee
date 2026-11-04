@@ -162,10 +162,10 @@ fun RecoveryScreen() {
     verticalArrangement = Arrangement.spacedBy(12.dp),
   ) {
     Text(t("Toparlanma", "Recovery"), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-    pending.forEach { PendingCheckInCard(it) }
-    NutritionCard(now)
-
+    // Skor (en üstte)
     NCard(Modifier.fillMaxWidth()) {
+      Text(t("Skor", "Score"), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+      Gap(8.dp)
       if (latest == null) {
         Text(t("Henüz toparlanma kontrolü yok", "No recovery check-ins yet"), style = MaterialTheme.typography.titleMedium)
         Text(
@@ -187,6 +187,9 @@ fun RecoveryScreen() {
       }
     }
 
+    pending.forEach { PendingCheckInCard(it) }
+    AdviceCard(now, latest)
+
     if (all.size >= 2) {
       NCard(Modifier.fillMaxWidth()) {
         Text(t("Son vardiyalar", "Recent shifts"), style = MaterialTheme.typography.titleMedium)
@@ -205,12 +208,12 @@ fun RecoveryScreen() {
     }
 
     // İçgörüler
-    SectionTitle(t("İçgörüler", "Insights"))
+    SectionTitle(t("Analizler", "Analyses")) 
     val basic = Recovery.basicInsight(all)
     if (basic == null) {
       Text(
-        t("Birkaç vardiya sonrası kontrolden sonra vardiyaların toparlanmanızı nasıl etkilediğini burada göreceksiniz.",
-          "After a few post-shift check-ins you'll see here how your shifts affect your recovery."),
+        t("Birkaç vardiya sonrası kontrolden sonra vardiyaların toparlanmanızı nasıl etkilediğine dair analizler burada görünecek.",
+          "After a few post-shift check-ins, analyses of how your shifts affect your recovery will appear here."),
         color = MaterialTheme.colorScheme.onSurfaceVariant,
       )
     } else {

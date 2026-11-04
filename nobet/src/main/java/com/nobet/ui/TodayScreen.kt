@@ -398,23 +398,66 @@ private fun Countdown(target: LocalDateTime) {
   )
 }
 
-@Composable
-fun NutritionCard(now: LocalDateTime) {
-  val adv = nutritionAdvice(now) ?: return
-  if (!Store.premium) {
-    LockedCard(
-      t("Kafein ve öğün zamanlaması", "Caffeine & meal timing"),
-      t("Bir sonraki vardiyanıza göre kafein ve öğün saatleri önerisi.", "Caffeine and meal timing suggestions for your next shift."),
-    ) { Nav.paywall(t("Kafein ve öğün zamanlaması", "Caffeine & meal timing")) }
-    return
+/** Son toparlanma skoruna (ve cevaplara) göre değişen tavsiyeler. */
+private fun scoreAdvice(latest: com.nobet.data.Recovery.Scored?): List<String> {
+  if (latest == null) {
+    return listOf(t("Bir sonraki vardiyanızdan sonra 4 kısa soruyu yanıtlayın; tavsiyeler skorunuza göre kişiselleşecek.",
+      "Answer the 4 quick questions after your next shift; advice will adapt to your score."))
   }
+  val out = mutableListOf<String>()
+  val c = latest.c
+  when (com.nobet.data.Recovery.band(latest.score)) {
+    "low" -> {
+      out += t("Skorunuz düşük: bugün mümkünse ağır işleri erteleyin ve kendinize dinlenme zamanı ayırın.",
+        "Your score is low: if you can, postpone heavy tasks today and make time to rest.")
+      out += t("20–30 dakikalık kısa bir kestirme ya da erken bir yatış toparlanmanıza yardımcı olabilir.",
+        "A 20–30 minute nap or an early night can help you recover.")
+      out += t("Bol su için; ek kafein yerine kısa bir yürüyüş ve gün ışığı deneyin.",
+        "Drink plenty of water; try a short walk and daylight instead of extra caffeine.")
+    }
+    "mid" -> {
+      out += t("Kısmen toparlandınız: hafif bir yürüyüş ve düzenli öğünler gününüzü dengeler.",
+        "Partly recovered: a light walk and regular meals will help balance your day.")
+      out += t("Bir sonraki vardiyadan önce yatış saatinizi biraz öne almayı deneyin.",
+        "Try going to bed a little earlier before your next shift.")
+    }
+    else -> {
+      out += t("İyi toparlandınız: rutininiz işe yarıyor, aynı uyku saatlerini korumaya çalışın.",
+        "Well recovered: your routine works — try to keep the same sleep times.")
+    }
+  }
+  if (c.sleepStatus == "notYet") out += t("Henüz uyumadınız: karanlık, serin ve sessiz bir odada dinlenmeye çalışın.",
+    "You haven't slept yet: try resting in a dark, cool, quiet room.")
+  if (c.smooth <= 4) out += t("Zor bir vardiyaydı; vardiya sonrası 15 dakikayı yalnızca kendinize ayırın.",
+    "That was a tough shift; give yourself 15 minutes just for you afterwards.")
+  if (c.energy in 1..3) out += t("Enerjiniz düşük: araç kullanmadan önce kısa bir mola verin.",
+    "Your energy is low: take a short break before driving.")
+  return out
+}
+
+@Composable
+fun AdviceCard(now: LocalDateTime, latest: com.nobet.data.Recovery.Scored?) {
+  val adv = nutritionAdvice(now)
   NCard(Modifier.fillMaxWidth()) {
-    Text(t("Kafein ve öğün", "Caffeine & meals"), style = MaterialTheme.typography.labelLarge)
+    Text(t("Tavsiyeler", "Advice"), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+    if (latest != null) {
+      Text(
+        t("Skorunuza göre (${latest.score})", "Based on your score (${latest.score})"),
+        style = MaterialTheme.typography.labelSmall,
+        color = scoreColor(latest.score),
+      )
+    }
     Gap(6.dp)
-    Text("☕ " + adv.first, style = MaterialTheme.typography.bodyMedium)
-    Gap(4.dp)
-    Text("🍽 " + adv.second, style = MaterialTheme.typography.bodyMedium)
-    Gap(4.dp)
+    scoreAdvice(latest).forEach {
+      Text("• $it", style = MaterialTheme.typography.bodyMedium)
+      Gap(4.dp)
+    }
+    if (adv != null) {
+      Text("☕ " + adv.first, style = MaterialTheme.typography.bodyMedium)
+      Gap(4.dp)
+      Text("🍽 " + adv.second, style = MaterialTheme.typography.bodyMedium)
+      Gap(4.dp)
+    }
     Text(t("Genel öneridir, tıbbi tavsiye değildir.", "General guidance, not medical advice."), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
   }
 
