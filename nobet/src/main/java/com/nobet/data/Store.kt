@@ -10,13 +10,17 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.nobet.notify.Reminders
+import android.util.Base64
 import org.json.JSONArray
 import org.json.JSONObject
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
+import java.io.ByteArrayOutputStream
 import java.util.Locale
+import java.util.zip.Deflater
+import java.util.zip.Inflater
 
 data class ShiftInstance(
   val date: LocalDate,
@@ -54,6 +58,18 @@ object Store {
   var remForgot by mutableStateOf(true)
   var remSmart by mutableStateOf(true)
   var lastFired by mutableLongStateOf(0L)
+  /** Kapatılan akıllı hatırlatıcı kategorileri. */
+  val smartOff = mutableStateListOf<String>()
+
+  // Kullanıcının kaydettiği düzen şablonları
+  val customPatterns = mutableStateListOf<Pattern>()
+
+  // Aile / partner paylaşımı: yalnızca VARDİYALAR (uyku/enerji asla paylaşılmaz)
+  var partnerName by mutableStateOf("")
+  var partnerStart by mutableStateOf("") // ISO tarih
+  var partnerSeq by mutableStateOf("")
+  var partnerUpdated by mutableLongStateOf(0L)
+  val partnerTypes = mutableStateListOf<ShiftType>()
 
   // Veri
   val types = mutableStateListOf<ShiftType>()
@@ -93,21 +109,30 @@ object Store {
     remSmart = p.getBoolean("remSmart", true)
     lastFired = p.getLong("lastFired", 0L)
 
-    types.clear()
-    val tj = p.getString("types", null)
-    if (tj == null) types.addAll(Builtins.defaultTypes()) else runCatching {
-      val a = JSONArray(tj)
+    smartOff.clear()
+    (p.getString("smartOff", "") ?: "").split(",").filter { it.isNotBlank() }.forEach { smartOff.add(it) }
+
+    customPatterns.clear()
+    runCatching {
+      val a = JSONArray(p.getString("patterns", "[]") ?: "[]")
       for (i in 0 until a.length()) {
         val o = a.getJSONObject(i)
-        types.add(
-          ShiftType(
-            o.getString("id"), o.getString("nameTr"), o.getString("nameEn"),
-            o.getString("letterTr"), o.getString("letterEn"), o.getLong("color"),
-            o.getInt("startMin"), o.getInt("endMin"), o.getBoolean("isOff"), o.getBoolean("builtIn"),
-          ),
-        )
+        val sq = o.getJSONArray("seq")
+        val nm = o.getString("name")
+        customPatterns.add(Pattern(o.getString("id"), nm, nm, "", "", List(sq.length()) { sq.getString(it) }, premium = false, custom = true))
       }
     }
+
+    partnerName = p.getString("partnerName", "") ?: ""
+    partnerStart = p.getString("partnerStart", "") ?: ""
+    partnerSeq = p.getString("partnerSeq", "") ?: ""
+    partnerUpdated = p.getLong("partnerUpdated", 0L)
+    partnerTypes.clear()
+    runCatching { partnerTypes.addAll(typesFromJson(JSONArray(p.getString("partnerTypes", "[]") ?: "[]"))) }
+
+    types.clear()
+    val tj = p.getString("types", null)
+    if (tj == null) types.addAll(Builtins.defaultTypes()) else runCatching { types.addAll(typesFromJson(JSONArray(tj))) }
     if (types.none { it.id == Builtins.OFF }) types.addAll(Builtins.defaultTypes().filter { d -> types.none { it.id == d.id } })
 
     shifts.clear()
@@ -138,16 +163,32 @@ object Store {
     }
   }
 
-  fun save() {
-    val p = prefs ?: return
+  private fun typesFromJson(a: JSONArray): List<ShiftType> = List(a.length()) { i ->
+    val o = a.getJSONObject(i)
+    ShiftType(
+      o.getString("id"), o.getString("nameTr"), o.getString("nameEn"),
+      o.getString("letterTr"), o.getString("letterEn"), o.getLong("color"),
+      o.getInt("startMin"), o.getInt("endMin"), o.getBoolean("isOff"), o.optBoolean("builtIn", false),
+    )
+  }
+
+  private fun typesToJson(l: List<ShiftType>): JSONArray {
     val ta = JSONArray()
-    types.forEach {
+    l.forEach {
       ta.put(
         JSONObject().put("id", it.id).put("nameTr", it.nameTr).put("nameEn", it.nameEn)
           .put("letterTr", it.letterTr).put("letterEn", it.letterEn).put("color", it.color)
           .put("startMin", it.startMin).put("endMin", it.endMin).put("isOff", it.isOff).put("builtIn", it.builtIn),
       )
     }
+    return ta
+  }
+
+  fun save() {
+    val p = prefs ?: return
+    val ta = typesToJson(types)
+    val pa = JSONArray()
+    customPatterns.forEach { pa.put(JSONObject().put("id", it.id).put("name", it.nameTr).put("seq", JSONArray(it.seq))) }
     val so = JSONObject()
     shifts.forEach { (k, v) -> so.put(k, v) }
     val sa = JSONArray()
@@ -165,6 +206,10 @@ object Store {
       .putBoolean("remForgot", remForgot).putBoolean("remSmart", remSmart).putLong("lastFired", lastFired)
       .putString("types", ta.toString()).putString("shifts", so.toString())
       .putString("sleeps", sa.toString()).putString("energies", ea.toString())
+      .putString("smartOff", smartOff.joinToString(",")).putString("patterns", pa.toString())
+      .putString("partnerName", partnerName).putString("partnerStart", partnerStart)
+      .putString("partnerSeq", partnerSeq).putLong("partnerUpdated", partnerUpdated)
+      .putString("partnerTypes", typesToJson(partnerTypes).toString())
       .apply()
   }
 
@@ -234,6 +279,104 @@ object Store {
   }
 
   fun customCount() = types.count { !it.builtIn }
+
+  // ---------- Düzen şablonları ----------
+  fun allPatterns(): List<Pattern> = customPatterns.toList() + Builtins.patterns
+
+  fun savePattern(name: String, seq: List<String>) {
+    customPatterns.add(0, Pattern("P" + System.currentTimeMillis(), name, name, "", "", seq, premium = false, custom = true))
+    changed()
+  }
+
+  fun deletePattern(id: String) {
+    customPatterns.removeAll { it.id == id }
+    changed()
+  }
+
+  fun smartOn(kind: String) = kind !in smartOff
+
+  fun setSmart(kind: String, on: Boolean) {
+    if (on) smartOff.remove(kind) else if (kind !in smartOff) smartOff.add(kind)
+    changed()
+  }
+
+  // ---------- Partner paylaşımı ----------
+  /**
+   * Paylaşım kodu: yalnızca vardiya türleri + bugünden itibaren [days] günlük vardiya dizisi.
+   * JSON → Deflate → Base64 (URL güvenli). Uyku/enerji verisi KESİNLİKLE eklenmez.
+   */
+  fun makeShareCode(days: Int, sender: String): String {
+    val start = today()
+    val used = (0 until days).mapNotNull { shifts[key(start.plusDays(it.toLong()))] }.distinct()
+    val ts = types.filter { it.id in used }
+    val seq = StringBuilder()
+    for (i in 0 until days) {
+      val id = shifts[key(start.plusDays(i.toLong()))]
+      val idx = ts.indexOfFirst { it.id == id }
+      seq.append(if (idx < 0) '.' else ('a' + idx))
+    }
+    val o = JSONObject().put("v", 1).put("n", sender).put("s", start.toString()).put("t", typesToJson(ts)).put("d", seq.toString())
+    val raw = o.toString().toByteArray(Charsets.UTF_8)
+    val def = Deflater(Deflater.BEST_COMPRESSION)
+    def.setInput(raw)
+    def.finish()
+    val out = ByteArrayOutputStream()
+    val buf = ByteArray(1024)
+    while (!def.finished()) out.write(buf, 0, def.deflate(buf))
+    def.end()
+    return "NB1" + Base64.encodeToString(out.toByteArray(), Base64.URL_SAFE or Base64.NO_WRAP or Base64.NO_PADDING)
+  }
+
+  /** Metnin içinden kodu bulup içe aktarır. Başarılıysa paylaşan kişinin adı döner. */
+  fun importShareCode(text: String): String? = runCatching {
+    val m = Regex("NB1[A-Za-z0-9_-]{8,}").find(text) ?: return null
+    val bytes = Base64.decode(m.value.removePrefix("NB1"), Base64.URL_SAFE or Base64.NO_WRAP or Base64.NO_PADDING)
+    val inf = Inflater()
+    inf.setInput(bytes)
+    val out = ByteArrayOutputStream()
+    val buf = ByteArray(1024)
+    var guard = 0
+    while (!inf.finished() && guard++ < 1000) {
+      val n = inf.inflate(buf)
+      if (n == 0 && (inf.needsInput() || inf.needsDictionary())) break
+      out.write(buf, 0, n)
+    }
+    inf.end()
+    val o = JSONObject(out.toString("UTF-8"))
+    LocalDate.parse(o.getString("s"))
+    partnerTypes.clear()
+    partnerTypes.addAll(typesFromJson(o.getJSONArray("t")))
+    partnerName = o.optString("n", "").ifBlank { "Partner" }
+    partnerStart = o.getString("s")
+    partnerSeq = o.getString("d")
+    partnerUpdated = System.currentTimeMillis()
+    save()
+    partnerName
+  }.getOrNull()
+
+  fun removePartner() {
+    partnerName = ""
+    partnerStart = ""
+    partnerSeq = ""
+    partnerUpdated = 0L
+    partnerTypes.clear()
+    save()
+  }
+
+  val hasPartner: Boolean get() = partnerSeq.isNotEmpty()
+
+  fun partnerShiftOn(d: LocalDate): ShiftType? {
+    if (!hasPartner) return null
+    val st = runCatching { LocalDate.parse(partnerStart) }.getOrNull() ?: return null
+    val i = java.time.temporal.ChronoUnit.DAYS.between(st, d)
+    if (i < 0 || i >= partnerSeq.length) return null
+    val c = partnerSeq[i.toInt()]
+    if (c == '.') return null
+    return partnerTypes.getOrNull(c - 'a')
+  }
+
+  fun partnerLastDay(): LocalDate? =
+    runCatching { LocalDate.parse(partnerStart).plusDays((partnerSeq.length - 1).toLong()) }.getOrNull()
 
   // ---------- Uyku ----------
   fun startSleep() {
@@ -311,6 +454,33 @@ object Store {
     val b = workOn(d)
     return (a != null && a.type.isNight && a.end.toLocalDate() == d) ||
       (b != null && b.type.isNight && b.end.toLocalDate() == d)
+  }
+
+  /** Uyku günü kategorisi: vardiyanın uykuyu nasıl etkilediğini karşılaştırmak için. */
+  fun sleepCategory(d: LocalDate): String {
+    val w = workOn(d)
+    return when {
+      isPostNight(d) -> "postNight"
+      w != null && w.type.isNight -> "preNight"
+      w != null -> "work"
+      else -> "off"
+    }
+  }
+
+  data class SleepStat(val days: Int, val avgMin: Int, val avgQuality: Float)
+
+  /** Son [range] gün için kategori bazında ortalama uyku süresi ve kalitesi. */
+  fun sleepByCategory(range: Int = 60, today: LocalDate = today()): Map<String, SleepStat> {
+    val m = mutableMapOf<String, MutableList<LocalDate>>()
+    for (i in 0 until range) {
+      val d = today.minusDays(i.toLong())
+      if (!hasSleep(d)) continue
+      m.getOrPut(sleepCategory(d)) { mutableListOf() }.add(d)
+    }
+    return m.mapValues { (_, ds) ->
+      val q = sleeps.filter { toDate(it.end) in ds }.map { it.quality }
+      SleepStat(ds.size, ds.map { sleepMinOn(it) }.average().toInt(), if (q.isEmpty()) 0f else q.average().toFloat())
+    }
   }
 
   fun exportCsv(): String {

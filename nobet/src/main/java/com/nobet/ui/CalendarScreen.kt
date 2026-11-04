@@ -286,6 +286,13 @@ private fun WeekRow(d: LocalDate, isToday: Boolean, isSelected: Boolean, onClick
       }
       val mins = Store.sleepMinOn(d)
       if (mins > 0) Text("🛏 ${fmtDur(mins)}", style = MaterialTheme.typography.bodySmall)
+      Store.partnerShiftOn(d)?.let { pt ->
+        Spacer(Modifier.width(8.dp))
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+          ShiftBadge(pt, 22.dp)
+          Text(Store.partnerName.take(6), style = MaterialTheme.typography.labelSmall, maxLines = 1)
+        }
+      }
     }
   }
 }
@@ -317,42 +324,68 @@ fun PatternScreen() {
   var startOffset by remember { mutableIntStateOf(0) } // bugünden kaç gün sonra başlasın
   var cycleDay by remember { mutableIntStateOf(0) }
   var months by remember { mutableIntStateOf(3) }
+  var building by remember { mutableStateOf(false) }
+  var deletingPattern by remember { mutableStateOf<Pattern?>(null) }
 
   Scaffold(
     topBar = {
       TopAppBar(
-        title = { Text(if (chosen == null) t("Vardiya düzenleri", "Rotation patterns") else patternName(chosen!!)) },
+        title = {
+          Text(
+            when {
+              building -> t("Yeni düzen şablonu", "New pattern template")
+              chosen == null -> t("Vardiya düzenleri", "Rotation patterns")
+              else -> patternName(chosen!!)
+            },
+          )
+        },
         navigationIcon = {
-          IconButton(onClick = { if (chosen != null) chosen = null else Nav.pop() }) { Icon(Icons.AutoMirrored.Filled.ArrowBack, t("Geri", "Back")) }
+          IconButton(onClick = {
+            when {
+              building -> building = false
+              chosen != null -> chosen = null
+              else -> Nav.pop()
+            }
+          }) { Icon(Icons.AutoMirrored.Filled.ArrowBack, t("Geri", "Back")) }
         },
       )
     },
   ) { pad ->
     Column(Modifier.padding(pad).fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp)) {
       val p = chosen
-      if (p == null) {
-        Builtins.patterns.forEach { pt ->
-          val locked = pt.premium && !Store.premium
-          NCard(Modifier.fillMaxWidth().padding(vertical = 5.dp), onClick = {
-            if (locked) Nav.paywall(t("Tüm vardiya düzenleri", "Full pattern library")) else {
-              chosen = pt
-              cycleDay = 0
-            }
-          }) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-              Column(Modifier.weight(1f)) {
-                Text(patternName(pt), style = MaterialTheme.typography.titleMedium)
-                Text(patternDesc(pt), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-              }
-              if (locked) Icon(Icons.Filled.Lock, t("Premium", "Premium"), tint = MaterialTheme.colorScheme.primary)
-            }
-            Gap(8.dp)
-            Row(horizontalArrangement = Arrangement.spacedBy(3.dp)) {
-              pt.seq.take(16).forEach { id -> Store.typeById(id)?.let { ShiftBadge(it, 16.dp) } }
-              if (pt.seq.size > 16) Text("…", style = MaterialTheme.typography.labelSmall)
-            }
+      if (building) {
+        PatternBuilder { building = false }
+      } else if (p == null) {
+        val pick: (Pattern) -> Unit = { pt ->
+          if (pt.premium && !Store.premium) Nav.paywall(t("Tüm vardiya düzenleri", "Full pattern library")) else {
+            chosen = pt
+            cycleDay = 0
           }
         }
+        val sug = Builtins.suggestedFor(Store.role)
+        SectionTitle(t("${com.nobet.i18n.roleName(Store.role)} için önerilenler", "Suggested for ${com.nobet.i18n.roleName(Store.role)}"))
+        Builtins.patterns.filter { it.id in sug }.forEach { PatternCard(it, onClick = { pick(it) }) }
+
+        SectionTitle(t("Şablonlarım", "My templates"))
+        if (Store.customPatterns.isEmpty()) {
+          Text(t("Henüz kayıtlı şablonunuz yok.", "You have no saved templates yet."), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        Store.customPatterns.forEach { pt -> PatternCard(pt, onClick = { pick(pt) }, onDelete = { deletingPattern = pt }) }
+        Gap(8.dp)
+        val limit = !Store.premium && Store.customPatterns.size >= 2
+        OutlinedButton(onClick = {
+          if (limit) Nav.paywall(t("Sınırsız düzen şablonu", "Unlimited pattern templates")) else building = true
+        }, modifier = Modifier.fillMaxWidth().height(52.dp)) {
+          Icon(Icons.Filled.Add, null)
+          Spacer(Modifier.width(8.dp))
+          Text(t("Kendi düzenini oluştur", "Create your own pattern") + if (limit) " 🔒" else "")
+        }
+        if (!Store.premium) {
+          Text(t("Ücretsiz sürümde 2 şablon kaydedebilirsiniz.", "Free plan: save up to 2 templates."), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+
+        SectionTitle(t("Hazır düzen kütüphanesi", "Pattern library"))
+        Builtins.patterns.filter { it.id !in sug }.forEach { PatternCard(it, onClick = { pick(it) }) }
       } else {
         val start = Store.today().plusDays(startOffset.toLong())
         SectionTitle(t("Başlangıç tarihi", "Start date"))
@@ -401,6 +434,96 @@ fun PatternScreen() {
         }
       }
     }
+  }
+  deletingPattern?.let { pt ->
+    ConfirmDialog(
+      t("Şablon silinsin mi?", "Delete template?"),
+      t("“${patternName(pt)}” silinecek. Takviminiz değişmez.", "“${patternName(pt)}” will be deleted. Your calendar stays the same."),
+      t("Sil", "Delete"),
+      { deletingPattern = null },
+    ) {
+      Store.deletePattern(pt.id)
+      deletingPattern = null
+    }
+  }
+}
+
+@Composable
+private fun PatternCard(pt: Pattern, onClick: () -> Unit, onDelete: (() -> Unit)? = null) {
+  val locked = pt.premium && !Store.premium
+  NCard(Modifier.fillMaxWidth().padding(vertical = 5.dp), onClick = onClick) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+      Column(Modifier.weight(1f)) {
+        Text(patternName(pt), style = MaterialTheme.typography.titleMedium)
+        val desc = if (pt.custom) t("${pt.seq.size} günlük döngü", "${pt.seq.size}-day cycle") else patternDesc(pt)
+        Text(desc, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+      }
+      if (locked) Icon(Icons.Filled.Lock, t("Premium", "Premium"), tint = MaterialTheme.colorScheme.primary)
+      if (onDelete != null) IconButton(onClick = onDelete) { Icon(Icons.Filled.Delete, t("Sil", "Delete")) }
+    }
+    Gap(8.dp)
+    Row(horizontalArrangement = Arrangement.spacedBy(3.dp)) {
+      pt.seq.take(16).forEach { id -> Store.typeById(id)?.let { ShiftBadge(it, 16.dp) } }
+      if (pt.seq.size > 16) Text("…", style = MaterialTheme.typography.labelSmall)
+    }
+  }
+}
+
+/** Kendi döngünü oluştur: türlere dokunarak sırayı kur, adlandır, kaydet. */
+@Composable
+private fun PatternBuilder(onDone: () -> Unit) {
+  val ctx = LocalContext.current
+  var name by remember { mutableStateOf("") }
+  val seq = remember { mutableStateListOf<String>() }
+  Text(t("Vardiya türlerine sırayla dokunarak döngünüzü oluşturun (en fazla 42 gün).", "Tap shift types in order to build your cycle (up to 42 days)."), color = MaterialTheme.colorScheme.onSurfaceVariant)
+  Gap()
+  OutlinedTextField(
+    value = name,
+    onValueChange = { name = it.take(30) },
+    label = { Text(t("Şablon adı", "Template name")) },
+    singleLine = true,
+    modifier = Modifier.fillMaxWidth(),
+  )
+  Gap()
+  FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    Store.types.forEach { ty ->
+      Surface(
+        onClick = { if (seq.size < 42) seq.add(ty.id) },
+        shape = RoundedCornerShape(14.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant,
+      ) {
+        Row(Modifier.padding(horizontal = 12.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
+          ShiftBadge(ty, 26.dp)
+          Spacer(Modifier.width(8.dp))
+          Text("+ " + typeName(ty))
+        }
+      }
+    }
+  }
+  Gap()
+  SectionTitle(t("Döngü (${seq.size} gün)", "Cycle (${seq.size} days)"))
+  if (seq.isEmpty()) {
+    Text(t("Henüz gün eklenmedi.", "No days added yet."), style = MaterialTheme.typography.bodySmall)
+  } else {
+    FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+      seq.forEachIndexed { i, id ->
+        val ty = Store.typeById(id) ?: return@forEachIndexed
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+          Text("${i + 1}", style = MaterialTheme.typography.labelSmall)
+          ShiftBadge(ty, 28.dp)
+        }
+      }
+    }
+    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+      TextButton(onClick = { seq.removeAt(seq.size - 1) }) { Text(t("Son günü sil", "Remove last")) }
+      TextButton(onClick = { seq.clear() }) { Text(t("Temizle", "Clear")) }
+    }
+  }
+  Gap()
+  BigButton(t("Şablonu kaydet", "Save template"), enabled = seq.size >= 2 && name.isNotBlank()) {
+    Store.savePattern(name.trim(), seq.toList())
+    Toast.makeText(ctx, t("Şablon kaydedildi", "Template saved"), Toast.LENGTH_SHORT).show()
+    onDone()
   }
 }
 

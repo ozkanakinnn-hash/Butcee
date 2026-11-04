@@ -45,12 +45,14 @@ object Reminders {
     val today = now.toLocalDate()
     val smart = Store.premium && Store.remSmart
     val sleeping = Store.sleepStart > 0L
+    fun on(kind: String) = smart && Store.smartOn(kind)
+    fun clock(t: LocalDateTime) = fmtClock(t.hour * 60 + t.minute)
 
-    for (i in -1..3) {
+    for (i in -1..4) {
       val d = today.plusDays(i.toLong())
       val w = Store.workOn(d) ?: continue
       val name = typeName(w.type)
-      val startTxt = fmtClock(w.type.startMin)
+      val startTxt = clock(w.start)
       if (Store.remShiftStart) {
         val lead = Store.remShiftLeadMin + if (w.type.isNight) 30 else 0
         out += Event(
@@ -61,46 +63,132 @@ object Reminders {
         )
       }
       if (!smart) continue
+
+      // Vardiya bitmeden 1 saat önce: dinlenmeyi planla
+      if (on("shiftEnd")) {
+        out += Event(
+          Store.toMs(w.end.minusHours(1)),
+          t("Vardiyanız 1 saat sonra bitiyor", "Your shift ends in 1 hour"),
+          if (w.type.isNight) t("Eve dönüşü ve uykuyu planlayın: güneş gözlüğü, karanlık oda, telefonu sessize alın.",
+            "Plan your wind-down: sunglasses on the way home, a dark room, phone on silent.")
+          else t("Akşamınızı planlayın: hafif bir yemek ve ekransız bir saat uykuya geçişi kolaylaştırır.",
+            "Plan your wind-down: a light meal and a screen-free hour make it easier to sleep."),
+          critical = false,
+        )
+      }
+
       if (w.type.isNight) {
-        var before = w.start.minusHours(24)
-        if (before.hour >= 22) before = before.toLocalDate().atTime(20, 0)
-        else if (before.hour < 8) before = before.toLocalDate().minusDays(1).atTime(20, 0)
-        out += Event(
-          Store.toMs(before),
-          t("Yarın gece vardiyası 🌙", "Night shift tomorrow 🌙"),
-          t("Yarın $startTxt'de gece vardiyanız var — sabah biraz geç kalkmaya ve bu akşamı sakin geçirmeye çalışın.",
-            "You have a night shift tomorrow at $startTxt — try to sleep in and keep tonight relaxed."),
-          critical = false,
-        )
-        out += Event(
-          Store.toMs(w.start.minusHours(4)),
-          t("Vardiya öncesi kısa uyku", "Pre-shift nap"),
-          t("$startTxt'de gece vardiyanız var. Şimdi 60–90 dakikalık bir kestirme dikkatinizi korumanıza yardımcı olur.",
-            "Night shift at $startTxt. A 60–90 minute nap now can help you stay sharp."),
-          critical = false,
-        )
-        out += Event(
-          Store.toMs(w.end.plusMinutes(15)),
-          t("Vardiya bitti 👏", "Shift done 👏"),
-          t("Daha iyi uyumak için eve dönerken güneş gözlüğü takın, odanızı karanlık ve serin tutun.",
-            "Keep your sunglasses on the way home and your room dark and cool for better sleep."),
-          critical = false,
-        )
-      } else {
-        // Ertesi sabah vardiyası: yatış = başlangıç − yol (1 sa) − hazırlık (30 dk) − uyku hedefi
+        val prevDay = w.start.toLocalDate().minusDays(1)
+        if (on("nightPrep")) {
+          var before = w.start.minusHours(24)
+          if (before.hour >= 22) before = before.toLocalDate().atTime(20, 0)
+          else if (before.hour < 8) before = before.toLocalDate().minusDays(1).atTime(20, 0)
+          out += Event(
+            Store.toMs(before),
+            t("Yarın gece vardiyası 🌙", "Night shift tomorrow 🌙"),
+            t("Yarın $startTxt'de gece vardiyanız var — sabah biraz geç kalkmaya ve bu akşamı sakin geçirmeye çalışın.",
+              "You have a night shift tomorrow at $startTxt — try to sleep in and keep tonight relaxed."),
+            critical = false,
+          )
+        }
+        if (on("caffeine")) {
+          // Gece vardiyasından önceki gün: 14:00'ten sonra kafeini sınırla (o gece iyi uyuyup sabah geç kalkabilmek için)
+          out += Event(
+            Store.toMs(prevDay.atTime(13, 30)),
+            t("Yarın gece vardiyası — kafeine dikkat ☕", "Night shift tomorrow — mind the caffeine ☕"),
+            t("Bu gece iyi uyuyup sabah geç kalkabilmek için 14:00'ten sonra kafeini sınırlamaya çalışın.",
+              "Try to limit caffeine after 14:00 so you sleep well tonight and can sleep in tomorrow."),
+            critical = false,
+          )
+          // Vardiya sırasında: uykudan ~6 saat önce son kahve
+          val sleepAfter = w.end.plusHours(1)
+          out += Event(
+            Store.toMs(sleepAfter.minusHours(6)),
+            t("Son kahve zamanı", "Last coffee for this shift"),
+            t("Vardiya sonrası ${clock(sleepAfter)} civarı uyuyabilmek için bundan sonra kafein almamaya çalışın.",
+              "To fall asleep around ${clock(sleepAfter)} after your shift, try to skip caffeine from now on."),
+            critical = false,
+          )
+        }
+        if (on("nap")) {
+          out += Event(
+            Store.toMs(w.start.minusHours(4)),
+            t("Vardiya öncesi kısa uyku", "Pre-shift nap"),
+            t("$startTxt'de gece vardiyanız var. Şimdi 60–90 dakikalık bir kestirme dikkatinizi korumanıza yardımcı olur.",
+              "Night shift at $startTxt. A 60–90 minute nap now can help you stay sharp."),
+            critical = false,
+          )
+        }
+        if (on("afterNight")) {
+          out += Event(
+            Store.toMs(w.end.plusMinutes(15)),
+            t("Vardiya bitti 👏", "Shift done 👏"),
+            t("Daha iyi uyumak için eve dönerken güneş gözlüğü takın, odanızı karanlık ve serin tutun.",
+              "Keep your sunglasses on the way home and your room dark and cool for better sleep."),
+            critical = false,
+          )
+          // Gece çıkışından sonra 24 saat içinde gündüz vardiyası: kısa geçiş uyarısı
+          val nextW = Store.workOn(w.end.toLocalDate()) ?: Store.workOn(w.end.toLocalDate().plusDays(1))
+          if (nextW != null && !nextW.type.isNight && nextW.start.isAfter(w.end) &&
+            java.time.Duration.between(w.end, nextW.start).toHours() < 24
+          ) {
+            out += Event(
+              Store.toMs(w.end.plusMinutes(20)),
+              t("Kısa geçiş uyarısı", "Quick turnaround"),
+              t("Bir sonraki vardiyanız ${clock(nextW.start)}'de. Şimdi 3–4 saat uyuyup akşam erken yatmayı deneyin.",
+                "Your next shift starts at ${clock(nextW.start)}. Try a 3–4 hour sleep now and an early night."),
+              critical = false,
+            )
+          }
+        }
+        if (on("transition")) {
+          // Gündüzden geceye geçiş: önceki 3 gün içinde gece olmayan bir çalışma vardiyası varsa 2 gün önce uyar
+          val prevWorkDay = (1..3).map { w.date.minusDays(it.toLong()) }.firstNotNullOfOrNull { Store.workOn(it) }
+          val prevNight = Store.workOn(w.date.minusDays(1))?.type?.isNight == true
+          if (!prevNight && prevWorkDay != null && !prevWorkDay.type.isNight) {
+            out += Event(
+              Store.toMs(w.date.minusDays(2).atTime(19, 0)),
+              t("Gece vardiyasına geçiş yaklaşıyor", "Switching to nights soon"),
+              t("2 gün sonra gece vardiyasına geçiyorsunuz. Yatış saatinizi her gece 1–2 saat ileri kaydırın.",
+                "You switch to nights in 2 days. Shift your bedtime 1–2 hours later each night."),
+              critical = false,
+            )
+          }
+        }
+      } else if (on("windDown") || on("caffeine")) {
+        // Sabah/gündüz vardiyası: yatış = başlangıç − yol (1 sa) − hazırlık (30 dk) − uyku hedefi
         val bed = w.start.minusMinutes(90L + Store.sleepGoalMin)
-        val bedTxt = fmtClock(bed.hour * 60 + bed.minute)
+        val bedTxt = clock(bed)
+        if (on("windDown")) {
+          out += Event(
+            Store.toMs(bed.minusMinutes(45)),
+            t("Yatma vakti yaklaşıyor", "Wind-down time"),
+            t("Yarınki $name vardiyası için $bedTxt civarı yatmayı hedefleyin. Ekranları kısın, ışıkları azaltın.",
+              "Aim for bed around $bedTxt for tomorrow's $name shift. Dim the screens and lights."),
+            critical = false,
+          )
+        }
+        if (on("caffeine")) {
+          out += Event(
+            Store.toMs(bed.minusHours(6)),
+            t("Kahve için son çağrı ☕", "Last call for coffee ☕"),
+            t("Şimdi alınan kafein $bedTxt'deki uykunuzu etkileyebilir.", "Caffeine now may affect your sleep at $bedTxt."),
+            critical = false,
+          )
+        }
+      }
+    }
+
+    // Toparlanma: uyku borcu yüksekse ve yarın izinse
+    if (on("recovery")) {
+      val tomorrow = today.plusDays(1)
+      val (debt, days) = Store.debt7(today)
+      if (days > 0 && debt > 420 && Store.workOn(tomorrow) == null) {
         out += Event(
-          Store.toMs(bed.minusMinutes(45)),
-          t("Yatma vakti yaklaşıyor", "Wind-down time"),
-          t("Yarınki $name vardiyası için $bedTxt civarı yatmayı hedefleyin. Ekranları kısın, ışıkları azaltın.",
-            "Aim for bed around $bedTxt for tomorrow's $name shift. Dim the screens and lights."),
-          critical = false,
-        )
-        out += Event(
-          Store.toMs(bed.minusHours(6)),
-          t("Kahve için son çağrı ☕", "Last call for coffee ☕"),
-          t("Şimdi alınan kafein $bedTxt'deki uykunuzu etkileyebilir.", "Caffeine now may affect your sleep at $bedTxt."),
+          Store.toMs(today.atTime(21, 0)),
+          t("Yarın izinlisiniz — toparlanma fırsatı", "Day off tomorrow — time to recover"),
+          t("Uyku borcunuz ${fmtDur(debt)}. Bu gece alarmsız uyumayı ve gündüz kısa bir şekerleme yapmayı deneyin.",
+            "Your sleep debt is ${fmtDur(debt)}. Try sleeping without an alarm tonight and a short nap tomorrow."),
           critical = false,
         )
       }
@@ -125,6 +213,18 @@ object Reminders {
       .filter { it.at > nowMs && it.at > Store.lastFired }
       .filter { it.critical || !sleeping }
       .sortedBy { it.at }
+      .distinctBy { it.at to it.title }
+  }
+
+  fun kindName(kind: String): Pair<String, String> = when (kind) {
+    "nightPrep" -> t("Gece vardiyası öncesi hazırlık", "Night-shift prep") to t("Bir gün önce akşam", "Evening before")
+    "caffeine" -> t("Kafein sınırı", "Caffeine cut-off") to t("Gece öncesi 14:00 ve yatıştan 6 sa önce", "14:00 before nights, 6 h before bed")
+    "nap" -> t("Vardiya öncesi şekerleme", "Pre-shift nap") to t("Gece vardiyasından 4 sa önce", "4 h before a night shift")
+    "windDown" -> t("Yatma vakti", "Wind-down") to t("Sabah vardiyası öncesi akşam", "Evening before a day shift")
+    "shiftEnd" -> t("Vardiya bitişi", "Shift ending") to t("Bitişten 1 saat önce", "1 hour before the end")
+    "afterNight" -> t("Gece sonrası ipuçları", "After-night tips") to t("Işık, uyku ve kısa geçiş uyarısı", "Light, sleep and quick-turnaround alerts")
+    "transition" -> t("Geceye geçiş", "Switching to nights") to t("Geçişten 2 gün önce", "2 days before the switch")
+    else -> t("Toparlanma", "Recovery") to t("Borç yüksekse ve yarın izinse", "High debt and a day off tomorrow")
   }
 
   fun reschedule(ctx: Context) {
@@ -173,8 +273,9 @@ object Reminders {
     }
   }
 
-  fun describeNext(): String? {
-    val e = upcoming().firstOrNull() ?: return null
+  fun describeNext(): String? = upcoming().firstOrNull()?.let { describe(it) }
+
+  fun describe(e: Event): String {
     val at = Store.toLdt(e.at)
     val days = ChronoUnit.DAYS.between(Store.today(), at.toLocalDate())
     val day = when (days) {

@@ -154,6 +154,7 @@ fun AppRoot() {
           "templates" -> TemplatesScreen()
           "patterns" -> PatternScreen()
           "sleepmode" -> SleepModeScreen()
+          "share" -> ShareScreen()
           else -> Unit
         }
       }

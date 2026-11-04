@@ -90,6 +90,8 @@ fun StatsScreen() {
       )
     }
 
+    SleepShiftCard()
+
     if (Store.premium) {
       NCard(Modifier.fillMaxWidth()) {
         Text(t("Vardiya türüne göre enerji", "Energy by shift type"), style = MaterialTheme.typography.titleMedium)
@@ -152,6 +154,54 @@ fun StatsScreen() {
   }
 }
 
+fun categoryName(c: String): String = when (c) {
+  "postNight" -> t("Gece vardiyası sonrası", "After a night shift")
+  "preNight" -> t("Gece vardiyası günü", "Night-shift day")
+  "work" -> t("Gündüz/akşam çalışma günü", "Day/evening work day")
+  else -> t("İzin günü", "Day off")
+}
+
+/** Vardiya türlerinin uyku süresi ve kalitesine etkisi. */
+@Composable
+fun SleepShiftCard() {
+  val stats = Store.sleepByCategory(60)
+  NCard(Modifier.fillMaxWidth()) {
+    Text(t("Vardiyalar uykunuzu nasıl etkiliyor?", "How shifts affect your sleep"), style = MaterialTheme.typography.titleMedium)
+    Text(t("Son 60 gün · ortalama süre ve kalite", "Last 60 days · average duration and quality"), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    Gap(8.dp)
+    if (stats.isEmpty()) {
+      Text(t("Uyku kaydettikçe vardiya türlerine göre karşılaştırma burada görünür.", "As you log sleep, a comparison by shift type appears here."), style = MaterialTheme.typography.bodySmall)
+      return@NCard
+    }
+    val maxMin = maxOf(stats.values.maxOf { it.avgMin }, Store.sleepGoalMin).toFloat()
+    listOf("postNight", "preNight", "work", "off").forEach { c ->
+      val st = stats[c] ?: return@forEach
+      val q = if (st.avgQuality > 0f) " · " + com.nobet.i18n.qualityEmoji[(st.avgQuality.toInt() - 1).coerceIn(0, 4)] + " " + fmtNum(st.avgQuality) + "/5" else ""
+      HBar(
+        categoryName(c) + t(" (${st.days} gün)", " (${st.days} days)"),
+        st.avgMin.toFloat(),
+        maxMin,
+        fmtDur(st.avgMin) + q,
+        when (c) {
+          "postNight", "preNight" -> MaterialTheme.colorScheme.primary
+          "work" -> Warning
+          else -> Success
+        },
+      )
+    }
+    val pn = stats["postNight"]
+    val off = stats["off"]
+    if (pn != null) {
+      Gap(8.dp)
+      Text(
+        t("Gece vardiyalarından sonra ortalama ${fmtHours(pn.avgMin)} uyuyorsunuz", "After night shifts, you sleep an average of ${fmtHours(pn.avgMin)}") +
+          if (off != null) t(" (izin günlerinde ${fmtHours(off.avgMin)}).", " (${fmtHours(off.avgMin)} on days off).") else ".",
+        fontWeight = FontWeight.SemiBold,
+      )
+    }
+  }
+}
+
 fun shareCsv(ctx: Context) {
   val i = Intent(Intent.ACTION_SEND).setType("text/plain")
     .putExtra(Intent.EXTRA_SUBJECT, "Nöbet export")
@@ -177,6 +227,21 @@ fun insights(today: LocalDate): List<String> {
 
   val post = range.filter { Store.isPostNight(it) }.map { Store.sleepMinOn(it) }
   val other = range.filter { !Store.isPostNight(it) }.map { Store.sleepMinOn(it) }
+  if (post.size >= 2) {
+    out += t(
+      "Gece vardiyalarından sonra ortalama ${fmtHours(post.average().toInt())} uyuyorsunuz. (${post.size} gece)",
+      "After night shifts, you sleep an average of ${fmtHours(post.average().toInt())}. (${post.size} nights)",
+    )
+  }
+  val cat = Store.sleepByCategory(60, today)
+  val qn = cat["postNight"]
+  val qo = cat["off"]
+  if (qn != null && qo != null && qn.days >= 2 && qo.days >= 2 && qo.avgQuality - qn.avgQuality >= 0.5f) {
+    out += t(
+      "Gece sonrası uyku kaliteniz izin günlerine göre daha düşük (${fmtNum(qn.avgQuality)} vs ${fmtNum(qo.avgQuality)} / 5). Karartma perdesi ve kulak tıkacı yardımcı olabilir.",
+      "Your sleep quality after nights is lower than on days off (${fmtNum(qn.avgQuality)} vs ${fmtNum(qo.avgQuality)} / 5). Blackout curtains and earplugs can help.",
+    )
+  }
   if (post.size >= 3 && other.size >= 3) {
     val diff = other.average() - post.average()
     if (diff > 20) {

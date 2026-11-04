@@ -167,8 +167,16 @@ fun SettingsScreen() {
         Text(t("Saatleri düzenleyin, özel vardiya ekleyin", "Edit times, add custom shifts"), style = MaterialTheme.typography.bodySmall)
       }
       NCard(Modifier.fillMaxWidth(), onClick = { Nav.open("patterns") }) {
-        Text(t("Vardiya düzeni uygula", "Apply a rotation pattern"), fontWeight = FontWeight.SemiBold)
-        Text(t("2-2-3, 4 çalış 4 izin, 24/48 ve diğerleri", "2-2-3, 4-on-4-off, 24/48 and more"), style = MaterialTheme.typography.bodySmall)
+        Text(t("Şablon kütüphanesi", "Template library"), fontWeight = FontWeight.SemiBold)
+        Text(t("Hazır düzenler, mesleğinize göre öneriler ve kendi şablonlarınız", "Ready-made patterns, suggestions for your role and your own templates"), style = MaterialTheme.typography.bodySmall)
+      }
+      NCard(Modifier.fillMaxWidth(), onClick = { Nav.open("share") }) {
+        Text(t("Aile / partner paylaşımı", "Family / partner sharing"), fontWeight = FontWeight.SemiBold)
+        Text(
+          if (Store.hasPartner) t("${Store.partnerName} takvimi ekli", "${Store.partnerName}'s schedule added")
+          else t("Vardiyalarınızı bir kişiyle paylaşın (uyku verisi paylaşılmaz)", "Share your shifts with one person (no sleep data)"),
+          style = MaterialTheme.typography.bodySmall,
+        )
       }
 
       // Hatırlatıcılar
@@ -213,12 +221,23 @@ fun SettingsScreen() {
             Store.changed()
           }
         }
+        if (Store.premium && Store.remSmart) {
+          com.nobet.data.Builtins.smartKinds.forEach { k ->
+            val (title, sub) = Reminders.kindName(k)
+            Row(Modifier.padding(start = 12.dp)) {
+              SwitchRow(title, sub, Store.smartOn(k)) { Store.setSmart(k, it) }
+            }
+          }
+        }
         Gap(4.dp)
-        Text(
-          t("Sıradaki: ", "Next: ") + (Reminders.describeNext() ?: t("planlanmış hatırlatıcı yok", "no reminder scheduled")),
-          style = MaterialTheme.typography.bodySmall,
-          color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
+        SectionTitle(t("Yaklaşan hatırlatıcılar", "Upcoming reminders"))
+        val up = Reminders.upcoming().take(5)
+        if (up.isEmpty()) {
+          Text(t("Planlanmış hatırlatıcı yok", "No reminders scheduled"), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        up.forEach { e ->
+          Text("• " + Reminders.describe(e), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
         Row {
           TextButton(onClick = {
             Reminders.show(ctx, t("Test bildirimi", "Test notification"), t("Hatırlatıcılar çalışıyor 👍", "Reminders are working 👍"))
@@ -281,7 +300,7 @@ fun SettingsScreen() {
       // Hakkında
       NCard(Modifier.fillMaxWidth()) {
         SectionTitle(t("Hakkında", "About"))
-        Text("Nöbet 0.1.0 (test)", fontWeight = FontWeight.SemiBold)
+        Text("Nöbet 0.2.0 (test)", fontWeight = FontWeight.SemiBold)
         Text(
           t("Nöbet genel sağlıklı yaşam bilgisi sunar, tıbbi tavsiye değildir. Sağlık sorunlarınız için bir hekime danışın.",
             "Nöbet provides general wellness information, not medical advice. Consult a doctor about health concerns."),

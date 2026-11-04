@@ -170,6 +170,8 @@ fun TodayScreen() {
       }
     }
 
+    PartnerTodayCard()
+
     // Önümüzdeki günler
     NCard(Modifier.fillMaxWidth(), onClick = { Nav.tab = 1 }) {
       Text(t("Önümüzdeki günler", "Next days"), style = MaterialTheme.typography.labelLarge)

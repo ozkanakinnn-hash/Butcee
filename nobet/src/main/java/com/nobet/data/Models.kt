@@ -40,6 +40,7 @@ data class Pattern(
   val descEn: String,
   val seq: List<String>,
   val premium: Boolean,
+  val custom: Boolean = false,
 )
 
 data class SleepEntry(
@@ -105,6 +106,21 @@ object Builtins {
       rep(D, 5) + rep(O, 2), premium = false,
     ),
     Pattern(
+      "permnight", "Sabit gece (5-2)", "Permanent nights (5-2)",
+      "5 gece çalış, 2 gün izin", "5 nights on, 2 days off",
+      rep(N, 5) + rep(O, 2), premium = false,
+    ),
+    Pattern(
+      "permnight43", "Sabit gece (4-3)", "Permanent nights (4-3)",
+      "4 gece çalış, 3 gün izin", "4 nights on, 3 days off",
+      rep(N, 4) + rep(O, 3), premium = true,
+    ),
+    Pattern(
+      "permeve", "Sabit akşam (5-2)", "Permanent evenings (5-2)",
+      "5 akşam çalış, 2 gün izin", "5 evenings on, 2 days off",
+      rep(E, 5) + rep(O, 2), premium = true,
+    ),
+    Pattern(
       "2dn4o", "2 Gündüz · 2 Gece · 4 İzin", "2 Days · 2 Nights · 4 Off",
       "Hastanelerde yaygın 12 saatlik düzen", "Common 12-hour hospital rotation",
       rep(D, 2) + rep(N, 2) + rep(O, 4), premium = true,
@@ -137,12 +153,15 @@ object Builtins {
   )
 
   fun suggestedFor(role: String): List<String> = when (role) {
-    "nurse" -> listOf("2dn4o", "1236", "223")
-    "factory" -> listOf("3shift", "223", "52")
-    "security" -> listOf("2448", "1236", "4on4off")
-    "hospitality" -> listOf("52", "3shift", "4on4off")
-    else -> listOf("223", "4on4off", "52")
+    "nurse" -> listOf("2dn4o", "1236", "223", "permnight")
+    "factory" -> listOf("3shift", "223", "52", "4dn")
+    "security" -> listOf("2448", "1236", "4on4off", "permnight")
+    "hospitality" -> listOf("52", "3shift", "permnight", "permeve")
+    else -> listOf("223", "4on4off", "52", "permnight")
   }
+
+  /** Akıllı hatırlatıcı kategorileri (Ayarlar'dan tek tek kapatılabilir). */
+  val smartKinds = listOf("nightPrep", "caffeine", "nap", "windDown", "shiftEnd", "afterNight", "transition", "recovery")
 
   val energyTags = listOf("caffeine", "exercise", "stress", "lateMeal", "alcohol", "nap")
 }
