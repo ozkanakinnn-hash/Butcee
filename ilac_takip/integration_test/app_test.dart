@@ -105,17 +105,17 @@ void main() {
     await tab('Takviyeler', '02_takviyeler');
     await tester.tap(find.text('Demir').first);
     await shot(tester, '03_takviye_ayrinti');
-    await tester.pageBack();
+    await tester.binding.handlePopRoute();
     await pumpFor(tester, 800);
 
     await tab('Panel', '04_panel');
     await tester.tap(find.text('Etkileşim kontrolü'));
     await shot(tester, '05_etkilesim');
-    await tester.pageBack();
+    await tester.binding.handlePopRoute();
     await pumpFor(tester, 800);
     await tester.tap(find.text('Hazır setler'));
     await shot(tester, '06_hazir_setler');
-    await tester.pageBack();
+    await tester.binding.handlePopRoute();
     await pumpFor(tester, 800);
 
     await tab('İstatistik', '07_istatistik');
