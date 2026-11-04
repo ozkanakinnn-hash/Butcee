@@ -72,12 +72,14 @@ adb shell input swipe 200 1300 950 1300 300; shot 04c_okuyucu_sonraki_sayfa 2
 tap_text "Meal"; shot 04d_okuyucu_meal 2
 tap_text "Okunuş"; shot 04e_okuyucu_okunus 2
 adb shell input keyevent KEYCODE_BACK; sleep 2
-tap_text "🏆 Hatim Takibi"; shot 04f_hatim 2
-adb shell input tap 300 1500; sleep 1; adb shell input swipe 540 1800 540 700 500; shot 04g_hatim_asagi 2
-tap_text "📖 Sureler"; sleep 1
+adb shell input tap 810 396; shot 04f_hatim 2
+adb shell input swipe 540 1800 540 700 500; shot 04g_hatim_asagi 2
+adb shell input swipe 540 600 540 1800 400; adb shell input tap 270 396; sleep 1
 tap_text "Takvim"; shot 05_takvim
 tap_text "Ayet & Dua"; shot 06_ayet_dua
-tap_text "Dahası"; sleep 2; tap_text "Esmâü'l-Hüsnâ"; shot 06b_esma 2
+tap_text "Dahası"; shot 06a_dahasi 2
+adb shell input swipe 540 1800 540 900 500; shot 06a2_dahasi_asagi 2
+tap_text "Esmâü'l-Hüsnâ"; shot 06b_esma 2
 adb shell input keyevent KEYCODE_BACK; sleep 2
 # Ramazan Rehberi (Dahası) + özel gün kartları + widget'lar
 tap_text "Ramazan Rehberi"; shot 06c_ramazan_rehberi 3
