@@ -92,3 +92,7 @@ gradle/actions/setup-gradle@v5 → `./gradlew assembleDebug` → upload-artifact
   `launchMode="singleTop"` + `onNewIntent`. Mesajlaşma uygulamaları özel şemayı link yapmaz → "Panodan yapıştır" da sun.
 - **Test sürümünde Premium:** Paywall "Test sürümü: ödeme alınmaz" diyerek Premium'u açar, Ayarlar'dan kapatılır;
   gerçek ödeme (Play Billing/RevenueCat) yayın öncesi eklenmeli — kullanıcıya hatırlat.
+- **FlowRow derleme hatası:** `FlowRow` kullanan HER dosyada (tam adla yazılsa bile) dosya başına
+  `@file:OptIn(..., ExperimentalLayoutApi::class)` ekle; yoksa "The API of this layout is experimental" ile derleme düşer.
+- **CI hata satırını bulmak:** blob log URL'si proxy'de engelli; `get_job_logs(job_id, return_content=true, tail_lines≈330)`
+  ile `e: file:///...` satırlarını ara (yığın izi ~200 satır, hatalar onun hemen üstünde).
