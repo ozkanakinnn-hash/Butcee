@@ -39,7 +39,8 @@ import com.example.i18n.t
 @Composable
 fun ShareWithLovedOnesCard(onClick: () -> Unit, modifier: Modifier = Modifier) {
   val today = remember { GreetingOccasion.forToday() }
-  val gold = Color(0xFFE5B869)
+  val preview = today ?: GreetingOccasion.CUMA
+  val accent = MaterialTheme.colorScheme.primary
   val subtitle = when {
     today != null && AppLanguage.isEnglish -> "Today: ${today.label.en} • Your card is ready"
     today != null -> "Bugün ${today.label.tr} • Kartınız hazır"
@@ -51,29 +52,29 @@ fun ShareWithLovedOnesCard(onClick: () -> Unit, modifier: Modifier = Modifier) {
       .fillMaxWidth()
       .padding(horizontal = 16.dp, vertical = 6.dp)
       .clip(RoundedCornerShape(20.dp))
-      .background(Brush.verticalGradient(listOf(Color(0xFF0C1424), Color(0xFF04070E))))
-      .border(1.dp, gold.copy(alpha = 0.6f), RoundedCornerShape(20.dp))
+      .background(
+        Brush.horizontalGradient(
+          listOf(MaterialTheme.colorScheme.surface, MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.55f))
+        )
+      )
+      .border(1.dp, accent.copy(alpha = 0.45f), RoundedCornerShape(20.dp))
       .clickable { onClick() }
       .testTag("share_loved_ones_card")
   ) {
     Row(
-      modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
+      modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
       verticalAlignment = Alignment.CenterVertically
     ) {
-      // Küçük altın kemer simgesi
-      Canvas(modifier = Modifier.size(width = 34.dp, height = 44.dp)) {
-        val w = size.width; val h = size.height
-        val arch = Path().apply {
-          moveTo(0f, h); lineTo(0f, h * 0.42f)
-          cubicTo(0f, h * 0.18f, w * 0.34f, h * 0.08f, w / 2f, 0f)
-          cubicTo(w * 0.66f, h * 0.08f, w, h * 0.18f, w, h * 0.42f)
-          lineTo(w, h); close()
-        }
-        drawPath(arch, gold, style = Stroke(width = 2.5f))
-        drawLine(gold, Offset(w / 2f, h * 0.12f), Offset(w / 2f, h * 0.38f), strokeWidth = 2f)
-        drawCircle(Color(0xFFFFD27A), radius = w * 0.13f, center = Offset(w / 2f, h * 0.5f))
-        drawCircle(Color(0x55FFD27A), radius = w * 0.28f, center = Offset(w / 2f, h * 0.5f))
-      }
+      // Bugünün kartından küçük önizleme
+      androidx.compose.foundation.Image(
+        painter = androidx.compose.ui.res.painterResource(preview.bgRes),
+        contentDescription = null,
+        contentScale = androidx.compose.ui.layout.ContentScale.Crop,
+        modifier = Modifier
+          .size(width = 40.dp, height = 64.dp)
+          .clip(RoundedCornerShape(8.dp))
+          .border(1.dp, accent.copy(alpha = 0.5f), RoundedCornerShape(8.dp))
+      )
       Spacer(modifier = Modifier.width(14.dp))
       Column(modifier = Modifier.weight(1f)) {
         Text(
@@ -81,12 +82,12 @@ fun ShareWithLovedOnesCard(onClick: () -> Unit, modifier: Modifier = Modifier) {
           fontFamily = FontFamily.Serif,
           fontWeight = FontWeight.Bold,
           fontSize = 17.sp,
-          color = Color(0xFFF3EEE2)
+          color = MaterialTheme.colorScheme.onSurface
         )
         Spacer(modifier = Modifier.height(2.dp))
-        Text(text = subtitle, fontSize = 12.sp, color = gold)
+        Text(text = subtitle, fontSize = 12.sp, color = accent)
       }
-      Text(text = "›", fontSize = 28.sp, color = gold, fontWeight = FontWeight.Bold)
+      Text(text = "›", fontSize = 28.sp, color = accent, fontWeight = FontWeight.Bold)
     }
   }
 }
