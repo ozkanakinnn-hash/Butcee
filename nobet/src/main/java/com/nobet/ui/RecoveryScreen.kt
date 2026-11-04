@@ -163,6 +163,7 @@ fun RecoveryScreen() {
   ) {
     Text(t("Toparlanma", "Recovery"), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
     pending.forEach { PendingCheckInCard(it) }
+    NutritionCard(now)
 
     NCard(Modifier.fillMaxWidth()) {
       if (latest == null) {

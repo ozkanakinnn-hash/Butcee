@@ -31,6 +31,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.nobet.data.Store
 import com.nobet.i18n.dowShort
+import com.nobet.i18n.fmtDate
 import com.nobet.i18n.fmtDur
 import com.nobet.i18n.fmtHours
 import com.nobet.i18n.fmtNum
@@ -40,19 +41,16 @@ import java.time.LocalDate
 
 @Composable
 fun StatsScreen() {
-  var month by rememberSaveable { mutableStateOf(false) }
+  var period by rememberSaveable { mutableStateOf("week") }
   val today = Store.today()
-  val n = if (month) 30 else 7
-  val days = (n - 1 downTo 0).map { today.minusDays(it.toLong()) }
-
-  val scores = days.map { com.nobet.data.Recovery.scoreOn(it) }
-  val scored = scores.filterNotNull()
-  val avgRec = if (scored.isEmpty()) null else scored.average().toInt()
-  val works = days.mapNotNull { Store.workOn(it) }
-  val nights = works.count { it.type.isNight }
-  val workMin = works.sumOf { it.type.durationMin }
-  val energies = days.mapNotNull { Store.energyOn(it) }
-  val avgEnergy = if (energies.isEmpty()) null else energies.average().toFloat()
+  val (from, to) = when (period) {
+    "month" -> today.withDayOfMonth(1) to today.withDayOfMonth(today.lengthOfMonth())
+    "year" -> today.withDayOfYear(1) to today.withDayOfYear(today.lengthOfYear())
+    else -> today.with(java.time.DayOfWeek.MONDAY) to today.with(java.time.DayOfWeek.SUNDAY)
+  }
+  val works = generateSequence(from) { it.plusDays(1) }.takeWhile { !it.isAfter(to) }.mapNotNull { Store.workOn(it) }.toList()
+  val total = works.sumOf { it.type.durationMin }
+  val done = works.filter { !it.end.isAfter(java.time.LocalDateTime.now(Store.zone)) }.sumOf { it.type.durationMin }
 
   Column(
     Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 12.dp),
@@ -60,58 +58,25 @@ fun StatsScreen() {
   ) {
     Text(t("İstatistikler", "Statistics"), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
     SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
-      SegmentedButton(selected = !month, onClick = { month = false }, shape = SegmentedButtonDefaults.itemShape(0, 2)) { Text(t("Hafta", "Week")) }
-      SegmentedButton(
-        selected = month,
-        onClick = { if (Store.premium) month = true else Nav.paywall(t("Aylık istatistikler", "Monthly statistics")) },
-        shape = SegmentedButtonDefaults.itemShape(1, 2),
-      ) { Text(t("Ay", "Month") + if (Store.premium) "" else " 🔒") }
-    }
-
-    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-      StatTile(t("Ort. toparlanma", "Avg recovery"), avgRec?.toString() ?: "–", t("${scored.size} kontrol", "${scored.size} check-ins"), Modifier.weight(1f))
-      StatTile(t("Vardiya", "Shifts"), "${works.size}", t("$nights gece · ${fmtHours(workMin)}", "$nights nights · ${fmtHours(workMin)}"), Modifier.weight(1f))
-    }
-    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-      StatTile(t("Ort. enerji", "Avg energy"), avgEnergy?.let { fmtNum(it) } ?: "–", t("son $n gün", "last $n days"), Modifier.weight(1f))
-      val rem = Store.leaveRemaining()
-      StatTile(t("Kalan izin", "Leave left"), fmtNum(rem).removeSuffix(",0").removeSuffix(".0"), t("${fmtNum(Store.leaveUsed()).removeSuffix(",0").removeSuffix(".0")} gün kullanıldı", "${fmtNum(Store.leaveUsed()).removeSuffix(",0").removeSuffix(".0")} days used"), Modifier.weight(1f))
-    }
-
-    NCard(Modifier.fillMaxWidth()) {
-      Text(t("Vardiya sonrası toparlanma", "Post-shift recovery"), style = MaterialTheme.typography.titleMedium)
-      Gap(8.dp)
-      BarChart(
-        values = scores.map { (it ?: 0).toFloat() },
-        labels = days.mapIndexed { i, d -> if (!month) dowShort(d.dayOfWeek) else if (i % 5 == 4) "${d.dayOfMonth}" else "" },
-        color = MaterialTheme.colorScheme.primary,
-        goal = 75f,
-      )
-      Text(t("Kesikli çizgi: 75 (iyi toparlanma)", "Dashed line: 75 (well recovered)"), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-    }
-
-    JournalCard()
-
-    if (Store.premium) {
-      NCard(Modifier.fillMaxWidth()) {
-        Text(t("Vardiya dağılımı", "Shift distribution"), style = MaterialTheme.typography.titleMedium)
-        Gap(8.dp)
-        val counts = days.mapNotNull { Store.shiftOn(it) }.groupingBy { it.id }.eachCount()
-        val total = counts.values.sum().coerceAtLeast(1)
-        if (counts.isEmpty()) Text(t("Bu aralıkta vardiya yok.", "No shifts in this range."), style = MaterialTheme.typography.bodySmall)
-        counts.entries.sortedByDescending { it.value }.forEach { (id, c) ->
-          val ty = Store.typeById(id) ?: return@forEach
-          HBar(typeName(ty), c.toFloat(), total.toFloat(), "$c", shiftColor(ty))
-        }
+      listOf("week" to t("Bu hafta", "This week"), "month" to t("Bu ay", "This month"), "year" to t("Bu yıl", "This year")).forEachIndexed { i, (k, l) ->
+        SegmentedButton(selected = period == k, onClick = { period = k }, shape = SegmentedButtonDefaults.itemShape(i, 3)) { Text(l, maxLines = 1) }
       }
-    } else {
-      LockedCard(
-        t("Detaylı istatistikler", "Detailed statistics"),
-        t("Vardiya dağılımı ve aylık görünüm.", "Shift distribution and monthly view."),
-      ) { Nav.paywall(t("Detaylı istatistikler", "Detailed statistics")) }
     }
-
-    Spacer(Modifier.height(72.dp))
+    NCard(Modifier.fillMaxWidth()) {
+      Text(t("Toplam çalışma saati", "Total working hours"), style = MaterialTheme.typography.titleMedium)
+      Text(
+        "${fmtDate(from, "d MMM")} – ${fmtDate(to, "d MMM")}",
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+      )
+      Gap(12.dp)
+      Text(fmtDur(total), style = MaterialTheme.typography.displaySmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+      Text(
+        t("${works.size} vardiya · tamamlanan ${fmtDur(done)}", "${works.size} shifts · completed ${fmtDur(done)}"),
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+      )
+    }
+    Spacer(Modifier.height(24.dp))
   }
 }
 

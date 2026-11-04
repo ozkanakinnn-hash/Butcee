@@ -188,7 +188,7 @@ fun CalendarScreen() {
     Gap()
     SectionTitle(t("Renkler", "Legend"))
     Text(
-      t("Kırmızı gün: resmî tatil · 🏖 izin · alttaki nokta: toparlanma puanı", "Red date: public holiday · 🏖 leave · dot below: recovery score"),
+      t("🎌 kırmızı gün: resmî tatil (açık ton: yarım gün) · 🏖 izin · alttaki nokta: toparlanma puanı", "🎌 red day: public holiday (lighter: half day) · 🏖 leave · dot below: recovery score"),
       style = MaterialTheme.typography.bodySmall,
       color = MaterialTheme.colorScheme.onSurfaceVariant,
     )
@@ -285,8 +285,10 @@ private fun MonthGrid(ym: YearMonth, today: LocalDate, selected: List<LocalDate>
 private fun DayCell(d: LocalDate, isToday: Boolean, isSelected: Boolean, onClick: () -> Unit) {
   val ty = Store.shiftOn(d)
   val shape = RoundedCornerShape(12.dp)
+  val hol = com.nobet.data.Holidays.on(d)
   val bg = when {
     isSelected -> MaterialTheme.colorScheme.primaryContainer
+    hol != null -> Alert.copy(alpha = if (hol.half) 0.10f else 0.20f)
     else -> MaterialTheme.colorScheme.surface
   }
   Column(
@@ -297,10 +299,11 @@ private fun DayCell(d: LocalDate, isToday: Boolean, isSelected: Boolean, onClick
     horizontalAlignment = Alignment.CenterHorizontally,
     verticalArrangement = Arrangement.SpaceBetween,
   ) {
-    val hol = com.nobet.data.Holidays.on(d)
     val leave = Store.leaves[Store.key(d)]
     Text(
-      "${d.dayOfMonth}",
+      "${d.dayOfMonth}" + if (hol != null) "🎌" else "",
+      maxLines = 1,
+      softWrap = false,
       style = MaterialTheme.typography.labelMedium,
       fontWeight = if (isToday || hol != null) FontWeight.Bold else FontWeight.Normal,
       color = when {

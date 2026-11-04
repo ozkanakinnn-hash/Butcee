@@ -35,6 +35,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.nobet.data.Store
 import com.nobet.i18n.fmtClock
 import com.nobet.i18n.fmtDate
@@ -96,6 +97,42 @@ fun TodayScreen() {
       IconButton(onClick = { Nav.open("settings") }) { Icon(Icons.Filled.Settings, t("Ayarlar", "Settings")) }
     }
 
+    // Sıradaki vardiya — canlı geri sayım (en üstte)
+    NCard(Modifier.fillMaxWidth(), onClick = { Nav.tab = 1 }, container = MaterialTheme.colorScheme.primaryContainer) {
+      if (next == null) {
+        Text(t("Yaklaşan vardiya yok", "No upcoming shifts"), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onPrimaryContainer)
+        Text(t("Takvimden vardiya ekleyin veya bir düzen uygulayın.", "Add shifts in the calendar or apply a rotation."), color = MaterialTheme.colorScheme.onPrimaryContainer)
+        Gap(8.dp)
+        FilledTonalButton(onClick = { Nav.open("patterns") }) { Text(t("Düzen uygula", "Apply rotation")) }
+      } else {
+        val running = !next.start.isAfter(now)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+          ShiftBadge(next.type, 40.dp)
+          Spacer(Modifier.width(12.dp))
+          Column(Modifier.weight(1f)) {
+            Text(
+              (if (running) t("ŞU AN", "NOW") else relDay(next.date).uppercase(com.nobet.i18n.appLocale())) + " · " + typeName(next.type),
+              style = MaterialTheme.typography.labelLarge,
+              color = MaterialTheme.colorScheme.onPrimaryContainer,
+              fontWeight = FontWeight.Bold,
+            )
+            Text(
+              "${fmtClock(next.type.startMin)} – ${fmtClock(next.type.endMin)}",
+              style = MaterialTheme.typography.titleMedium,
+              color = MaterialTheme.colorScheme.onPrimaryContainer,
+            )
+          }
+        }
+        Gap(10.dp)
+        Text(
+          if (running) t("Vardiyanın bitmesine", "Shift ends in") else t("Vardiyanın başlamasına", "Shift starts in"),
+          style = MaterialTheme.typography.labelLarge,
+          color = MaterialTheme.colorScheme.onPrimaryContainer,
+        )
+        Countdown(if (running) next.end else next.start)
+      }
+    }
+
     // Resmî tatil / izin bilgisi
     com.nobet.data.Holidays.on(today)?.let { h ->
       NCard(Modifier.fillMaxWidth(), container = MaterialTheme.colorScheme.secondaryContainer) {
@@ -110,84 +147,6 @@ fun TodayScreen() {
 
     // Bekleyen toparlanma kontrolü (en yeni vardiya)
     com.nobet.data.Recovery.pending(now).firstOrNull()?.let { PendingCheckInCard(it) }
-
-    // Sıradaki vardiya
-    NCard(Modifier.fillMaxWidth(), onClick = { Nav.tab = 1 }) {
-      if (next == null) {
-        Text(t("Yaklaşan vardiya yok", "No upcoming shifts"), style = MaterialTheme.typography.titleMedium)
-        Text(t("Takvimden vardiya ekleyin veya bir düzen uygulayın.", "Add shifts in the calendar or apply a rotation."), color = MaterialTheme.colorScheme.onSurfaceVariant)
-        Gap(8.dp)
-        FilledTonalButton(onClick = { Nav.open("patterns") }) { Text(t("Düzen uygula", "Apply rotation")) }
-      } else {
-        val running = !next.start.isAfter(now)
-        Row(verticalAlignment = Alignment.CenterVertically) {
-          ShiftBadge(next.type, 44.dp)
-          Spacer(Modifier.width(14.dp))
-          Column(Modifier.weight(1f)) {
-            Text(
-              (if (running) t("ŞU AN", "NOW") else relDay(next.date).uppercase(com.nobet.i18n.appLocale())) + " · " + typeName(next.type),
-              style = MaterialTheme.typography.labelLarge,
-              color = shiftColor(next.type),
-              fontWeight = FontWeight.Bold,
-            )
-            Text("${fmtClock(next.type.startMin)} – ${fmtClock(next.type.endMin)}", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-            val txt = if (running) {
-              t("Bitmesine ", "Ends in ") + fmtDur(Duration.between(now, next.end).toMinutes().toInt())
-            } else {
-              t("Başlamasına ", "Starts in ") + fmtDur(Duration.between(now, next.start).toMinutes().toInt())
-            }
-            Text(txt, color = MaterialTheme.colorScheme.onSurfaceVariant)
-          }
-        }
-      }
-    }
-
-    // İpucu
-    val tip = tipFor(now)
-    if (tip != null) {
-      NCard(Modifier.fillMaxWidth(), container = MaterialTheme.colorScheme.secondaryContainer) {
-        Row {
-          Icon(Icons.Filled.Lightbulb, null, tint = MaterialTheme.colorScheme.onSecondaryContainer)
-          Spacer(Modifier.width(10.dp))
-          Text(tip, color = MaterialTheme.colorScheme.onSecondaryContainer)
-        }
-      }
-    }
-
-    NutritionCard(now)
-
-    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-      NCard(Modifier.weight(1f), onClick = { Nav.tab = 2 }) {
-        Text(t("Toparlanma", "Recovery"), style = MaterialTheme.typography.labelLarge)
-        Gap(8.dp)
-        val latest = com.nobet.data.Recovery.history(30, today).firstOrNull()
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
-          ScoreRing(latest?.score, 96.dp, latest?.c?.provisional == true)
-        }
-        Gap(4.dp)
-        Text(
-          if (latest == null) t("Vardiya sonrası 4 kısa soru", "4 quick questions after a shift")
-          else com.nobet.data.Recovery.bandLabel(latest.score) + " · " + typeName(latest.w.type),
-          style = MaterialTheme.typography.bodySmall,
-          color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-      }
-      NCard(Modifier.weight(1f)) {
-        Text(t("Bugünkü enerji", "Energy today"), style = MaterialTheme.typography.labelLarge)
-        Gap(8.dp)
-        val en = Store.energyOn(today)
-        Text(
-          if (en == null) "–" else fmtNum(en) + " / 10",
-          style = MaterialTheme.typography.headlineMedium,
-          fontWeight = FontWeight.Bold,
-          color = MaterialTheme.colorScheme.primary,
-        )
-        Gap(8.dp)
-        FilledTonalButton(onClick = { Nav.dialog = "energy" }, modifier = Modifier.fillMaxWidth()) {
-          Text(if (en == null) t("Kaydet", "Check in") else t("Güncelle", "Add"), maxLines = 1)
-        }
-      }
-    }
 
     PartnerTodayCard()
 
@@ -323,8 +282,29 @@ private fun nutritionAdvice(now: LocalDateTime): Pair<String, String>? {
       "Try to finish dinner before ${clk(bed.minusHours(2))}; have breakfast within an hour of waking.")
 }
 
+/** Canlı geri sayım: 24 saatten azsa SS:DD:SN, fazlaysa gün + saat. */
 @Composable
-private fun NutritionCard(now: LocalDateTime) {
+private fun Countdown(target: LocalDateTime) {
+  val now = rememberNow(1_000L)
+  val sec = Duration.between(now, target).seconds.coerceAtLeast(0)
+  val txt = if (sec >= 86_400) {
+    val d = sec / 86_400
+    val h = (sec % 86_400) / 3600
+    t("$d gün $h sa", "${d}d ${h}h")
+  } else {
+    String.format(java.util.Locale.ROOT, "%02d:%02d:%02d", sec / 3600, (sec % 3600) / 60, sec % 60)
+  }
+  Text(
+    txt,
+    fontSize = 44.sp,
+    fontWeight = FontWeight.Bold,
+    color = MaterialTheme.colorScheme.onPrimaryContainer,
+    fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
+  )
+}
+
+@Composable
+fun NutritionCard(now: LocalDateTime) {
   val adv = nutritionAdvice(now) ?: return
   if (!Store.premium) {
     LockedCard(

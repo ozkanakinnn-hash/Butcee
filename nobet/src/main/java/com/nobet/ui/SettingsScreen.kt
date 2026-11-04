@@ -316,7 +316,7 @@ fun SettingsScreen() {
       // Hakkında
       NCard(Modifier.fillMaxWidth()) {
         SectionTitle(t("Hakkında", "About"))
-        Text("Nöbet 0.5.0 (test)", fontWeight = FontWeight.SemiBold)
+        Text("Nöbet 0.6.0 (test)", fontWeight = FontWeight.SemiBold)
         Text(
           t("Nöbet genel sağlıklı yaşam bilgisi sunar, tıbbi tavsiye değildir. Sağlık sorunlarınız için bir hekime danışın.",
             "Nöbet provides general wellness information, not medical advice. Consult a doctor about health concerns."),
