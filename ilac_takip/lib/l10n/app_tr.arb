@@ -2,7 +2,7 @@
   "@@locale": "tr",
   "appTitle": "Vitamin Takip",
   "today": "Bugün",
-  "pendingTitle": "{count, plural, =1{1 ilaç bekliyor} other{{count} ilaç bekliyor}}",
+  "pendingTitle": "{count, plural, =1{1 takviye bekliyor} other{{count} takviye bekliyor}}",
   "@pendingTitle": {
     "placeholders": {
       "count": {
@@ -51,10 +51,10 @@
   "snoozedToast": "10 dakika sonra tekrar hatırlatacağım",
   "skippedToast": "Doz atlandı olarak kaydedildi",
   "snoozeLimitReached": "Erteleme hakkı doldu",
-  "addMedicine": "İlaç ekle",
+  "addMedicine": "Takviye ekle",
   "medicines": "İlaçlarım",
   "settings": "Ayarlar",
-  "noMedicines": "Henüz ilaç eklemediniz.",
+  "noMedicines": "Henüz takviye eklemediniz.",
   "lowStockBadge": "Stok azaldı",
   "delete": "Sil",
   "deleteMedicineConfirm": "{name} ve tüm planları silinsin mi?",
@@ -78,7 +78,7 @@
   "statusTaken": "Alındı",
   "statusSkipped": "Atlandı",
   "statusMissed": "Kaçırıldı",
-  "medicineName": "İlaç adı",
+  "medicineName": "Ad",
   "nickname": "Takma ad (isteğe bağlı)",
   "form": "Form",
   "formTablet": "Tablet",

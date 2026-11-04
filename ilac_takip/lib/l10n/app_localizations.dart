@@ -113,7 +113,7 @@ abstract class AppLocalizations {
   /// No description provided for @pendingTitle.
   ///
   /// In tr, this message translates to:
-  /// **'{count, plural, =1{1 ilaç bekliyor} other{{count} ilaç bekliyor}}'**
+  /// **'{count, plural, =1{1 takviye bekliyor} other{{count} takviye bekliyor}}'**
   String pendingTitle(int count);
 
   /// No description provided for @snoozedUntil.
@@ -203,7 +203,7 @@ abstract class AppLocalizations {
   /// No description provided for @addMedicine.
   ///
   /// In tr, this message translates to:
-  /// **'İlaç ekle'**
+  /// **'Takviye ekle'**
   String get addMedicine;
 
   /// No description provided for @medicines.
@@ -221,7 +221,7 @@ abstract class AppLocalizations {
   /// No description provided for @noMedicines.
   ///
   /// In tr, this message translates to:
-  /// **'Henüz ilaç eklemediniz.'**
+  /// **'Henüz takviye eklemediniz.'**
   String get noMedicines;
 
   /// No description provided for @lowStockBadge.
@@ -323,7 +323,7 @@ abstract class AppLocalizations {
   /// No description provided for @medicineName.
   ///
   /// In tr, this message translates to:
-  /// **'İlaç adı'**
+  /// **'Ad'**
   String get medicineName;
 
   /// No description provided for @nickname.

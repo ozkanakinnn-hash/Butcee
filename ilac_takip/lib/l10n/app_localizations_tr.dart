@@ -20,8 +20,8 @@ class AppLocalizationsTr extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count ilaç bekliyor',
-      one: '1 ilaç bekliyor',
+      other: '$count takviye bekliyor',
+      one: '1 takviye bekliyor',
     );
     return '$_temp0';
   }
@@ -75,7 +75,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get snoozeLimitReached => 'Erteleme hakkı doldu';
 
   @override
-  String get addMedicine => 'İlaç ekle';
+  String get addMedicine => 'Takviye ekle';
 
   @override
   String get medicines => 'İlaçlarım';
@@ -84,7 +84,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get settings => 'Ayarlar';
 
   @override
-  String get noMedicines => 'Henüz ilaç eklemediniz.';
+  String get noMedicines => 'Henüz takviye eklemediniz.';
 
   @override
   String get lowStockBadge => 'Stok azaldı';
@@ -137,7 +137,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get statusMissed => 'Kaçırıldı';
 
   @override
-  String get medicineName => 'İlaç adı';
+  String get medicineName => 'Ad';
 
   @override
   String get nickname => 'Takma ad (isteğe bağlı)';

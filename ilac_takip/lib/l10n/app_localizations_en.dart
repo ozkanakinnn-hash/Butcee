@@ -75,7 +75,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get snoozeLimitReached => 'No snoozes left';
 
   @override
-  String get addMedicine => 'Add medicine';
+  String get addMedicine => 'Add supplement';
 
   @override
   String get medicines => 'My medicines';
@@ -84,7 +84,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settings => 'Settings';
 
   @override
-  String get noMedicines => 'You haven\'t added any medicines yet.';
+  String get noMedicines => 'You haven\'t added any supplements yet.';
 
   @override
   String get lowStockBadge => 'Low stock';
@@ -137,7 +137,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get statusMissed => 'Missed';
 
   @override
-  String get medicineName => 'Medicine name';
+  String get medicineName => 'Name';
 
   @override
   String get nickname => 'Nickname (optional)';

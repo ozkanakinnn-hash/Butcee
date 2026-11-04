@@ -43,7 +43,7 @@ class PanelScreen extends ConsumerWidget {
 
     return Scaffold(
       body: CustomScrollView(slivers: [
-        SliverAppBar.large(
+        SliverAppBar.medium(
           title: Text(t.appTitle, style: const TextStyle(fontWeight: FontWeight.w800)),
           backgroundColor: cs.primaryContainer,
           foregroundColor: cs.onPrimaryContainer,

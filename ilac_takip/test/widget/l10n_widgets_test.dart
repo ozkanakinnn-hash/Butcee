@@ -52,7 +52,7 @@ void main() {
   test('her iki dilde de tüm metinler mevcut ve çoğullar doğru', () {
     final tr = lookupAppLocalizations(const Locale('tr'));
     final en = lookupAppLocalizations(const Locale('en'));
-    expect(tr.pendingTitle(1), '1 ilaç bekliyor');
+    expect(tr.pendingTitle(1), '1 takviye bekliyor');
     expect(en.pendingTitle(3), '3 doses waiting');
     expect(tr.everyNDaysLabel(2), 'Gün aşırı');
     expect(en.everyNDaysLabel(3), 'Every 3 days');

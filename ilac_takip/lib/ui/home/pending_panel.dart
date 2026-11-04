@@ -34,30 +34,36 @@ class PendingPanel extends ConsumerWidget {
                 style: textStyle.copyWith(fontWeight: FontWeight.w900, fontSize: large ? 26 : 18)),
           ),
           for (final v in pending)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-              child: InkWell(
-                onTap: () => context.push('/alarm/${v.dose.logId}'),
-                child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-                  Text(v.medicine.displayName,
-                      style: textStyle.copyWith(fontWeight: FontWeight.bold, fontSize: large ? 24 : 16)),
-                  Text(_subtitle(context, v), style: textStyle),
-                  const SizedBox(height: 6),
-                  if (large)
-                    FilledButton(
-                      onPressed: () => DoseUiActions.take(context, ref, v.dose.logId),
-                      child: Text('✓ ${upper(t.takeNow, t.localeName)}'),
-                    )
-                  else
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: FilledButton(
-                        onPressed: () => DoseUiActions.take(context, ref, v.dose.logId),
-                        child: Text(t.take),
-                      ),
-                    ),
-                  const SizedBox(height: 4),
-                ]),
+            InkWell(
+              onTap: () => context.push('/alarm/${v.dose.logId}'),
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 4, 12, 4),
+                child: large
+                    ? Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+                        Text(v.medicine.displayName,
+                            style: textStyle.copyWith(fontWeight: FontWeight.bold, fontSize: 24)),
+                        Text(_subtitle(context, v), style: textStyle),
+                        const SizedBox(height: 6),
+                        FilledButton(
+                          onPressed: () => DoseUiActions.take(context, ref, v.dose.logId),
+                          child: Text('✓ ${upper(t.takeNow, t.localeName)}'),
+                        ),
+                        const SizedBox(height: 8),
+                      ])
+                    : Row(children: [
+                        Expanded(
+                          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                            Text(v.medicine.displayName, style: textStyle.copyWith(fontWeight: FontWeight.bold, fontSize: 16)),
+                            Text(_subtitle(context, v), style: textStyle.copyWith(fontSize: 13)),
+                          ]),
+                        ),
+                        const SizedBox(width: 8),
+                        FilledButton(
+                          style: FilledButton.styleFrom(visualDensity: VisualDensity.compact),
+                          onPressed: () => DoseUiActions.take(context, ref, v.dose.logId),
+                          child: Text(t.take),
+                        ),
+                      ]),
               ),
             ),
         ]),
