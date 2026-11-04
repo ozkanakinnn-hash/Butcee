@@ -81,6 +81,7 @@ fun SettingsDialog(
   onColorThemeChanged: (AppColorTheme) -> Unit,
   onLanguageChanged: (String) -> Unit = {},
   onChangeLocation: () -> Unit,
+  onOpenWizard: () -> Unit = {},
   onDismiss: () -> Unit
 ) {
   val context = LocalContext.current
@@ -278,6 +279,13 @@ fun SettingsDialog(
           }
 
           Spacer(modifier = Modifier.height(16.dp))
+
+          // 2b. Bildirim sihirbazı (pil optimizasyonu, otomatik başlatma, test)
+          androidx.compose.material3.Button(
+            onClick = onOpenWizard,
+            modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp),
+            shape = androidx.compose.foundation.shape.RoundedCornerShape(14.dp)
+          ) { Text(t("🔔 Bildirim Sihirbazı • Ezan gelmiyor mu?"), fontWeight = FontWeight.Bold) }
 
           // 3. VAKİT BİLDİRİMLERİ & DAKİKA BARLARI (Requirement 6)
           SettingsSectionHeader(title = t("Namaz Vakitleri & Hatırlatıcı Barları"))

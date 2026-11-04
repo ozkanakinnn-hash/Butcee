@@ -19,7 +19,9 @@ object ReminderScheduler {
     PRAYER_IMSAK(7201, "İmsak"), PRAYER_OGLE(7202, "Öğle"), PRAYER_IKINDI(7203, "İkindi"),
     PRAYER_AKSAM(7204, "Akşam"), PRAYER_YATSI(7205, "Yatsı"),
     // Ramazan boyunca her gün farklı faydalı oruç bilgisi
-    FASTING_TIP(7301, "Oruç Bilgisi")
+    FASTING_TIP(7301, "Oruç Bilgisi"),
+    // Bildirim sihirbazı: 1 dakika sonra arka plan testi
+    TEST(7901, "Test")
   }
 
   const val EXTRA_TYPE = "reminder_type"
@@ -85,6 +87,20 @@ object ReminderScheduler {
       }
     } catch (e: SecurityException) {
       alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAt, pi)
+    }
+  }
+
+  /** Bildirim sihirbazı: 1 dakika sonra arka planda test bildirimi. */
+  fun scheduleTest(context: Context) {
+    val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+    val at = System.currentTimeMillis() + 60_000L
+    val pi = pendingIntent(context, Type.TEST, at)
+    val canExact = Build.VERSION.SDK_INT < Build.VERSION_CODES.S || alarmManager.canScheduleExactAlarms()
+    try {
+      if (canExact) alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi)
+      else alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi)
+    } catch (e: SecurityException) {
+      alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi)
     }
   }
 

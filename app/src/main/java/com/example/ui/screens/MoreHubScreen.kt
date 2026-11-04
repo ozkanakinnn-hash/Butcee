@@ -56,6 +56,10 @@ fun MoreHubScreen(
   onOpenFastingGuide: () -> Unit = {},
   onOpenGreetingCards: () -> Unit = {},
   onOpenHatim: () -> Unit = {},
+  onOpenKaza: () -> Unit = {},
+  onOpenKandil: () -> Unit = {},
+  onOpenHutbe: () -> Unit = {},
+  onOpenWizard: () -> Unit = {},
   onContinueReading: () -> Unit = {},
   onAddWidget: () -> Unit = {},
   onOpenQibla: () -> Unit,
@@ -147,6 +151,54 @@ fun MoreHubScreen(
           subtitle = if (com.example.i18n.AppLanguage.isEnglish) "Quran • Page $lastPage\nContinue reading" else "Kur'an • Sayfa $lastPage\nOkumaya devam et",
           iconRes = R.drawable.ic_hub_bookmark,
           onClick = onContinueReading,
+          modifier = Modifier.weight(1f)
+        )
+      }
+    }
+
+    // Kaza namazı • Kandil duaları • Cuma hutbesi • Bildirim sihirbazı
+    item {
+      Row(
+        modifier = Modifier
+          .fillMaxWidth()
+          .padding(horizontal = 16.dp, vertical = 6.dp),
+        horizontalArrangement = Arrangement.spacedBy(10.dp)
+      ) {
+        HubCard(
+          title = t("Kaza Namazı"),
+          subtitle = t("Borç hesapla\nKıldıkça işaretle"),
+          iconRes = R.drawable.ic_hub_kaza,
+          onClick = onOpenKaza,
+          modifier = Modifier.weight(1f)
+        )
+        HubCard(
+          title = t("Kandil Duaları"),
+          subtitle = t("Mübarek geceler\nDua & ibadetler"),
+          iconRes = R.drawable.ic_hub_kandil,
+          onClick = onOpenKandil,
+          modifier = Modifier.weight(1f)
+        )
+      }
+    }
+    item {
+      Row(
+        modifier = Modifier
+          .fillMaxWidth()
+          .padding(horizontal = 16.dp, vertical = 6.dp),
+        horizontalArrangement = Arrangement.spacedBy(10.dp)
+      ) {
+        HubCard(
+          title = t("Cuma Hutbesi"),
+          subtitle = t("Diyanet hutbesi\nKısa özet"),
+          iconRes = R.drawable.ic_hub_hutbe,
+          onClick = onOpenHutbe,
+          modifier = Modifier.weight(1f)
+        )
+        HubCard(
+          title = t("Bildirim Sihirbazı"),
+          subtitle = t("Ezan gelmiyor mu?\nAyarla & test et"),
+          iconRes = R.drawable.ic_hub_bell,
+          onClick = onOpenWizard,
           modifier = Modifier.weight(1f)
         )
       }

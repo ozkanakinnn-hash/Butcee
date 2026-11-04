@@ -92,6 +92,10 @@ sealed class ActiveSubScreen {
   data class SurahDetail(val surah: SurahInfo, val fromTab: Boolean = false) : ActiveSubScreen()
   data object FastingGuide : ActiveSubScreen()
   data object GreetingCards : ActiveSubScreen()
+  data object KazaNamazi : ActiveSubScreen()
+  data object KandilDualari : ActiveSubScreen()
+  data object Hutbe : ActiveSubScreen()
+  data object NotificationWizard : ActiveSubScreen()
   data object SpiritualNotes : ActiveSubScreen()
   data object Zikirmatik : ActiveSubScreen()
   data object Esma : ActiveSubScreen()
@@ -393,6 +397,10 @@ fun RamazanRehberiApp(
             prefs = prefs,
             onOpenQuran = { activeSubScreen = ActiveSubScreen.QuranList() },
             onOpenHatim = { activeSubScreen = ActiveSubScreen.QuranList(tab = 1) },
+            onOpenKaza = { activeSubScreen = ActiveSubScreen.KazaNamazi },
+            onOpenKandil = { activeSubScreen = ActiveSubScreen.KandilDualari },
+            onOpenHutbe = { activeSubScreen = ActiveSubScreen.Hutbe },
+            onOpenWizard = { activeSubScreen = ActiveSubScreen.NotificationWizard },
             onContinueReading = { activeSubScreen = ActiveSubScreen.QuranReader(com.example.data.HatimStore(AppHolder.context).lastPage) },
             isRamadan = ramadanDay != null,
             onOpenFastingGuide = { activeSubScreen = ActiveSubScreen.FastingGuide },
@@ -458,6 +466,10 @@ fun RamazanRehberiApp(
             surah = subScreen.surah,
             onNavigateBack = { activeSubScreen = if (subScreen.fromTab) null else ActiveSubScreen.QuranList() }
           )
+          is ActiveSubScreen.KazaNamazi -> com.example.ui.screens.KazaNamaziScreen(onNavigateBack = { activeSubScreen = null })
+          is ActiveSubScreen.KandilDualari -> com.example.ui.screens.KandilDualariScreen(onNavigateBack = { activeSubScreen = null })
+          is ActiveSubScreen.Hutbe -> com.example.ui.screens.HutbeScreen(onNavigateBack = { activeSubScreen = null })
+          is ActiveSubScreen.NotificationWizard -> com.example.ui.screens.NotificationWizardScreen(onNavigateBack = { activeSubScreen = null })
           is ActiveSubScreen.GreetingCards -> com.example.ui.screens.GreetingCardsScreen(onNavigateBack = { activeSubScreen = null })
           is ActiveSubScreen.FastingGuide -> androidx.compose.foundation.layout.Column(Modifier.fillMaxSize()) {
             androidx.compose.foundation.layout.Row(
@@ -554,6 +566,10 @@ fun RamazanRehberiApp(
         onChangeLocation = {
           showSettingsDialog = false
           showLocationDialog = true
+        },
+        onOpenWizard = {
+          showSettingsDialog = false
+          activeSubScreen = ActiveSubScreen.NotificationWizard
         },
         onDismiss = {
           showSettingsDialog = false

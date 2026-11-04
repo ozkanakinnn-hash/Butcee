@@ -21,7 +21,15 @@ class ReminderReceiver : BroadcastReceiver() {
       val dayKey = RamadanCalendar.dateKey(targetDay)
       val isFastingDay = RamadanCalendar.isRamadanDay(dayKey) || prefs.getFastingDates().contains(dayKey)
 
-      if (type == ReminderScheduler.Type.FASTING_TIP) {
+      if (type == ReminderScheduler.Type.TEST) {
+        val en = prefs.language == "en"
+        NotificationHelper.sendEzanNotification(
+          context,
+          if (en) "✅ Background test successful" else "✅ Arka plan testi başarılı",
+          if (en) "Adhan and reminders will arrive on time on this phone." else "Ezan ve hatırlatıcılar bu telefonda vaktinde gelecek.",
+          notificationId = type.requestCode
+        )
+      } else if (type == ReminderScheduler.Type.FASTING_TIP) {
         val day = RamadanCalendar.dayOfRamadan(targetDay)
         if (day != null) {
           com.example.i18n.AppLanguage.current = prefs.language
