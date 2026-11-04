@@ -55,6 +55,7 @@ class TodayScreen extends ConsumerWidget {
         ],
       ),
       floatingActionButton: FloatingActionButton(
+        heroTag: null, // sekmeler canlı tutulur; varsayılan etiket Hero çakışması yaratır
         tooltip: t.addMedicine,
         onPressed: () => context.push('/catalog'),
         child: const Icon(Icons.add),

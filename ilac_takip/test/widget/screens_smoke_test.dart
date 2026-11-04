@@ -118,6 +118,17 @@ void main() {
     expect(find.text('Kahve / çay + demir'), findsOneWidget);
   });
 
+  testWidgets('sekmeden yeni sayfa açma (Hero etiket çakışması olmamalı)', (tester) async {
+    await seed(tester);
+    await pumpApp(tester);
+    await tester.tap(find.descendant(of: find.byType(NavigationBar), matching: find.text('Takviyeler')));
+    await settle(tester);
+    await tester.tap(find.text('Demir').first);
+    await settle(tester);
+    expectNoError(tester);
+    expect(find.text('REFERANS DEĞERLER'), findsOneWidget);
+  });
+
   testWidgets('takviye ayrıntısı: referans değerler ve ayrı alın listesi', (tester) async {
     await seed(tester);
     final plans = await tester.runAsync(() => services.supplements.plans());
