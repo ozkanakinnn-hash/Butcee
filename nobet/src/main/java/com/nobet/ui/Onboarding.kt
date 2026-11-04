@@ -34,6 +34,7 @@ import androidx.compose.material.icons.filled.NightsStay
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -64,6 +65,7 @@ import com.nobet.i18n.relDay
 import com.nobet.i18n.roleName
 import com.nobet.i18n.t
 import com.nobet.i18n.typeName
+import com.nobet.i18n.workTypeName
 
 private const val LAST = 10
 
@@ -119,34 +121,21 @@ fun Onboarding() {
           Text(t("Daha sonra Ayarlar'dan değiştirebilirsiniz.", "You can change this later in Settings."), color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         4 -> {
-          Title(t("Ne iş yapıyorsunuz?", "What do you do?"))
-          OutlinedTextField(
-            value = Store.name,
-            onValueChange = { Store.name = it.take(30) },
-            label = { Text(t("Adınız (isteğe bağlı)", "Your name (optional)")) },
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth(),
+          Title(t("Biraz kendinizden bahsedin", "Tell us a little about you"))
+          Text(
+            t("Tüm alanlar isteğe bağlıdır; dilediğiniz zaman atlayabilir ve Ayarlar → Profil'den değiştirebilirsiniz.",
+              "Every field is optional — skip anything and change it later in Settings → Profile."),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
           )
           Gap()
-          val roles: List<Pair<String, ImageVector>> = listOf(
-            "nurse" to Icons.Filled.MedicalServices,
-            "factory" to Icons.Filled.Factory,
-            "security" to Icons.Filled.Security,
-            "hospitality" to Icons.Filled.Hotel,
-            "other" to Icons.Filled.MoreHoriz,
-          )
-          roles.forEach { (r, icon) ->
-            ChoiceCard(roleName(r), selected = Store.role == r, icon = icon) {
-              Store.role = r
-              val eight = r == "factory"
-              val defs = Builtins.defaultTypes(eight)
-              defs.forEach { d -> Store.types.indexOfFirst { it.id == d.id }.takeIf { it >= 0 }?.let { Store.types[it] = d } }
-            }
-          }
+          ProfileFields(onWorkTypePicked = { w ->
+            // Çalışma şekli tek bir düzene karşılık geliyorsa bir sonraki adımda onu önceden seç
+            patternId = Builtins.suggestedFor("", w).firstOrNull() ?: patternId
+          })
         }
         5 -> {
           Title(t("Vardiya düzeniniz nasıl?", "How does your rotation work?"))
-          val sug = Builtins.suggestedFor(Store.role)
+          val sug = Builtins.suggestedFor(Store.role, Store.workType)
           SectionTitle(t("Size önerilenler", "Suggested for you"))
           Builtins.patterns.filter { it.id in sug }.forEach { p ->
             ChoiceCard(patternName(p), patternDesc(p), selected = patternId == p.id) { patternId = p.id }
@@ -262,6 +251,10 @@ fun Onboarding() {
         BigButton(if (page == 2) t("Başlayalım", "Get started") else t("İleri", "Next")) { page++ }
         TextButton(onClick = { page = 3 }, modifier = Modifier.fillMaxWidth()) { Text(t("Atla", "Skip")) }
       }
+      4 -> {
+        BigButton(t("Devam", "Continue")) { page++ }
+        TextButton(onClick = { page++ }, modifier = Modifier.fillMaxWidth()) { Text(t("Atla", "Skip")) }
+      }
       5 -> {
         BigButton(t("Devam", "Continue"), enabled = patternId != null) { page = 6 }
         TextButton(onClick = { patternId = null; page = 7 }, modifier = Modifier.fillMaxWidth()) { Text(t("Şimdilik atla", "Skip for now")) }
@@ -294,6 +287,78 @@ fun Onboarding() {
         Store.upsertType(if (isStart) ty.copy(startMin = m) else ty.copy(endMin = m))
         editType = null
       }
+    }
+  }
+}
+
+/**
+ * İsteğe bağlı profil alanları: ad/takma ad, meslek (hızlı seçim + serbest unvan), çalışma şekli.
+ * Onboarding'de ve Ayarlar → Profil'de aynı bileşen kullanılır. Seçili bir öğeye tekrar dokunmak seçimi kaldırır.
+ */
+@Composable
+fun ProfileFields(onWorkTypePicked: (String) -> Unit = {}) {
+  OutlinedTextField(
+    value = Store.name,
+    onValueChange = {
+      Store.name = it.take(30)
+      Store.save()
+    },
+    label = { Text(t("Ad veya takma ad (isteğe bağlı)", "Name or nickname (optional)")) },
+    singleLine = true,
+    modifier = Modifier.fillMaxWidth(),
+  )
+  Gap()
+  SectionTitle(t("Meslek (isteğe bağlı)", "Profession (optional)"))
+  val roles: List<Pair<String, ImageVector>> = listOf(
+    "nurse" to Icons.Filled.MedicalServices,
+    "factory" to Icons.Filled.Factory,
+    "security" to Icons.Filled.Security,
+    "hospitality" to Icons.Filled.Hotel,
+    "other" to Icons.Filled.MoreHoriz,
+  )
+  FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    roles.forEach { (r, icon) ->
+      FilterChip(
+        selected = Store.role == r,
+        onClick = {
+          val newRole = if (Store.role == r) "" else r
+          Store.role = newRole
+          // Fabrika seçilirse 8 saatlik vardiya saatleri varsayılır (özel saatler ezilmez, yalnızca yerleşik türler)
+          if (newRole == "factory" || (r == "factory" && newRole.isEmpty())) {
+            val defs = Builtins.defaultTypes(newRole == "factory")
+            defs.forEach { d -> Store.types.indexOfFirst { it.id == d.id }.takeIf { it >= 0 }?.let { Store.types[it] = d } }
+          }
+          Store.save()
+        },
+        label = { Text(roleName(r)) },
+        leadingIcon = { Icon(icon, null, Modifier.size(18.dp)) },
+      )
+    }
+  }
+  Gap(8.dp)
+  OutlinedTextField(
+    value = Store.jobTitle,
+    onValueChange = {
+      Store.jobTitle = it.take(40)
+      Store.save()
+    },
+    label = { Text(t("Unvan (ör. Yoğun bakım hemşiresi)", "Job title (e.g. ICU nurse)")) },
+    singleLine = true,
+    modifier = Modifier.fillMaxWidth(),
+  )
+  Gap()
+  SectionTitle(t("Çalışma şekli (isteğe bağlı)", "Work type (optional)"))
+  FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    Builtins.workTypes.forEach { w ->
+      FilterChip(
+        selected = Store.workType == w,
+        onClick = {
+          Store.workType = if (Store.workType == w) "" else w
+          Store.save()
+          if (Store.workType.isNotEmpty()) onWorkTypePicked(Store.workType)
+        },
+        label = { Text(workTypeName(w)) },
+      )
     }
   }
 }

@@ -152,6 +152,23 @@ object Builtins {
     ),
   )
 
+  /** Çalışma şekilleri (profil). */
+  val workTypes = listOf("rotating", "permanentNight", "permanentDay", "permanentEvening", "223", "4on4off", "2448", "other")
+
+  /** Meslek + çalışma şekline göre önerilen düzenler (çalışma şekli önce gelir). */
+  fun suggestedFor(role: String, workType: String): List<String> {
+    val byWork = when (workType) {
+      "permanentNight" -> listOf("permnight", "permnight43")
+      "permanentDay" -> listOf("52")
+      "permanentEvening" -> listOf("permeve")
+      "223" -> listOf("223")
+      "4on4off" -> listOf("4on4off", "4dn")
+      "2448" -> listOf("2448")
+      else -> emptyList()
+    }
+    return (byWork + suggestedFor(role)).distinct().take(4)
+  }
+
   fun suggestedFor(role: String): List<String> = when (role) {
     "nurse" -> listOf("2dn4o", "1236", "223", "permnight")
     "factory" -> listOf("3shift", "223", "52", "4dn")

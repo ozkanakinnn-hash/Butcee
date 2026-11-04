@@ -58,7 +58,6 @@ import com.nobet.data.Store
 import com.nobet.notify.Reminders
 import com.nobet.i18n.fmtClock
 import com.nobet.i18n.fmtDur
-import com.nobet.i18n.roleName
 import com.nobet.i18n.t
 
 @Composable
@@ -139,18 +138,13 @@ fun SettingsScreen() {
       // Profil
       NCard(Modifier.fillMaxWidth()) {
         SectionTitle(t("Profil", "Profile"))
-        OutlinedTextField(
-          value = Store.name,
-          onValueChange = {
-            Store.name = it.take(30)
-            Store.save()
-          },
-          label = { Text(t("Adınız", "Your name")) },
-          singleLine = true,
-          modifier = Modifier.fillMaxWidth(),
+        Text(
+          t("Tüm alanlar isteğe bağlıdır. Seçili bir öğeye tekrar dokunarak kaldırabilirsiniz.", "All fields are optional. Tap a selected item again to clear it."),
+          style = MaterialTheme.typography.bodySmall,
+          color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         Gap(8.dp)
-        Text(t("Meslek: ", "Role: ") + roleName(Store.role), style = MaterialTheme.typography.bodySmall)
+        ProfileFields()
         Gap(8.dp)
         Text(t("Uyku hedefi: ", "Sleep goal: ") + fmtDur(Store.sleepGoalMin), fontWeight = FontWeight.SemiBold)
         Slider(
@@ -300,7 +294,7 @@ fun SettingsScreen() {
       // Hakkında
       NCard(Modifier.fillMaxWidth()) {
         SectionTitle(t("Hakkında", "About"))
-        Text("Nöbet 0.2.0 (test)", fontWeight = FontWeight.SemiBold)
+        Text("Nöbet 0.3.0 (test)", fontWeight = FontWeight.SemiBold)
         Text(
           t("Nöbet genel sağlıklı yaşam bilgisi sunar, tıbbi tavsiye değildir. Sağlık sorunlarınız için bir hekime danışın.",
             "Nöbet provides general wellness information, not medical advice. Consult a doctor about health concerns."),

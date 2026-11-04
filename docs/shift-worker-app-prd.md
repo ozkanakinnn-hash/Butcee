@@ -173,10 +173,11 @@ Legend: **M** = Must-have (MVP), **N** = Nice-to-have (post-MVP / v1.x), **F** =
 |---|---|---|---|
 | ONB-01 | 3-screen value intro, skippable | M | F |
 | ONB-02 | Language auto-detect (tr/en), switchable | M | F |
-| ONB-03 | Role selection (personalizes copy & default patterns) | M | F |
+| ONB-03 | Optional profile setup: **name/nickname**, **profession / job title**, **work type / shift pattern** (e.g. rotating, permanent nights, 2-2-3). Every field is optional and skippable; answers personalize greetings, copy and suggested patterns | M | F |
 | ONB-04 | Quick first-rotation setup (pattern + start date) | M | F |
 | ONB-05 | Sleep goal setup (default 7 h 30 min) | M | F |
 | ONB-06 | Notification permission with pre-prompt explaining value | M | F |
+| SET-08 | Profile editing: name/nickname, profession / job title and work type can be changed (or cleared) at any time from Settings → Profile | M | F |
 | SET-01 | Language switch (System / Türkçe / English) — instant, no restart | M | F |
 | SET-02 | Theme: System / Light / Dark / **Night (red-shifted, ultra-dim)** | M | F (System/Light/Dark) / P (Night) |
 | SET-03 | Time format 12/24 h, week start Mon/Sun (defaults from locale) | M | F |
@@ -206,9 +207,12 @@ The **[+] Quick Action** opens a bottom sheet: *Start sleep · Log sleep · Ener
 ```
 Splash → Welcome (3 value slides, skippable)
        → Language confirm (pre-selected from device)
-       → "What's your job?" (Nurse / Factory / Security / Hospitality / Other)
+       → "About you" (all optional, "Skip" always available)
+             ├─ Name or nickname (free text)
+             ├─ Profession / job title (quick picks: Nurse · Factory · Security · Hospitality · Other, or free-text title)
+             └─ Work type (Rotating · Permanent nights · Permanent days · Permanent evenings · 2-2-3 · 4-on-4-off · 24/48 · Other)
        → "How does your rotation work?"
-             ├─ Pick a pattern (suggested by role) → choose start date + which day of cycle today is → preview month → Save
+             ├─ Pick a pattern (suggested by profession + work type) → choose start date + which day of cycle today is → preview month → Save
              ├─ "I'll add shifts manually" → Calendar (empty, coach-mark on a day)
              └─ "Skip for now"
        → Shift times (pre-filled per pattern, editable)
@@ -285,7 +289,7 @@ Any lock icon / premium card → Paywall (contextual headline for the feature ta
 | S-01 | Splash | Brand, load local DB | Logo, theme-aware background | ✔ |
 | S-02 | Welcome carousel (3) | Value proposition | Illustration, title, body, Skip / Next | ✔ |
 | S-03 | Language | Confirm tr/en | Two large cards | ✔ |
-| S-04 | Role selection | Personalize | 5 large tiles with icons | ✔ |
+| S-04 | About you (optional profile) | Personalize | Name field, profession quick picks + job-title field, work-type chips, Skip | ✔ |
 | S-05 | Rotation setup | First shifts | Pattern list (role-suggested), cycle-day picker, month preview | ✔ |
 | S-06 | Shift times | Set start/end per type | Time pickers, color chips | ✔ |
 | S-07 | Sleep goal | Personal target | Slider 5–10 h, guidance text | ✔ |
@@ -343,7 +347,7 @@ Nöbet
 ├── Onboarding (first run only)
 │   ├── Welcome (3)
 │   ├── Language
-│   ├── Role
+│   ├── About you (name, profession, work type — optional)
 │   ├── Rotation setup → Shift times
 │   ├── Sleep goal
 │   └── Notification permission
@@ -384,7 +388,7 @@ Nöbet
 │
 └── Settings
     ├── Premium (status / upgrade → Paywall)
-    ├── Profile: name, role, sleep goal
+    ├── Profile: name/nickname, profession / job title, work type, sleep goal (all editable, all optional)
     ├── Shifts: templates, default times, week start
     ├── Reminders: basic · smart🔒
     ├── Appearance: System / Light / Dark / Night🔒
@@ -407,7 +411,8 @@ Nöbet
 | `EnergyEntry` | id, timestamp, level (1–10), tags[], note |
 | `ReminderRule` | id, type (shiftStart, windDown, nap, caffeine, checkIn, forgotLog, transition), shiftTypeId?, offsetMinutes, enabled |
 | `ScheduledNotification` | id, ruleId, fireAt, payload (for reconciliation) |
-| `Settings` | locale, theme, timeFormat, weekStart, sleepGoalMinutes, role, onboardingDone, appLock, analyticsOptIn |
+| `Settings` | locale, theme, timeFormat, weekStart, sleepGoalMinutes, onboardingDone, appLock, analyticsOptIn |
+| `Profile` | displayName?, professionKey? (nurse/factory/security/hospitality/other), jobTitle?, workType? (rotating/permanentNight/permanentDay/permanentEvening/223/4on4off/2448/other) — every field nullable |
 | `Entitlement` | isPremium, plan, expiresAt, lastVerifiedAt (cached for offline) |
 
 All timestamps stored in UTC + the device time-zone ID at creation, so travel/DST changes don't corrupt
@@ -514,7 +519,7 @@ calendar.
 | 2 | Welcome 2 | **Your shifts, sorted in seconds.** Pick your rotation once — we fill in the months ahead. | **Vardiyalarınız saniyeler içinde hazır.** Düzeninizi bir kez seçin, önümüzdeki ayları biz dolduralım. | Animated calendar filling |
 | 3 | Welcome 3 | **Know how rested you really are.** Track sleep and energy, get gentle reminders that fit your shifts. | **Ne kadar dinlendiğinizi bilin.** Uykunuzu ve enerjinizi takip edin, vardiyanıza uygun nazik hatırlatmalar alın. | "Get started" button |
 | 4 | Language | **Choose your language** · Türkçe / English | **Dilinizi seçin** · Türkçe / English | Pre-selected from device locale (tr → Türkçe, anything else → English) |
-| 5 | Role | **What do you do?** Nurse / Healthcare · Factory / Production · Security · Hotel / Hospitality · Other | **Ne iş yapıyorsunuz?** Hemşire / Sağlık · Fabrika / Üretim · Güvenlik · Otel / Turizm · Diğer | Drives pattern suggestions & example copy |
+| 5 | About you | **Tell us a little about you (optional).** Name or nickname · Profession / job title (Nurse / Healthcare · Factory / Production · Security · Hotel / Hospitality · Other, or type your title) · Work type (Rotating · Permanent nights · Permanent days · Permanent evenings · 2-2-3 · 4-on-4-off · 24/48 · Other) | **Biraz kendinizden bahsedin (isteğe bağlı).** Ad veya takma ad · Meslek / unvan (Hemşire / Sağlık · Fabrika / Üretim · Güvenlik · Otel / Turizm · Diğer veya unvanınızı yazın) · Çalışma şekli (Dönüşümlü · Sabit gece · Sabit gündüz · Sabit akşam · 2-2-3 · 4 çalış 4 izin · 24/48 · Diğer) | Every field optional; "Skip" always visible. Profession + work type drive pattern suggestions and copy. Editable later in Settings → Profile |
 | 6 | Rotation | **How does your rotation work?** Suggested: 2-2-3 · 4-on-4-off · 24/48 … · *Add shifts manually* · *Skip* → then **"What is today?"** (Day 1 of Night, Off…) + live month preview | **Vardiya düzeniniz nasıl?** Önerilen: 2-2-3 · 4 çalış 4 izin · 24/48 … · *Kendim ekleyeceğim* · *Atla* → **"Bugün düzeninizin hangi günü?"** + canlı ay önizlemesi | Core activation step. Role-based suggestions: Nurse → 2-2 Day/Night, 12/36; Factory → weekly 3-shift rotation, 2-2-3; Security → 24/48, 12/36; Hospitality → Custom |
 | 7 | Shift times | **When do your shifts start and end?** | **Vardiyalarınız ne zaman başlıyor ve bitiyor?** | Pre-filled (Day 08–20, Night 20–08 for 12-h patterns) |
 | 8 | Sleep goal | **How much sleep do you need to feel good?** (default 7 h 30) — *Most adults need 7–9 hours.* | **Kendinizi iyi hissetmek için ne kadar uykuya ihtiyacınız var?** — *Çoğu yetişkinin 7–9 saate ihtiyacı vardır.* | Slider |

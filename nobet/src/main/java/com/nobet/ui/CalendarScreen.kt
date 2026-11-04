@@ -362,8 +362,14 @@ fun PatternScreen() {
             cycleDay = 0
           }
         }
-        val sug = Builtins.suggestedFor(Store.role)
-        SectionTitle(t("${com.nobet.i18n.roleName(Store.role)} için önerilenler", "Suggested for ${com.nobet.i18n.roleName(Store.role)}"))
+        val sug = Builtins.suggestedFor(Store.role, Store.workType)
+        val who = when {
+          Store.workType.isNotEmpty() && Store.workType != "other" -> com.nobet.i18n.workTypeName(Store.workType)
+          Store.jobTitle.isNotBlank() -> Store.jobTitle.trim()
+          Store.role.isNotEmpty() -> com.nobet.i18n.roleName(Store.role)
+          else -> ""
+        }
+        SectionTitle(if (who.isEmpty()) t("Önerilenler", "Suggested") else t("$who için önerilenler", "Suggested for $who"))
         Builtins.patterns.filter { it.id in sug }.forEach { PatternCard(it, onClick = { pick(it) }) }
 
         SectionTitle(t("Şablonlarım", "My templates"))

@@ -78,6 +78,21 @@ fun tagName(tag: String): String = when (tag) {
   else -> tag
 }
 
+fun workTypeName(w: String): String = when (w) {
+  "rotating" -> t("Dönüşümlü vardiya", "Rotating shifts")
+  "permanentNight" -> t("Sabit gece", "Permanent nights")
+  "permanentDay" -> t("Sabit gündüz", "Permanent days")
+  "permanentEvening" -> t("Sabit akşam", "Permanent evenings")
+  "223" -> "2-2-3"
+  "4on4off" -> t("4 çalış 4 izin", "4-on-4-off")
+  "2448" -> "24/48"
+  "other" -> t("Diğer", "Other")
+  else -> t("Belirtilmedi", "Not specified")
+}
+
+/** Profilde gösterilecek meslek metni: serbest unvan varsa o, yoksa meslek grubu. */
+fun professionText(): String = Store.jobTitle.trim().ifEmpty { if (Store.role.isEmpty()) t("Belirtilmedi", "Not specified") else roleName(Store.role) }
+
 fun roleName(r: String): String = when (r) {
   "nurse" -> t("Hemşire / Sağlık", "Nurse / Healthcare")
   "factory" -> t("Fabrika / Üretim", "Factory / Production")

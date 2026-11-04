@@ -45,7 +45,9 @@ object Store {
   var theme by mutableStateOf("system") // system / light / dark / night
   var onboarded by mutableStateOf(false)
   var name by mutableStateOf("")
-  var role by mutableStateOf("other")
+  var role by mutableStateOf("") // meslek grubu; boş = belirtilmedi
+  var jobTitle by mutableStateOf("") // serbest unvan (isteğe bağlı)
+  var workType by mutableStateOf("") // çalışma şekli; boş = belirtilmedi
   var sleepGoalMin by mutableIntStateOf(450)
   var premium by mutableStateOf(false)
   var sleepStart by mutableLongStateOf(0L)
@@ -97,7 +99,9 @@ object Store {
     theme = p.getString("theme", "system") ?: "system"
     onboarded = p.getBoolean("onboarded", false)
     name = p.getString("name", "") ?: ""
-    role = p.getString("role", "other") ?: "other"
+    role = p.getString("role", "") ?: ""
+    jobTitle = p.getString("jobTitle", "") ?: ""
+    workType = p.getString("workType", "") ?: ""
     sleepGoalMin = p.getInt("sleepGoal", 450)
     premium = p.getBoolean("premium", false)
     sleepStart = p.getLong("sleepStart", 0L)
@@ -199,7 +203,7 @@ object Store {
     }
     p.edit()
       .putString("lang", lang).putString("theme", theme).putBoolean("onboarded", onboarded)
-      .putString("name", name).putString("role", role).putInt("sleepGoal", sleepGoalMin)
+      .putString("name", name).putString("role", role).putString("jobTitle", jobTitle).putString("workType", workType).putInt("sleepGoal", sleepGoalMin)
       .putBoolean("premium", premium).putLong("sleepStart", sleepStart)
       .putBoolean("remShiftStart", remShiftStart).putInt("remShiftLead", remShiftLeadMin)
       .putBoolean("remCheckIn", remCheckIn).putInt("remCheckInMin", remCheckInMin)
