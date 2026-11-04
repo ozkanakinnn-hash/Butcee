@@ -63,7 +63,7 @@ launch
 shot 01_ana_sayfa 2
 tap_text "Zikirmatik"; shot 01b_zikirmatik 2
 for i in 1 2 3 4 5 6 7; do adb shell input tap 540 1400; sleep 0.3; done; shot 01c_zikirmatik_7 1
-tap_text "Sıfırla"; shot 01d_zikir_sifirla_onay 1
+adb shell input tap 870 558; shot 01d_zikir_sifirla_onay 1
 tap_text "Sıfırla"; shot 01e_zikir_sifirlandi 1
 adb shell input keyevent KEYCODE_BACK; sleep 2
 adb shell input swipe 540 1700 540 700 500; shot 02_ana_sayfa_asagi

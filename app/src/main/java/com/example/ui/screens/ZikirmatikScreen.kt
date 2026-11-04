@@ -103,12 +103,12 @@ fun ZikirmatikScreen(onNavigateBack: () -> Unit) {
   Column(modifier = Modifier.fillMaxSize().background(bg).testTag("zikirmatik_screen")) {
     // Üst çubuk
     Row(modifier = Modifier.fillMaxWidth().padding(8.dp), verticalAlignment = Alignment.CenterVertically) {
-      IconButton(onClick = onNavigateBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = if (en) "Back" else "Geri") }
-      Text(if (en) "Tasbih Counter" else "Zikirmatik", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
+      IconButton(onClick = onNavigateBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = if (en) "Back" else "Geri", tint = MaterialTheme.colorScheme.onBackground) }
+      Text(if (en) "Tasbih Counter" else "Zikirmatik", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground, modifier = Modifier.weight(1f))
       IconButton(onClick = {
         saveEntry(context, store, mode, count, en)
-      }) { Icon(Icons.Default.BookmarkBorder, contentDescription = if (en) "Save" else "Kaydet") }
-      IconButton(onClick = { reset() }) { Icon(Icons.Default.Refresh, contentDescription = if (en) "Reset" else "Sıfırla") }
+      }) { Icon(Icons.Default.BookmarkBorder, contentDescription = if (en) "Save" else "Kaydet", tint = accent) }
+      IconButton(onClick = { if (count > 0 || step > 0) showResetConfirm = true }) { Icon(Icons.Default.Refresh, contentDescription = if (en) "Reset counter" else "Sayacı sıfırla", tint = accent) }
     }
 
     // Mod seçici
