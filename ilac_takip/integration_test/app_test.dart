@@ -9,6 +9,7 @@ import 'package:ilac_takip/domain/dose_rule.dart';
 import 'package:ilac_takip/domain/models.dart';
 import 'package:ilac_takip/main.dart' as app;
 import 'package:ilac_takip/services/alarm_planner.dart';
+import 'package:ilac_takip/services/settings_store.dart';
 import 'package:ilac_takip/services/supplement_service.dart';
 import 'package:integration_test/integration_test.dart';
 
@@ -30,6 +31,9 @@ void main() {
   }
 
   testWidgets('açılış, takviye ekleme ve alarm kurma çökmeden çalışır; ekran görüntüleri', (tester) async {
+    // Emülatörün sistem dili İngilizce; ekran görüntüleri Türkçe arayüzden alınır.
+    final store = await SettingsStore.load();
+    await store.write(store.read().copyWith(languageCode: () => 'tr'));
     final services = await AppServices.create();
     final exact = await services.scheduler.canScheduleExact();
     debugPrint('Tam zamanlı alarm izni: $exact (Android 14 yeni kurulumda false beklenir)');
