@@ -61,6 +61,9 @@ adb shell input keyevent KEYCODE_BACK; sleep 2
 adb shell input swipe 540 1700 540 700 500; shot 02_ana_sayfa_asagi
 adb shell input swipe 540 1700 540 700 500; shot 03_ana_sayfa_radyo_menu
 tap_text "Kur'an-ı Kerim"; shot 04_kuran_sekmesi
+tap_text "Bakara"; shot 04b_bakara 3
+adb shell input swipe 540 1800 540 300 500; adb shell input swipe 540 1800 540 300 500; shot 04c_bakara_asagi 2
+adb shell input keyevent KEYCODE_BACK; sleep 2
 tap_text "Takvim"; shot 05_takvim
 tap_text "Ayet & Dua"; shot 06_ayet_dua
 tap_text "Dahası"; sleep 2; tap_text "Esmâü'l-Hüsnâ"; shot 06b_esma 2

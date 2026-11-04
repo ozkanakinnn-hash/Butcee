@@ -107,6 +107,8 @@ class MainActivity : ComponentActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     AppHolder.context = applicationContext
+    // Kur'an metnini (6236 ayet) arka planda yükle
+    Thread { com.example.data.QuranText.preload(applicationContext) }.start()
     com.example.util.CrashReporter.install(this)
     val lastCrash = com.example.util.CrashReporter.consumeLastCrash(this)
     enableEdgeToEdge()

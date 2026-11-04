@@ -142,109 +142,15 @@ object QuranData {
     SurahInfo(114, "Nâs", "الناس", "İnsanlar", 6, "Mekkî", 30, "30. Cüz")
   )
 
-  // Pre-cached authentic verses with Diyanet-aligned translations for essential and frequently recited surahs
-  fun getVersesForSurah(surahNumber: Int): List<AyahItem> {
-    return when (surahNumber) {
-      1 -> listOf(
-        AyahItem(1, "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ", "Rahmân ve Rahîm olan Allah'ın adıyla."),
-        AyahItem(2, "الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ", "Hamd, âlemlerin Rabbi olan Allah'a mahsustur."),
-        AyahItem(3, "الرَّحْمَٰنِ الرَّحِيمِ", "O, Rahmândır ve Rahîmdir."),
-        AyahItem(4, "مَالِكِ يَوْمِ الدِّينِ", "Din (hesap ve ceza) gününün tek sahibidir."),
-        AyahItem(5, "إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ", "(Rabbimiz!) Yalnız sana kulluk eder ve yalnız senden yardım dileriz."),
-        AyahItem(6, "اهْدِنَا الصِّرَاطَ الْمُسْتَقِيمَ", "Bizi dosdoğru yola ilet."),
-        AyahItem(7, "صِرَاطَ الَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ الْمَغْضُوبِ عَلَيْهِمْ وَلَا الضَّالِّينَ", "Kendilerine lütufta bulunduğun kimselerin yoluna; gazaba uğramışların ve sapmışların yoluna değil. (Âmin)")
-      )
-      93 -> listOf(
-        AyahItem(1, "وَالضُّحَىٰ", "Kuşluk vaktine andolsun,"),
-        AyahItem(2, "وَاللَّيْلِ إِذَا سَجَىٰ", "Karanlığı çöktüğü zaman geceye andolsun ki,"),
-        AyahItem(3, "مَا وَدَّعَكَ رَبُّكَ وَمَا قَلَىٰ", "Rabbin seni ne terk etti, ne de sana darıldı."),
-        AyahItem(4, "وَلَلْآخِرَةُ خَيْرٌ لَّكَ مِنَ الْأُولَىٰ", "Elbette ahiret senin için dünyadan çok daha hayırlıdır."),
-        AyahItem(5, "وَلَسَوْفَ يُعْطِيكَ رَبُّكَ فَتَرْضَىٰ", "Rabbin sana verecek ve sen hoşnut olacaksın."),
-        AyahItem(6, "أَلَمْ يَجِدْكَ يَتِيمًا فَآوَىٰ", "O seni yetim bulup barındırmadı mı?"),
-        AyahItem(7, "وَوَجَدَكَ ضَالًّا فَهَدَىٰ", "Seni yolunu ararken bulup hidayete erdirmedi mi?"),
-        AyahItem(8, "وَوَجَدَكَ عَائِلًا فَأَغْنَىٰ", "Seni yoksul bulup zengin kılmadı mı?"),
-        AyahItem(9, "فَأَمَّا الْيَتِيمَ فَلَا تَقْهَرْ", "Öyleyse sakın yetimi ezme!"),
-        AyahItem(10, "وَأَمَّا السَّائِلَ فَلَا تَنْهَرْ", "Bir şey isteyeni asla azarlama!"),
-        AyahItem(11, "وَأَمَّا بِنِعْمَةِ رَبِّكَ فَحَدِّثْ", "Ve Rabbinin nimetini şükranla anlat!")
-      )
-      94 -> listOf(
-        AyahItem(1, "أَلَمْ نَشْرَحْ لَكَ صَدْرَكَ", "Biz senin göğsünü yarıp genişletmedik mi?"),
-        AyahItem(2, "وَوَضَعْنَا عَنكَ وِزْرَكَ", "Belini büken ağır yükünü üzerinden indirmedik mi?"),
-        AyahItem(3, "الَّذِي أَنقَضَ ظَهْرَكَ", "O yük ki senin belini bükmüştü."),
-        AyahItem(4, "وَرَفَعْنَا لَكَ ذِكْرَكَ", "Senin şanını ve namını yüceltmedik mi?"),
-        AyahItem(5, "فَإِنَّ مَعَ الْعُسْرِ يُسْرًا", "Şüphesiz her zorlukla beraber bir kolaylık vardır."),
-        AyahItem(6, "إِنَّ مَعَ الْعُسْرِ يُسْرًا", "Evet, muhakkak her zorlukla beraber bir kolaylık vardır."),
-        AyahItem(7, "فَإِذَا فَرَغْتَ فَانصَبْ", "Öyleyse bir işi bitirince diğerine koyul."),
-        AyahItem(8, "وَإِلَىٰ رَبِّكَ فَارْغَب", "Ve yalnız Rabbine yönel, O'na rağbet et.")
-      )
-      97 -> listOf(
-        AyahItem(1, "إِنَّا أَنزَلْنَاهُ فِي لَيْلَةِ الْقَدْرِ", "Şüphesiz biz onu (Kur'an'ı) Kadir Gecesi'nde indirdik."),
-        AyahItem(2, "وَمَا أَدْرَاكَ مَا لَيْلَةُ الْقَدْرِ", "Kadir Gecesi'nin ne olduğunu sen nereden bileceksin?"),
-        AyahItem(3, "لَيْلَةُ الْقَدْرِ خَيْرٌ مِّنْ أَلْفِ شَهْرٍ", "Kadir Gecesi, bin aydan daha hayırlıdır."),
-        AyahItem(4, "تَنَزَّلُ الْمَلَائِكَةُ وَالرُّوحُ فِيهَا بِإِذْنِ رَبِّهِم مِّن كُلِّ أَمْرٍ", "Melekler ve Ruh (Cebrail), Rablerinin izniyle her türlü iş için o gece iner de iner."),
-        AyahItem(5, "سَلَامٌ هِيَ حَتَّىٰ مَطْلَعِ الْفَجْرِ", "O gece, tan yeri ağarıncaya kadar tam bir esenlik ve selamettir.")
-      )
-      103 -> listOf(
-        AyahItem(1, "وَالْعَصْرِ", "Asra (zamana) andolsun ki,"),
-        AyahItem(2, "إِنَّ الْإِنسَانَ لَفِي خُسْرٍ", "İnsan gerçekten büyük bir ziyan içindedir."),
-        AyahItem(3, "إِلَّا الَّذِينَ آمَنُوا وَعَمِلُوا الصَّالِحَاتِ وَتَوَاصَوْا بِالْحَقِّ وَتَوَاصَوْا بِالصَّبْرِ", "Ancak iman edip salih ameller işleyenler, birbirlerine hakkı ve sabrı tavsiye edenler müstesnadır.")
-      )
-      108 -> listOf(
-        AyahItem(1, "إِنَّا أَعْطَيْنَاكَ الْكَوْثَرَ", "Şüphesiz biz sana bol nimet ve Kevser'i verdik."),
-        AyahItem(2, "فَصَلِّ لِرَبِّكَ وَانْحَرْ", "Şimdi sen yalnız Rabbin için namaz kıl ve kurban kes."),
-        AyahItem(3, "إِنَّ شَانِئَكَ هُوَ الْأَبْتَرُ", "Asıl soyu kesik olan, sana buğzeden (düşmanlık eden) kimsedir.")
-      )
-      112 -> listOf(
-        AyahItem(1, "قُلْ هُوَ اللَّهُ أَحَدٌ", "De ki: O Allah tektir."),
-        AyahItem(2, "اللَّهُ الصَّمَدُ", "Allah Samed'dir (her şey O'na muhtaçtır, O hiçbir şeye muhtaç değildir)."),
-        AyahItem(3, "لَمْ يَلِدْ وَلَمْ يُولَدْ", "O doğurmamış ve doğmamıştır."),
-        AyahItem(4, "وَلَمْ يَكُن لَّهُ كُفُوًا أَحَدٌ", "Hiçbir şey O'na denk ve benzer olamaz.")
-      )
-      113 -> listOf(
-        AyahItem(1, "قُلْ أَعُوذُ بِرَبِّ الْفَلَقِ", "De ki: Sabahın Rabbine sığınırım,"),
-        AyahItem(2, "مِن شَرِّ مَا خَلَقَ", "Yarattığı şeylerin şerrinden,"),
-        AyahItem(3, "وَمِن شَرِّ غَاسِقٍ إِذَا وَقَبَ", "Karanlığı çöktüğü zaman gecenin şerrinden,"),
-        AyahItem(4, "وَمِن شَرِّ النَّفَّاثَاتِ فِي الْعُقَدِ", "Düğümlere üfleyen büyücülerin şerrinden,"),
-        AyahItem(5, "وَمِن شَرِّ حَاسِدٍ إِذَا حَسَدَ", "Ve haset ettiği vakit hasetçinin şerrinden.")
-      )
-      114 -> listOf(
-        AyahItem(1, "قُلْ أَعُوذُ بِرَبِّ النَّاسِ", "De ki: İnsanların Rabbine sığınırım,"),
-        AyahItem(2, "مَلِكِ النَّاسِ", "İnsanların yegâne Hükümdarına,"),
-        AyahItem(3, "إِلَٰهِ النَّاسِ", "İnsanların gerçek İlahına,"),
-        AyahItem(4, "مِن شَرِّ الْوَسْوَاسِ الْخَنَّاسِ", "O sinsi ve gizlice fısıldayan vesvesecinin şerrinden,"),
-        AyahItem(5, "الَّذِي يُوَسْوِسُ فِي صُدُورِ النَّاسِ", "O ki insanların kalplerine vesvese sokar;"),
-        AyahItem(6, "مِنَ الْجِنَّةِ وَالنَّاسِ", "Gerek cinlerden gerekse insanlardan olanların şerrinden.")
-      )
-      67 -> listOf(
-        AyahItem(1, "تَبَارَكَ الَّذِي بِيَدِهِ الْمُلْكُ وَهُوَ عَلَىٰ كُلِّ شَيْءٍ قَدِيرٌ", "Hükümranlık elinde olan Allah ne yücedir! O, her şeye hakkıyla kadirdir."),
-        AyahItem(2, "الَّذِي خَلَقَ الْمَوْتَ وَالْحَيَاةَ لِيَبْلُوَكُمْ أَيُّكُمْ أَحْسَنُ عَمَلًا ۚ وَهُوَ الْعَزِيزُ الْغَفُورُ", "O, hanginizin daha güzel amel yapacağını sınamak için ölümü ve hayatı yaratandır. O mutlak güç sahibidir, çok bağışlayandır."),
-        AyahItem(3, "الَّذِي خَلَقَ سَبْعَ سَمَاوَاتٍ طِبَاقًا ۖ مَّا تَرَىٰ فِي خَلْقِ الرَّحْمَٰنِ مِن تَفَاوُتٍ", "O, yedi göğü birbiriyle tam bir uyum içinde yaratandır. Rahmân'ın yaratışında hiçbir düzensizlik göremezsin."),
-        AyahItem(4, "ثُمَّ ارْجِعِ الْبَصَرَ كَرَّتَيْنِ يَنقَلِبْ إِلَيْكَ الْبَصَرُ خَاسِئًا وَهُوَ حَسِيرٌ", "Gözünü bir kez daha çevir bak; göz sana yorulmuş ve aradığını bulamamış olarak geri dönecektir.")
-      )
-      36 -> listOf(
-        AyahItem(1, "يس", "Yâsîn."),
-        AyahItem(2, "وَالْقُرْآنِ الْحَكِيمِ", "Hikmet dolu Kur'an'a andolsun ki,"),
-        AyahItem(3, "إِنَّكَ لَمِنَ الْمُرْسَلِينَ", "Sen şüphesiz peygamberlerdensin,"),
-        AyahItem(4, "عَلَىٰ صِرَاطٍ مُّسْتَقِيمٍ", "Dosdoğru bir yol üzerindesin."),
-        AyahItem(5, "تَنزِيلَ الْعَزِيزِ الرَّحِيمِ", "Bu Kur'an, mutlak güç ve engin merhamet sahibi Allah tarafından indirilmiştir.")
-      )
-      else -> listOf(
-        AyahItem(1, "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ", "Rahmân ve Rahîm olan Allah'ın adıyla."),
-        AyahItem(2, "الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ", "Hamd, âlemlerin Rabbi olan Allah'a mahsustur."),
-        AyahItem(3, "إِنَّ هَٰذَا الْقُرْآنَ يَهْدِي لِلَّتِي هِيَ أَقْوَمُ", "Şüphesiz bu Kur'an, insanları en doğru ve sağlam yola iletir.")
-      )
-    }
-  }
+  /** Surenin tüm ayetleri: Arapça metin + Diyanet İşleri meali (assets/quran/quran.tsv). */
+  fun getVersesForSurah(surahNumber: Int): List<AyahItem> =
+    QuranText.surah(surahNumber).map { AyahItem(it.ayah, it.arabic, it.meal) }
 
   fun getSurahDetailContent(surahNumber: Int, surahName: String): SurahDetailContent {
     val tr = getSurahDetailContentTr(surahNumber, surahName)
     if (!com.example.i18n.AppLanguage.isEnglish) return tr
-    val en = EnglishContent.surahTexts[surahNumber]
     // İngilizce meal gösterilmez; yalnızca Arapça metin + Latin harfli okunuş.
-    return tr.copy(
-      fullPronunciation = en ?: "English transliteration for this surah will be added soon.",
-      fullTranslation = ""
-    )
+    return tr.copy(fullPronunciation = englishTransliteration(surahNumber), fullTranslation = "")
   }
 
   /** "1 - 3. Cüz" -> İngilizcede "Juz 1 - 3" */
@@ -258,307 +164,78 @@ object QuranData {
   fun meaningOf(surah: SurahInfo): String =
     if (com.example.i18n.AppLanguage.isEnglish) EnglishContent.surahMeaning(surah.number) ?: surah.meaningTurkish else surah.meaningTurkish
 
-  private fun getSurahDetailContentTr(surahNumber: Int, surahName: String): SurahDetailContent {
-    return when (surahNumber) {
-      1 -> SurahDetailContent(
-        fullArabic = "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ ﴿١﴾ الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ ﴿٢﴾ الرَّحْمَٰنِ الرَّحِيمِ ﴿٣﴾ مَالِكِ يَوْمِ الدِّينِ ﴿٤﴾ إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ ﴿٥﴾ اهْدِنَا الصِّرَاطَ الْمُسْتَقِيمَ ﴿٦﴾ صِرَاطَ الَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ الْمَغْضُوبِ عَلَيْهِمْ وَلَا الضَّالِّينَ ﴿٧﴾",
-        fullPronunciation = """
-          Bismillâhirrahmânirrahîm.
-          1. Elhamdü lillâhi rabbil'âlemîn.
-          2. Errahmânir'rahîm.
-          3. Mâliki yevmiddîn.
-          4. İyyâke na'büdü ve iyyâke neste'în.
-          5. İhdinâs-sırâtel müstekîm.
-          6. Sırâtallezîne en'amte aleyhim.
-          7. Ğayrilmağdûbi aleyhim veleddâllîn. (Âmîn)
-        """.trimIndent(),
-        fullTranslation = """
-          Rahmân ve Rahîm olan Allah'ın adıyla.
-          1. Hamd, âlemlerin Rabbi olan Allah'a mahsustur.
-          2. O, Rahmândır ve Rahîmdir.
-          3. Din ve hesap gününün yegâne sahibidir.
-          4. (Rabbimiz!) Yalnız sana ibadet eder ve yalnız senden yardım dileriz.
-          5. Bizi dosdoğru yola ilet.
-          6. Kendilerine lütuf ve nimet verdiğin kimselerin yoluna;
-          7. Gazaba uğramışların ve sapmışların yoluna değil. (Âmin)
-        """.trimIndent()
-      )
-
-      112 -> SurahDetailContent(
-        fullArabic = "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ\nقُلْ هُوَ اللَّهُ أَحَدٌ ﴿١﴾ اللَّهُ الصَّمَدُ ﴿٢﴾ لَمْ يَلِدْ وَلَمْ يُولَدْ ﴿٣﴾ وَلَمْ يَكُن لَّهُ كُفُوًا أَحَدٌ ﴿٤﴾",
-        fullPronunciation = """
-          Bismillâhirrahmânirrahîm.
-          1. Kul hüvellâhü ehad.
-          2. Allâhüs-samed.
-          3. Lem yelid ve lem yûled.
-          4. Ve lem yekün lehû küfüven ehad.
-        """.trimIndent(),
-        fullTranslation = """
-          Rahmân ve Rahîm olan Allah'ın adıyla.
-          1. De ki: O Allah tektir (eşi ve benzeri yoktur).
-          2. Allah Samed'dir (her şey O'na muhtaçtır, O hiçbir şeye muhtaç değildir).
-          3. O doğurmamış ve doğmamıştır.
-          4. Hiçbir şey O'na denk ve benzer olamaz.
-        """.trimIndent()
-      )
-
-      113 -> SurahDetailContent(
-        fullArabic = "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ\nقُلْ أَعُوذُ بِرَبِّ الْفَلَقِ ﴿١﴾ مِن شَرِّ مَا خَلَقَ ﴿٢﴾ وَمِن شَرِّ غَاسِقٍ إِذَا وَقَبَ ﴿٣﴾ وَمِن شَرِّ النَّفَّاثَاتِ فِي الْعُقَدِ ﴿٤﴾ وَمِن شَرِّ حَاسِدٍ إِذَا حَسَدَ ﴿٥﴾",
-        fullPronunciation = """
-          Bismillâhirrahmânirrahîm.
-          1. Kul e'ûzü birabbil-felak.
-          2. Min şerri mâ halak.
-          3. Ve min şerri ğâsikın izâ vekab.
-          4. Ve min şerrin-neffâsâti fil-'ukad.
-          5. Ve min şerri hâsidin izâ hased.
-        """.trimIndent(),
-        fullTranslation = """
-          Rahmân ve Rahîm olan Allah'ın adıyla.
-          1. De ki: Sabahın Rabbine sığınırım,
-          2. Yarattığı şeylerin şerrinden,
-          3. Karanlığı çöktüğü zaman gecenin şerrinden,
-          4. Düğümlere üfleyen büyücülerin şerrinden,
-          5. Ve haset ettiği vakit hasetçinin şerrinden.
-        """.trimIndent()
-      )
-
-      114 -> SurahDetailContent(
-        fullArabic = "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ\nقُلْ أَعُوذُ بِرَبِّ النَّاسِ ﴿١﴾ مَلِكِ النَّاسِ ﴿٢﴾ إِلَٰهِ النَّاسِ ﴿٣﴾ مِن شَرِّ الْوَسْوَاسِ الْخَنَّاسِ ﴿٤﴾ الَّذِي يُوَسْوِسُ فِي صُدُورِ النَّاسِ ﴿٥﴾ مِنَ الْجِنَّةِ وَالنَّاسِ ﴿٦﴾",
-        fullPronunciation = """
-          Bismillâhirrahmânirrahîm.
-          1. Kul e'ûzü birabbin-nâs.
-          2. Melikin-nâs.
-          3. İlâhin-nâs.
-          4. Min şerril-vesvâsil-hannâs.
-          5. Ellezî yüvesvisü fî sudûrin-nâs.
-          6. Minel-cinneti ven-nâs.
-        """.trimIndent(),
-        fullTranslation = """
-          Rahmân ve Rahîm olan Allah'ın adıyla.
-          1. De ki: İnsanların Rabbine sığınırım,
-          2. İnsanların mutlak Hükümdarına,
-          3. İnsanların gerçek İlahına,
-          4. O sinsi vesvesecinin şerrinden,
-          5. O ki insanların kalplerine vesvese sokar;
-          6. Gerek cinlerden gerekse insanlardan olanların şerrinden.
-        """.trimIndent()
-      )
-
-      108 -> SurahDetailContent(
-        fullArabic = "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ\nإِنَّا أَعْطَيْنَاكَ الْكَوْثَرَ ﴿١﴾ فَصَلِّ لِرَبِّكَ وَانْحَرْ ﴿٢﴾ إِنَّ شَانِئَكَ هُوَ الْأَبْتَرُ ﴿٣﴾",
-        fullPronunciation = """
-          Bismillâhirrahmânirrahîm.
-          1. İnnâ a'taynâkel-kevser.
-          2. Fesalli lirabbike venhar.
-          3. İnne şânieke hüvel-ebter.
-        """.trimIndent(),
-        fullTranslation = """
-          Rahmân ve Rahîm olan Allah'ın adıyla.
-          1. Şüphesiz biz sana bol hayır ve Kevser'i verdik.
-          2. Şimdi sen yalnız Rabbin için namaz kıl ve kurban kes.
-          3. Asıl soyu kesik olan, sana buğzedip düşmanlık besleyendir.
-        """.trimIndent()
-      )
-
-      103 -> SurahDetailContent(
-        fullArabic = "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ\nوَالْعَصْرِ ﴿١﴾ إِنَّ الْإِنسَانَ لَفِي خُسْرٍ ﴿٢﴾ إِلَّا الَّذِينَ آمَنُوا وَعَمِلُوا الصَّالِحَاتِ وَتَوَاصَوْا بِالْحَقِّ وَتَوَاصَوْا بِالصَّبْرِ ﴿٣﴾",
-        fullPronunciation = """
-          Bismillâhirrahmânirrahîm.
-          1. Vel-'asr.
-          2. İnnel-insâne lefî husr.
-          3. İllellezîne âmenû ve 'amilus-sâlihâti ve tevâsav bil-hakkı ve tevâsav bis-sabr.
-        """.trimIndent(),
-        fullTranslation = """
-          Rahmân ve Rahîm olan Allah'ın adıyla.
-          1. Asra (zamana) andolsun ki,
-          2. İnsan gerçekten büyük bir ziyan içindedir.
-          3. Ancak iman edip salih ameller işleyenler, birbirlerine hakkı ve sabrı tavsiye edenler müstesnadır.
-        """.trimIndent()
-      )
-
-      97 -> SurahDetailContent(
-        fullArabic = "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ\nإِنَّا أَنزَلْنَاهُ فِي لَيْلَةِ الْقَدْرِ ﴿١﴾ وَمَا أَدْرَاكَ مَا لَيْلَةُ الْقَدْرِ ﴿٢﴾ لَيْلَةُ الْقَدْرِ خَيْرٌ مِّنْ أَلْفِ شَهْرٍ ﴿٣﴾ تَنَزَّلُ الْمَلَائِكَةُ وَالرُّوحُ فِيهَا بِإِذْنِ رَبِّهِم مِّن كُلِّ أَمْرٍ ﴿٤﴾ سَلَامٌ هِيَ حَتَّىٰ مَطْلَعِ الْفَجْرِ ﴿٥﴾",
-        fullPronunciation = """
-          Bismillâhirrahmânirrahîm.
-          1. İnnâ enzelnâhü fî leyletil-kadr.
-          2. Ve mâ edrâke mâ leyletül-kadr.
-          3. Leyletül-kadri hayrum-min elfi şehr.
-          4. Tenezzelül-melâiketü ver-rûhu fîhâ bi-izni rabbihim min külli emr.
-          5. Selâmün hiye hattâ matle'il-fecr.
-        """.trimIndent(),
-        fullTranslation = """
-          Rahmân ve Rahîm olan Allah'ın adıyla.
-          1. Şüphesiz biz onu (Kur'an'ı) Kadir Gecesi'nde indirdik.
-          2. Kadir Gecesi'nin ne olduğunu sen nereden bileceksin?
-          3. Kadir Gecesi, bin aydan daha hayırlıdır.
-          4. Melekler ve Ruh (Cebrail), Rablerinin izniyle her türlü iş için o gece iner de iner.
-          5. O gece, tan yeri ağarıncaya kadar tam bir esenlik ve selamettir.
-        """.trimIndent()
-      )
-
-      94 -> SurahDetailContent(
-        fullArabic = "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ\nأَلَمْ نَشْرَحْ لَكَ صَدْرَكَ ﴿١﴾ وَوَضَعْنَا عَنكَ وِزْرَكَ ﴿٢﴾ الَّذِي أَنقَضَ ظَهْرَكَ ﴿٣﴾ وَرَفَعْنَا لَكَ ذِكْرَكَ ﴿٤﴾ فَإِنَّ مَعَ الْعُسْرِ يُسْرًا ﴿٥﴾ إِنَّ مَعَ الْعُسْرِ يُسْرًا ﴿٦﴾ فَإِذَا فَرَغْتَ فَانصَبْ ﴿٧﴾ وَإِلَىٰ رَبِّكَ فَارْغَب ﴿٨﴾",
-        fullPronunciation = """
-          Bismillâhirrahmânirrahîm.
-          1. Elem neşrah leke sadrak.
-          2. Ve veda'nâ 'anke vizrak.
-          3. Ellezî enkada zahrak.
-          4. Ve refa'nâ leke zikrak.
-          5. Fe-inne me'al-'usri yusrâ.
-          6. İnne me'al-'usri yusrâ.
-          7. Fe-izâ ferağte fensab.
-          8. Ve ilâ rabbike ferğab.
-        """.trimIndent(),
-        fullTranslation = """
-          Rahmân ve Rahîm olan Allah'ın adıyla.
-          1. Biz senin göğsünü açıp genişletmedik mi?
-          2. Belini büken ağır yükünü üzerinden indirmedik mi?
-          3. O yük ki senin belini bükmüştü.
-          4. Senin şanını ve namını yüceltmedik mi?
-          5. Şüphesiz her zorlukla beraber bir kolaylık vardır.
-          6. Evet, muhakkak her zorlukla beraber bir kolaylık vardır.
-          7. Öyleyse bir işi bitirince hemen diğerine koyul;
-          8. Ve yalnız Rabbine yönel, O'na rağbet et.
-        """.trimIndent()
-      )
-
-      93 -> SurahDetailContent(
-        fullArabic = "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ\nوَالضُّحَىٰ ﴿١﴾ وَاللَّيْلِ إِذَا سَجَىٰ ﴿٢﴾ مَا وَدَّعَكَ رَبُّكَ وَمَا قَلَىٰ ﴿٣﴾ وَلَلْآخِرَةُ خَيْرٌ لَّكَ مِنَ الْأُولَىٰ ﴿٤﴾ وَلَسَوْفَ يُعْطِيكَ رَبُّكَ فَتَرْضَىٰ ﴿٥﴾ أَلَمْ يَجِدْكَ يَتِيمًا فَآوَىٰ ﴿٦﴾ وَوَجَدَكَ ضَالًّا فَهَدَىٰ ﴿٧﴾ وَوَجَدَكَ عَائِلًا فَأَغْنَىٰ ﴿٨﴾ فَأَمَّا الْيَتِيمَ فَلَا تَقْهَرْ ﴿٩﴾ وَأَمَّا السَّائِلَ فَلَا تَنْهَرْ ﴿١٠﴾ وَأَمَّا بِنِعْمَةِ رَبِّكَ فَحَدِّثْ ﴿١١﴾",
-        fullPronunciation = """
-          Bismillâhirrahmânirrahîm.
-          1. Ved-duhâ. 2. Vel-leyli izâ secâ. 3. Mâ vedde'ake rabbüke ve mâ kalâ. 4. Ve lel-âhiratü hayrul-leke minel-ûlâ. 5. Ve lesevfe yu'tîke rabbüke feterdâ. 6. Elem yecidke yetîmen fe-âvâ. 7. Ve vecedeke dâllen fe-hedâ. 8. Ve vecedeke 'âilen fe-ağnâ. 9. Fe-emmel-yetîme felâ takher. 10. Ve emmes-sâile felâ tenher. 11. Ve emmâ bini'meti rabbike fehaddis.
-        """.trimIndent(),
-        fullTranslation = """
-          Rahmân ve Rahîm olan Allah'ın adıyla.
-          1. Kuşluk vaktine andolsun, 2. Karanlığı çöktüğü zaman geceye andolsun ki, 3. Rabbin seni terk etmedi ve sana darılmadı. 4. Elbette ahiret senin için dünyadan hayırlıdır. 5. Rabbin sana verecek ve sen hoşnut olacaksın. 6. O seni yetim bulup barındırmadı mı? 7. Yolunu ararken bulup hidayete erdirmedi mi? 8. Yoksul bulup zengin kılmadı mı? 9. Öyleyse sakın yetimi ezme! 10. Bir şey isteyeni asla azarlama! 11. Ve Rabbinin nimetini şükranla anlat!
-        """.trimIndent()
-      )
-
-      109 -> SurahDetailContent(
-        fullArabic = "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ\nقُلْ يَا أَيُّهَا الْكَافِرُونَ ﴿١﴾ لَا أَعْبُدُ مَا تَعْبُدُونَ ﴿٢﴾ وَلَا أَنتُمْ عَابِدُونَ مَا أَعْبُدُ ﴿٣﴾ وَلَا أَنَا عَابِدٌ مَّا عَبَدتُّمْ ﴿٤﴾ وَلَا أَنتُمْ عَابِدُونَ مَا أَعْبُدُ ﴿٥﴾ لَكُمْ دِينُكُمْ وَلِيَ دِينِ ﴿٦﴾",
-        fullPronunciation = """
-          Bismillâhirrahmânirrahîm.
-          1. Kul yâ eyyühel-kâfirûn.
-          2. Lâ a'büdü mâ ta'büdûn.
-          3. Ve lâ entüm 'âbidûne mâ a'büd.
-          4. Ve lâ ene 'âbidüm-mâ 'abettüm.
-          5. Ve lâ entüm 'âbidûne mâ a'büd.
-          6. Leküm dînüküm veliye dîn.
-        """.trimIndent(),
-        fullTranslation = """
-          Rahmân ve Rahîm olan Allah'ın adıyla.
-          1. De ki: Ey inkârcılar!
-          2. Ben sizin taptıklarınıza tapmam.
-          3. Siz de benim taptığıma tapacak değilsiniz.
-          4. Ben sizin taptıklarınıza asla tapacak değilim.
-          5. Siz de benim taptığıma tapacak değilsiniz.
-          6. Sizin dininiz size, benim dinim banadır.
-        """.trimIndent()
-      )
-
-      106 -> SurahDetailContent(
-        fullArabic = "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ\nلِإِيلَافِ قُرَيْشٍ ﴿١﴾ إِيلَافِهِمْ رِحْلَةَ الشِّتَاءِ وَالصَّيْفِ ﴿٢﴾ فَلْيَعْبُدُوا رَبَّ هَٰذَا الْبَيْتِ ﴿٣﴾ الَّذِي أَطْعَمَهُم مِّن جُوعٍ وَآمَنَهُم مِّنْ خَوْفٍ ﴿٤﴾",
-        fullPronunciation = """
-          Bismillâhirrahmânirrahîm.
-          1. Li-îlâfi kurayş.
-          2. Îlâfihim rıhleteş-şitâi ves-sayf.
-          3. Fel-ya'büdû rabbe hâzel-beyt.
-          4. Ellezî et'amehüm min cû'in ve âmenehüm min havf.
-        """.trimIndent(),
-        fullTranslation = """
-          Rahmân ve Rahîm olan Allah'ın adıyla.
-          1. Kureyş'in güven ve uzlaşmasını sağladığı için,
-          2. Kış ve yaz yolculuklarında onları güvenli kıldığı için,
-          3. Artık bu Beyt'in (Kâbe'nin) Rabbine kulluk etsinler;
-          4. O ki, onları açlıktan doyurmuş ve her türlü korkudan emin kılmıştır.
-        """.trimIndent()
-      )
-
-      105 -> SurahDetailContent(
-        fullArabic = "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ\nأَلَمْ تَرَ كَيْفَ فَعَلَ رَبُّكَ بِأَصْحَابِ الْفِيلِ ﴿١﴾ أَلَمْ يَجْعَلْ كَيْدَهُمْ فِي تَضْلِيلٍ ﴿٢﴾ وَأَرْسَلَ عَلَيْهِمْ طَيْرًا أَبَابِيلَ ﴿٣﴾ تَرْمِيهِم بِحِجَارَةٍ مِّن سِجِّيلٍ ﴿٤﴾ فَجَعَلَهُمْ كَعَصْفٍ مَّأْكُولٍ ﴿٥﴾",
-        fullPronunciation = """
-          Bismillâhirrahmânirrahîm.
-          1. Elem tera keyfe fe'ale rabbüke bi-eshâbil-fîl.
-          2. Elem yec'al keydehüm fî tadlîl.
-          3. Ve ersele 'aleyhim tayran ebâbîl.
-          4. Termîhim bi-hicâratim-min siccîl.
-          5. Fece'alehüm ke-'asfim-me'kûl.
-        """.trimIndent(),
-        fullTranslation = """
-          Rahmân ve Rahîm olan Allah'ın adıyla.
-          1. Görmedin mi Rabbin fil sahiplerine ne yaptı?
-          2. Onların tuzaklarını boşa çıkarmadı mı?
-          3. Üzerlerine sürü sürü Ebabil kuşlarını saldı.
-          4. Onlara pişmiş çamurdan taşlar atıyorlardı.
-          5. Nihayet onları çiğnenmiş ekin yaprağı gibi kıldı.
-        """.trimIndent()
-      )
-
-      36 -> SurahDetailContent(
-        fullArabic = "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ\nيس ﴿١﴾ وَالْقُرْآنِ الْحَكِيمِ ﴿٢﴾ إِنَّكَ لَمِنَ الْمُرْسَلِينَ ﴿٣﴾ عَلَىٰ صِرَاطٍ مُّسْتَقِيمٍ ﴿٤﴾ تَنزِيلَ الْعَزِيزِ الرَّحِيمِ ﴿٥﴾ لِتُنذِرَ قَوْمًا مَّا أُنذِرَ آبَاؤُهُمْ فَهُمْ غَافِلُونَ ﴿٦﴾ لَقَدْ حَقَّ الْقَوْلُ عَلَىٰ أَكْثَرِهِمْ فَهُمْ لَا يُؤْمِنُونَ ﴿٧﴾ إِنَّا جَعَلْنَا فِي أَعْنَاقِهِمْ أَغْلَالًا فَهِيَ إِلَى الْأَذْقَانِ فَهُم مُّقْمَحُونَ ﴿٨﴾",
-        fullPronunciation = """
-          Bismillâhirrahmânirrahîm.
-          1. Yâsîn.
-          2. Vel-kur'ânil-hakîm.
-          3. İnneke leminel-mürselîn.
-          4. 'Alâ sırâtım-müstekîm.
-          5. Tenzîlel-'azîzir-rahîm.
-          6. Li-tünzira kavmem-mâ ünzira âbâühüm fehüm ğâfilûn.
-          7. Lekad hakkal-kavlü 'alâ ekserihim fehüm lâ yü'minûn.
-        """.trimIndent(),
-        fullTranslation = """
-          Rahmân ve Rahîm olan Allah'ın adıyla.
-          1. Yâsîn.
-          2. Hikmet dolu Kur'an'a andolsun ki,
-          3. Sen şüphesiz gönderilmiş peygamberlerdensin.
-          4. Dosdoğru bir yol üzerindesin.
-          5. Bu Kur'an, mutlak güç ve engin merhamet sahibi Allah tarafından indirilmiştir.
-          6. Ataları uyarılmamış, bu yüzden kendileri de gaflet içinde kalmış bir toplumu uyarman için gönderildin.
-          7. Andolsun ki onların çoğu üzerine o azap hükmü hak olmuştur.
-        """.trimIndent()
-      )
-
-      67 -> SurahDetailContent(
-        fullArabic = "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ\nتَبَارَكَ الَّذِي بِيَدِهِ الْمُلْكُ وَهُوَ عَلَىٰ كُلِّ شَيْءٍ قَدِيرٌ ﴿١﴾ الَّذِي خَلَقَ الْمَوْتَ وَالْحَيَاةَ لِيَبْلُوَكُمْ أَيُّكُمْ أَحْسَنُ عَمَلًا ۚ وَهُوَ الْعَزِيزُ الْغَفُورُ ﴿٢﴾ الَّذِي خَلَقَ سَبْعَ سَمَاوَاتٍ طِبَاقًا ۖ مَّا تَرَىٰ فِي خَلْقِ الرَّحْمَٰنِ مِن تَفَاوُتٍ ۖ فَارْجِعِ الْبَصَرَ هَلْ تَرَىٰ مِن فُطُورٍ ﴿٣﴾ ثُمَّ ارْجِعِ الْبَصَرَ كَرَّتَيْنِ يَنقَلِبْ إِلَيْكَ الْبَصَرُ خَاسِئًا وَهُوَ حَسِيرٌ ﴿٤﴾",
-        fullPronunciation = """
-          Bismillâhirrahmânirrahîm.
-          1. Tebârakellezî bi-yedihil-mülkü ve hüve 'alâ külli şey'in kadîr.
-          2. Ellezî halakal-mevte vel-hayâte li-yeblüveküm eyyüküm ahsenü 'amelâ, ve hüvel-'azîzül-ğafûr.
-          3. Ellezî halaka seb'a semâvâtin tıbâkâ, mâ terâ fî halkır-rahmâni min tefâvüt, ferci'ıl-basara hel terâ min fütûr.
-          4. Sümmerci'ıl-basara kerrateyni yenkalib ileykel-basaru hâsi-ev-ve hüve hasîr.
-        """.trimIndent(),
-        fullTranslation = """
-          Rahmân ve Rahîm olan Allah'ın adıyla.
-          1. Hükümranlık elinde olan Allah yüceler yücesidir; O, her şeye hakkıyla kadirdir.
-          2. O, hanginizin daha güzel amel yapacağını sınamak için ölümü ve hayatı yaratandır. O, mutlak güç sahibidir, çok bağışlayandır.
-          3. O, yedi göğü birbiriyle tam bir uyum içinde yaratandır. Rahmân'ın yaratışında hiçbir düzensizlik göremezsin. Gözünü çevir de bak, bir çatlak veya kusur görebilir misin?
-          4. Sonra gözünü tekrar tekrar çevir bak; göz sana yorulmuş ve aradığını bulamamış olarak geri dönecektir.
-        """.trimIndent()
-      )
-
-      else -> {
-        val ayahs = getVersesForSurah(surahNumber)
-        val arabicCombined = StringBuilder()
-        if (surahNumber != 9) {
-          arabicCombined.append("بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ\n")
-        }
-        val pronunciationCombined = StringBuilder()
-        pronunciationCombined.append("Bismillâhirrahmânirrahîm.\n")
-        val translationCombined = StringBuilder()
-        translationCombined.append("Rahmân ve Rahîm olan Allah'ın adıyla.\n\n")
-
-        ayahs.forEach { ayah ->
-          arabicCombined.append("${ayah.arabicText} ﴿${ayah.numberInSurah}﴾ ")
-          pronunciationCombined.append("${ayah.numberInSurah}. ${ayah.turkishMeal.take(30)}... [Arapça tilâvet]\n")
-          translationCombined.append("${ayah.numberInSurah}. ${ayah.turkishMeal}\n")
-        }
-
-        SurahDetailContent(
-          fullArabic = arabicCombined.toString().trim(),
-          fullPronunciation = pronunciationCombined.toString().trim(),
-          fullTranslation = translationCombined.toString().trim()
-        )
-      }
+  private fun getSurahDetailContentTr(surahNumber: Int, @Suppress("UNUSED_PARAMETER") surahName: String): SurahDetailContent {
+    val rows = QuranText.surah(surahNumber)
+    if (rows.isEmpty()) {
+      return SurahDetailContent("", "Sure metni yüklenemedi.", "")
     }
+    // Fâtiha'da besmele 1. ayettir; Tevbe'de besmele okunmaz; diğerlerinde başta ayrıca yazılır.
+    val withBasmala = surahNumber != 1 && surahNumber != 9
+    val arabic = StringBuilder()
+    val pron = StringBuilder()
+    val meal = StringBuilder()
+    if (withBasmala) {
+      arabic.append(BASMALA_AR).append("\n")
+      pron.append("Bismillâhirrahmânirrahîm.\n")
+      meal.append("Rahmân ve Rahîm olan Allah'ın adıyla.\n")
+    }
+    rows.forEach { r ->
+      arabic.append(r.arabic).append(" ﴿").append(toArabicDigits(r.ayah)).append("﴾ ")
+      pron.append(r.ayah).append(". ").append(r.pronunciation).append("\n")
+      // Eski Diyanet baskısında birkaç ayete tek meal yazılmıştır; tekrarlar boş bırakıldı.
+      if (r.meal.isNotBlank()) meal.append(r.ayah).append(". ").append(r.meal).append("\n")
+    }
+    return SurahDetailContent(
+      fullArabic = arabic.toString().trim(),
+      fullPronunciation = pron.toString().trim(),
+      fullTranslation = meal.toString().trim()
+    )
+  }
+
+  /** İngilizce modda: Latin harfli (İngilizce) okunuş. */
+  fun englishTransliteration(surahNumber: Int): String {
+    val rows = QuranText.surah(surahNumber)
+    val sb = StringBuilder()
+    if (surahNumber != 1 && surahNumber != 9) sb.append("Bismi Allahi alrrahmani alrraheemi\n")
+    rows.forEach { sb.append(it.ayah).append(". ").append(it.english).append("\n") }
+    return sb.toString().trim()
+  }
+
+  private const val BASMALA_AR = "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ"
+
+  private fun toArabicDigits(n: Int): String =
+    n.toString().map { c -> '\u0660' + (c - '0') }.joinToString("")
+}
+
+/** Kur'an metni: assets/quran/quran.tsv (sure, ayet, Arapça, Türkçe okunuş, İngilizce okunuş, Diyanet meali). */
+object QuranText {
+  data class Row(val surah: Int, val ayah: Int, val arabic: String, val pronunciation: String, val english: String, val meal: String)
+
+  @Volatile private var bySurah: Map<Int, List<Row>>? = null
+
+  fun surah(n: Int): List<Row> = load()[n].orEmpty()
+
+  /** Uygulama açılışında arka planda çağrılır; ilk sure açılışında bekleme olmaz. */
+  fun preload(context: android.content.Context) { load(context) }
+
+  @Synchronized
+  private fun load(context: android.content.Context? = null): Map<Int, List<Row>> {
+    bySurah?.let { return it }
+    val ctx = context ?: com.example.AppHolder.context
+    val map = HashMap<Int, MutableList<Row>>(128)
+    try {
+      ctx.assets.open("quran/quran.tsv").bufferedReader(Charsets.UTF_8).useLines { lines ->
+        lines.forEach { line ->
+          val f = line.split('\t')
+          if (f.size >= 6) {
+            val r = Row(f[0].toInt(), f[1].toInt(), f[2], f[3], f[4], f[5])
+            map.getOrPut(r.surah) { ArrayList() }.add(r)
+          }
+        }
+      }
+    } catch (_: Exception) {
+      return emptyMap()
+    }
+    return map.also { bySurah = it }
   }
 }
