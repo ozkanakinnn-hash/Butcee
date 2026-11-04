@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -75,6 +76,7 @@ fun ZikirmatikScreen(onNavigateBack: () -> Unit) {
   var step by remember { mutableIntStateOf(store.tesbihatStep) }
   var total by remember { mutableIntStateOf(store.totalAllTime) }
   var pulse by remember { mutableStateOf(false) }
+  var showResetConfirm by remember { mutableStateOf(false) }
   val scale by animateFloatAsState(if (pulse) 1.06f else 1f, label = "count_pulse")
 
   val target: Int? = when (mode) { "33", "tesbihat" -> 33; "99" -> 99; else -> null }
@@ -178,6 +180,39 @@ fun ZikirmatikScreen(onNavigateBack: () -> Unit) {
           )
         }
       }
+
+      // Sıfırla düğmesi (dokunma alanının içinde, sağ üstte; kendi tıklaması sayıma karışmaz)
+      Row(
+        modifier = Modifier
+          .align(Alignment.TopEnd)
+          .padding(14.dp)
+          .clip(RoundedCornerShape(50))
+          .background(MaterialTheme.colorScheme.primaryContainer)
+          .clickable { if (count > 0 || step > 0) showResetConfirm = true }
+          .padding(horizontal = 14.dp, vertical = 8.dp)
+          .testTag("zikir_reset_button"),
+        verticalAlignment = Alignment.CenterVertically
+      ) {
+        Icon(Icons.Default.Refresh, contentDescription = null, tint = accent, modifier = Modifier.size(18.dp))
+        Spacer(modifier = Modifier.width(6.dp))
+        Text(if (en) "Reset" else "Sıfırla", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = accent)
+      }
+    }
+
+    if (showResetConfirm) {
+      androidx.compose.material3.AlertDialog(
+        onDismissRequest = { showResetConfirm = false },
+        title = { Text(if (en) "Reset counter?" else "Sayaç sıfırlansın mı?") },
+        text = { Text(if (en) "The current count ($count) will be reset. Total dhikr is kept." else "Mevcut sayı ($count) sıfırlanacak. Toplam zikir korunur.") },
+        confirmButton = {
+          androidx.compose.material3.TextButton(onClick = { reset(); showResetConfirm = false; vibrate(context, 40) }) {
+            Text(if (en) "Reset" else "Sıfırla", fontWeight = FontWeight.Bold)
+          }
+        },
+        dismissButton = {
+          androidx.compose.material3.TextButton(onClick = { showResetConfirm = false }) { Text(if (en) "Cancel" else "Vazgeç") }
+        }
+      )
     }
 
     Text(
