@@ -106,6 +106,7 @@ object GreetingCardRenderer {
       .setAlignment(Layout.Alignment.ALIGN_CENTER)
       .setLineSpacing(0f, mult)
       .setIncludePad(false)
+      .setBreakStrategy(Layout.BREAK_STRATEGY_BALANCED)
       .build()
 
   private fun decode(context: Context, resId: Int, scale: Float): Bitmap? = try {
