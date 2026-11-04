@@ -2,7 +2,6 @@ import '../data/app_database.dart';
 import '../data/supplement_catalog.dart';
 import '../domain/adherence.dart';
 import '../domain/dose_rule.dart';
-import '../domain/gs1_parser.dart';
 import '../domain/models.dart';
 import 'alarm_planner.dart';
 import 'settings_store.dart';
@@ -60,13 +59,10 @@ class SupplementService {
     required DoseRule rule,
     List<String> slots = const [],
     double initialStock = 0,
-    ScannedDrugCode? scanned,
     bool persistent = false,
   }) async {
     final id = await db.insertMedicine(medicine.copyWith(totalStock: 0));
-    if (scanned != null) {
-      await db.addScannedPack(id, scanned, initialStock, clock());
-    } else if (initialStock > 0) {
+    if (initialStock > 0) {
       await db.adjustStock(id, initialStock);
     }
     await db.upsertSchedule(Schedule(

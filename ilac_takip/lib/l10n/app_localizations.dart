@@ -146,12 +146,6 @@ abstract class AppLocalizations {
   /// **'ALDIM'**
   String get takeBig;
 
-  /// No description provided for @takeNow.
-  ///
-  /// In tr, this message translates to:
-  /// **'Şimdi aldım'**
-  String get takeNow;
-
   /// No description provided for @snooze10.
   ///
   /// In tr, this message translates to:
@@ -203,13 +197,13 @@ abstract class AppLocalizations {
   /// No description provided for @addMedicine.
   ///
   /// In tr, this message translates to:
-  /// **'Takviye ekle'**
+  /// **'Vitamin ve takviye ekle'**
   String get addMedicine;
 
   /// No description provided for @medicines.
   ///
   /// In tr, this message translates to:
-  /// **'İlaçlarım'**
+  /// **'Takviyelerim'**
   String get medicines;
 
   /// No description provided for @settings.
@@ -253,12 +247,6 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Kaydet'**
   String get save;
-
-  /// No description provided for @ok.
-  ///
-  /// In tr, this message translates to:
-  /// **'Tamam'**
-  String get ok;
 
   /// No description provided for @mealNone.
   ///
@@ -395,7 +383,7 @@ abstract class AppLocalizations {
   /// No description provided for @criticalMedicine.
   ///
   /// In tr, this message translates to:
-  /// **'Kritik ilaç'**
+  /// **'Kritik takviye'**
   String get criticalMedicine;
 
   /// No description provided for @criticalMedicineHint.
@@ -470,66 +458,6 @@ abstract class AppLocalizations {
   /// **'Kaydedildi'**
   String get saved;
 
-  /// No description provided for @scanTitle.
-  ///
-  /// In tr, this message translates to:
-  /// **'İlaç tara'**
-  String get scanTitle;
-
-  /// No description provided for @scanHint.
-  ///
-  /// In tr, this message translates to:
-  /// **'Kutunun üzerindeki karekodu veya barkodu çerçeveye alın'**
-  String get scanHint;
-
-  /// No description provided for @scanManualEntry.
-  ///
-  /// In tr, this message translates to:
-  /// **'Barkodu elle gir'**
-  String get scanManualEntry;
-
-  /// No description provided for @barcodeDigits.
-  ///
-  /// In tr, this message translates to:
-  /// **'13 haneli barkod'**
-  String get barcodeDigits;
-
-  /// No description provided for @duplicatePack.
-  ///
-  /// In tr, this message translates to:
-  /// **'Bu kutu zaten eklenmiş'**
-  String get duplicatePack;
-
-  /// No description provided for @addStockQuestion.
-  ///
-  /// In tr, this message translates to:
-  /// **'{name} listenizde var. Stoğa {qty} eklensin mi?'**
-  String addStockQuestion(String name, String qty);
-
-  /// No description provided for @addStockDone.
-  ///
-  /// In tr, this message translates to:
-  /// **'Stok güncellendi'**
-  String get addStockDone;
-
-  /// No description provided for @notFoundInCatalog.
-  ///
-  /// In tr, this message translates to:
-  /// **'Bu ilacı henüz tanımıyoruz. Bilgileri elle girebilirsiniz.'**
-  String get notFoundInCatalog;
-
-  /// No description provided for @expiryLabel.
-  ///
-  /// In tr, this message translates to:
-  /// **'Son kullanma: {date}'**
-  String expiryLabel(String date);
-
-  /// No description provided for @invalidCode.
-  ///
-  /// In tr, this message translates to:
-  /// **'Kod okunamadı'**
-  String get invalidCode;
-
   /// No description provided for @doseQuantity.
   ///
   /// In tr, this message translates to:
@@ -593,7 +521,7 @@ abstract class AppLocalizations {
   /// No description provided for @channelCritical.
   ///
   /// In tr, this message translates to:
-  /// **'Kritik ilaç alarmları'**
+  /// **'Kritik takviye alarmları'**
   String get channelCritical;
 
   /// No description provided for @channelCriticalDesc.
@@ -605,7 +533,7 @@ abstract class AppLocalizations {
   /// No description provided for @channelNormal.
   ///
   /// In tr, this message translates to:
-  /// **'İlaç hatırlatmaları'**
+  /// **'Takviye hatırlatmaları'**
   String get channelNormal;
 
   /// No description provided for @channelInfo.
@@ -638,59 +566,11 @@ abstract class AppLocalizations {
   /// **'Sistem dili'**
   String get languageSystem;
 
-  /// No description provided for @seniorMode.
-  ///
-  /// In tr, this message translates to:
-  /// **'Basit Mod'**
-  String get seniorMode;
-
-  /// No description provided for @seniorModeHint.
-  ///
-  /// In tr, this message translates to:
-  /// **'Büyük yazı, yüksek kontrast, tek ekran'**
-  String get seniorModeHint;
-
-  /// No description provided for @textScale.
-  ///
-  /// In tr, this message translates to:
-  /// **'Yazı büyüklüğü'**
-  String get textScale;
-
   /// No description provided for @ttsOnAlarm.
   ///
   /// In tr, this message translates to:
   /// **'Alarmda sesli oku'**
   String get ttsOnAlarm;
-
-  /// No description provided for @caregiverPhone.
-  ///
-  /// In tr, this message translates to:
-  /// **'Yakınımın telefonu'**
-  String get caregiverPhone;
-
-  /// No description provided for @seniorPin.
-  ///
-  /// In tr, this message translates to:
-  /// **'Ayar kilidi PIN\'i (4 hane)'**
-  String get seniorPin;
-
-  /// No description provided for @seniorPinHint.
-  ///
-  /// In tr, this message translates to:
-  /// **'Basit Mod\'dan çıkmak için gerekir'**
-  String get seniorPinHint;
-
-  /// No description provided for @enterPin.
-  ///
-  /// In tr, this message translates to:
-  /// **'PIN girin'**
-  String get enterPin;
-
-  /// No description provided for @wrongPin.
-  ///
-  /// In tr, this message translates to:
-  /// **'PIN hatalı'**
-  String get wrongPin;
 
   /// No description provided for @reliability.
   ///
@@ -763,54 +643,6 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Test alarmı 1 dakika sonra çalacak. Uygulamayı kapatıp ekranı kilitleyin.'**
   String get testAlarmScheduled;
-
-  /// No description provided for @goodMorning.
-  ///
-  /// In tr, this message translates to:
-  /// **'Günaydın'**
-  String get goodMorning;
-
-  /// No description provided for @goodAfternoon.
-  ///
-  /// In tr, this message translates to:
-  /// **'İyi günler'**
-  String get goodAfternoon;
-
-  /// No description provided for @goodEvening.
-  ///
-  /// In tr, this message translates to:
-  /// **'İyi akşamlar'**
-  String get goodEvening;
-
-  /// No description provided for @callCaregiver.
-  ///
-  /// In tr, this message translates to:
-  /// **'📞 YAKINIMI ARA'**
-  String get callCaregiver;
-
-  /// No description provided for @nextDoses.
-  ///
-  /// In tr, this message translates to:
-  /// **'SIRADAKİ'**
-  String get nextDoses;
-
-  /// No description provided for @todayProgress.
-  ///
-  /// In tr, this message translates to:
-  /// **'Bugün: {total} ilacın {taken} tanesi alındı'**
-  String todayProgress(int taken, int total);
-
-  /// No description provided for @allDoneToday.
-  ///
-  /// In tr, this message translates to:
-  /// **'Bugünkü ilaçlarınızın hepsini aldınız 👏'**
-  String get allDoneToday;
-
-  /// No description provided for @longPressForSettings.
-  ///
-  /// In tr, this message translates to:
-  /// **'Ayarlar için başlığa uzun basın'**
-  String get longPressForSettings;
 
   /// No description provided for @ttsDose.
   ///
@@ -973,12 +805,6 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Hazır setlere göz at'**
   String get browsePresets;
-
-  /// No description provided for @shareProgram.
-  ///
-  /// In tr, this message translates to:
-  /// **'Programı PDF olarak paylaş'**
-  String get shareProgram;
 
   /// No description provided for @paused.
   ///
@@ -1274,12 +1100,6 @@ abstract class AppLocalizations {
   /// **'Tüm araçlar tek yerde'**
   String get panelSubtitle;
 
-  /// No description provided for @toolScan.
-  ///
-  /// In tr, this message translates to:
-  /// **'Karekod / barkod tara'**
-  String get toolScan;
-
   /// No description provided for @toolCatalog.
   ///
   /// In tr, this message translates to:
@@ -1298,53 +1118,11 @@ abstract class AppLocalizations {
   /// **'Hazır setler'**
   String get toolPresets;
 
-  /// No description provided for @toolProgramPdf.
-  ///
-  /// In tr, this message translates to:
-  /// **'Program PDF'**
-  String get toolProgramPdf;
-
-  /// No description provided for @toolDoctorReport.
-  ///
-  /// In tr, this message translates to:
-  /// **'Doktor raporu'**
-  String get toolDoctorReport;
-
-  /// No description provided for @toolNearbyPharmacy.
-  ///
-  /// In tr, this message translates to:
-  /// **'Yakındaki eczaneler'**
-  String get toolNearbyPharmacy;
-
-  /// No description provided for @toolDutyPharmacy.
-  ///
-  /// In tr, this message translates to:
-  /// **'Nöbetçi eczaneler'**
-  String get toolDutyPharmacy;
-
-  /// No description provided for @toolSideEffect.
-  ///
-  /// In tr, this message translates to:
-  /// **'Yan etki bildir'**
-  String get toolSideEffect;
-
   /// No description provided for @toolReminders.
   ///
   /// In tr, this message translates to:
   /// **'Hatırlatıcılar'**
   String get toolReminders;
-
-  /// No description provided for @sideEffectBody.
-  ///
-  /// In tr, this message translates to:
-  /// **'Bir ilaç veya takviyeden sonra beklenmeyen bir etki fark ederseniz kullanmayı bırakıp doktorunuza veya eczacınıza danışın. İlaç yan etkileri Türkiye\'de TİTCK bünyesindeki Türkiye Farmakovijilans Merkezi\'ne (TÜFAM) bildirilebilir.'**
-  String get sideEffectBody;
-
-  /// No description provided for @openTitck.
-  ///
-  /// In tr, this message translates to:
-  /// **'TİTCK sitesini aç'**
-  String get openTitck;
 
   /// No description provided for @interactionsTitle.
   ///
@@ -1646,48 +1424,6 @@ abstract class AppLocalizations {
   /// **'Zaman dilimleri'**
   String get reminderSlots;
 
-  /// No description provided for @productInfo.
-  ///
-  /// In tr, this message translates to:
-  /// **'Ürün bilgisi'**
-  String get productInfo;
-
-  /// No description provided for @barcodeLabel.
-  ///
-  /// In tr, this message translates to:
-  /// **'Barkod'**
-  String get barcodeLabel;
-
-  /// No description provided for @serialLabel.
-  ///
-  /// In tr, this message translates to:
-  /// **'Seri no'**
-  String get serialLabel;
-
-  /// No description provided for @lotLabel.
-  ///
-  /// In tr, this message translates to:
-  /// **'Parti no'**
-  String get lotLabel;
-
-  /// No description provided for @addToMySupplements.
-  ///
-  /// In tr, this message translates to:
-  /// **'Takviyelerime ekle'**
-  String get addToMySupplements;
-
-  /// No description provided for @findPharmacy.
-  ///
-  /// In tr, this message translates to:
-  /// **'Eczane bul'**
-  String get findPharmacy;
-
-  /// No description provided for @readLeaflet.
-  ///
-  /// In tr, this message translates to:
-  /// **'Kullanma talimatı'**
-  String get readLeaflet;
-
   /// No description provided for @crashTitle.
   ///
   /// In tr, this message translates to:
@@ -1765,6 +1501,12 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Düzenle'**
   String get editSupplement;
+
+  /// No description provided for @toolExportPdf.
+  ///
+  /// In tr, this message translates to:
+  /// **'Dışa aktar (PDF)'**
+  String get toolExportPdf;
 }
 
 class _AppLocalizationsDelegate

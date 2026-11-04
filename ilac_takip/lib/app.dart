@@ -12,8 +12,6 @@ import 'ui/alarm/alarm_screen.dart';
 import 'ui/learn/learn_screen.dart';
 import 'ui/panel/interactions_screen.dart';
 import 'ui/panel/panel_screen.dart';
-import 'ui/scan/scan_screen.dart';
-import 'ui/senior/senior_home_screen.dart';
 import 'ui/settings/reliability_screen.dart';
 import 'ui/settings/reminders_screen.dart';
 import 'ui/settings/settings_screen.dart';
@@ -35,7 +33,7 @@ GoRouter buildRouter({String initialLocation = '/'}) => GoRouter(
       initialLocation: initialLocation,
       routes: [
         StatefulShellRoute.indexedStack(
-          builder: (_, _, shell) => _SeniorSwitch(shell: shell),
+          builder: (_, _, shell) => MainShell(shell: shell),
           branches: [
             StatefulShellBranch(routes: [GoRoute(path: '/', builder: (_, _) => const TodayScreen())]),
             StatefulShellBranch(routes: [GoRoute(path: '/supplements', builder: (_, _) => const SupplementsScreen())]),
@@ -45,7 +43,6 @@ GoRouter buildRouter({String initialLocation = '/'}) => GoRouter(
           ],
         ),
         GoRoute(path: '/alarm/:logId', builder: (_, s) => AlarmScreen(logId: s.pathParameters['logId']!)),
-        GoRoute(path: '/scan', builder: (_, _) => const ScanScreen()),
         GoRoute(path: '/catalog', builder: (_, _) => const CatalogPickerScreen()),
         GoRoute(
           path: '/supplements/add',
@@ -62,16 +59,6 @@ GoRouter buildRouter({String initialLocation = '/'}) => GoRouter(
         GoRoute(path: '/reliability', builder: (_, _) => const ReliabilityScreen()),
       ],
     );
-
-/// Basit Mod açıksa sekmeler yerine tek ekranlı Basit Mod ana ekranı.
-class _SeniorSwitch extends ConsumerWidget {
-  const _SeniorSwitch({required this.shell});
-  final StatefulNavigationShell shell;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) =>
-      ref.watch(settingsProvider.select((s) => s.seniorMode)) ? const SeniorHomeScreen() : MainShell(shell: shell);
-}
 
 class IlacTakipApp extends ConsumerStatefulWidget {
   const IlacTakipApp({super.key, required this.router});
@@ -155,7 +142,6 @@ class _IlacTakipAppState extends ConsumerState<IlacTakipApp> with WidgetsBinding
   @override
   Widget build(BuildContext context) {
     final settings = ref.watch(settingsProvider);
-    final senior = settings.seniorMode;
     return MaterialApp.router(
       onGenerateTitle: (c) => AppLocalizations.of(c).appTitle,
       debugShowCheckedModeBanner: false,
@@ -168,17 +154,8 @@ class _IlacTakipAppState extends ConsumerState<IlacTakipApp> with WidgetsBinding
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      theme: senior ? seniorTheme(Brightness.light) : normalTheme(Brightness.light),
-      darkTheme: senior ? seniorTheme(Brightness.dark) : normalTheme(Brightness.dark),
-      builder: (context, child) {
-        if (!senior) return child!;
-        final mq = MediaQuery.of(context);
-        final system = mq.textScaler.scale(1);
-        return MediaQuery(
-          data: mq.copyWith(textScaler: TextScaler.linear((system * settings.textScale).clamp(1.0, 2.2))),
-          child: child!,
-        );
-      },
+      theme: normalTheme(Brightness.light),
+      darkTheme: normalTheme(Brightness.dark),
     );
   }
 }

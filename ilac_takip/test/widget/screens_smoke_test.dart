@@ -21,13 +21,9 @@ void main() {
   late AppDatabase db;
   late AppServices services;
 
-  Future<void> seed(WidgetTester tester, {bool senior = false, String lang = 'tr'}) async {
+  Future<void> seed(WidgetTester tester, {String lang = 'tr'}) async {
     await tester.runAsync(() async {
-      SharedPreferences.setMockInitialValues({
-        'seniorMode': senior,
-        'languageCode': lang,
-        'caregiverPhone': '+900000000000',
-      });
+      SharedPreferences.setMockInitialValues({'languageCode': lang});
       db = await openTestDb();
       final now = DateTime.now();
       final clock = TestClock(now);
@@ -165,7 +161,7 @@ void main() {
       ('/presets', 'Kemik sağlığı'),
       ('/interactions', 'Etkileşim kontrolü'),
       ('/reminders', 'Hatırlatıcıları etkinleştir'),
-      ('/settings', 'Basit Mod'),
+      ('/settings', 'Alarm güvenilirliği'),
     ]) {
       await pumpApp(tester, location: loc);
       expectNoError(tester);
@@ -173,12 +169,12 @@ void main() {
     }
   });
 
-  testWidgets('Basit Mod ana ekranı (İngilizce)', (tester) async {
-    await seed(tester, senior: true, lang: 'en');
+  testWidgets('İngilizce arayüz', (tester) async {
+    await seed(tester, lang: 'en');
     await pumpApp(tester);
     expectNoError(tester);
-    await tester.dragUntilVisible(find.text('📞 CALL MY CAREGIVER'), find.byType(Scrollable).first, const Offset(0, -300));
-    expectNoError(tester);
+    expect(find.text('Today'), findsWidgets);
+    expect(find.text('Supplements'), findsOneWidget);
   });
 }
 

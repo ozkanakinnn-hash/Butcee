@@ -4,7 +4,6 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 import 'data/app_database.dart';
-import 'data/drug_catalog.dart';
 import 'l10n/app_localizations.dart';
 import 'services/alarm_planner.dart';
 import 'services/dose_action_service.dart';
@@ -23,7 +22,6 @@ class AppServices {
     required this.scheduler,
     required this.planner,
     required this.actions,
-    required this.catalog,
     required this.reliability,
     required this.supplements,
   });
@@ -33,7 +31,6 @@ class AppServices {
   final LocalNotificationAlarmScheduler scheduler;
   final AlarmPlanner planner;
   final DoseActionService actions;
-  final DrugCatalogRepository catalog;
   final ReliabilityService reliability;
   final SupplementService supplements;
 
@@ -55,7 +52,6 @@ class AppServices {
       scheduler: scheduler,
       planner: planner,
       actions: actions,
-      catalog: DrugCatalogRepository(db),
       reliability: ReliabilityService(scheduler),
       supplements: SupplementService(db: db, planner: planner, clock: planner.clock),
     );
@@ -92,7 +88,6 @@ class AppServices {
       scheduler: scheduler,
       planner: planner,
       actions: actions,
-      catalog: DrugCatalogRepository(db),
       reliability: ReliabilityService(scheduler),
       supplements: SupplementService(db: db, planner: planner, clock: DateTime.now),
     );

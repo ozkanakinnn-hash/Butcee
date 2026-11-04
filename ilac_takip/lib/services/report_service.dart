@@ -8,10 +8,9 @@ import '../domain/adherence.dart';
 import '../domain/models.dart';
 import '../l10n/app_localizations.dart';
 import 'localized_texts.dart';
-import 'settings_store.dart';
 import 'supplement_service.dart';
 
-/// Program PDF'i ve doktor için 30 günlük uyum raporu.
+/// Dışa aktarılan PDF: (veri varsa) 30 günlük uyum özeti + takviye programı.
 class ReportService {
   ReportService._();
 
@@ -28,7 +27,6 @@ class ReportService {
   static List<({String title, String time, Map<MealRelation, List<String>> groups})> programSections(
     AppLocalizations t,
     List<SupplementPlan> plans,
-    AppSettings settings,
   ) {
     final sections = <String, ({String title, String time, Map<MealRelation, List<String>> groups})>{};
     void add(String key, String title, String time, MealRelation meal, String line) {
@@ -63,7 +61,6 @@ class ReportService {
   static Future<Uint8List> build({
     required AppLocalizations t,
     required List<SupplementPlan> plans,
-    required AppSettings settings,
     Map<int, AdherenceStats>? perMedicine,
     AdherenceStats? total,
   }) async {
@@ -71,7 +68,7 @@ class ReportService {
     final now = DateTime.now();
     final dateFmt = DateFormat.yMMMd(t.localeName);
     final isReport = total != null;
-    final sections = programSections(t, plans, settings);
+    final sections = programSections(t, plans);
 
     doc.addPage(pw.MultiPage(
       pageFormat: PdfPageFormat.a4,

@@ -25,9 +25,9 @@ class StatsScreen extends ConsumerWidget {
         title: Text(t.statsTitle, style: const TextStyle(fontWeight: FontWeight.w800)),
         actions: [
           IconButton(
-            tooltip: t.toolDoctorReport,
-            icon: const Icon(Icons.medical_information_outlined),
-            onPressed: () => ReportActions.shareDoctorReport(context, ref),
+            tooltip: t.toolExportPdf,
+            icon: const Icon(Icons.picture_as_pdf_outlined),
+            onPressed: () => ReportActions.exportPdf(context, ref),
           ),
         ],
       ),
@@ -103,8 +103,8 @@ class StatsScreen extends ConsumerWidget {
             const SizedBox(height: 12),
             FilledButton.tonalIcon(
               icon: const Icon(Icons.picture_as_pdf_outlined),
-              label: Text(t.toolDoctorReport),
-              onPressed: () => ReportActions.shareDoctorReport(context, ref),
+              label: Text(t.toolExportPdf),
+              onPressed: () => ReportActions.exportPdf(context, ref),
             ),
           ]),
         _ => const Center(child: CircularProgressIndicator()),

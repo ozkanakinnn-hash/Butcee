@@ -25,9 +25,9 @@ class SupplementsScreen extends ConsumerWidget {
         ]),
         actions: [
           IconButton(
-            tooltip: t.shareProgram,
-            icon: const Icon(Icons.ios_share),
-            onPressed: () => ReportActions.shareProgram(context, ref),
+            tooltip: t.toolExportPdf,
+            icon: const Icon(Icons.picture_as_pdf_outlined),
+            onPressed: () => ReportActions.exportPdf(context, ref),
           ),
         ],
       ),

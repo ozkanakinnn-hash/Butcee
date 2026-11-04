@@ -29,9 +29,6 @@ class _CatalogPickerScreenState extends State<CatalogPickerScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(t.addMedicine),
-        actions: [
-          IconButton(tooltip: t.toolScan, icon: const Icon(Icons.qr_code_scanner), onPressed: () => context.push('/scan')),
-        ],
       ),
       body: Column(children: [
         Padding(

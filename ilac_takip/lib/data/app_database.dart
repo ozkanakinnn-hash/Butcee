@@ -1,9 +1,9 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:path/path.dart' as p;
 import 'package:sqflite/sqflite.dart';
 
-import '../domain/gs1_parser.dart';
 import '../domain/models.dart';
 
 /// Yerel doğruluk kaynağı (offline-first). Alarm kararları yalnızca buradan verilir.
@@ -16,7 +16,7 @@ class AppDatabase {
   final Database _db;
   final _changes = StreamController<void>.broadcast();
 
-  static const _version = 3;
+  static const _version = 4;
 
   static Future<AppDatabase> open({DatabaseFactory? factory, String? path}) async {
     final f = factory ?? databaseFactory;
@@ -29,10 +29,12 @@ class AppDatabase {
         onCreate: (db, _) async {
           await _createSchemaV1(db);
           await _migrateV1toV2(db);
+          await _migrateV3toV4(db);
         },
         onUpgrade: (db, from, to) async {
           if (from < 2) await _migrateV1toV2(db);
           if (from < 3) await _migrateV2toV3(db);
+          if (from < 4) await _migrateV3toV4(db);
         },
       ),
     );
@@ -136,8 +138,18 @@ class AppDatabase {
   static Future<void> _migrateV2toV3(Database db) =>
       db.delete('drug_catalog', where: 'barcode IN (?, ?)', whereArgs: ['0000000000017', '0000000000024']);
 
+  /// v4: karekod tarama kaldırıldı → ilaç kataloğu ve taranan kutu tabloları silinir.
+  static Future<void> _migrateV3toV4(Database db) async {
+    await db.execute('DROP TABLE IF EXISTS drug_catalog');
+    await db.execute('DROP TABLE IF EXISTS scanned_packs');
+  }
+
   /// Test için: v1 şemasıyla açılmış bir veritabanı oluşturur.
   static Future<void> createV1SchemaForTest(Database db) => _createSchemaV1(db);
+
+  @visibleForTesting
+  Future<bool> hasTable(String name) async =>
+      (await _db.query('sqlite_master', where: "type = 'table' AND name = ?", whereArgs: [name])).isNotEmpty;
 
   Stream<void> get changes => _changes.stream;
   void notifyChanged() => _changes.add(null);
@@ -163,11 +175,6 @@ class AppDatabase {
   Future<List<Medicine>> medicines() async =>
       (await _db.query('medicines', orderBy: 'name COLLATE NOCASE')).map(Medicine.fromRow).toList();
 
-  Future<Medicine?> medicineByBarcode(String barcode) async {
-    final r = await _db.query('medicines', where: 'barcode = ?', whereArgs: [barcode], limit: 1);
-    return r.isEmpty ? null : Medicine.fromRow(r.first);
-  }
-
   Future<void> adjustStock(int medicineId, double delta, {Transaction? txn}) async {
     await (txn ?? _db).rawUpdate(
       'UPDATE medicines SET total_stock = MAX(0, total_stock + ?) WHERE id = ?',
@@ -180,39 +187,6 @@ class AppDatabase {
     await _db.delete('medicines', where: 'id = ?', whereArgs: [id]);
     notifyChanged();
   }
-
-  /// Karekodlu kutuyu stoğa ekler. Aynı seri no daha önce eklendiyse `false`.
-  Future<bool> addScannedPack(int medicineId, ScannedDrugCode code, double quantity, DateTime now) async {
-    final ok = await _db.transaction((txn) async {
-      if (code.serial != null) {
-        final exists = await txn.query('scanned_packs', where: 'serial = ?', whereArgs: [code.serial]);
-        if (exists.isNotEmpty) return false;
-        await txn.insert('scanned_packs', {
-          'serial': code.serial,
-          'barcode': code.barcode13,
-          'medicine_id': medicineId,
-          'lot': code.lot,
-          'expiry': code.expiry?.toIso8601String().substring(0, 10),
-          'added_quantity': quantity,
-          'scanned_at': now.millisecondsSinceEpoch,
-        });
-      }
-      await adjustStock(medicineId, quantity, txn: txn);
-      if (code.expiry != null) {
-        final r = await txn.query('medicines', columns: ['expiry_dates'], where: 'id = ?', whereArgs: [medicineId]);
-        final existing = ((r.first['expiry_dates'] as String?) ?? '').split(',').where((e) => e.isNotEmpty).toSet();
-        existing.add(code.expiry!.toIso8601String().substring(0, 10));
-        await txn.update('medicines', {'expiry_dates': (existing.toList()..sort()).join(',')},
-            where: 'id = ?', whereArgs: [medicineId]);
-      }
-      return true;
-    });
-    if (ok) notifyChanged();
-    return ok;
-  }
-
-  Future<bool> isPackScanned(String serial) async =>
-      (await _db.query('scanned_packs', where: 'serial = ?', whereArgs: [serial])).isNotEmpty;
 
   // ───────────── Ruh hâli (öz bildirim) ─────────────
 
@@ -338,21 +312,6 @@ class AppDatabase {
     final rows = await _db.query('dose_logs',
         where: "status IN ('pending','snoozed') AND grace_until <= ?", whereArgs: [now.millisecondsSinceEpoch]);
     return rows.map(DoseLog.fromRow).toList();
-  }
-
-  // ───────────── Katalog ─────────────
-
-  Future<void> upsertCatalog(List<Map<String, Object?>> rows) async {
-    final b = _db.batch();
-    for (final r in rows) {
-      b.insert('drug_catalog', r, conflictAlgorithm: ConflictAlgorithm.replace);
-    }
-    await b.commit(noResult: true);
-  }
-
-  Future<Map<String, Object?>?> catalogEntry(String barcode) async {
-    final r = await _db.query('drug_catalog', where: 'barcode = ?', whereArgs: [barcode]);
-    return r.isEmpty ? null : r.first;
   }
 
   // ───────────── Bakım ─────────────

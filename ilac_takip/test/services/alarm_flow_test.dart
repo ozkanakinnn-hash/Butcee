@@ -1,8 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ilac_takip/data/app_database.dart';
-import 'package:ilac_takip/data/drug_catalog.dart';
 import 'package:ilac_takip/domain/dose_rule.dart';
-import 'package:ilac_takip/domain/gs1_parser.dart';
 import 'package:ilac_takip/domain/models.dart';
 import 'package:ilac_takip/services/alarm_planner.dart';
 import 'package:ilac_takip/services/alarm_scheduler.dart';
@@ -184,36 +182,5 @@ void main() {
     await db.deleteMedicine(medId);
     await planner.reconcile();
     expect(alarms.pending, isEmpty);
-  });
-
-  group('karekod → katalog', () {
-    test('aynı seri no iki kez stoğa eklenemez; SKT kaydedilir', () async {
-      await setUpWith();
-      final code = Gs1Parser.parse('0108699514010012${'21'}SER1\u001d17280331')!;
-      expect(await db.addScannedPack(medId, code, 30, clock.now), isTrue);
-      expect(await db.addScannedPack(medId, code, 30, clock.now), isFalse);
-      final m = (await db.medicine(medId))!;
-      expect(m.totalStock, 36);
-      expect(m.expiryDates, [DateTime(2028, 3, 31)]);
-    });
-
-    test('resolve: kopya / sahip olunan / katalog / bilinmeyen', () async {
-      await setUpWith();
-      final repo = DrugCatalogRepository(db);
-      await db.upsertCatalog([
-        {'barcode': '0000000000017', 'name': 'Örnek A', 'form': 'tablet', 'package_size': 30},
-      ]);
-
-      expect(await repo.resolve(const ScannedDrugCode('0000000000017')), isA<NewFromCatalog>());
-      expect(await repo.resolve(const ScannedDrugCode('1111111111111')), isA<NotInCatalog>());
-
-      final owned = await db.insertMedicine(const Medicine(name: 'Örnek A', barcode: '0000000000017'));
-      final r = await repo.resolve(const ScannedDrugCode('0000000000017', serial: 'X1'));
-      expect(r, isA<AddStock>());
-      expect((r as AddStock).quantity, 30);
-
-      await db.addScannedPack(owned, const ScannedDrugCode('0000000000017', serial: 'X1'), 30, clock.now);
-      expect(await repo.resolve(const ScannedDrugCode('0000000000017', serial: 'X1')), isA<DuplicatePack>());
-    });
   });
 }

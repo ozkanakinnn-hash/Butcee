@@ -28,6 +28,7 @@ Future<void> startApp(AppServices services) async {
   // Bakım: biriken eski kayıtları temizle (açılışı engellemez).
   try {
     await services.db.pruneOldData(DateTime.now());
+    await services.settings.removeLegacyKeys(); // kaldırılan Basit Mod ayarları
   } on Object catch (e, st) {
     CrashReporter.record(e, st, context: 'prune');
   }

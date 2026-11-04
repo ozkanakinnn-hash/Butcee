@@ -48,9 +48,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get takeBig => 'I TOOK IT';
 
   @override
-  String get takeNow => 'Take now';
-
-  @override
   String get snooze10 => 'In 10 min';
 
   @override
@@ -75,10 +72,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get snoozeLimitReached => 'No snoozes left';
 
   @override
-  String get addMedicine => 'Add supplement';
+  String get addMedicine => 'Add vitamin or supplement';
 
   @override
-  String get medicines => 'My medicines';
+  String get medicines => 'My supplements';
 
   @override
   String get settings => 'Settings';
@@ -102,9 +99,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get save => 'Save';
-
-  @override
-  String get ok => 'OK';
 
   @override
   String get mealNone => 'Any time';
@@ -173,7 +167,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get packageSize => 'Package size';
 
   @override
-  String get criticalMedicine => 'Critical medicine';
+  String get criticalMedicine => 'Critical supplement';
 
   @override
   String get criticalMedicineHint =>
@@ -223,42 +217,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get saved => 'Saved';
 
   @override
-  String get scanTitle => 'Scan medicine';
-
-  @override
-  String get scanHint =>
-      'Place the box\'s DataMatrix code or barcode inside the frame';
-
-  @override
-  String get scanManualEntry => 'Enter barcode manually';
-
-  @override
-  String get barcodeDigits => '13-digit barcode';
-
-  @override
-  String get duplicatePack => 'This box has already been added';
-
-  @override
-  String addStockQuestion(String name, String qty) {
-    return '$name is already in your list. Add $qty to stock?';
-  }
-
-  @override
-  String get addStockDone => 'Stock updated';
-
-  @override
-  String get notFoundInCatalog =>
-      'We don\'t recognise this medicine yet. You can enter the details manually.';
-
-  @override
-  String expiryLabel(String date) {
-    return 'Expires: $date';
-  }
-
-  @override
-  String get invalidCode => 'Could not read the code';
-
-  @override
   String doseQuantity(String qty, String form) {
     return '$qty $form';
   }
@@ -297,13 +255,13 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get channelCritical => 'Critical medication alarms';
+  String get channelCritical => 'Critical supplement alarms';
 
   @override
   String get channelCriticalDesc => 'Alarms that ring until you confirm';
 
   @override
-  String get channelNormal => 'Medication reminders';
+  String get channelNormal => 'Supplement reminders';
 
   @override
   String get channelInfo => 'Information';
@@ -321,31 +279,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get languageSystem => 'System language';
 
   @override
-  String get seniorMode => 'Simple Mode';
-
-  @override
-  String get seniorModeHint => 'Large text, high contrast, single screen';
-
-  @override
-  String get textScale => 'Text size';
-
-  @override
   String get ttsOnAlarm => 'Read alarms aloud';
-
-  @override
-  String get caregiverPhone => 'Caregiver\'s phone';
-
-  @override
-  String get seniorPin => 'Settings lock PIN (4 digits)';
-
-  @override
-  String get seniorPinHint => 'Required to leave Simple Mode';
-
-  @override
-  String get enterPin => 'Enter PIN';
-
-  @override
-  String get wrongPin => 'Wrong PIN';
 
   @override
   String get reliability => 'Alarm reliability';
@@ -386,32 +320,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get testAlarmScheduled =>
       'The test alarm will ring in 1 minute. Close the app and lock the screen.';
-
-  @override
-  String get goodMorning => 'Good morning';
-
-  @override
-  String get goodAfternoon => 'Good afternoon';
-
-  @override
-  String get goodEvening => 'Good evening';
-
-  @override
-  String get callCaregiver => '📞 CALL MY CAREGIVER';
-
-  @override
-  String get nextDoses => 'NEXT';
-
-  @override
-  String todayProgress(int taken, int total) {
-    return 'Today: $taken of $total taken';
-  }
-
-  @override
-  String get allDoneToday => 'You\'ve taken all of today\'s medicines 👏';
-
-  @override
-  String get longPressForSettings => 'Long-press the title for settings';
 
   @override
   String ttsDose(String time, String name, String meal, String qty) {
@@ -512,9 +420,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get browsePresets => 'Browse ready-made sets';
-
-  @override
-  String get shareProgram => 'Share program as PDF';
 
   @override
   String get paused => 'Paused';
@@ -682,9 +587,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get panelSubtitle => 'All tools in one place';
 
   @override
-  String get toolScan => 'Scan code / barcode';
-
-  @override
   String get toolCatalog => 'Find a supplement';
 
   @override
@@ -694,29 +596,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get toolPresets => 'Ready-made sets';
 
   @override
-  String get toolProgramPdf => 'Program PDF';
-
-  @override
-  String get toolDoctorReport => 'Doctor report';
-
-  @override
-  String get toolNearbyPharmacy => 'Nearby pharmacies';
-
-  @override
-  String get toolDutyPharmacy => 'On-duty pharmacies';
-
-  @override
-  String get toolSideEffect => 'Report a side effect';
-
-  @override
   String get toolReminders => 'Reminders';
-
-  @override
-  String get sideEffectBody =>
-      'If you notice an unexpected effect after a medicine or supplement, stop taking it and talk to your doctor or pharmacist. In Türkiye, medicine side effects can be reported to the national pharmacovigilance centre (TÜFAM) of TİTCK.';
-
-  @override
-  String get openTitck => 'Open TİTCK website';
 
   @override
   String get interactionsTitle => 'Interaction check';
@@ -890,27 +770,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get reminderSlots => 'Time slots';
 
   @override
-  String get productInfo => 'Product info';
-
-  @override
-  String get barcodeLabel => 'Barcode';
-
-  @override
-  String get serialLabel => 'Serial no';
-
-  @override
-  String get lotLabel => 'Batch no';
-
-  @override
-  String get addToMySupplements => 'Add to my supplements';
-
-  @override
-  String get findPharmacy => 'Find a pharmacy';
-
-  @override
-  String get readLeaflet => 'Patient leaflet';
-
-  @override
   String get crashTitle => 'An error occurred in the previous session';
 
   @override
@@ -954,4 +813,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get editSupplement => 'Edit';
+
+  @override
+  String get toolExportPdf => 'Export (PDF)';
 }

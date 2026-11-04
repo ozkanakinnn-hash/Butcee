@@ -1,7 +1,5 @@
 import 'dart:convert';
-import 'dart:math';
 
-import 'package:crypto/crypto.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Hatırlatma dilimleri ve varsayılan saatleri.
@@ -20,22 +18,12 @@ class AppSettings {
     this.slotTimes = defaultSlotTimes,
     this.mutedSlots = const {},
     this.languageCode,
-    this.seniorMode = false,
-    this.textScale = 1.3,
     this.ttsOnAlarm = true,
-    this.caregiverPhone,
-    this.pinHash,
   });
 
   /// null = sistem dili.
   final String? languageCode;
-  final bool seniorMode;
-  final double textScale;
   final bool ttsOnAlarm;
-  final String? caregiverPhone;
-  final String? pinHash;
-
-  bool get hasPin => pinHash != null;
 
   final bool remindersEnabled;
 
@@ -48,11 +36,7 @@ class AppSettings {
 
   AppSettings copyWith({
     String? Function()? languageCode,
-    bool? seniorMode,
-    double? textScale,
     bool? ttsOnAlarm,
-    String? Function()? caregiverPhone,
-    String? Function()? pinHash,
     bool? remindersEnabled,
     Map<String, String>? slotTimes,
     Set<String>? mutedSlots,
@@ -62,11 +46,7 @@ class AppSettings {
         slotTimes: slotTimes ?? this.slotTimes,
         mutedSlots: mutedSlots ?? this.mutedSlots,
         languageCode: languageCode != null ? languageCode() : this.languageCode,
-        seniorMode: seniorMode ?? this.seniorMode,
-        textScale: textScale ?? this.textScale,
         ttsOnAlarm: ttsOnAlarm ?? this.ttsOnAlarm,
-        caregiverPhone: caregiverPhone != null ? caregiverPhone() : this.caregiverPhone,
-        pinHash: pinHash != null ? pinHash() : this.pinHash,
       );
 }
 
@@ -79,11 +59,7 @@ class SettingsStore {
 
   AppSettings read() => AppSettings(
         languageCode: _prefs.getString('languageCode'),
-        seniorMode: _prefs.getBool('seniorMode') ?? false,
-        textScale: _prefs.getDouble('textScale') ?? 1.3,
         ttsOnAlarm: _prefs.getBool('ttsOnAlarm') ?? true,
-        caregiverPhone: _prefs.getString('caregiverPhone'),
-        pinHash: _prefs.getString('pinHash'),
         remindersEnabled: _prefs.getBool('remindersEnabled') ?? true,
         slotTimes: {
           ...defaultSlotTimes,
@@ -94,11 +70,7 @@ class SettingsStore {
 
   Future<void> write(AppSettings s) async {
     await _setOrClear('languageCode', s.languageCode);
-    await _prefs.setBool('seniorMode', s.seniorMode);
-    await _prefs.setDouble('textScale', s.textScale);
     await _prefs.setBool('ttsOnAlarm', s.ttsOnAlarm);
-    await _setOrClear('caregiverPhone', s.caregiverPhone);
-    await _setOrClear('pinHash', s.pinHash);
     await _prefs.setBool('remindersEnabled', s.remindersEnabled);
     await _prefs.setString('slotTimes', jsonEncode(s.slotTimes));
     await _prefs.setStringList('mutedSlots', s.mutedSlots.toList());
@@ -112,15 +84,10 @@ class SettingsStore {
     }
   }
 
-  /// "tuz:sha256(tuz+pin)" — yerel ayar kilidi içindir, güvenlik sınırı değildir.
-  static String hashPin(String pin, {String? salt}) {
-    final s = salt ?? base64Url.encode(List.generate(12, (_) => Random.secure().nextInt(256)));
-    return '$s:${sha256.convert(utf8.encode('$s$pin'))}';
-  }
-
-  static bool verifyPin(String pin, String stored) {
-    final i = stored.indexOf(':');
-    if (i < 0) return false;
-    return hashPin(pin, salt: stored.substring(0, i)) == stored;
+  /// Eski sürümlerden kalan, artık kullanılmayan ayarları siler.
+  Future<void> removeLegacyKeys() async {
+    for (final k in const ['seniorMode', 'textScale', 'caregiverPhone', 'pinHash']) {
+      await _prefs.remove(k);
+    }
   }
 }

@@ -48,9 +48,6 @@ class AppLocalizationsTr extends AppLocalizations {
   String get takeBig => 'ALDIM';
 
   @override
-  String get takeNow => 'Şimdi aldım';
-
-  @override
   String get snooze10 => '10 dk sonra';
 
   @override
@@ -75,10 +72,10 @@ class AppLocalizationsTr extends AppLocalizations {
   String get snoozeLimitReached => 'Erteleme hakkı doldu';
 
   @override
-  String get addMedicine => 'Takviye ekle';
+  String get addMedicine => 'Vitamin ve takviye ekle';
 
   @override
-  String get medicines => 'İlaçlarım';
+  String get medicines => 'Takviyelerim';
 
   @override
   String get settings => 'Ayarlar';
@@ -102,9 +99,6 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get save => 'Kaydet';
-
-  @override
-  String get ok => 'Tamam';
 
   @override
   String get mealNone => 'Fark etmez';
@@ -173,7 +167,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get packageSize => 'Kutu içeriği';
 
   @override
-  String get criticalMedicine => 'Kritik ilaç';
+  String get criticalMedicine => 'Kritik takviye';
 
   @override
   String get criticalMedicineHint =>
@@ -223,42 +217,6 @@ class AppLocalizationsTr extends AppLocalizations {
   String get saved => 'Kaydedildi';
 
   @override
-  String get scanTitle => 'İlaç tara';
-
-  @override
-  String get scanHint =>
-      'Kutunun üzerindeki karekodu veya barkodu çerçeveye alın';
-
-  @override
-  String get scanManualEntry => 'Barkodu elle gir';
-
-  @override
-  String get barcodeDigits => '13 haneli barkod';
-
-  @override
-  String get duplicatePack => 'Bu kutu zaten eklenmiş';
-
-  @override
-  String addStockQuestion(String name, String qty) {
-    return '$name listenizde var. Stoğa $qty eklensin mi?';
-  }
-
-  @override
-  String get addStockDone => 'Stok güncellendi';
-
-  @override
-  String get notFoundInCatalog =>
-      'Bu ilacı henüz tanımıyoruz. Bilgileri elle girebilirsiniz.';
-
-  @override
-  String expiryLabel(String date) {
-    return 'Son kullanma: $date';
-  }
-
-  @override
-  String get invalidCode => 'Kod okunamadı';
-
-  @override
   String doseQuantity(String qty, String form) {
     return '$qty $form';
   }
@@ -297,13 +255,13 @@ class AppLocalizationsTr extends AppLocalizations {
   }
 
   @override
-  String get channelCritical => 'Kritik ilaç alarmları';
+  String get channelCritical => 'Kritik takviye alarmları';
 
   @override
   String get channelCriticalDesc => '\"Aldım\" diyene kadar çalan alarmlar';
 
   @override
-  String get channelNormal => 'İlaç hatırlatmaları';
+  String get channelNormal => 'Takviye hatırlatmaları';
 
   @override
   String get channelInfo => 'Bilgilendirme';
@@ -322,31 +280,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get languageSystem => 'Sistem dili';
 
   @override
-  String get seniorMode => 'Basit Mod';
-
-  @override
-  String get seniorModeHint => 'Büyük yazı, yüksek kontrast, tek ekran';
-
-  @override
-  String get textScale => 'Yazı büyüklüğü';
-
-  @override
   String get ttsOnAlarm => 'Alarmda sesli oku';
-
-  @override
-  String get caregiverPhone => 'Yakınımın telefonu';
-
-  @override
-  String get seniorPin => 'Ayar kilidi PIN\'i (4 hane)';
-
-  @override
-  String get seniorPinHint => 'Basit Mod\'dan çıkmak için gerekir';
-
-  @override
-  String get enterPin => 'PIN girin';
-
-  @override
-  String get wrongPin => 'PIN hatalı';
 
   @override
   String get reliability => 'Alarm güvenilirliği';
@@ -387,32 +321,6 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get testAlarmScheduled =>
       'Test alarmı 1 dakika sonra çalacak. Uygulamayı kapatıp ekranı kilitleyin.';
-
-  @override
-  String get goodMorning => 'Günaydın';
-
-  @override
-  String get goodAfternoon => 'İyi günler';
-
-  @override
-  String get goodEvening => 'İyi akşamlar';
-
-  @override
-  String get callCaregiver => '📞 YAKINIMI ARA';
-
-  @override
-  String get nextDoses => 'SIRADAKİ';
-
-  @override
-  String todayProgress(int taken, int total) {
-    return 'Bugün: $total ilacın $taken tanesi alındı';
-  }
-
-  @override
-  String get allDoneToday => 'Bugünkü ilaçlarınızın hepsini aldınız 👏';
-
-  @override
-  String get longPressForSettings => 'Ayarlar için başlığa uzun basın';
 
   @override
   String ttsDose(String time, String name, String meal, String qty) {
@@ -513,9 +421,6 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get browsePresets => 'Hazır setlere göz at';
-
-  @override
-  String get shareProgram => 'Programı PDF olarak paylaş';
 
   @override
   String get paused => 'Duraklatıldı';
@@ -683,9 +588,6 @@ class AppLocalizationsTr extends AppLocalizations {
   String get panelSubtitle => 'Tüm araçlar tek yerde';
 
   @override
-  String get toolScan => 'Karekod / barkod tara';
-
-  @override
   String get toolCatalog => 'Takviye ara';
 
   @override
@@ -695,29 +597,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get toolPresets => 'Hazır setler';
 
   @override
-  String get toolProgramPdf => 'Program PDF';
-
-  @override
-  String get toolDoctorReport => 'Doktor raporu';
-
-  @override
-  String get toolNearbyPharmacy => 'Yakındaki eczaneler';
-
-  @override
-  String get toolDutyPharmacy => 'Nöbetçi eczaneler';
-
-  @override
-  String get toolSideEffect => 'Yan etki bildir';
-
-  @override
   String get toolReminders => 'Hatırlatıcılar';
-
-  @override
-  String get sideEffectBody =>
-      'Bir ilaç veya takviyeden sonra beklenmeyen bir etki fark ederseniz kullanmayı bırakıp doktorunuza veya eczacınıza danışın. İlaç yan etkileri Türkiye\'de TİTCK bünyesindeki Türkiye Farmakovijilans Merkezi\'ne (TÜFAM) bildirilebilir.';
-
-  @override
-  String get openTitck => 'TİTCK sitesini aç';
 
   @override
   String get interactionsTitle => 'Etkileşim kontrolü';
@@ -890,27 +770,6 @@ class AppLocalizationsTr extends AppLocalizations {
   String get reminderSlots => 'Zaman dilimleri';
 
   @override
-  String get productInfo => 'Ürün bilgisi';
-
-  @override
-  String get barcodeLabel => 'Barkod';
-
-  @override
-  String get serialLabel => 'Seri no';
-
-  @override
-  String get lotLabel => 'Parti no';
-
-  @override
-  String get addToMySupplements => 'Takviyelerime ekle';
-
-  @override
-  String get findPharmacy => 'Eczane bul';
-
-  @override
-  String get readLeaflet => 'Kullanma talimatı';
-
-  @override
   String get crashTitle => 'Önceki oturumda bir hata oluştu';
 
   @override
@@ -954,4 +813,7 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get editSupplement => 'Düzenle';
+
+  @override
+  String get toolExportPdf => 'Dışa aktar (PDF)';
 }

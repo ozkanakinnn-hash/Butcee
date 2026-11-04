@@ -15,7 +15,6 @@ class Medicine {
     required this.name,
     this.nickname,
     this.form = 'tablet',
-    this.barcode,
     this.totalStock = 0,
     this.criticalStockLevel = 5,
     this.packageSize,
@@ -33,7 +32,6 @@ class Medicine {
   /// Basit Mod'da gösterilen takma ad (ör. "Beyaz küçük hap — kalp ilacı").
   final String? nickname;
   final String form;
-  final String? barcode;
   final double totalStock;
   final double criticalStockLevel;
   final int? packageSize;
@@ -56,7 +54,6 @@ class Medicine {
         name: name,
         nickname: nickname,
         form: form,
-        barcode: barcode,
         totalStock: totalStock ?? this.totalStock,
         criticalStockLevel: criticalStockLevel ?? this.criticalStockLevel,
         packageSize: packageSize,
@@ -73,7 +70,6 @@ class Medicine {
         'name': name,
         'nickname': nickname,
         'form': form,
-        'barcode': barcode,
         'total_stock': totalStock,
         'critical_stock_level': criticalStockLevel,
         'package_size': packageSize,
@@ -90,7 +86,6 @@ class Medicine {
         name: r['name'] as String,
         nickname: r['nickname'] as String?,
         form: r['form'] as String,
-        barcode: r['barcode'] as String?,
         totalStock: (r['total_stock'] as num).toDouble(),
         criticalStockLevel: (r['critical_stock_level'] as num).toDouble(),
         packageSize: r['package_size'] as int?,

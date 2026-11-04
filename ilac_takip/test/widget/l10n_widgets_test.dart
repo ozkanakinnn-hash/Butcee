@@ -7,7 +7,7 @@ import 'package:ilac_takip/services/localized_texts.dart';
 import 'package:ilac_takip/ui/theme.dart';
 import 'package:ilac_takip/ui/widgets/common.dart';
 
-Widget _wrap(Widget child, Locale locale, {bool senior = false}) => MaterialApp(
+Widget _wrap(Widget child, Locale locale) => MaterialApp(
       locale: locale,
       supportedLocales: AppLocalizations.supportedLocales,
       localizationsDelegates: const [
@@ -16,7 +16,7 @@ Widget _wrap(Widget child, Locale locale, {bool senior = false}) => MaterialApp(
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      theme: senior ? seniorTheme(Brightness.light) : normalTheme(Brightness.light),
+      theme: normalTheme(Brightness.light),
       home: Scaffold(body: child),
     );
 
@@ -32,15 +32,6 @@ void main() {
   testWidgets('MealRelation.none rozet çizmez', (tester) async {
     await tester.pumpWidget(_wrap(const MealBadge(MealRelation.none), const Locale('tr')));
     expect(find.byType(Container), findsNothing);
-  });
-
-  testWidgets('Basit Mod birincil düğmesi en az 72 dp yüksekliğinde', (tester) async {
-    await tester.pumpWidget(_wrap(
-      FilledButton(onPressed: () {}, child: const Text('ALDIM')),
-      const Locale('tr'),
-      senior: true,
-    ));
-    expect(tester.getSize(find.byType(FilledButton)).height, greaterThanOrEqualTo(72));
   });
 
   test('Türkçe büyük harf: i → İ', () {

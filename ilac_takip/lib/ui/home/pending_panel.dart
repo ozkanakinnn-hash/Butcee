@@ -10,8 +10,7 @@ import '../widgets/dose_ui_actions.dart';
 
 /// Ertelenen, zamanı gelmiş ve son 24 saatte kaçırılan dozlar. Ana ekranın en üstünde sabit.
 class PendingPanel extends ConsumerWidget {
-  const PendingPanel({super.key, this.large = false});
-  final bool large;
+  const PendingPanel({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -29,28 +28,16 @@ class PendingPanel extends ConsumerWidget {
         padding: const EdgeInsets.symmetric(vertical: 8),
         child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
           ListTile(
-            leading: Icon(Icons.warning_amber_rounded, color: cs.onErrorContainer, size: large ? 36 : 24),
+            leading: Icon(Icons.warning_amber_rounded, color: cs.onErrorContainer, size: 24),
             title: Text(t.pendingTitle(pending.length),
-                style: textStyle.copyWith(fontWeight: FontWeight.w900, fontSize: large ? 26 : 18)),
+                style: textStyle.copyWith(fontWeight: FontWeight.w900, fontSize: 18)),
           ),
           for (final v in pending)
             InkWell(
               onTap: () => context.push('/alarm/${v.dose.logId}'),
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(16, 4, 12, 4),
-                child: large
-                    ? Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-                        Text(v.medicine.displayName,
-                            style: textStyle.copyWith(fontWeight: FontWeight.bold, fontSize: 24)),
-                        Text(_subtitle(context, v), style: textStyle),
-                        const SizedBox(height: 6),
-                        FilledButton(
-                          onPressed: () => DoseUiActions.take(context, ref, v.dose.logId),
-                          child: Text('✓ ${upper(t.takeNow, t.localeName)}'),
-                        ),
-                        const SizedBox(height: 8),
-                      ])
-                    : Row(children: [
+                child: Row(children: [
                         Expanded(
                           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                             Text(v.medicine.displayName, style: textStyle.copyWith(fontWeight: FontWeight.bold, fontSize: 16)),

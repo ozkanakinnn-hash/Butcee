@@ -95,13 +95,12 @@ void main() {
     });
   });
 
-  test('v1 veritabanı v3\'e kayıpsız geçer', () async {
+  test('v1 veritabanı v4\'e kayıpsız geçer', () async {
     sqfliteFfiInit();
     final path = '${(await databaseFactoryFfi.getDatabasesPath())}/migration_test_${DateTime.now().microsecondsSinceEpoch}.db';
     final v1 = await databaseFactoryFfi.openDatabase(path,
         options: OpenDatabaseOptions(version: 1, onCreate: (d, _) => AppDatabase.createV1SchemaForTest(d)));
     await v1.insert('medicines', {'name': 'Eski ilaç', 'form': 'tablet', 'total_stock': 10});
-    await v1.insert('drug_catalog', {'barcode': '0000000000017', 'name': 'ÖRNEK', 'form': 'tablet'});
     await v1.close();
 
     db = await AppDatabase.open(factory: databaseFactoryFfi, path: path);
@@ -110,7 +109,8 @@ void main() {
     expect(m.name, 'Eski ilaç');
     expect(m.category, ItemCategory.vitamin);
     expect(m.totalStock, 10);
-    expect(await db.catalogEntry('0000000000017'), isNull, reason: 'v3 örnek kataloğu siler');
+    expect(await db.hasTable('drug_catalog'), isFalse, reason: 'v4 tarama tablolarını siler');
+    expect(await db.hasTable('scanned_packs'), isFalse);
     await db.setMood(DateTime(2026, 11, 4), 5);
     expect((await db.moods(DateTime(2026, 11, 4), DateTime(2026, 11, 5))).values.single, 5);
     await databaseFactoryFfi.deleteDatabase(path);
@@ -252,12 +252,12 @@ void main() {
       expect(LocalizedDoseTexts(t).body(m, d), '07:00 · 1 tablet · YEMEKLE BİRLİKTE');
     });
 
-    test('program ve doktor raporu Türkçe karakterlerle oluşur', () async {
+    test('dışa aktarılan PDF (uyum + program) Türkçe karakterlerle oluşur', () async {
       await setUpWith();
       await svc.applyPreset(supplementPresets.first, settings, 'tr');
       final t = lookupAppLocalizations(const Locale('tr'));
       final plans = await svc.plans();
-      final sections = ReportService.programSections(t, plans, settings);
+      final sections = ReportService.programSections(t, plans);
       expect(sections.first.title, 'Erken sabah');
       expect(sections.first.time, '07:00');
       expect(sections.last.title, 'Akşam');
@@ -265,7 +265,6 @@ void main() {
       final bytes = await ReportService.build(
         t: t,
         plans: plans,
-        settings: settings,
         total: const AdherenceStats(planned: 10, onTime: 9),
         perMedicine: const {},
       );

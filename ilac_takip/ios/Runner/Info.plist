@@ -13,8 +13,6 @@
 		<string>tr</string>
 		<string>en</string>
 	</array>
-	<key>NSCameraUsageDescription</key>
-	<string>İlaç kutusundaki karekodu okumak için kamera kullanılır; görüntü kaydedilmez.</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>

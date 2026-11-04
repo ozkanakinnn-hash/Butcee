@@ -4,10 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
-import '../../data/drug_catalog.dart';
 import '../../data/supplement_catalog.dart';
 import '../../domain/dose_rule.dart';
-import '../../domain/gs1_parser.dart';
 import '../../domain/models.dart';
 import '../../services/localized_texts.dart';
 import '../../services/settings_store.dart';
@@ -17,12 +15,10 @@ import '../widgets/common.dart';
 import 'supplement_detail_screen.dart';
 import '../widgets/visuals.dart';
 
-/// Ekleme ekranına ön doldurma verisi: katalog takviyesi, taranan kutu veya elle ad.
+/// Ekleme ekranına ön doldurma verisi: katalog takviyesi veya elle girilen ad.
 class AddSupplementArgs {
-  const AddSupplementArgs({this.catalogId, this.code, this.drugEntry, this.customName});
+  const AddSupplementArgs({this.catalogId, this.customName});
   final String? catalogId;
-  final ScannedDrugCode? code;
-  final DrugCatalogEntry? drugEntry;
   final String? customName;
 }
 
@@ -42,10 +38,10 @@ class _AddSupplementScreenState extends ConsumerState<AddSupplementScreen> {
   late final _name = TextEditingController();
   late final _amount = TextEditingController(text: _info?.defaultAmount == null ? '' : formatQty(_info!.defaultAmount!));
   final _qty = TextEditingController(text: '1');
-  late final _stock = TextEditingController(text: '${widget.args.drugEntry?.packageSize ?? ''}');
+  final _stock = TextEditingController();
   final _critical = TextEditingController(text: '5');
 
-  late ItemCategory _category = _info?.category ?? (widget.args.drugEntry != null ? ItemCategory.medicine : ItemCategory.vitamin);
+  late ItemCategory _category = _info?.category ?? ItemCategory.vitamin;
   late String _unit = _info?.unit ?? 'mg';
   late MealRelation _meal = _info?.meal ?? MealRelation.none;
   late final Set<String> _slots = {_info?.defaultSlot ?? 'earlyMorning'};
@@ -62,7 +58,7 @@ class _AddSupplementScreenState extends ConsumerState<AddSupplementScreen> {
     super.didChangeDependencies();
     if (_nameInit) return;
     _nameInit = true;
-    _name.text = _info?.name.of(context.l10n.localeName) ?? widget.args.drugEntry?.name ?? widget.args.customName ?? '';
+    _name.text = _info?.name.of(context.l10n.localeName) ?? widget.args.customName ?? '';
   }
 
   @override
@@ -117,15 +113,12 @@ class _AddSupplementScreenState extends ConsumerState<AddSupplementScreen> {
           doseAmount: _num(_amount),
           doseUnit: _unit,
           form: _unit == 'capsule' ? 'capsule' : 'tablet',
-          barcode: widget.args.code?.barcode13,
-          packageSize: widget.args.drugEntry?.packageSize,
           criticalStockLevel: _num(_critical) ?? 5,
           isCritical: _isCritical,
         ),
         rule: _rule(settings),
         slots: _usesSlots ? _orderedSlots : const [],
         initialStock: _num(_stock) ?? 0,
-        scanned: widget.args.code,
         persistent: _persistent,
       );
       if (!mounted) return;
@@ -185,7 +178,10 @@ class _AddSupplementScreenState extends ConsumerState<AddSupplementScreen> {
           DropdownButtonFormField<ItemCategory>(
             initialValue: _category,
             decoration: InputDecoration(labelText: t.categoryLabel),
-            items: [for (final c in ItemCategory.values) DropdownMenuItem(value: c, child: Text(categoryLabel(t, c)))],
+            items: [
+              for (final c in ItemCategory.values)
+                if (c != ItemCategory.medicine || _category == c) DropdownMenuItem(value: c, child: Text(categoryLabel(t, c))),
+            ],
             onChanged: (v) => setState(() => _category = v ?? ItemCategory.vitamin),
           ),
           const SizedBox(height: 12),

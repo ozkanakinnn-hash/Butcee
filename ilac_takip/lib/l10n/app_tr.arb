@@ -42,7 +42,6 @@
   },
   "take": "Aldım",
   "takeBig": "ALDIM",
-  "takeNow": "Şimdi aldım",
   "snooze10": "10 dk sonra",
   "skip": "Atla",
   "wontTake": "Almayacağım",
@@ -51,8 +50,8 @@
   "snoozedToast": "10 dakika sonra tekrar hatırlatacağım",
   "skippedToast": "Doz atlandı olarak kaydedildi",
   "snoozeLimitReached": "Erteleme hakkı doldu",
-  "addMedicine": "Takviye ekle",
-  "medicines": "İlaçlarım",
+  "addMedicine": "Vitamin ve takviye ekle",
+  "medicines": "Takviyelerim",
   "settings": "Ayarlar",
   "noMedicines": "Henüz takviye eklemediniz.",
   "lowStockBadge": "Stok azaldı",
@@ -67,7 +66,6 @@
   },
   "cancel": "Vazgeç",
   "save": "Kaydet",
-  "ok": "Tamam",
   "mealNone": "Fark etmez",
   "afterMeal": "Tok karnına",
   "beforeMeal": "Yemekten önce",
@@ -90,7 +88,7 @@
   "stock": "Mevcut stok",
   "criticalStock": "Uyarı verilecek stok",
   "packageSize": "Kutu içeriği",
-  "criticalMedicine": "Kritik ilaç",
+  "criticalMedicine": "Kritik takviye",
   "criticalMedicineHint": "Sessiz modda da alarm sesiyle çalar, kilit ekranında açılır",
   "persistentAlarm": "Israrcı alarm",
   "persistentAlarmHint": "\"Aldım\" diyene kadar 3 dakikada bir tekrar çalar",
@@ -110,33 +108,6 @@
   "maxPerDay": "Günde en fazla",
   "requiredField": "Bu alan zorunlu",
   "saved": "Kaydedildi",
-  "scanTitle": "İlaç tara",
-  "scanHint": "Kutunun üzerindeki karekodu veya barkodu çerçeveye alın",
-  "scanManualEntry": "Barkodu elle gir",
-  "barcodeDigits": "13 haneli barkod",
-  "duplicatePack": "Bu kutu zaten eklenmiş",
-  "addStockQuestion": "{name} listenizde var. Stoğa {qty} eklensin mi?",
-  "@addStockQuestion": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      },
-      "qty": {
-        "type": "String"
-      }
-    }
-  },
-  "addStockDone": "Stok güncellendi",
-  "notFoundInCatalog": "Bu ilacı henüz tanımıyoruz. Bilgileri elle girebilirsiniz.",
-  "expiryLabel": "Son kullanma: {date}",
-  "@expiryLabel": {
-    "placeholders": {
-      "date": {
-        "type": "String"
-      }
-    }
-  },
-  "invalidCode": "Kod okunamadı",
   "doseQuantity": "{qty} {form}",
   "@doseQuantity": {
     "placeholders": {
@@ -181,23 +152,15 @@
       }
     }
   },
-  "channelCritical": "Kritik ilaç alarmları",
+  "channelCritical": "Kritik takviye alarmları",
   "channelCriticalDesc": "\"Aldım\" diyene kadar çalan alarmlar",
-  "channelNormal": "İlaç hatırlatmaları",
+  "channelNormal": "Takviye hatırlatmaları",
   "channelInfo": "Bilgilendirme",
   "testAlarmTitle": "🔔 Test alarmı",
   "testAlarmBody": "Bu bildirimi gördüyseniz alarmlarınız çalışıyor.",
   "language": "Dil",
   "languageSystem": "Sistem dili",
-  "seniorMode": "Basit Mod",
-  "seniorModeHint": "Büyük yazı, yüksek kontrast, tek ekran",
-  "textScale": "Yazı büyüklüğü",
   "ttsOnAlarm": "Alarmda sesli oku",
-  "caregiverPhone": "Yakınımın telefonu",
-  "seniorPin": "Ayar kilidi PIN'i (4 hane)",
-  "seniorPinHint": "Basit Mod'dan çıkmak için gerekir",
-  "enterPin": "PIN girin",
-  "wrongPin": "PIN hatalı",
   "reliability": "Alarm güvenilirliği",
   "reliabilityIntro": "Alarmlarınızın her zaman çalması için aşağıdaki maddelerin hepsi yeşil olmalı.",
   "relNotifications": "Bildirim izni",
@@ -217,24 +180,6 @@
   "open": "Aç",
   "testAlarm": "Test alarmı kur (1 dk sonra)",
   "testAlarmScheduled": "Test alarmı 1 dakika sonra çalacak. Uygulamayı kapatıp ekranı kilitleyin.",
-  "goodMorning": "Günaydın",
-  "goodAfternoon": "İyi günler",
-  "goodEvening": "İyi akşamlar",
-  "callCaregiver": "📞 YAKINIMI ARA",
-  "nextDoses": "SIRADAKİ",
-  "todayProgress": "Bugün: {total} ilacın {taken} tanesi alındı",
-  "@todayProgress": {
-    "placeholders": {
-      "taken": {
-        "type": "int"
-      },
-      "total": {
-        "type": "int"
-      }
-    }
-  },
-  "allDoneToday": "Bugünkü ilaçlarınızın hepsini aldınız 👏",
-  "longPressForSettings": "Ayarlar için başlığa uzun basın",
   "ttsDose": "Saat {time} ilacınız: {name}. {meal}. {qty}.",
   "@ttsDose": {
     "placeholders": {
@@ -292,7 +237,6 @@
     }
   },
   "browsePresets": "Hazır setlere göz at",
-  "shareProgram": "Programı PDF olarak paylaş",
   "paused": "Duraklatıldı",
   "searchSupplements": "Takviye ara",
   "notInList": "Listede yok mu? Elle ekleyin",
@@ -389,18 +333,10 @@
     }
   },
   "panelSubtitle": "Tüm araçlar tek yerde",
-  "toolScan": "Karekod / barkod tara",
   "toolCatalog": "Takviye ara",
   "toolInteractions": "Etkileşim kontrolü",
   "toolPresets": "Hazır setler",
-  "toolProgramPdf": "Program PDF",
-  "toolDoctorReport": "Doktor raporu",
-  "toolNearbyPharmacy": "Yakındaki eczaneler",
-  "toolDutyPharmacy": "Nöbetçi eczaneler",
-  "toolSideEffect": "Yan etki bildir",
   "toolReminders": "Hatırlatıcılar",
-  "sideEffectBody": "Bir ilaç veya takviyeden sonra beklenmeyen bir etki fark ederseniz kullanmayı bırakıp doktorunuza veya eczacınıza danışın. İlaç yan etkileri Türkiye'de TİTCK bünyesindeki Türkiye Farmakovijilans Merkezi'ne (TÜFAM) bildirilebilir.",
-  "openTitck": "TİTCK sitesini aç",
   "interactionsTitle": "Etkileşim kontrolü",
   "sameTimeConflict": "Yakın saatte planlı — ayırın",
   "separatedOk": "Farklı saatlerde ✓",
@@ -475,13 +411,6 @@
   "enableReminders": "Hatırlatıcıları etkinleştir",
   "enableRemindersHint": "Takviye alma zamanı geldiğinde bildirim al.",
   "reminderSlots": "Zaman dilimleri",
-  "productInfo": "Ürün bilgisi",
-  "barcodeLabel": "Barkod",
-  "serialLabel": "Seri no",
-  "lotLabel": "Parti no",
-  "addToMySupplements": "Takviyelerime ekle",
-  "findPharmacy": "Eczane bul",
-  "readLeaflet": "Kullanma talimatı",
   "crashTitle": "Önceki oturumda bir hata oluştu",
   "crashBody": "Sorunu düzeltebilmemiz için raporu kopyalayıp geliştiriciye gönderebilirsiniz.",
   "copyReport": "Raporu kopyala",
@@ -511,5 +440,7 @@
       }
     }
   },
-  "editSupplement": "Düzenle"
+  "editSupplement": "Düzenle",
+  "toolExportPdf": "Dışa aktar (PDF)",
+  "@toolExportPdf": {}
 }
