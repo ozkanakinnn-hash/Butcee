@@ -70,3 +70,20 @@ gradle/actions/setup-gradle@v5 → `./gradlew assembleDebug` → upload-artifact
 - **Gerçek cihaz testi olmadan doğrulama**: GitHub Actions'ta `reactivecircus/android-emulator-runner` ile emülatör aç, `adb` ile tıkla (uiautomator dump + metne göre dokunma), `screencap` ile ekran görüntüsü ve `logcat -b crash` ile çökme izi al; sonuçları `[skip ci]` commit'iyle dala yaz (scripts/take_screenshots.sh).
 - **Kullanıcıdaki çökmeler için**: `Thread.setDefaultUncaughtExceptionHandler` ile yığın izini dosyaya yaz, sonraki açılışta "Raporu Kopyala" diyaloğu göster (util/CrashReporter.kt).
 - **Canlı yayın adresi doğrulama**: sandbox çoğu alana erişemez; CI'da curl ile playlist → alt playlist → segment zincirini test et, resmi sitenin HTML'indeki `live_stream_url` değerini oku.
+
+## 7. Aynı repoda ikinci uygulama (Nöbet örneği, `nobet/`)
+- Yeni uygulamayı ayrı modül olarak ekle: `settings.gradle.kts` → `include(":nobet")`, kendi `applicationId`'si,
+  sadece `android.application` + `kotlin.compose` eklentileri (AGP 9 yerleşik Kotlin). CI'da `assembleDebug` tüm
+  modülleri derler; `upload-artifact` adımına yeni APK yolunu ekle. Kullanıcıya iki uygulamanın karışmayacağını söyle.
+- **İlk derlemede geçen kalıplar (yerel SDK yokken güvenli):** Room/KSP yerine SharedPreferences + `org.json`;
+  navigation kütüphanesi yerine `object Nav { tab; stack: mutableStateListOf<String>() }` + tam ekran `Surface` katmanları
+  ve `BackHandler`; `@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)`; `DayOfWeek.values()`;
+  `TimeInput` (AlertDialog içinde `TimePicker`'dan daha güvenli); grafikler için `Canvas`.
+- **TR/EN tek satırda:** `fun t(tr: String, en: String) = if (Store.isEn) en else tr` — her metin iki dilde yazılmak
+  zorunda kalır, eksik çeviri olmaz. `Store.lang` Compose state; kökte `key(Store.lang) { AppRoot() }`.
+  Türkçe büyük harf için `uppercase(Locale.forLanguageTag("tr-TR"))`.
+- **Sunucusuz paylaşım:** JSON → `Deflater` → `Base64.URL_SAFE|NO_WRAP|NO_PADDING`, önek `NB1`; metin içinden
+  `Regex("NB1[A-Za-z0-9_-]{8,}")` ile bul. Manifest'te `nobet://share` VIEW + `text/plain` SEND filtresi,
+  `launchMode="singleTop"` + `onNewIntent`. Mesajlaşma uygulamaları özel şemayı link yapmaz → "Panodan yapıştır" da sun.
+- **Test sürümünde Premium:** Paywall "Test sürümü: ödeme alınmaz" diyerek Premium'u açar, Ayarlar'dan kapatılır;
+  gerçek ödeme (Play Billing/RevenueCat) yayın öncesi eklenmeli — kullanıcıya hatırlat.
