@@ -1,5 +1,16 @@
 package com.nobet.ui
 
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.clip
+import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.ChevronLeft
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.border
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -150,23 +161,8 @@ fun TodayScreen() {
 
     PartnerTodayCard()
 
-    // Önümüzdeki günler
-    NCard(Modifier.fillMaxWidth(), onClick = { Nav.tab = 1 }) {
-      Text(t("Önümüzdeki günler", "Next days"), style = MaterialTheme.typography.labelLarge)
-      Gap(10.dp)
-      Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-        for (i in 0 until 7) {
-          val d = today.plusDays(i.toLong())
-          val ty = Store.shiftOn(d)
-          Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(com.nobet.i18n.dowShort(d.dayOfWeek), style = MaterialTheme.typography.labelSmall, maxLines = 1)
-            Gap(4.dp)
-            if (ty != null) ShiftBadge(ty, 34.dp) else Text("·", Modifier.height(34.dp), color = MaterialTheme.colorScheme.outline)
-            Text("${d.dayOfMonth}", style = MaterialTheme.typography.labelSmall)
-          }
-        }
-      }
-    }
+    // Aylık takvim: çalışma günleri ve izin günleri farklı renkte
+    HomeCalendar(today)
     Spacer(Modifier.height(72.dp))
   }
 }
@@ -280,6 +276,105 @@ private fun nutritionAdvice(now: LocalDateTime): Pair<String, String>? {
     "To protect your sleep, try to skip caffeine after about ${clk(bed.minusHours(6))}.") to
     t("Akşam yemeğini ${clk(bed.minusHours(2))} öncesinde bitirmeye çalışın; uyandıktan sonraki bir saat içinde kahvaltı edin.",
       "Try to finish dinner before ${clk(bed.minusHours(2))}; have breakfast within an hour of waking.")
+}
+
+/** Gün türü: çalışma · izin (düzen izni ya da izin günü) · boş. */
+private fun dayKind(d: java.time.LocalDate): String {
+  val leave = Store.leaves[Store.key(d)]
+  if (leave != null && leave != "annualHalf") return "off"
+  val ty = Store.shiftOn(d) ?: return ""
+  return if (ty.isOff) "off" else "work"
+}
+
+@Composable
+private fun HomeCalendar(today: java.time.LocalDate) {
+  var offset by remember { mutableStateOf(0L) }
+  val ym = java.time.YearMonth.from(today).plusMonths(offset)
+  val first = ym.atDay(1)
+  val lead = first.dayOfWeek.value - 1
+  val len = ym.lengthOfMonth()
+  val rows = (lead + len + 6) / 7
+  val workC = MaterialTheme.colorScheme.primary
+  val offC = Success
+  NCard(Modifier.fillMaxWidth()) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+      IconButton(onClick = { offset-- }) { Icon(Icons.Filled.ChevronLeft, t("Önceki ay", "Previous month")) }
+      Text(
+        fmtDate(first, "LLLL yyyy").replaceFirstChar { it.titlecase(com.nobet.i18n.appLocale()) },
+        Modifier.weight(1f),
+        textAlign = TextAlign.Center,
+        style = MaterialTheme.typography.titleMedium,
+        fontWeight = FontWeight.SemiBold,
+      )
+      IconButton(onClick = { offset++ }) { Icon(Icons.Filled.ChevronRight, t("Sonraki ay", "Next month")) }
+    }
+    Row(Modifier.fillMaxWidth()) {
+      java.time.DayOfWeek.values().forEach {
+        Text(
+          com.nobet.i18n.dowShort(it),
+          Modifier.weight(1f),
+          textAlign = TextAlign.Center,
+          style = MaterialTheme.typography.labelSmall,
+          color = MaterialTheme.colorScheme.onSurfaceVariant,
+          maxLines = 1,
+        )
+      }
+    }
+    Gap(4.dp)
+    for (r in 0 until rows) {
+      Row(Modifier.fillMaxWidth()) {
+        for (c in 0 until 7) {
+          val idx = r * 7 + c - lead
+          Box(Modifier.weight(1f).aspectRatio(1f).padding(2.dp), contentAlignment = Alignment.Center) {
+            if (idx in 0 until len) {
+              val d = first.plusDays(idx.toLong())
+              val kind = dayKind(d)
+              val hol = com.nobet.data.Holidays.on(d) != null
+              val bg = when (kind) {
+                "work" -> workC
+                "off" -> offC
+                else -> Color.Transparent
+              }
+              val fg = when {
+                kind.isNotEmpty() -> Color.White
+                hol -> Alert
+                else -> MaterialTheme.colorScheme.onSurface
+              }
+              Box(
+                Modifier.fillMaxSize().clip(RoundedCornerShape(10.dp)).background(bg)
+                  .then(if (d == today) Modifier.border(2.dp, MaterialTheme.colorScheme.onSurface, RoundedCornerShape(10.dp)) else Modifier)
+                  .clickable { Nav.daySheet = d },
+                contentAlignment = Alignment.Center,
+              ) {
+                Text(
+                  "${d.dayOfMonth}",
+                  color = fg,
+                  fontWeight = if (d == today || hol) FontWeight.Bold else FontWeight.Normal,
+                  style = MaterialTheme.typography.bodyMedium,
+                  textDecoration = if (hol) androidx.compose.ui.text.style.TextDecoration.Underline else null,
+                )
+              }
+            }
+          }
+        }
+      }
+    }
+    Gap(8.dp)
+    Row(horizontalArrangement = Arrangement.spacedBy(16.dp), verticalAlignment = Alignment.CenterVertically) {
+      LegendDot(workC, t("Çalışma", "Work"))
+      LegendDot(offC, t("İzin", "Off"))
+      Text(t("Altı çizili: resmî tatil", "Underlined: holiday"), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
+  }
+}
+
+@Composable
+private fun LegendDot(c: Color, label: String) {
+  Row(verticalAlignment = Alignment.CenterVertically) {
+    Box(Modifier.size(12.dp).clip(RoundedCornerShape(3.dp)).background(c))
+    Spacer(Modifier.width(6.dp))
+    Text(label, style = MaterialTheme.typography.labelMedium)
+  }
 }
 
 /** Canlı geri sayım: 24 saatten azsa SS:DD:SN, fazlaysa gün + saat. */
