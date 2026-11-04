@@ -70,3 +70,17 @@ gradle/actions/setup-gradle@v5 → `./gradlew assembleDebug` → upload-artifact
 - **Gerçek cihaz testi olmadan doğrulama**: GitHub Actions'ta `reactivecircus/android-emulator-runner` ile emülatör aç, `adb` ile tıkla (uiautomator dump + metne göre dokunma), `screencap` ile ekran görüntüsü ve `logcat -b crash` ile çökme izi al; sonuçları `[skip ci]` commit'iyle dala yaz (scripts/take_screenshots.sh).
 - **Kullanıcıdaki çökmeler için**: `Thread.setDefaultUncaughtExceptionHandler` ile yığın izini dosyaya yaz, sonraki açılışta "Raporu Kopyala" diyaloğu göster (util/CrashReporter.kt).
 - **Canlı yayın adresi doğrulama**: sandbox çoğu alana erişemez; CI'da curl ile playlist → alt playlist → segment zincirini test et, resmi sitenin HTML'indeki `live_stream_url` değerini oku.
+
+## Ana ekran widget'ları (RemoteViews — ek bağımlılık gerektirmez)
+- `AppWidgetProvider` + `res/layout` (yalnızca LinearLayout/FrameLayout/TextView/ImageView/Chronometer) + `res/xml/widget_info_*.xml`.
+- Canlı geri sayım: `Chronometer` + `setChronometer(id, elapsedRealtime()+kalanMs, null, true)` + `setChronometerCountDown(id, true)` (API 24). Her saniye güncellemeye gerek kalmaz.
+- Vakit değişiminde yenileme: AlarmManager ile bir sonraki vakte (veya gece yarısına) `WidgetRefreshReceiver` alarmı; ayrıca `updatePeriodMillis=1800000` yedek.
+- Önizleme: `android:previewLayout` aynı layout'u gösterir → layout'taki TextView'lara örnek `android:text` değerleri koy, yoksa önizleme boş görünür.
+- Uygulama içinden ekleme: `AppWidgetManager.requestPinAppWidget` (API 26+), desteklenmezse "Ana ekranda basılı tut → Widget'lar" yönlendirmesi.
+- Widget/Receiver kodu tüm `try/catch` içinde; dil için `AppLanguage.current = prefs.language` ayarla (Activity açılmadan çalışır).
+- Emülatörde test: uygulamadaki "widget ekle" düğmesi → sistem diyaloğunda "Add to home screen"'e dokun → ana ekran ekran görüntüsü.
+
+## Paylaşılabilir görsel kart (Canvas → PNG → FileProvider)
+- 1080x1920 Bitmap'e Canvas ile çiz; önizleme için aynı fonksiyonu `scale` (ör. 0.45) ile `Dispatchers.Default`'ta üret, `produceState` ile göster.
+- Fotoğrafı `inSampleSize` ile küçültüp kemer yoluna `clipPath` ederek centerCrop çiz; metinleri `StaticLayout` ile ortala, sığmazsa yazı boyutunu küçülterek tekrar ölç.
+- Paylaşım: cache/shared_images → `FileProvider` Uri → `ACTION_SEND` chooser; Instagram için `com.instagram.share.ADD_TO_STORY` (facebook_app_id gerekir), yoksa genel paylaşıma düş.
