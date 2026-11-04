@@ -55,6 +55,8 @@ fun MoreHubScreen(
   isRamadan: Boolean = false,
   onOpenFastingGuide: () -> Unit = {},
   onOpenGreetingCards: () -> Unit = {},
+  onOpenHatim: () -> Unit = {},
+  onContinueReading: () -> Unit = {},
   onAddWidget: () -> Unit = {},
   onOpenQibla: () -> Unit,
   onOpenMosques: () -> Unit,
@@ -119,6 +121,32 @@ fun MoreHubScreen(
           subtitle = t("Pusula Sensörü\nKâbe İstikameti"),
           emoji = "🧭",
           onClick = onOpenQibla,
+          modifier = Modifier.weight(1f)
+        )
+      }
+    }
+
+    // Hatim Takibi & Kur'an'a devam
+    item {
+      val lastPage = androidx.compose.runtime.remember { com.example.data.HatimStore(com.example.AppHolder.context).lastPage }
+      Row(
+        modifier = Modifier
+          .fillMaxWidth()
+          .padding(horizontal = 16.dp, vertical = 6.dp),
+        horizontalArrangement = Arrangement.spacedBy(10.dp)
+      ) {
+        HubCard(
+          title = t("Hatim Takibi"),
+          subtitle = t("Cüz & Sure\nİlerleme"),
+          emoji = "🏆",
+          onClick = onOpenHatim,
+          modifier = Modifier.weight(1f)
+        )
+        HubCard(
+          title = t("Kaldığın Yer"),
+          subtitle = if (com.example.i18n.AppLanguage.isEnglish) "Quran • Page $lastPage\nContinue reading" else "Kur'an • Sayfa $lastPage\nOkumaya devam et",
+          emoji = "📖",
+          onClick = onContinueReading,
           modifier = Modifier.weight(1f)
         )
       }

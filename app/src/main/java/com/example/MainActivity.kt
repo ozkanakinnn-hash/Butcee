@@ -86,7 +86,9 @@ sealed class ActiveSubScreen {
   data object Qibla : ActiveSubScreen()
   data object Mosques : ActiveSubScreen()
   data object FastingTracker : ActiveSubScreen()
-  data object QuranList : ActiveSubScreen()
+  data class QuranList(val tab: Int = 0) : ActiveSubScreen()
+  /** Sayfa sayfa Kur'an okuyucu (1-604). */
+  data class QuranReader(val page: Int, val fromTab: Boolean = false) : ActiveSubScreen()
   data class SurahDetail(val surah: SurahInfo, val fromTab: Boolean = false) : ActiveSubScreen()
   data object FastingGuide : ActiveSubScreen()
   data object GreetingCards : ActiveSubScreen()
@@ -375,7 +377,8 @@ fun RamazanRehberiApp(
             prayerTimes = prayerTimes,
             onOpenFastingTracker = { activeSubScreen = ActiveSubScreen.FastingTracker }
           ) else QuranScreen(
-            onSelectSurah = { surah: SurahInfo -> activeSubScreen = ActiveSubScreen.SurahDetail(surah, fromTab = true) },
+            onSelectSurah = { surah: SurahInfo -> activeSubScreen = ActiveSubScreen.QuranReader(com.example.data.QuranText.firstPageOfSurah(surah.number), fromTab = true) },
+            onOpenPage = { p -> activeSubScreen = ActiveSubScreen.QuranReader(p, fromTab = true) },
             onNavigateBack = { currentTab = 0 }
           )
           2 -> FastingCalendarScreen(
@@ -387,7 +390,9 @@ fun RamazanRehberiApp(
           )
           4 -> MoreHubScreen(
             prefs = prefs,
-            onOpenQuran = { activeSubScreen = ActiveSubScreen.QuranList },
+            onOpenQuran = { activeSubScreen = ActiveSubScreen.QuranList() },
+            onOpenHatim = { activeSubScreen = ActiveSubScreen.QuranList(tab = 1) },
+            onContinueReading = { activeSubScreen = ActiveSubScreen.QuranReader(com.example.data.HatimStore(AppHolder.context).lastPage) },
             isRamadan = ramadanDay != null,
             onOpenFastingGuide = { activeSubScreen = ActiveSubScreen.FastingGuide },
             onOpenGreetingCards = { activeSubScreen = ActiveSubScreen.GreetingCards },
@@ -407,8 +412,8 @@ fun RamazanRehberiApp(
     // Active SubScreen Overlay
     activeSubScreen?.let { subScreen ->
       BackHandler {
-        if (subScreen is ActiveSubScreen.SurahDetail && !subScreen.fromTab) {
-          activeSubScreen = ActiveSubScreen.QuranList
+        if ((subScreen is ActiveSubScreen.SurahDetail && !subScreen.fromTab) || (subScreen is ActiveSubScreen.QuranReader && !subScreen.fromTab)) {
+          activeSubScreen = ActiveSubScreen.QuranList()
         } else {
           activeSubScreen = null
         }
@@ -439,12 +444,18 @@ fun RamazanRehberiApp(
             }
           )
           is ActiveSubScreen.QuranList -> QuranScreen(
-            onSelectSurah = { surah: SurahInfo -> activeSubScreen = ActiveSubScreen.SurahDetail(surah) },
+            onSelectSurah = { surah: SurahInfo -> activeSubScreen = ActiveSubScreen.QuranReader(com.example.data.QuranText.firstPageOfSurah(surah.number)) },
+            onOpenPage = { p -> activeSubScreen = ActiveSubScreen.QuranReader(p) },
+            initialTab = subScreen.tab,
             onNavigateBack = { activeSubScreen = null }
+          )
+          is ActiveSubScreen.QuranReader -> com.example.ui.screens.QuranReaderScreen(
+            startPage = subScreen.page,
+            onNavigateBack = { activeSubScreen = if (subScreen.fromTab) null else ActiveSubScreen.QuranList() }
           )
           is ActiveSubScreen.SurahDetail -> SurahDetailScreen(
             surah = subScreen.surah,
-            onNavigateBack = { activeSubScreen = if (subScreen.fromTab) null else ActiveSubScreen.QuranList }
+            onNavigateBack = { activeSubScreen = if (subScreen.fromTab) null else ActiveSubScreen.QuranList() }
           )
           is ActiveSubScreen.GreetingCards -> com.example.ui.screens.GreetingCardsScreen(onNavigateBack = { activeSubScreen = null })
           is ActiveSubScreen.FastingGuide -> androidx.compose.foundation.layout.Column(Modifier.fillMaxSize()) {

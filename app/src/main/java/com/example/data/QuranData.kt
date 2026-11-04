@@ -209,11 +209,26 @@ object QuranData {
 
 /** Kur'an metni: assets/quran/quran.tsv (sure, ayet, Arapça, Türkçe okunuş, İngilizce okunuş, Diyanet meali). */
 object QuranText {
-  data class Row(val surah: Int, val ayah: Int, val arabic: String, val pronunciation: String, val english: String, val meal: String)
+  data class Row(val surah: Int, val ayah: Int, val arabic: String, val pronunciation: String, val english: String, val meal: String, val page: Int = 1, val juz: Int = 1)
 
   @Volatile private var bySurah: Map<Int, List<Row>>? = null
 
   fun surah(n: Int): List<Row> = load()[n].orEmpty()
+
+  const val PAGE_COUNT = 604
+
+  @Volatile private var byPage: Map<Int, List<Row>>? = null
+
+  /** Medine mushafı sayfa düzeni (1-604). */
+  fun page(p: Int): List<Row> {
+    val m = byPage ?: load().values.flatten().sortedWith(compareBy<Row>({ it.surah }, { it.ayah })).groupBy { it.page }.also { byPage = it }
+    return m[p].orEmpty()
+  }
+
+  fun firstPageOfSurah(n: Int): Int = surah(n).firstOrNull()?.page ?: 1
+
+  fun firstPageOfJuz(j: Int): Int =
+    load().values.asSequence().flatten().filter { it.juz == j }.minOfOrNull { it.page } ?: 1
 
   /** Uygulama açılışında arka planda çağrılır; ilk sure açılışında bekleme olmaz. */
   fun preload(context: android.content.Context) { load(context) }
@@ -228,7 +243,7 @@ object QuranText {
         lines.forEach { line ->
           val f = line.split('\t')
           if (f.size >= 6) {
-            val r = Row(f[0].toInt(), f[1].toInt(), f[2], f[3], f[4], f[5])
+            val r = Row(f[0].toInt(), f[1].toInt(), f[2], f[3], f[4], f[5], f.getOrNull(6)?.toIntOrNull() ?: 1, f.getOrNull(7)?.toIntOrNull() ?: 1)
             map.getOrPut(r.surah) { ArrayList() }.add(r)
           }
         }

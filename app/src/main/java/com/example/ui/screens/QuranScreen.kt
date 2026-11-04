@@ -45,6 +45,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.R
+import com.example.ui.components.hatimItems
 import com.example.data.QuranData
 import com.example.data.SurahInfo
 import com.example.ui.components.AdBannerComponent
@@ -53,8 +54,15 @@ import com.example.ui.components.AdBannerComponent
 fun QuranScreen(
   onSelectSurah: (SurahInfo) -> Unit,
   onNavigateBack: () -> Unit,
+  onOpenPage: (Int) -> Unit = {},
+  initialTab: Int = 0,
   modifier: Modifier = Modifier
 ) {
+  var tab by remember { androidx.compose.runtime.mutableIntStateOf(initialTab) }
+  val hatim = com.example.ui.components.rememberHatimState()
+  val context = androidx.compose.ui.platform.LocalContext.current
+  val lastPage = remember(tab) { com.example.data.HatimStore(context).lastPage }
+  val bookmark = remember(tab) { com.example.data.HatimStore(context).bookmarkPage }
   BackHandler { onNavigateBack() }
   var searchQuery by remember { mutableStateOf("") }
 
@@ -109,6 +117,25 @@ fun QuranScreen(
             )
           }
         }
+      }
+    }
+
+    // Sureler | Hatim Takibi
+    item { com.example.ui.components.QuranTabSelector(tab) { tab = it } }
+    if (tab == 1) {
+      hatimItems(hatim, onOpenPage)
+      return@LazyColumn
+    }
+
+    // Kaldığın yer / yer imi
+    if (lastPage > 1 || bookmark > 0) item {
+      Row(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+      ) {
+        val en = com.example.i18n.AppLanguage.isEnglish
+        if (lastPage > 1) ResumeChip(if (en) "📖 Continue • p. $lastPage" else "📖 Kaldığın yer • s. $lastPage", Modifier.weight(1f)) { onOpenPage(lastPage) }
+        if (bookmark > 0) ResumeChip(if (en) "🔖 Bookmark • p. $bookmark" else "🔖 Yer imi • s. $bookmark", Modifier.weight(1f)) { onOpenPage(bookmark) }
       }
     }
 
@@ -239,4 +266,20 @@ fun QuranScreen(
       AdBannerComponent()
     }
   }
+}
+
+@Composable
+private fun ResumeChip(label: String, modifier: Modifier, onClick: () -> Unit) {
+  Text(
+    text = label,
+    fontSize = 12.sp,
+    fontWeight = FontWeight.Bold,
+    color = MaterialTheme.colorScheme.primary,
+    maxLines = 1,
+    modifier = modifier
+      .clip(RoundedCornerShape(12.dp))
+      .background(MaterialTheme.colorScheme.primaryContainer)
+      .clickable { onClick() }
+      .padding(horizontal = 12.dp, vertical = 10.dp)
+  )
 }
