@@ -102,3 +102,12 @@ gradle/actions/setup-gradle@v5 → `./gradlew assembleDebug` → upload-artifact
 - Kritik olmayanlar (günlük bilgi, widget yenileme): `setWindow` veya uyandırmayan `set(RTC, …)` — kritik alarmların kotasını yemesin.
 - Boot, paket güncellemesi, `TIME_SET`, `TIMEZONE_CHANGED`, `SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED` olaylarında alarmları yeniden kur.
 - FCM push gecikiyorsa sunucudan `priority: high` gönder (normal öncelik Doze'da bekletilir).
+
+## Play Store yayın hazırlığı (her uygulamada kontrol et)
+- Paket adı (applicationId) ilk yüklemeden sonra değişmez: geçici/şablon adları yayından önce değiştir.
+- Gizlilik politikası (docs/ + GitHub Pages), uygulama içi bağlantı; "veriler yalnızca cihazda" gibi iddialar reklam/analitik SDK varken yanıltıcıdır.
+- Test/hata ayıklama düğmeleri `BuildConfig.DEBUG` arkasında.
+- Wear + telefon aynı ilanda: sürüm kodları farklı olmalı (wear = 1_000_000 + kod), kod tek yerden (gradle.properties).
+- CI'da `:app:minifyReleaseWithR8` (imzasız) ile R8 kontrolü; elle çalışan imzalı AAB iş akışı (KEYSTORE_BASE64 vb. gizli değişkenler).
+- Premium: Play Billing 7 (`billing-ktx`), abonelik + tek seferlik ürün, açılışta/onResume'da queryPurchasesAsync ile doğrulama, 3 gün içinde acknowledge, otomatik yenileme ve iptal bilgilendirmesi, "geri yükle" ve "aboneliği yönet" bağlantısı; temel özellikleri (widget, ezan) ücretli yapma.
+- Yeni kişisel geliştirici hesaplarında üretimden önce 12 testçi / 14 gün kapalı test zorunlu.
