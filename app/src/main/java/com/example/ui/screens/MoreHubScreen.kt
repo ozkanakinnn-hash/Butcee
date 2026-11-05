@@ -33,6 +33,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.foundation.border
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -59,6 +62,7 @@ fun MoreHubScreen(
   onOpenKaza: () -> Unit = {},
   onOpenKandil: () -> Unit = {},
   onOpenWizard: () -> Unit = {},
+  onOpenPremium: () -> Unit = {},
   onAddWidget: () -> Unit = {},
   onOpenQibla: () -> Unit,
   onOpenMosques: () -> Unit,
@@ -125,6 +129,38 @@ fun MoreHubScreen(
           onClick = onOpenQibla,
           modifier = Modifier.weight(1f)
         )
+      }
+    }
+
+    // Premium (reklamsız) kartı
+    item {
+      val isPremium by com.example.billing.PremiumManager.isPremium.collectAsState()
+      val cs = MaterialTheme.colorScheme
+      Row(
+        modifier = Modifier
+          .fillMaxWidth()
+          .padding(horizontal = 16.dp, vertical = 6.dp)
+          .clip(RoundedCornerShape(20.dp))
+          .background(androidx.compose.ui.graphics.Brush.horizontalGradient(listOf(cs.primaryContainer, cs.surface)))
+          .border(1.dp, cs.primary.copy(alpha = 0.5f), RoundedCornerShape(20.dp))
+          .clickable { onOpenPremium() }
+          .padding(16.dp)
+          .testTag("hub_premium"),
+        verticalAlignment = Alignment.CenterVertically
+      ) {
+        Text("⭐", fontSize = 26.sp)
+        Spacer(modifier = Modifier.width(12.dp))
+        Column(modifier = Modifier.weight(1f)) {
+          Text(
+            if (isPremium) t("Premium etkin") else t("Reklamsız Premium'a geç"),
+            fontWeight = FontWeight.Bold, fontSize = 16.sp, color = cs.onSurface
+          )
+          Text(
+            if (isPremium) t("Desteğiniz için teşekkürler") else t("Reklamları kaldır, uygulamaya destek ol"),
+            fontSize = 12.sp, color = cs.onSurfaceVariant
+          )
+        }
+        Text("›", fontSize = 26.sp, fontWeight = FontWeight.Bold, color = cs.primary)
       }
     }
 

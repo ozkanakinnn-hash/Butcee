@@ -41,6 +41,10 @@ jobs:
       - name: Debug APK derle
         run: ./gradlew --no-daemon --stacktrace assembleDebug
 
+      # Yayın (release) sürümünün R8 küçültme/karartma adımı hatasız mı? (imza gerektirmez)
+      - name: Yayın sürümü R8 kontrolü
+        run: ./gradlew --no-daemon --stacktrace :app:minifyReleaseWithR8
+
       - uses: actions/upload-artifact@v5
         with:
           name: ramazan-rehberi-debug

@@ -82,6 +82,7 @@ fun SettingsDialog(
   onLanguageChanged: (String) -> Unit = {},
   onChangeLocation: () -> Unit,
   onOpenWizard: () -> Unit = {},
+  onOpenPremium: () -> Unit = {},
   onDismiss: () -> Unit
 ) {
   val context = LocalContext.current
@@ -279,6 +280,13 @@ fun SettingsDialog(
           }
 
           Spacer(modifier = Modifier.height(16.dp))
+
+          // 2a. Premium (reklamsız)
+          androidx.compose.material3.OutlinedButton(
+            onClick = onOpenPremium,
+            modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+            shape = androidx.compose.foundation.shape.RoundedCornerShape(14.dp)
+          ) { Text(t("⭐ Reklamsız Premium"), fontWeight = FontWeight.Bold) }
 
           // 2b. Bildirim sihirbazı (pil optimizasyonu, otomatik başlatma, test)
           androidx.compose.material3.Button(
@@ -551,6 +559,12 @@ fun SettingsDialog(
             Spacer(modifier = Modifier.height(10.dp))
           }
 
+          // Gizlilik politikası
+          androidx.compose.material3.TextButton(
+            onClick = { com.example.util.AppLinks.open(context, com.example.util.AppLinks.PRIVACY_URL) },
+            modifier = Modifier.fillMaxWidth()
+          ) { Text(t("Gizlilik Politikası"), fontWeight = FontWeight.Bold) }
+
           // Privacy note
           Row(
             modifier = Modifier.fillMaxWidth(),
@@ -560,7 +574,7 @@ fun SettingsDialog(
             Icon(imageVector = Icons.Default.Lock, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(14.dp))
             Spacer(modifier = Modifier.width(6.dp))
             Text(
-              text = t("🔒 Verileriniz yalnızca cihazınızda yerel olarak saklanmaktadır."),
+              text = t("🔒 Kayıtlarınız cihazınızda kalır • Diyanet ile resmî bağı yoktur"),
               fontSize = 10.sp,
               color = MaterialTheme.colorScheme.onSurfaceVariant
             )

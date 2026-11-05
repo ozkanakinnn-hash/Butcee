@@ -1,5 +1,7 @@
 package com.example.ui.components
 
+import androidx.compose.foundation.clickable
+
 import com.example.i18n.t
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -55,11 +57,22 @@ fun PrivacyFooter(
     }
     Spacer(modifier = Modifier.height(4.dp))
     Text(
-      text = t("🔒 Verileriniz yalnızca cihazınızda güvenli ve yerel olarak saklanmaktadır."),
+      text = t("🔒 Notlarınız ve kayıtlarınız cihazınızda kalır; hesap gerekmez. Reklam ve bildirim hizmetleri için Gizlilik Politikası'na bakın."),
       fontSize = 10.sp,
       color = MaterialTheme.colorScheme.onSurfaceVariant,
       textAlign = TextAlign.Center,
       lineHeight = 14.sp
+    )
+    val ctx = androidx.compose.ui.platform.LocalContext.current
+    Text(
+      text = t("Gizlilik Politikası ›"),
+      fontSize = 11.sp,
+      fontWeight = FontWeight.Bold,
+      color = MaterialTheme.colorScheme.primary,
+      modifier = Modifier
+        .padding(top = 4.dp)
+        .clickable { com.example.util.AppLinks.open(ctx, com.example.util.AppLinks.PRIVACY_URL) }
+        .padding(6.dp)
     )
   }
 }

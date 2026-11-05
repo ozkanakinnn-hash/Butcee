@@ -28,8 +28,10 @@ fun AdBannerComponent(
   var adFailed by remember { mutableStateOf(false) }
   // Reklam yalnızca kullanıcı onayı (UMP) alınıp SDK başlatıldıktan sonra yüklenir
   val canShowAds by com.example.util.AdsConsent.canShowAds.collectAsState()
+  // Premium (reklamsız) üyelerde reklam gösterilmez
+  val isPremium by com.example.billing.PremiumManager.isPremium.collectAsState()
 
-  if (!adFailed && canShowAds) {
+  if (!adFailed && canShowAds && !isPremium) {
     Box(
       modifier = modifier
         .fillMaxWidth()

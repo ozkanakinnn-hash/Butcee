@@ -30,3 +30,8 @@
     public static int d(...);
     public static int i(...);
 }
+
+# Google Play Faturalandırma (kütüphane kendi kurallarını getirir; ek güvence)
+-keep class com.android.vending.billing.** { *; }
+# Google UMP onay formu
+-keep class com.google.android.ump.** { *; }

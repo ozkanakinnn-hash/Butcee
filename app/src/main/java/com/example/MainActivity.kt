@@ -95,6 +95,7 @@ sealed class ActiveSubScreen {
   data object KazaNamazi : ActiveSubScreen()
   data object KandilDualari : ActiveSubScreen()
   data object NotificationWizard : ActiveSubScreen()
+  data object Premium : ActiveSubScreen()
   data object SpiritualNotes : ActiveSubScreen()
   data object Zikirmatik : ActiveSubScreen()
   data object Esma : ActiveSubScreen()
@@ -109,6 +110,12 @@ data class NavTabItem(
 
 class MainActivity : ComponentActivity() {
 
+  override fun onResume() {
+    super.onResume()
+    // Abonelik iptal/yenileme durumunu her dönüşte Google Play'den doğrula
+    com.example.billing.PremiumManager.refresh()
+  }
+
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     AppHolder.context = applicationContext
@@ -122,6 +129,9 @@ class MainActivity : ComponentActivity() {
     com.example.util.CrashReporter.install(this)
     val lastCrash = com.example.util.CrashReporter.consumeLastCrash(this)
     enableEdgeToEdge()
+
+    // Premium üyelik (Google Play Faturalandırma): durum doğrulanır, ürün fiyatları alınır
+    com.example.billing.PremiumManager.init(this)
 
     // Reklam onayı (UMP) → izin varsa AdMob arka planda başlatılır
     com.example.util.AdsConsent.gather(this)
@@ -399,6 +409,7 @@ fun RamazanRehberiApp(
             onOpenKaza = { activeSubScreen = ActiveSubScreen.KazaNamazi },
             onOpenKandil = { activeSubScreen = ActiveSubScreen.KandilDualari },
             onOpenWizard = { activeSubScreen = ActiveSubScreen.NotificationWizard },
+            onOpenPremium = { activeSubScreen = ActiveSubScreen.Premium },
             isRamadan = ramadanDay != null,
             onOpenFastingGuide = { activeSubScreen = ActiveSubScreen.FastingGuide },
             onOpenGreetingCards = { activeSubScreen = ActiveSubScreen.GreetingCards },
@@ -465,6 +476,7 @@ fun RamazanRehberiApp(
           )
           is ActiveSubScreen.KazaNamazi -> com.example.ui.screens.KazaNamaziScreen(onNavigateBack = { activeSubScreen = null })
           is ActiveSubScreen.KandilDualari -> com.example.ui.screens.KandilDualariScreen(onNavigateBack = { activeSubScreen = null })
+          is ActiveSubScreen.Premium -> com.example.ui.screens.PremiumScreen(onNavigateBack = { activeSubScreen = null })
           is ActiveSubScreen.NotificationWizard -> com.example.ui.screens.NotificationWizardScreen(onNavigateBack = { activeSubScreen = null })
           is ActiveSubScreen.GreetingCards -> com.example.ui.screens.GreetingCardsScreen(onNavigateBack = { activeSubScreen = null })
           is ActiveSubScreen.FastingGuide -> androidx.compose.foundation.layout.Column(Modifier.fillMaxSize()) {
@@ -566,6 +578,10 @@ fun RamazanRehberiApp(
         onOpenWizard = {
           showSettingsDialog = false
           activeSubScreen = ActiveSubScreen.NotificationWizard
+        },
+        onOpenPremium = {
+          showSettingsDialog = false
+          activeSubScreen = ActiveSubScreen.Premium
         },
         onDismiss = {
           showSettingsDialog = false

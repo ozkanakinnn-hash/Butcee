@@ -173,8 +173,8 @@ fun CountdownCard(
 
       Spacer(modifier = Modifier.height(16.dp))
 
-      // Cannon trigger button
-      OutlinedButton(
+      // Top atışı test düğmesi: yalnızca geliştirici (debug) sürümünde
+      if (com.example.BuildConfig.DEBUG) OutlinedButton(
         onClick = onFireCannon,
         modifier = Modifier.testTag("fire_cannon_button"),
         shape = RoundedCornerShape(12.dp),
@@ -290,7 +290,7 @@ fun CompactCountdownCard(
         trackColor = MaterialTheme.colorScheme.surfaceVariant
       )
 
-      if (countdown.mode == CountdownMode.IFTAR) {
+      if (countdown.mode == CountdownMode.IFTAR && com.example.BuildConfig.DEBUG) {
         OutlinedButton(
           onClick = onFireCannon,
           modifier = Modifier

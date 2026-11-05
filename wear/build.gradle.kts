@@ -13,8 +13,8 @@ android {
     applicationId = "com.abacusai.ramazanrehberi.t1793533738"
     minSdk = 30
     targetSdk = 36
-    versionCode = 1
-    versionName = "1.0"
+    versionCode = 1_000_000 + (project.findProperty("APP_VERSION_CODE") as String).toInt()
+    versionName = project.findProperty("APP_VERSION_NAME") as String
   }
 
   signingConfigs {

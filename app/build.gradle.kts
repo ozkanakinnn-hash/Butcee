@@ -16,8 +16,8 @@ android {
     applicationId = "com.abacusai.ramazanrehberi.t1793533738"
     minSdk = 24
     targetSdk = 36
-    versionCode = 1
-    versionName = "1.0"
+    versionCode = (project.findProperty("APP_VERSION_CODE") as String).toInt()
+    versionName = project.findProperty("APP_VERSION_NAME") as String
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -128,6 +128,8 @@ dependencies {
   implementation(libs.play.services.ads)
   // Reklam onayı (GDPR/KVKK) — Google User Messaging Platform
   implementation(libs.ump)
+  // Reklamsız Premium üyelik — Google Play Faturalandırma
+  implementation(libs.billing.ktx)
   // Akıllı saate namaz vakitlerini gönderme (Wear Data Layer)
   implementation(libs.play.services.wearable)
   // Uncomment to use Firestore:
