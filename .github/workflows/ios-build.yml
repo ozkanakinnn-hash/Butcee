@@ -6,6 +6,10 @@ on:
     paths: [ "ios/**", ".github/workflows/ios-build.yml" ]
   workflow_dispatch:
 
+concurrency:
+  group: ios-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: macos-15-intel
@@ -78,4 +82,4 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add docs/screenshots-ios
           git commit -m "iOS ekran görüntüleri [skip ci]" || exit 0
-          for i in 1 2 3; do git pull --rebase origin "${GITHUB_REF_NAME}" && git push origin "HEAD:${GITHUB_REF_NAME}" && break; sleep 5; done
+          for i in 1 2 3; do git pull --rebase -X theirs origin "${GITHUB_REF_NAME}" && git push origin "HEAD:${GITHUB_REF_NAME}" && exit 0; git rebase --abort 2>/dev/null; sleep 5; done; exit 1
