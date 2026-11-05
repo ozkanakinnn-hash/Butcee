@@ -248,10 +248,13 @@ export function drawHouse(ctx: C2D, level: number, cx: number, by: number, s: nu
   ctx.fillStyle = st.wall;
   ctx.fillRect(-W / 2 + 0.6 * u, -H, W - 1.2 * u, H - 0.6 * u);
   if (st.stone) {
+    ctx.save();
+    ctx.beginPath(); ctx.rect(-W / 2, -H, W, H); ctx.clip();
     ctx.strokeStyle = 'rgba(80,70,60,0.35)'; ctx.lineWidth = 0.35 * u;
-    for (let r = 0; r < st.h / 2.5; r++) for (let c = 0; c < st.w / 4; c++) {
+    for (let r = 0; r < st.h / 2.5; r++) for (let c = -1; c < st.w / 4; c++) {
       ctx.strokeRect(-W / 2 + (c * 4 + (r % 2) * 2) * u, -H + r * 2.5 * u, 4 * u, 2.5 * u);
     }
+    ctx.restore();
   } else if (level <= 1) {
     ctx.strokeStyle = 'rgba(60,30,10,0.3)'; ctx.lineWidth = 0.35 * u;
     for (let y = 2; y < st.h; y += 2) { ctx.beginPath(); ctx.moveTo(-W / 2, -y * u); ctx.lineTo(W / 2, -y * u); ctx.stroke(); }

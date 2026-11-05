@@ -236,3 +236,4 @@ button { font-family: inherit; border: 0; cursor: pointer; touch-action: manipul
 .continue { display: grid; gap: 8px; background: rgba(255,255,255,.55); border-radius: 14px; padding: 10px; }
 .gem-line { display: flex; justify-content: center; }
 .gem-line .gem-chip { color: #1576c4; background: rgba(21,118,196,.12); border-color: rgba(21,118,196,.3); }
+.garden .tip { transition: opacity .8s; } .garden .tip.fade { opacity: 0; }

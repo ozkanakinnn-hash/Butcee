@@ -34,7 +34,9 @@ export function gardenScreen(router: Router): Screen {
     h('button', { class: 'btn', onclick: () => openHouse() }, t('garden.house')),
     h('button', { class: 'btn green', onclick: () => openShop(firstEmpty()) }, t('garden.shop')),
   );
-  el.append(canvas, top, h('div', { class: 'tip' }, t('garden.tapSlot')), bar);
+  const tip = h('div', { class: 'tip' }, t('garden.tapSlot'));
+  el.append(canvas, top, tip, bar);
+  setTimeout(() => tip.classList.add('fade'), 5000);
 
   function renderStats() {
     stats.innerHTML = '';
