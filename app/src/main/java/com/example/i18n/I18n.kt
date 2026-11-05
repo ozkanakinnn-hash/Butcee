@@ -306,7 +306,11 @@ private val dictionary: Map<String, String> = mapOf(
     "Boğaziçi'nin Zirvesi • Modern Silüet" to "Atop the Bosphorus • modern skyline",
     "Maneviyatın ve Cuma'nın Dua Kapısı" to "A spiritual gateway of prayer",
     "Boğaziçi'nin İncisi • Zarif Barok" to "Pearl of the Bosphorus • elegant baroque",
-    "Fatih Sultan Mehmed Külliyesi" to "Complex of Sultan Mehmed the Conqueror"
+    "Fatih Sultan Mehmed Külliyesi" to "Complex of Sultan Mehmed the Conqueror",
+    "📍 Konumu otomatik takip et (GPS)" to "📍 Follow my location automatically (GPS)",
+    "Başka şehre gidince namaz vakitleri kendiliğinden güncellenir" to "Prayer times update by themselves when you travel to another city",
+    "(GPS koordinatına göre)" to "(by GPS coordinates)",
+    "(Diyanet Uyumlu Vakitler)" to "(Diyanet-compatible times)"
 )
 
 private val prayerWords = listOf("İmsak", "Güneş", "Öğle", "İkindi", "Akşam", "Yatsı")

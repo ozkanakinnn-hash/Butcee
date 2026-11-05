@@ -12,7 +12,7 @@ TODAY=$(date +%Y-%m-%d)
 shot () { # ad, argümanlar...
   local name=$1; shift
   xcrun simctl terminate "$DEV" $BID 2>/dev/null
-  xcrun simctl launch "$DEV" $BID -debug_no_ads YES -key_language "${SHOT_LANG:-tr}" -key_onboarding_completed YES -key_user_name "Özkan" -key_province Manisa -key_district Saruhanlı "$@"
+  xcrun simctl launch "$DEV" $BID -debug_no_ads YES -key_auto_location NO -key_language "${SHOT_LANG:-tr}" -key_onboarding_completed YES -key_user_name "Özkan" -key_province Manisa -key_district Saruhanlı "$@"
   sleep 14
   xcrun simctl io "$DEV" screenshot "$OUT/$name.png"
   # Çökme kontrolü
@@ -35,7 +35,7 @@ shot 14_kaza -key_theme_mode LIGHT -debug_route kaza
 shot 15_ayarlar -key_theme_mode DARK -debug_route settings
 SHOT_LANG=en shot 16_english -key_theme_mode DARK
 # İlk açılış ekranı
-xcrun simctl terminate "$DEV" $BID; xcrun simctl launch "$DEV" $BID -debug_no_ads YES -key_language tr -key_theme_mode DARK; sleep 12
+xcrun simctl terminate "$DEV" $BID; xcrun simctl launch "$DEV" $BID -debug_no_ads YES -key_auto_location NO -key_language tr -key_theme_mode DARK; sleep 12
 xcrun simctl io "$DEV" screenshot "$OUT/00_ilk_acilis.png"
 xcrun simctl spawn "$DEV" log show --last 10m --predicate 'process == "RamazanRehberi" AND messageType == fault' --style compact 2>/dev/null | tail -40 >> "$OUT/crash_log.txt" || true
 ls -la "$OUT"

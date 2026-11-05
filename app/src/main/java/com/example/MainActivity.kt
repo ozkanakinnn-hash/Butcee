@@ -259,7 +259,11 @@ fun RamazanRehberiApp(
   // Load prayer times whenever location changes or on start
   fun loadPrayers() {
     coroutineScope.launch {
-      val result = prayerRepo.getPrayerTimes(city = prefs.province, district = prefs.district, country = prefs.country)
+      val result = prayerRepo.getPrayerTimes(
+        city = prefs.province, district = prefs.district, country = prefs.country,
+        lat = if (prefs.useCoordinates) prefs.latitude else null,
+        lon = if (prefs.useCoordinates) prefs.longitude else null
+      )
       prayerTimes = result
       ReminderScheduler.onPrayerTimesLoaded(AppHolder.context, result)
       com.example.util.WearSync.send(AppHolder.context, result, prefs)
@@ -268,6 +272,48 @@ fun RamazanRehberiApp(
 
   LaunchedEffect(prefs.country, prefs.province, prefs.district) {
     loadPrayers()
+  }
+
+  // GPS ile otomatik konum: uygulama her öne geldiğinde il/ilçe kontrol edilir, değiştiyse vakitler güncellenir
+  val autoContext = androidx.compose.ui.platform.LocalContext.current
+  fun runAutoLocation() {
+    if (!prefs.autoLocation || !com.example.util.AutoLocation.hasPermission(autoContext)) return
+    coroutineScope.launch {
+      val d = com.example.util.AutoLocation.detect(autoContext) ?: return@launch
+      val changed = d.province != prefs.province || d.district != prefs.district || d.country != prefs.country ||
+        prefs.useCoordinates != !d.matchedTurkey
+      prefs.latitude = d.latitude
+      prefs.longitude = d.longitude
+      if (changed) {
+        prefs.country = d.country
+        prefs.province = d.province
+        prefs.district = d.district
+        prefs.useCoordinates = !d.matchedTurkey
+        loadPrayers()
+        android.widget.Toast.makeText(
+          autoContext,
+          (if (com.example.i18n.AppLanguage.isEnglish) "Location updated: " else "Konum güncellendi: ") + "${d.province} / ${d.district}",
+          android.widget.Toast.LENGTH_SHORT
+        ).show()
+      }
+    }
+  }
+  val autoLocPermission = androidx.activity.compose.rememberLauncherForActivityResult(
+    androidx.activity.result.contract.ActivityResultContracts.RequestMultiplePermissions()
+  ) { granted -> if (granted.values.any { it }) runAutoLocation() }
+  LaunchedEffect(Unit) {
+    if (prefs.autoLocation && !com.example.util.AutoLocation.hasPermission(autoContext) && !prefs.autoLocationAsked) {
+      prefs.autoLocationAsked = true
+      autoLocPermission.launch(arrayOf(android.Manifest.permission.ACCESS_COARSE_LOCATION, android.Manifest.permission.ACCESS_FINE_LOCATION))
+    }
+  }
+  val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
+  androidx.compose.runtime.DisposableEffect(lifecycleOwner) {
+    val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
+      if (event == androidx.lifecycle.Lifecycle.Event.ON_RESUME) runAutoLocation()
+    }
+    lifecycleOwner.lifecycle.addObserver(observer)
+    onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
   }
 
   // 1-Second Live Countdown Ticker
@@ -528,6 +574,9 @@ fun RamazanRehberiApp(
         currentCity = prefs.province,
         currentDistrict = prefs.district,
         onLocationSelected = { country, city, district ->
+          // Listeden elle seçim: otomatik konum kapanır (Ayarlar'dan tekrar açılabilir)
+          prefs.autoLocation = false
+          prefs.useCoordinates = false
           prefs.country = country
           prefs.province = city
           prefs.district = district
@@ -579,6 +628,7 @@ fun RamazanRehberiApp(
           showSettingsDialog = false
           activeSubScreen = ActiveSubScreen.NotificationWizard
         },
+        onAutoLocationEnabled = { runAutoLocation() },
         onOpenPremium = {
           showSettingsDialog = false
           activeSubScreen = ActiveSubScreen.Premium

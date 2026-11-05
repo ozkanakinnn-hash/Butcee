@@ -48,6 +48,7 @@ struct RamazanRehberiApp: App {
         .environmentObject(prayers)
         .environmentObject(premium)
         .onAppear {
+          AutoLocator.shared.refreshIfEnabled()
           prayers.reload()
           premium.start()
           if !UserDefaults.standard.bool(forKey: "debug_no_ads") { Ads.gatherConsentAndStart() }
@@ -56,6 +57,7 @@ struct RamazanRehberiApp: App {
     }
     .onChange(of: phase) { p in
       if p == .active {
+        AutoLocator.shared.refreshIfEnabled()
         prayers.reload()
         Task { await premium.refresh() }
       }

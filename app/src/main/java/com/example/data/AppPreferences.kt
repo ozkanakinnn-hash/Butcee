@@ -46,6 +46,29 @@ class AppPreferences(context: Context) {
     get() = prefs.getString("key_district", "Saruhanlı") ?: "Saruhanlı"
     set(value) = prefs.edit().putString("key_district", value).apply()
 
+  /** GPS ile konumu otomatik takip et (uygulama açılışında il/ilçe güncellenir). */
+  var autoLocation: Boolean
+    get() = prefs.getBoolean("key_auto_location", true)
+    set(value) = prefs.edit().putBoolean("key_auto_location", value).apply()
+
+  /** Konum izni bir kez soruldu mu (tekrar tekrar sormamak için). */
+  var autoLocationAsked: Boolean
+    get() = prefs.getBoolean("key_auto_location_asked", false)
+    set(value) = prefs.edit().putBoolean("key_auto_location_asked", value).apply()
+
+  /** true: vakitler kayıtlı koordinata göre hesaplanır (yurt dışı / ilçe eşleşmedi). */
+  var useCoordinates: Boolean
+    get() = prefs.getBoolean("key_use_coords", false)
+    set(value) = prefs.edit().putBoolean("key_use_coords", value).apply()
+
+  var latitude: Double
+    get() = prefs.getString("key_lat", null)?.toDoubleOrNull() ?: 0.0
+    set(value) = prefs.edit().putString("key_lat", value.toString()).apply()
+
+  var longitude: Double
+    get() = prefs.getString("key_lon", null)?.toDoubleOrNull() ?: 0.0
+    set(value) = prefs.edit().putString("key_lon", value.toString()).apply()
+
   var themeMode: AppThemeMode
     get() {
       val name = prefs.getString("key_theme_mode", AppThemeMode.SYSTEM.name)

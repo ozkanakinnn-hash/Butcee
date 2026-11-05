@@ -13,6 +13,7 @@ write_prefs () { # $1 = festival preview ("" / RAMAZAN), $2 = theme mode
 <?xml version='1.0' encoding='utf-8' standalone='yes' ?>
 <map>
     <boolean name="key_onboarding_completed" value="true" />
+    <boolean name="key_auto_location" value="false" />
     <string name="key_user_name">Özkan</string>
     <string name="key_theme_mode">$2</string>
     <string name="key_language">${3:-tr}</string>
@@ -144,6 +145,7 @@ cat > /tmp/p.xml <<XML
 <?xml version='1.0' encoding='utf-8' standalone='yes' ?>
 <map>
     <boolean name="key_onboarding_completed" value="true" />
+    <boolean name="key_auto_location" value="false" />
     <string name="key_user_name">Özkan</string>
     <string name="key_theme_mode">DARK</string>
     <string name="key_language">tr</string>

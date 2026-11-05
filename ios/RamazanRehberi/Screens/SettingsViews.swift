@@ -20,6 +20,13 @@ struct LocationPickerView: View {
   var body: some View {
     NavigationStack {
       List {
+        Section {
+          Button {
+            store.autoLocation = true
+            AutoLocator.shared.refreshIfEnabled()
+            dismiss()
+          } label: { Label(t("📍 Konumumu otomatik bul (GPS)"), systemImage: "location.fill") }
+        }
         Section(t("Ülke")) {
           Picker(t("Ülke"), selection: $country) {
             ForEach(AppContent.shared.countries, id: \.name) { Text($0.name).tag($0.name) }
@@ -59,9 +66,7 @@ struct LocationPickerView: View {
   }
 
   private func save(city: String, district: String) {
-    store.country = country
-    store.province = city
-    store.district = district
+    store.applyManualLocation(country: country, province: city, district: district)
     onDone?()
     dismiss()
   }
@@ -104,6 +109,13 @@ struct SettingsView: View {
             }
             Spacer()
             Text(t("Değiştir ›")).foregroundStyle(p.primary)
+          }
+        }
+        Toggle(isOn: $store.autoLocation) {
+          VStack(alignment: .leading) {
+            Text(t("📍 Konumu otomatik takip et (GPS)"))
+            Text(store.useCoordinates ? t("(GPS koordinatına göre)") : t("Başka şehre gidince namaz vakitleri kendiliğinden güncellenir"))
+              .font(.caption).foregroundStyle(p.onSurfaceVariant)
           }
         }
       }

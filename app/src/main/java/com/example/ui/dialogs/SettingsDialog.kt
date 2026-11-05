@@ -83,6 +83,7 @@ fun SettingsDialog(
   onChangeLocation: () -> Unit,
   onOpenWizard: () -> Unit = {},
   onOpenPremium: () -> Unit = {},
+  onAutoLocationEnabled: () -> Unit = {},
   onDismiss: () -> Unit
 ) {
   val context = LocalContext.current
@@ -269,7 +270,7 @@ fun SettingsDialog(
                     fontSize = 14.sp
                   )
                   Text(
-                    text = "${prefs.country} (Diyanet Uyumlu Vakitler)",
+                    text = "${prefs.country} " + (if (prefs.useCoordinates) t("(GPS koordinatına göre)") else t("(Diyanet Uyumlu Vakitler)")),
                     fontSize = 11.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                   )
@@ -277,6 +278,35 @@ fun SettingsDialog(
               }
               Text(t("Değiştir ›"), fontWeight = FontWeight.Bold, fontSize = 13.sp, color = MaterialTheme.colorScheme.primary)
             }
+          }
+
+          // 2-b. GPS ile otomatik konum
+          var autoLoc by remember { mutableStateOf(prefs.autoLocation) }
+          val autoLocLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
+            androidx.activity.result.contract.ActivityResultContracts.RequestMultiplePermissions()
+          ) { granted ->
+            if (granted.values.any { it }) { prefs.autoLocation = true; autoLoc = true; onAutoLocationEnabled() }
+            else { prefs.autoLocation = false; autoLoc = false }
+          }
+          Row(
+            modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
+              .clip(RoundedCornerShape(16.dp))
+              .background(MaterialTheme.colorScheme.surfaceVariant)
+              .padding(horizontal = 14.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically
+          ) {
+            Column(modifier = Modifier.weight(1f)) {
+              Text(t("📍 Konumu otomatik takip et (GPS)"), fontWeight = FontWeight.Bold, fontSize = 14.sp)
+              Text(t("Başka şehre gidince namaz vakitleri kendiliğinden güncellenir"), fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            androidx.compose.material3.Switch(
+              checked = autoLoc,
+              onCheckedChange = { on ->
+                if (!on) { prefs.autoLocation = false; autoLoc = false }
+                else if (com.example.util.AutoLocation.hasPermission(context)) { prefs.autoLocation = true; autoLoc = true; onAutoLocationEnabled() }
+                else autoLocLauncher.launch(arrayOf(android.Manifest.permission.ACCESS_COARSE_LOCATION, android.Manifest.permission.ACCESS_FINE_LOCATION))
+              }
+            )
           }
 
           Spacer(modifier = Modifier.height(16.dp))

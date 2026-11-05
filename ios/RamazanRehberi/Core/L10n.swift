@@ -104,6 +104,10 @@ enum L10n {
     "📖 Sureler": "📖 Surahs",
     "🏆 Hatim Takibi": "🏆 Khatm Tracker",
     "Oku": "Read",
+    "📍 Konumu otomatik takip et (GPS)": "📍 Follow my location automatically (GPS)",
+    "Başka şehre gidince namaz vakitleri kendiliğinden güncellenir": "Prayer times update by themselves when you travel",
+    "(GPS koordinatına göre)": "(by GPS coordinates)",
+    "📍 Konumumu otomatik bul (GPS)": "📍 Find my location automatically (GPS)",
   ]
 }
 

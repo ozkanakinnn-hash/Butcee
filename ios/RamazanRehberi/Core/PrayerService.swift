@@ -62,12 +62,23 @@ final class PrayerService: ObservableObject {
 
   private func fetchMonth(year: Int, month: Int, city: String, district: String, country: String) async {
     let isTurkey = country == "Turkey"
-    let address = isTurkey ? "\(district), \(city), Turkey" : "\(city), \(country)"
-    var comps = URLComponents(string: "https://api.aladhan.com/v1/calendarByAddress/\(year)/\(month)")!
-    comps.queryItems = [
-      URLQueryItem(name: "address", value: address),
-      URLQueryItem(name: "method", value: "13"),
-    ]
+    var comps: URLComponents
+    if AppData.shared.useCoordinates, let c = Shared.defaults.array(forKey: "key_gps_coords") as? [Double], c.count == 2 {
+      // GPS koordinatına göre (yurt dışı / ilçe eşleşmedi)
+      comps = URLComponents(string: "https://api.aladhan.com/v1/calendar/\(year)/\(month)")!
+      comps.queryItems = [
+        URLQueryItem(name: "latitude", value: String(c[0])),
+        URLQueryItem(name: "longitude", value: String(c[1])),
+        URLQueryItem(name: "method", value: "13"),
+      ]
+    } else {
+      let address = isTurkey ? "\(district), \(city), Turkey" : "\(city), \(country)"
+      comps = URLComponents(string: "https://api.aladhan.com/v1/calendarByAddress/\(year)/\(month)")!
+      comps.queryItems = [
+        URLQueryItem(name: "address", value: address),
+        URLQueryItem(name: "method", value: "13"),
+      ]
+    }
     guard let url = comps.url else { return }
     var req = URLRequest(url: url, timeoutInterval: 8)
     req.setValue("RamazanRehberi-iOS/1.0", forHTTPHeaderField: "User-Agent")

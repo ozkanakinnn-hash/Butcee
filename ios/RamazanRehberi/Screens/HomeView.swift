@@ -7,6 +7,7 @@ struct HomeView: View {
   @StateObject private var ticker = Ticker()
   var selectTab: (Int) -> Void = { _ in }
   @State private var showLocation = false
+  @ObservedObject private var locator = AutoLocator.shared
 
   var body: some View {
     let now = ticker.now
@@ -49,7 +50,15 @@ struct HomeView: View {
     .screen()
     .toolbar(.hidden, for: .navigationBar)
     .sheet(isPresented: $showLocation) { LocationPickerView() }
-    .refreshable { prayers.reload() }
+    .refreshable { AutoLocator.shared.refreshIfEnabled(); prayers.reload() }
+    .overlay(alignment: .top) {
+      if let m = locator.lastMessage {
+        Label(m, systemImage: "location.fill").font(.system(size: 13, weight: .semibold)).foregroundStyle(p.onPrimary)
+          .padding(.horizontal, 14).padding(.vertical, 9).background(Capsule().fill(p.primary)).padding(.top, 6)
+          .transition(.move(edge: .top).combined(with: .opacity))
+      }
+    }
+    .animation(.easeInOut, value: locator.lastMessage)
   }
 
   private func header(name: String) -> some View {

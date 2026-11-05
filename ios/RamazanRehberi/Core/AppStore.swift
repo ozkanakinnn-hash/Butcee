@@ -24,6 +24,10 @@ final class AppData: ObservableObject {
   @Published var colorTheme: AppColorTheme { didSet { s.set(colorTheme.rawValue, forKey: "key_color_theme"); WidgetCenter.shared.reloadAllTimelines() } }
   @Published var language: String { didSet { d.set(language, forKey: "key_language"); s.set(language, forKey: "key_language"); L10n.current = language; WidgetCenter.shared.reloadAllTimelines() } }
 
+  // GPS ile otomatik konum
+  @Published var autoLocation: Bool { didSet { d.set(autoLocation, forKey: "key_auto_location"); if autoLocation { AutoLocator.shared.refreshIfEnabled() } } }
+  @Published var useCoordinates: Bool { didSet { s.set(useCoordinates, forKey: "key_use_coords") } }
+
   // Bildirimler
   @Published var notificationsEnabled: Bool { didSet { d.set(notificationsEnabled, forKey: "key_notif_enabled"); reschedule() } }
   @Published var notifyImsak: Bool { didSet { d.set(notifyImsak, forKey: "key_notify_imsak"); reschedule() } }
@@ -78,6 +82,8 @@ final class AppData: ObservableObject {
     let lang = d.string(forKey: "key_language") ?? (Locale.preferredLanguages.first?.hasPrefix("tr") == false ? "en" : "tr")
     language = lang
     L10n.current = lang
+    autoLocation = b("key_auto_location", true)
+    useCoordinates = s.bool(forKey: "key_use_coords")
     notificationsEnabled = d.bool(forKey: "key_notif_enabled")
     notifyImsak = b("key_notify_imsak", true)
     notifyOgle = b("key_notify_ogle", true)
@@ -111,7 +117,33 @@ final class AppData: ObservableObject {
 
   var locationLabel: String { "\(province) / \(district)" }
 
+  private var suppressLocationReload = false
+
+  /// GPS'ten gelen konumu tek seferde uygular (vakitler bir kez yeniden yüklenir).
+  func applyAutoLocation(country: String, province: String, district: String, useCoordinates: Bool) {
+    suppressLocationReload = true
+    self.useCoordinates = useCoordinates
+    self.country = country
+    self.province = province
+    self.district = district
+    suppressLocationReload = false
+    locationChanged()
+  }
+
+  /// Listeden elle seçim: otomatik konum kapanır.
+  func applyManualLocation(country: String, province: String, district: String) {
+    suppressLocationReload = true
+    autoLocation = false
+    useCoordinates = false
+    self.country = country
+    self.province = province
+    self.district = district
+    suppressLocationReload = false
+    locationChanged()
+  }
+
   private func locationChanged() {
+    if suppressLocationReload { return }
     PrayerService.shared.reload()
     WidgetCenter.shared.reloadAllTimelines()
   }

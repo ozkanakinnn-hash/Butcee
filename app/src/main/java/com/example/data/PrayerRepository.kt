@@ -16,27 +16,37 @@ import kotlin.math.sin
 
 class PrayerRepository(private val context: Context) {
 
-  private val dateFormat = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
-  private val apiDateFormat = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
+  private val dateFormat = SimpleDateFormat("dd.MM.yyyy", Locale.ROOT)
+  private val apiDateFormat = SimpleDateFormat("dd.MM.yyyy", Locale.ROOT)
 
-  suspend fun getPrayerTimes(city: String, district: String, country: String = "Turkey"): PrayerTimes = withContext(Dispatchers.IO) {
+  /**
+   * [lat]/[lon] verilirse (GPS ile yurt dışı / eşleşmeyen konum) vakitler koordinata göre alınır;
+   * aksi halde il/ilçe adresine göre (Türkiye'de Diyanet ilçe vakitleri).
+   */
+  suspend fun getPrayerTimes(city: String, district: String, country: String = "Turkey", lat: Double? = null, lon: Double? = null): PrayerTimes = withContext(Dispatchers.IO) {
     val todayStr = dateFormat.format(Date())
 
     // 1. Check local cache
-    val cached = getCachedPrayerTimes("$country-$city", district, todayStr)
+    val cached = getCachedPrayerTimes(city, district, todayStr)
     if (cached != null) {
       return@withContext cached
     }
 
-    // 2. Attempt Aladhan API fetch with Diyanet method (13)
+    // 2. Aladhan (Diyanet yöntemi, method=13): koordinat veya ilçe adresi
     try {
-      val cleanCity = city.trim().replace(" ", "%20")
-      val cleanCountry = country.trim().replace(" ", "%20")
-      val urlStr = "https://api.aladhan.com/v1/timingsByCity?city=$cleanCity&country=$cleanCountry&method=13"
+      val day = apiDateFormat.format(Date())
+      fun enc(v: String) = java.net.URLEncoder.encode(v, "UTF-8")
+      val isTurkey = country.equals("Türkiye", true) || country.equals("Turkey", true)
+      val urlStr = if (lat != null && lon != null) {
+        "https://api.aladhan.com/v1/timings/$day?latitude=$lat&longitude=$lon&method=13"
+      } else {
+        val address = if (isTurkey) "$district, $city, Turkey" else "$city, $country"
+        "https://api.aladhan.com/v1/timingsByAddress/$day?address=${enc(address)}&method=13"
+      }
       val url = URL(urlStr)
       val connection = (url.openConnection() as HttpURLConnection).apply {
-        connectTimeout = 4000
-        readTimeout = 4000
+        connectTimeout = 5000
+        readTimeout = 5000
         requestMethod = "GET"
         setRequestProperty("User-Agent", "RamazanRehberiApp/1.0")
       }
@@ -73,9 +83,22 @@ class PrayerRepository(private val context: Context) {
     }
 
     // 3. Fallback: Accurate local Diyanet calculation for Turkey
-    val fallbackTimes = calculateLocalDiyanetTimes(city, district, todayStr)
+    val fallbackTimes = calculateLocalTimes(city, district, todayStr, lat, lon)
     saveCache(fallbackTimes)
     fallbackTimes
+  }
+
+  /** Çevrimdışı: koordinat (GPS) veya il merkezine göre astronomik hesap. */
+  private fun calculateLocalTimes(city: String, district: String, dateStr: String, lat: Double?, lon: Double?): PrayerTimes {
+    val known = com.example.util.PrayerCalc.provinceCoords[city]
+    val la = lat ?: known?.first
+    val lo = lon ?: known?.second
+    if (la != null && lo != null) {
+      // Türkiye illeri her zaman TSİ (UTC+3)
+      val t = com.example.util.PrayerCalc.times(la, lo, Calendar.getInstance(), if (lat == null && known != null) 3.0 else null)
+      return PrayerTimes(t[0], t[1], t[2], t[3], t[4], t[5], dateStr, city, district)
+    }
+    return calculateLocalDiyanetTimes(city, district, dateStr)
   }
 
   private fun calculateLocalDiyanetTimes(city: String, district: String, dateStr: String): PrayerTimes {
