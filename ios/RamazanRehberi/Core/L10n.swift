@@ -100,6 +100,10 @@ enum L10n {
     "Gizlilik Politikası": "Privacy Policy",
     "Kart Paylaş": "Share Card",
     "Ana Ekran Widget'ları": "Home Screen Widgets",
+    "Kıble": "Qibla",
+    "📖 Sureler": "📖 Surahs",
+    "🏆 Hatim Takibi": "🏆 Khatm Tracker",
+    "Oku": "Read",
   ]
 }
 

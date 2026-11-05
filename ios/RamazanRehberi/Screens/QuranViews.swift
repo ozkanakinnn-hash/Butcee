@@ -185,8 +185,13 @@ struct QuranReaderView: View {
   @Environment(\.palette) var p
   @EnvironmentObject var store: AppData
   let startPage: Int
-  @State private var page: Int = 1
+  @State private var page: Int
   @State private var mode = 0
+
+  init(startPage: Int) {
+    self.startPage = startPage
+    _page = State(initialValue: max(1, min(QuranText.pageCount, startPage)))
+  }
 
   var rows: [QuranText.Row] { QuranText.shared.page(page) }
 
@@ -222,7 +227,6 @@ struct QuranReaderView: View {
         Button { store.readerFontStep = (store.readerFontStep + 1) % 4 } label: { Image(systemName: "textformat.size") }
       }
     }
-    .onAppear { page = max(1, min(QuranText.pageCount, startPage)) }
     .onChange(of: page) { v in store.lastPage = v }
   }
 }

@@ -50,7 +50,7 @@ struct RamazanRehberiApp: App {
         .onAppear {
           prayers.reload()
           premium.start()
-          Ads.gatherConsentAndStart()
+          if !UserDefaults.standard.bool(forKey: "debug_no_ads") { Ads.gatherConsentAndStart() }
           AppDelegate.scheduleRefresh()
         }
     }
