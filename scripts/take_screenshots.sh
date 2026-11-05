@@ -138,6 +138,28 @@ echo "DOZE_TEST: bildirim ${FOUND:-GELMEDI} saniyede geldi (hedef ~60 sn)" >> $O
 adb shell dumpsys deviceidle unforce; adb shell dumpsys battery reset; adb shell input keyevent KEYCODE_WAKEUP; adb shell input keyevent 82; sleep 2
 adb exec-out screencap -p > $OUT/06l_doze_test_bildirim.png
 
+# 1d) Oruç planlı gün: ana sayfada iftar menüsü, Ramazan Rehberi'nde iftar + sahur menü önerisi
+TODAY=$(adb shell date +%Y-%m-%d | tr -d '\r')
+cat > /tmp/p.xml <<XML
+<?xml version='1.0' encoding='utf-8' standalone='yes' ?>
+<map>
+    <boolean name="key_onboarding_completed" value="true" />
+    <string name="key_user_name">Özkan</string>
+    <string name="key_theme_mode">DARK</string>
+    <string name="key_language">tr</string>
+    <set name="key_fasting_dates"><string>$TODAY</string></set>
+</map>
+XML
+adb shell am force-stop $PKG
+adb push /tmp/p.xml /data/local/tmp/p.xml
+adb shell "run-as $PKG sh -c 'cat /data/local/tmp/p.xml > shared_prefs/ramazan_rehberi_prefs.xml'"
+launch
+tap_text "Dahası"; sleep 2; tap_text "Ramazan Rehberi"; sleep 3
+for i in 1 2 3 4 5 6; do adb shell input swipe 540 1900 540 500 400; sleep 1; done
+shot 06m_rehber_iftar_menu 2
+adb shell input swipe 540 1900 540 600 400; shot 06n_rehber_sahur_menu 2
+adb shell input swipe 540 1900 540 900 400; shot 06o_rehber_sahur_menu_alt 2
+
 # 2) İngilizce + aydınlık tema
 write_prefs "" "LIGHT" "en"
 launch

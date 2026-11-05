@@ -391,6 +391,15 @@ fun MenusScreen(
       }
     }
 
+    // 5b. GÜNÜN SAHUR MENÜ ÖNERİSİ (iftar menüsüyle aynı koşulda)
+    if (showIftarMenu) item {
+      com.example.ui.components.SahurMenuCard(
+        menu = com.example.data.SahurMenus.forDay(selectedDay),
+        imsakTime = prayerTimes?.imsak?.let { com.example.data.PrayerTimeUtils.cleanTimeString(it) },
+        ramadanDay = ramadanDay
+      )
+    }
+
     // 6. HEALTHY IFTAR & SAHUR RECOMMENDATION
     item {
       Card(
