@@ -36,7 +36,7 @@ targets:
     dependencies:
       - package: GoogleMobileAds
       - package: GoogleUMP
-        product: UserMessagingPlatform
+        product: GoogleUserMessagingPlatform
       - target: RamazanWidget
         embed: true
   RamazanWidget:

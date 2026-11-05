@@ -156,7 +156,7 @@ struct ShortcutsRow: View {
             iconChip("ic_hub_tasbih")
             Spacer(minLength: 0)
             Text(t("Zikirmatik")).font(.system(size: 16, weight: .bold)).foregroundStyle(p.onBackground)
-            (Text(t("Toplam") + " ").foregroundStyle(p.onSurfaceVariant) + Text("\(store.zikirTotal)").foregroundStyle(p.primary).bold())
+            (Text(t("Toplam") + " ").foregroundColor(p.onSurfaceVariant) + Text("\(store.zikirTotal)").foregroundColor(p.primary).bold())
               .font(.system(size: 12))
           }
           .padding(14).frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .trailing)
@@ -333,13 +333,13 @@ struct HolidayCountdownCard: View {
 struct NameSuggestionsCard: View {
   @Environment(\.palette) var p
   var body: some View {
-    let (girls, boys) = AppContent.shared.namesToday()
+    let names = AppContent.shared.namesToday()
     VStack(alignment: .leading, spacing: 10) {
       Text(t("👶 Bugün Doğanlara İsim Önerileri")).font(.system(size: 18, weight: .bold))
       Text(t("Anlamı güzel, Kur'an ve İslam tarihinde geçen isimler")).font(.system(size: 13)).foregroundStyle(p.onSurfaceVariant)
       HStack(alignment: .top, spacing: 10) {
-        column(L10n.isEnglish ? "👧 Girl" : "👧 Kız", Color(hex: 0xE8789A), girls, Color(hex: 0x3A2328))
-        column(L10n.isEnglish ? "👦 Boy" : "👦 Erkek", Color(hex: 0x6FA8E8), boys, Color(hex: 0x1E2A3A))
+        column(L10n.isEnglish ? "👧 Girl" : "👧 Kız", Color(hex: 0xE8789A), names.0, Color(hex: 0x3A2328))
+        column(L10n.isEnglish ? "👦 Boy" : "👦 Erkek", Color(hex: 0x6FA8E8), names.1, Color(hex: 0x1E2A3A))
       }
     }
     .padding(16).card()

@@ -119,3 +119,17 @@ gradle/actions/setup-gradle@v5 → `./gradlew assembleDebug` → upload-artifact
   `by lazy { ... }` yap veya `when` kullan.
 - Emülatör betiğinde Dahası gibi ızgaralarda hedef kutu ekran dışında kalabilir: `for i in 1..5; tap_text X && break; swipe` kalıbı.
 - Kart üstü süsleme (filigran) çizerken opak "kesme" dairesi kullanma; `Path.op(..., PathOperation.Difference)` ile gerçek şekil çiz, düşük alfa ver.
+
+## iOS sürümü (SwiftUI) — Android uygulamasından port
+- Proje `ios/` altında XcodeGen (`project.yml`) ile; `.xcodeproj` depoya girmez, CI'da `xcodegen generate`.
+- CI: `macos-15` runner, `xcodebuild ... -sdk iphoneos CODE_SIGNING_ALLOWED=NO build` → `.app`'i `Payload/` içine koyup zip'le = imzasız `.ipa`
+  (AltStore/Sideloadly ile kurulur, 7 günde bir yenilenir). Apple Developer hesabı varsa TestFlight.
+- İçerik aktarımı: saf Kotlin veri dosyalarını kotlinc ile (Android sınıflarına küçük stub'larla) derle, yansıma (reflection) ile
+  JSON'a dök; `JAVA_OPTS=-Dfile.encoding=UTF-8 -Dstdout.encoding=UTF-8` şart, yoksa Türkçe karakterler "?" olur.
+- Android vector drawable → SVG: pathData'yı `<path d>` yap; asset catalog'da `preserves-vector-representation` + `template`.
+- Sesler: iOS bildirim sesi ≤30 sn ve caf/wav/aiff olmalı → `ffmpeg -t 29.5 -c:a pcm_s16le -f caf`.
+- iOS arka planda kod çalıştıramaz: bildirimleri günler öncesinden planla (en fazla 64 bekleyen); vakitleri aylık API'den
+  (Aladhan `calendarByAddress`, method=13 Diyanet) önbelleğe al; çevrimdışı için astronomik hesap yedeği.
+- Tuzaklar: StoreKit'in `AppStore` tipiyle çakışmaması için kendi sınıfına başka ad ver; iOS 16'da `Text + Text` için
+  `.foregroundColor` kullan (`foregroundStyle` Text döndürmez); `.topBarTrailing` iOS 17 → `.navigationBarTrailing`;
+  Swift sözlük sabitinde tekrarlanan anahtar çalışma anında çöker; AdMob SPM'de UMP ürün adı `GoogleUserMessagingPlatform`.

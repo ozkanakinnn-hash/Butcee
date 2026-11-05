@@ -58,8 +58,8 @@ final class AppData: ObservableObject {
   @Published var readerFontStep: Int { didSet { d.set(readerFontStep, forKey: "hatim_font_step") } }
 
   // Kaza
-  @Published var kazaRemaining: [String: Int] { didSet { d.set(kazaRemaining, forKey: "kaza_kalan") } }
-  @Published var kazaPrayed: [String: Int] { didSet { d.set(kazaPrayed, forKey: "kaza_kilinan") } }
+  @Published var kazaRemainingMap: [String: Int] { didSet { d.set(kazaRemainingMap, forKey: "kaza_kalan") } }
+  @Published var kazaPrayedMap: [String: Int] { didSet { d.set(kazaPrayedMap, forKey: "kaza_kilinan") } }
 
   // Premium
   @Published var isPremium: Bool { didSet { d.set(isPremium, forKey: "key_premium") } }
@@ -103,8 +103,8 @@ final class AppData: ObservableObject {
     lastPage = i("hatim_last_page", 1)
     bookmarkPage = d.integer(forKey: "hatim_bookmark_page")
     readerFontStep = i("hatim_font_step", 1)
-    kazaRemaining = (d.dictionary(forKey: "kaza_kalan") as? [String: Int]) ?? [:]
-    kazaPrayed = (d.dictionary(forKey: "kaza_kilinan") as? [String: Int]) ?? [:]
+    kazaRemainingMap = (d.dictionary(forKey: "kaza_kalan") as? [String: Int]) ?? [:]
+    kazaPrayedMap = (d.dictionary(forKey: "kaza_kilinan") as? [String: Int]) ?? [:]
     isPremium = d.bool(forKey: "key_premium")
     if s.string(forKey: "key_language") == nil { s.set(lang, forKey: "key_language") }
   }
@@ -149,20 +149,20 @@ final class AppData: ObservableObject {
   func completeHatim() { hatimCompleted += 1; readJuz = []; readSurahs = [] }
 
   // MARK: Kaza
-  func kazaRemaining(_ v: KazaVakit) -> Int { kazaRemaining[v.rawValue] ?? 0 }
-  func kazaPrayed(_ v: KazaVakit) -> Int { kazaPrayed[v.rawValue] ?? 0 }
+  func kazaRemaining(_ v: KazaVakit) -> Int { kazaRemainingMap[v.rawValue] ?? 0 }
+  func kazaPrayed(_ v: KazaVakit) -> Int { kazaPrayedMap[v.rawValue] ?? 0 }
   var kazaTotalRemaining: Int { KazaVakit.allCases.reduce(0) { $0 + kazaRemaining($1) } }
   var kazaTotalPrayed: Int { KazaVakit.allCases.reduce(0) { $0 + kazaPrayed($1) } }
   func kazaMarkPrayed(_ v: KazaVakit) {
     let r = kazaRemaining(v); guard r > 0 else { return }
-    kazaRemaining[v.rawValue] = r - 1
-    kazaPrayed[v.rawValue] = kazaPrayed(v) + 1
+    kazaRemainingMap[v.rawValue] = r - 1
+    kazaPrayedMap[v.rawValue] = kazaPrayed(v) + 1
   }
-  func kazaAdd(_ v: KazaVakit, _ n: Int) { kazaRemaining[v.rawValue] = max(0, kazaRemaining(v) + n) }
+  func kazaAdd(_ v: KazaVakit, _ n: Int) { kazaRemainingMap[v.rawValue] = max(0, kazaRemaining(v) + n) }
   func kazaAddDays(_ days: Int, includeVitir: Bool) {
-    for v in KazaVakit.allCases where v != .vitir || includeVitir { kazaRemaining[v.rawValue] = kazaRemaining(v) + days }
+    for v in KazaVakit.allCases where v != .vitir || includeVitir { kazaRemainingMap[v.rawValue] = kazaRemaining(v) + days }
   }
-  func kazaReset() { kazaRemaining = [:]; kazaPrayed = [:] }
+  func kazaReset() { kazaRemainingMap = [:]; kazaPrayedMap = [:] }
 }
 
 enum KazaVakit: String, CaseIterable, Identifiable {
