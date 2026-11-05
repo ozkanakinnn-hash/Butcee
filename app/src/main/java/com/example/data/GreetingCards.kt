@@ -132,7 +132,8 @@ enum class GreetingOccasion(
   }
 }
 
-private val CARD_QUOTES: Map<GreetingOccasion, CardQuote> = mapOf(
+// lazy: enum ile dosya düzeyindeki paletlerin başlatma sırası döngüsünde anahtarlar null kalmasın
+private val CARD_QUOTES: Map<GreetingOccasion, CardQuote> by lazy { mapOf(
   GreetingOccasion.CUMA to CardQuote(Bi("Üzerine güneş doğan en hayırlı gün cuma günüdür.", "The best day on which the sun rises is Friday."), "Müslim, Cum'a 17"),
   GreetingOccasion.REGAIB to CardQuote(Bi("Allah'ım! Recep ve Şaban'ı bize mübarek kıl ve bizi Ramazan'a ulaştır.", "O God, bless us in Rajab and Sha'ban and let us reach Ramadan."), "Ahmed b. Hanbel, Müsned"),
   GreetingOccasion.MIRAC to CardQuote(Bi("Kulunu bir gece Mescid-i Haram'dan Mescid-i Aksâ'ya götüren Allah'ın şanı yücedir.", "Glory be to Him who took His servant by night from al-Masjid al-Haram to al-Masjid al-Aqsa."), "İsrâ, 17/1"),
@@ -144,6 +145,6 @@ private val CARD_QUOTES: Map<GreetingOccasion, CardQuote> = mapOf(
   GreetingOccasion.MEVLID to CardQuote(Bi("Biz seni ancak âlemlere rahmet olarak gönderdik.", "We have not sent you except as a mercy to the worlds."), "Enbiyâ, 21/107"),
   GreetingOccasion.HICRI_YILBASI to CardQuote(Bi("Üzülme, şüphesiz Allah bizimle beraberdir.", "Do not grieve; indeed God is with us."), "Tevbe, 9/40"),
   GreetingOccasion.ASURE to CardQuote(Bi("Aşure günü orucunun geçmiş bir yılın günahlarına kefaret olmasını Allah'tan umarım.", "I hope from God that fasting on Ashura expiates the sins of the previous year."), "Müslim, Sıyâm 196")
-)
+) }
 
 val GreetingOccasion.quote: CardQuote get() = CARD_QUOTES.getValue(this)
