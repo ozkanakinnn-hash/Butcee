@@ -42,6 +42,8 @@ export interface MoveResult {
   /** Parça yerleştikten hemen sonraki, temizleme öncesi tahta. */
   placed: Grid;
   steps: ClearStep[];
+  /** Temizlemelerden sonra, saldırı/Zen rahatlaması öncesi tahta. */
+  afterClear: Grid;
   points: number;
   comboBefore: number;
   combo: number;
@@ -219,7 +221,7 @@ export class Game {
     }
 
     return {
-      piece, rot, col, row, placed, steps, points, comboBefore, combo: s.combo, seasonChanged, attack,
+      piece, rot, col, row, placed, steps, afterClear: cleared, points, comboBefore, combo: s.combo, seasonChanged, attack,
       zenRelief, final: s.grid, status: s.status,
     };
   }

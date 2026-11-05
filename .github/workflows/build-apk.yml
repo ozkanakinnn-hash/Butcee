@@ -1,0 +1,64 @@
+name: Blok Bahçesi APK
+
+on:
+  push:
+    paths:
+      - "blok-bahcesi/**"
+      - ".github/workflows/build-apk.yml"
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: blok-bahcesi
+    steps:
+      - uses: actions/checkout@v5
+
+      # Not: Capacitor 8 CLI Node 22+ ister (Node 20 ile `cap sync` çalışmaz).
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: blok-bahcesi/package-lock.json
+
+      # Not: Capacitor 8 Android kütüphanesi Java 21 ile derlenir (JDK 17 yetmez).
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      # Varsayılan "tools" paketi artık yok; yalnızca platform-tools kur, gerisini Gradle indirir.
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: "platform-tools"
+
+      - name: Bağımlılıklar
+        run: npm ci
+
+      - name: Birim testleri (Vitest)
+        run: npm test
+
+      - name: Web derlemesi
+        run: npm run build
+
+      - name: Capacitor sync
+        run: npx cap sync android
+
+      - uses: gradle/actions/setup-gradle@v5
+
+      - name: Debug APK
+        working-directory: blok-bahcesi/android
+        run: |
+          chmod +x gradlew
+          ./gradlew --no-daemon assembleDebug
+          cp app/build/outputs/apk/debug/app-debug.apk ../BlokBahcesi-debug.apk
+          ls -lh ../BlokBahcesi-debug.apk
+
+      - uses: actions/upload-artifact@v5
+        with:
+          name: BlokBahcesi-debug
+          path: blok-bahcesi/BlokBahcesi-debug.apk
+          if-no-files-found: error
