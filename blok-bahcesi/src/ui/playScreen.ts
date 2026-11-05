@@ -626,7 +626,7 @@ export function playScreen(router: Router, opts: PlayOpts): Screen {
 
   setup();
   // Hata ayıklama (yalnızca geliştirme sunucusunda)
-  if (import.meta.env.DEV) (window as unknown as Record<string, unknown>).__bb = () => ({ game, sel, rot, col, pieceRow, animating: animating(), overlay: !!overlay, paused });
+  if (import.meta.env.DEV) (window as unknown as Record<string, unknown>).__bb = () => ({ game, view, sel, rot, col, pieceRow, animating: animating(), overlay: !!overlay, paused });
 
   return {
     el,
