@@ -91,7 +91,10 @@ export function menuScreen(router: Router): Screen {
       ),
     );
     hero.start();
-    // Kritik eşik ödülleri
+  }
+
+  /** Kritik eşik ödülleri (ekran gösterildiğinde, çizimden sonra) */
+  function claimRewards() {
     const got = claimMilestones();
     if (got.length) {
       rewardPopup(el, got.map((g) => {
@@ -100,6 +103,5 @@ export function menuScreen(router: Router): Screen {
       }), t('dia.milestone'));
     }
   }
-  render();
-  return { el, onShow: () => { render(); music.play('calm'); }, onHide: () => hero?.stop() };
+  return { el, onShow: () => { render(); claimRewards(); music.play('calm'); }, onHide: () => hero?.stop() };
 }

@@ -226,7 +226,7 @@ button { font-family: inherit; border: 0; cursor: pointer; touch-action: manipul
   padding: 2px 8px; border-radius: 999px; white-space: nowrap; box-shadow: 0 2px 4px rgba(0,0,0,.35); }
 .node.rescue.done .rescue-label { background: #5aa845; }
 .node.rescue.locked .rescue-label { background: #6b5d4f; }
-.chip.danger { background: rgba(200,30,30,.75); animation: blink .8s ease-in-out infinite; }
+.chip.chip-alarm { color: #fff; background: rgba(200,30,30,.75); animation: blink .8s ease-in-out infinite; }
 .hint-row { display: flex; gap: 10px; align-items: center; }
 .hint-row canvas { flex: none; }
 .rescue-end .gardener-big { display: flex; justify-content: center; animation: gempop .6s cubic-bezier(.2,2,.4,1); }

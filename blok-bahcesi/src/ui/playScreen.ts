@@ -122,10 +122,12 @@ export function playScreen(router: Router, opts: PlayOpts): Screen {
     const right = h('div', { class: 'grow' });
     if (mode === 'adventure' || mode === 'daily') {
       const g = level.goal.type;
-      if (g === 'rescue') {
+      if (g === 'rescue' && s.gardenerSaved) {
+        right.append(chip(gardenerIcon(28, 'cheer'), '✓'));
+      } else if (g === 'rescue') {
         const m = game.gardenerMargin() ?? 0;
         const c = chip(gardenerIcon(28, m <= 1 ? 'scared' : 'happy'), h('small', {}, t('hud.danger')), String(Math.max(0, m)));
-        if (m <= 1) c.classList.add('danger');
+        if (m <= 1) c.classList.add('chip-alarm');
         right.append(c);
       } else {
         if (g !== 'boss' && g !== 'none') right.append(chip(iconCanvas(g, 26), String(game.goalRemaining())));
@@ -774,7 +776,7 @@ export function playScreen(router: Router, opts: PlayOpts): Screen {
 
   setup();
   // Hata ayıklama (yalnızca geliştirme sunucusunda)
-  if (import.meta.env.DEV) (window as unknown as Record<string, unknown>).__bb = () => ({ game, view, sel, rot, col, pieceRow, animating: animating(), overlay: !!overlay, paused });
+  if (import.meta.env.DEV) (window as unknown as Record<string, unknown>).__bb = () => ({ game, view, sel, rot, col, pieceRow, animating: animating(), overlay: !!overlay, paused, move: (hi: number, r: number, c: number) => { closeOverlay(); sel = hi; rot = r; col = clampCol(c, r); doDrop(); } });
 
   return {
     el,
