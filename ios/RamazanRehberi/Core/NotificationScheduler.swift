@@ -36,7 +36,9 @@ enum NotificationScheduler {
     }
 
     let ezan = st.ezanSound ? "ezan_aksam.caf" : nil
-    for offset in 0..<7 {
+    // iOS en fazla 64 bekleyen bildirime izin verir: sınır dolana kadar günleri doldur (en çok 30 gün)
+    for offset in 0..<30 {
+      if requests.count >= 60 { break }
       let day = DateUtil.addDays(offset, to: now)
       let key = DateUtil.dateKey(day)
       let pt = PrayerCache.timesFor(date: day)
@@ -93,7 +95,18 @@ enum NotificationScheduler {
       let db = (b.trigger as? UNCalendarNotificationTrigger)?.nextTriggerDate() ?? .distantFuture
       return da < db
     }
-    for r in requests.prefix(62) { center.add(r) }
+    let scheduled = Array(requests.prefix(60))
+    for r in scheduled { center.add(r) }
+    // Son planlanan günde: bildirimlerin devam etmesi için uygulamayı açma hatırlatması
+    if let last = scheduled.last.flatMap({ ($0.trigger as? UNCalendarNotificationTrigger)?.nextTriggerDate() }) {
+      let c = UNMutableNotificationContent()
+      c.title = en ? "🔔 Keep adhan notifications on" : "🔔 Ezan bildirimleri devam etsin"
+      c.body = en ? "Open Ramazan Rehberi once so the next days' prayer notifications are scheduled." : "Sonraki günlerin vakit bildirimleri için Ramazan Rehberi'ni bir kez açın."
+      c.sound = .default
+      let at = DateUtil.cal.date(bySettingHour: 12, minute: 0, second: 0, of: last) ?? last
+      let comps = DateUtil.cal.dateComponents([.year, .month, .day, .hour, .minute], from: at > now ? at : last.addingTimeInterval(60))
+      center.add(UNNotificationRequest(identifier: "refresh_reminder", content: c, trigger: UNCalendarNotificationTrigger(dateMatching: comps, repeats: false)))
+    }
   }
 
   /// "Bildirimi test et": 10 saniye sonra ezan sesiyle örnek bildirim.
