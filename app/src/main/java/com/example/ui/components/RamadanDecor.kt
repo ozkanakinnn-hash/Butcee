@@ -163,12 +163,21 @@ fun RamadanMahyaBar(day: Int, totalDays: Int = 30, modifier: Modifier = Modifier
 @Composable
 fun CrescentWatermark(modifier: Modifier = Modifier) {
   val c = MaterialTheme.colorScheme.primary
-  val bg = MaterialTheme.colorScheme.surface
   Canvas(modifier = modifier) {
+    // Gerçek hilal biçimi (iki dairenin farkı) — yarı saydam, alttaki yazıları örtmez
     val r = size.minDimension * 0.42f
     val center = Offset(size.width - r * 0.55f, size.height - r * 0.55f)
-    drawCircle(c.copy(alpha = 0.13f), radius = r, center = center)
-    drawCircle(bg, radius = r * 0.86f, center = Offset(center.x + r * 0.42f, center.y - r * 0.24f))
+    val outer = androidx.compose.ui.graphics.Path().apply {
+      addOval(androidx.compose.ui.geometry.Rect(center, r))
+    }
+    val innerC = Offset(center.x + r * 0.42f, center.y - r * 0.24f)
+    val inner = androidx.compose.ui.graphics.Path().apply {
+      addOval(androidx.compose.ui.geometry.Rect(innerC, r * 0.86f))
+    }
+    val crescent = androidx.compose.ui.graphics.Path().apply {
+      op(outer, inner, androidx.compose.ui.graphics.PathOperation.Difference)
+    }
+    drawPath(crescent, c.copy(alpha = 0.08f))
   }
 }
 

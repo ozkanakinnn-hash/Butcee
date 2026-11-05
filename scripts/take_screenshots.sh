@@ -93,9 +93,9 @@ done
 tap_text "Ramazan Rehberi"; shot 06c_ramazan_rehberi 3
 adb shell input swipe 540 1800 540 600 500; shot 06d_rehber_faydalar 2
 adb shell input swipe 540 1800 540 600 500; shot 06e_rehber_iftar_sahur 2
-adb shell input keyevent KEYCODE_BACK; sleep 2
-tap_text "Wait" || true
-tap_text "Özel Gün Kartları"; shot 06f_ozel_gun_kartlari 5
+launch; tap_text "Dahası"; sleep 2
+for i in 1 2 3 4 5; do tap_text "Özel Gün Kartları" && break; adb shell input swipe 540 1700 540 900 400; sleep 1; done
+shot 06f_ozel_gun_kartlari 5
 tap_text "Wait" || true; shot 06f_ozel_gun_kartlari 2
 tap_text "Kurban Bayramı"; shot 06g_kart_kurban 4
 adb shell input keyevent KEYCODE_BACK; sleep 2
@@ -179,7 +179,9 @@ ls -la $OUT; cat $OUT/crash_log.txt | head -80
 # Özel gün kartları (yeni tasarım): Kadir ve Ramazan
 write_prefs "" "DARK"
 launch
-tap_text "Dahası"; sleep 2; tap_text "Özel Gün Kartları"; sleep 5
+tap_text "Dahası"; sleep 2
+for i in 1 2 3 4 5; do tap_text "Özel Gün Kartları" && break; adb shell input swipe 540 1700 540 900 400; sleep 1; done
+sleep 5; tap_text "Wait" || true
 tap_text "Kadir"; shot 15_kart_kadir 5
 tap_text "Ramazan"; shot 15b_kart_ramazan 5
 adb shell input keyevent KEYCODE_BACK; sleep 1
