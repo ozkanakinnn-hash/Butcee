@@ -1,4 +1,4 @@
-// Uygulama simgesi ve açılış ekranını oyunun kendi çizim kodundan üretir.
+// Uygulama simgesi ve açılış ekranını (yalnız dikey) oyunun kendi çizim kodundan üretir.
 // Kullanım: önce `npx vite --port 5173`, sonra `node scripts/gen-icons.cjs`
 const { chromium } = require('playwright');
 const fs = require('fs');
@@ -12,7 +12,6 @@ const RES = path.join(__dirname, '../android/app/src/main/res');
   await p.goto('http://localhost:5173/');
   const out = await p.evaluate(async () => {
     const d = await import('/src/render/draw.ts');
-    const bgm = await import('/src/render/background.ts');
     const res = {};
     const mk = (w, h) => { const c = document.createElement('canvas'); c.width = w; c.height = h; return c; };
     // simgedeki blok kompozisyonu: (0,0) merkezli, birim = blok
@@ -46,7 +45,10 @@ const RES = path.join(__dirname, '../android/app/src/main/res');
     const splash = (w, h) => {
       const c = mk(w, h); const ctx = c.getContext('2d');
       d.clearSpriteCache(1);
-      bgm.drawBackground(ctx, w, h, 1, 0);
+      // düz gradyan (ahşap dokusu PNG'de çok yer kaplıyor)
+      const g = ctx.createLinearGradient(0, 0, 0, h);
+      g.addColorStop(0, '#7a4d2e'); g.addColorStop(1, '#3b2416');
+      ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
       const s = Math.min(w, h) * 0.11;
       art(ctx, w / 2, h / 2 - s * 0.6, s);
       ctx.font = `800 ${s * 0.75}px system-ui, sans-serif`;
@@ -59,7 +61,6 @@ const RES = path.join(__dirname, '../android/app/src/main/res');
     const sizes = { mdpi: [320, 480], hdpi: [480, 800], xhdpi: [720, 1280], xxhdpi: [960, 1600], xxxhdpi: [1280, 1920] };
     for (const [k, [w, h]] of Object.entries(sizes)) {
       res[`drawable-port-${k}/splash.png`] = splash(w, h);
-      res[`drawable-land-${k}/splash.png`] = splash(h, w);
     }
     res['drawable/splash.png'] = splash(480, 320);
     return res;
