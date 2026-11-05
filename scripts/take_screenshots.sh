@@ -83,6 +83,8 @@ tap_text "Dahası"; shot 06a_dahasi 2
 adb shell input swipe 540 1800 540 900 500; shot 06a2_dahasi_asagi 2
 tap_text "Esmâü'l-Hüsnâ"; shot 06b_esma 2
 adb shell input keyevent KEYCODE_BACK; sleep 2
+tap_text "Reklamsız Premium'a geç"; shot 06b1_premium 6
+adb shell input keyevent KEYCODE_BACK; sleep 2
 for item in "Kaza Namazı:06b2_kaza" "Kandil Duaları:06b3_kandil" "Bildirim Sihirbazı:06b5_sihirbaz"; do
   tap_text "${item%%:*}"; shot "${item##*:}" 4
   adb shell input keyevent KEYCODE_BACK; sleep 2
