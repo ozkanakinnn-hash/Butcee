@@ -111,3 +111,11 @@ gradle/actions/setup-gradle@v5 → `./gradlew assembleDebug` → upload-artifact
 - CI'da `:app:minifyReleaseWithR8` (imzasız) ile R8 kontrolü; elle çalışan imzalı AAB iş akışı (KEYSTORE_BASE64 vb. gizli değişkenler).
 - Premium: Play Billing 7 (`billing-ktx`), abonelik + tek seferlik ürün, açılışta/onResume'da queryPurchasesAsync ile doğrulama, 3 gün içinde acknowledge, otomatik yenileme ve iptal bilgilendirmesi, "geri yükle" ve "aboneliği yönet" bağlantısı; temel özellikleri (widget, ezan) ücretli yapma.
 - Yeni kişisel geliştirici hesaplarında üretimden önce 12 testçi / 14 gün kapalı test zorunlu.
+
+## Kotlin başlatma sırası tuzağı (enum + dosya düzeyi val)
+- Enum girdileri aynı dosyadaki `private val` (ör. renk paletleri) değerlerine erişiyorsa ve aynı dosyada
+  `mapOf(Enum.X to ...)` gibi enum'u kullanan bir üst düzey val varsa, sınıf başlatma döngüsünde enum
+  sabitleri `null` görünür → `NoSuchElementException: Key X is missing in the map`. Çözüm: haritayı
+  `by lazy { ... }` yap veya `when` kullan.
+- Emülatör betiğinde Dahası gibi ızgaralarda hedef kutu ekran dışında kalabilir: `for i in 1..5; tap_text X && break; swipe` kalıbı.
+- Kart üstü süsleme (filigran) çizerken opak "kesme" dairesi kullanma; `Path.op(..., PathOperation.Difference)` ile gerçek şekil çiz, düşük alfa ver.
