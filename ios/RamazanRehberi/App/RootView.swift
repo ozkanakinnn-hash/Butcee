@@ -12,13 +12,34 @@ enum Route: Hashable {
 struct RootView: View {
   @EnvironmentObject var store: AppData
   @Environment(\.palette) var p
-  @State private var tab = 0
+  // Test/ekran görüntüsü için başlatma argümanları: -debug_start_tab N, -debug_route qibla
+  @State private var tab = UserDefaults.standard.integer(forKey: "debug_start_tab")
+  @State private var debugPath: [Route] = RootView.debugRoute()
+
+  static func debugRoute() -> [Route] {
+    switch UserDefaults.standard.string(forKey: "debug_route") ?? "" {
+    case "qibla": return [.qibla]
+    case "zikirmatik": return [.zikirmatik]
+    case "esma": return [.esma]
+    case "kaza": return [.kaza]
+    case "kandil": return [.kandil]
+    case "hatim": return [.hatim]
+    case "wizard": return [.notificationWizard]
+    case "premium": return [.premium]
+    case "cards": return [.greetingCards]
+    case "guide": return [.ramadanGuide]
+    case "settings": return [.settings]
+    case "reader": return [.quranReader(page: 2)]
+    case "mosques": return [.mosques]
+    default: return []
+    }
+  }
 
   var isRamadan: Bool { RamadanCalendar.isRamadanDay(date: Date()) }
 
   var body: some View {
     TabView(selection: $tab) {
-      NavigationStack { HomeView(selectTab: { tab = $0 }).withRoutes() }
+      NavigationStack(path: $debugPath) { HomeView(selectTab: { tab = $0 }).withRoutes() }
         .tabItem { Label(t("Ana Sayfa"), systemImage: "house.fill") }.tag(0)
       NavigationStack {
         Group { if isRamadan { RamadanGuideView() } else { QuranListView(initialTab: 0) } }.withRoutes()
