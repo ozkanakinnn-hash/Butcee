@@ -1,5 +1,5 @@
 import {
-  bossAttack, cloneGrid, countCells, emptyGrid, findFullRows, landingRow, fitsAt, parseMap, placeCells,
+  bossAttack, cloneGrid, countCells, emptyGrid, findCell, findFullRows, landingRow, fitsAt, parseMap, placeCells,
   resolveAll, type ClearStep,
 } from './board';
 import { DEFAULT_COLORS, PIECE_WEIGHTS, shapeCells, uniqueRotations } from './pieces';
@@ -29,6 +29,9 @@ export interface GameState {
   rescued: Record<AnimalKind, number>;
   sprouted: number;
   bossHp: number;
+  /** Kurtarma bölümü: alttan su basmış satır sayısı */
+  water: number;
+  gardenerSaved: boolean;
   status: Status;
   loseReason: LoseReason;
   undoLeft: number;
@@ -49,6 +52,7 @@ export interface MoveResult {
   combo: number;
   seasonChanged: boolean;
   attack: { gap: number; before: Grid } | null;
+  waterRose: boolean;
   zenRelief: number[];
   final: Grid;
   status: Status;
@@ -57,7 +61,7 @@ export interface MoveResult {
 export class Game {
   readonly mode: Mode;
   readonly level: LevelDef;
-  readonly moveLimit: number | null;
+  moveLimit: number | null;
   readonly totalAnimals: number;
   readonly totalSeeds: number;
   state: GameState;
@@ -75,7 +79,7 @@ export class Game {
     this.state = {
       grid, hand: [], queue: [], rng: seed >>> 0, nextId: 1, recent: [], score: 0, combo: 0, maxCombo: 0,
       season: 0, movesUsed: 0, lines: 0, rescued: { hedgehog: 0, turtle: 0, ladybug: 0 }, sprouted: 0,
-      bossHp: level.bossHp ?? 0, status: 'playing', loseReason: null, undoLeft: UNDO_LIMIT,
+      bossHp: level.bossHp ?? 0, water: 0, gardenerSaved: false, status: 'playing', loseReason: null, undoLeft: UNDO_LIMIT,
     };
     const start = level.startHand ?? [];
     for (let i = 0; i < 3; i++) this.state.hand.push(this.genPiece(start[i]));
@@ -105,6 +109,7 @@ export class Game {
     return this.moveLimit === null ? null : Math.max(0, this.moveLimit - this.state.movesUsed);
   }
   get isBoss() { return this.level.goal.type === 'boss'; }
+  get isRescue() { return this.level.goal.type === 'rescue'; }
   get rescuedTotal() { const r = this.state.rescued; return r.hedgehog + r.turtle + r.ladybug; }
 
   /** Hedefte kalan sayı (hedef yoksa null). */
@@ -115,6 +120,7 @@ export class Game {
       case 'seeds': return Math.max(0, (g.count ?? this.totalSeeds) - this.state.sprouted);
       case 'lines': return Math.max(0, (g.count ?? 0) - this.state.lines);
       case 'boss': return Math.max(0, this.state.bossHp);
+      case 'rescue': return this.state.gardenerSaved ? 0 : 1;
       default: return null;
     }
   }
@@ -122,6 +128,19 @@ export class Game {
   /** Bir sonraki hamleden sonra fırtına saldıracak mı? (1 hamle önceden uyarı) */
   attackSoon(): boolean {
     return this.isBoss && this.state.status === 'playing' && (this.state.movesUsed + 1) % BOSS_EVERY === 0;
+  }
+
+  /** Kurtarma: bahçıvan ile su arasındaki güvenli satır sayısı (null: bahçıvan yok). */
+  gardenerMargin(): number | null {
+    const p = findCell(this.state.grid, 'gardener');
+    if (!p) return null;
+    return ROWS - this.state.water - 1 - p.r;
+  }
+
+  /** Bir sonraki hamlede su yükselecek mi? */
+  waterRisesNext(): boolean {
+    const e = this.level.waterEvery;
+    return !!e && this.isRescue && this.state.status === 'playing' && (this.state.movesUsed + 1) % e === 0;
   }
 
   stars(): number { return starsFor(this.movesLeft, this.moveLimit); }
@@ -173,6 +192,7 @@ export class Game {
       lines += st.rows.length;
       s.sprouted += st.sprouted.length;
       for (const a of st.rescued) s.rescued[a.a]++;
+      if (st.gardener) s.gardenerSaved = true;
       if (this.isBoss) s.bossHp = Math.max(0, s.bossHp - st.damage);
     }
     s.lines += lines;
@@ -191,6 +211,7 @@ export class Game {
 
     // Hedef kontrolü
     let attack: MoveResult['attack'] = null;
+    let waterRose = false;
     const zenRelief: number[] = [];
     if (this.goalRemaining() === 0) {
       s.status = 'won';
@@ -204,6 +225,11 @@ export class Game {
         attack = { gap: res.gap, before };
         if (res.overflow) this.lose('overflow');
       }
+      if (this.isRescue && this.level.waterEvery && s.movesUsed % this.level.waterEvery === 0) {
+        s.water = Math.min(ROWS, s.water + 1);
+        waterRose = true;
+      }
+      if (this.isRescue && (this.gardenerMargin() ?? 0) < 0) this.lose('flooded');
       if (s.status === 'playing') {
         if (this.mode === 'zen') {
           // Zen: tahta tıkanırsa üstten 4'er satır yumuşakça temizlenir.
@@ -221,7 +247,7 @@ export class Game {
     }
 
     return {
-      piece, rot, col, row, placed, steps, afterClear: cleared, points, comboBefore, combo: s.combo, seasonChanged, attack,
+      piece, rot, col, row, placed, steps, afterClear: cleared, points, comboBefore, combo: s.combo, seasonChanged, attack, waterRose,
       zenRelief, final: s.grid, status: s.status,
     };
   }
@@ -251,6 +277,25 @@ export class Game {
   }
 
   forceLose(reason: LoseReason) { this.lose(reason); }
+
+  // ---------- elmasla devam ----------
+  /** Hamle bitince: +n hamle ile devam. */
+  addMoves(n: number) {
+    if (this.moveLimit === null) return;
+    this.moveLimit += n;
+    this.revive();
+  }
+  /** Kurtarma: su n satır çekilir. */
+  recedeWater(n: number) {
+    this.state.water = Math.max(0, this.state.water - n);
+    this.revive();
+  }
+  /** Ek geri alma hakkı. */
+  grantUndo(n = 1) { this.state.undoLeft += n; }
+  private revive() {
+    if (this.state.status === 'lost') { this.state.status = 'playing'; this.state.loseReason = null; }
+    if (this.state.status === 'playing' && this.isStuck()) this.lose('stuck');
+  }
 
   static comboMultiplier = comboMultiplier;
 }

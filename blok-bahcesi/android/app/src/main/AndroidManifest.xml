@@ -34,6 +34,14 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths"></meta-data>
         </provider>
+        <!-- AdMob: varsayılan Google TEST uygulama kimliği; yayında ADMOB_APP_ID ortam değişkeniyle değiştirin -->
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="${admobAppId}" />
+        <!-- Google Play Games: PGS_APP_ID ile doldurulur (boşsa sıralama devre dışı) -->
+        <meta-data
+            android:name="com.google.android.gms.games.APP_ID"
+            android:value="@string/game_services_project_id" />
     </application>
 
     <!-- Permissions -->

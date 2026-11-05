@@ -1,5 +1,6 @@
 import { getLang, setLang, t, type Lang } from '../i18n';
-import { sfx } from '../audio';
+import { music, sfx } from '../audio';
+import { pgStatus, signIn, submitGardenScore } from '../playgames';
 import { clearSpriteCache } from '../render/draw';
 import { persist, resetProgress, save } from '../storage';
 import { h, toast } from './dom';
@@ -9,20 +10,33 @@ import { confirmDialog } from './dialogs';
 export function settingsScreen(router: Router): Screen {
   const el = h('div', { class: 'screen' });
 
-  function toggle(key: 'sound' | 'haptics' | 'symbols') {
+  function toggle(key: 'sound' | 'music' | 'haptics' | 'symbols') {
     const b = h('button', { class: 'toggle' + (save.settings[key] ? ' on' : ''), role: 'switch', 'aria-checked': String(save.settings[key]) });
     b.addEventListener('click', () => {
       save.settings[key] = !save.settings[key];
       persist();
       b.classList.toggle('on', save.settings[key]);
       b.setAttribute('aria-checked', String(save.settings[key]));
+      if (key === 'music' || key === 'sound') { if (save.settings.music && save.settings.sound) music.refresh(); else music.pause(); }
       if (key === 'symbols') clearSpriteCache(Math.min(3, window.devicePixelRatio || 1));
       sfx.click();
     });
     return b;
   }
 
+  const account = h('div', { class: 'card' });
+  async function renderAccount() {
+    account.innerHTML = '';
+    const st = await pgStatus();
+    const row = h('div', { class: 'setting' }, t('settings.account'),
+      h('span', { style: { fontSize: '14px' } }, save.player ? save.player.name : t('settings.notSigned')));
+    account.append(row);
+    if (st === 'signed_out') account.append(h('button', { class: 'btn small green', style: { margin: '0 0 12px' }, onclick: async () => { if (await signIn()) { await submitGardenScore(); renderAccount(); } } }, t('lb.signin')));
+    else if (st !== 'ready') account.append(h('p', { style: { fontSize: '13px', opacity: '.75', margin: '0 0 12px' } }, st === 'web' ? t('lb.web') : t('lb.offline')));
+  }
+
   function render() {
+    void renderAccount();
     el.innerHTML = '';
     const langSeg = h('div', { class: 'seg' });
     (['tr', 'en'] as Lang[]).forEach((l) => {
@@ -40,10 +54,12 @@ export function settingsScreen(router: Router): Screen {
         h('div', { class: 'stack' },
           h('div', { class: 'card' },
             h('div', { class: 'setting' }, t('settings.sound'), toggle('sound')),
+            h('div', { class: 'setting' }, t('settings.music'), toggle('music')),
             h('div', { class: 'setting' }, t('settings.haptics'), toggle('haptics')),
             h('div', { class: 'setting' }, t('settings.symbols'), toggle('symbols')),
             h('div', { class: 'setting' }, t('settings.language'), langSeg),
           ),
+          account,
           h('div', { class: 'card' },
             h('button', {
               class: 'setting danger', style: { width: '100%', background: 'transparent', fontFamily: 'inherit' },

@@ -1,17 +1,10 @@
 import type { AnimalKind } from './game/types';
 import type { Lang } from './i18n';
+import { dueMilestones, GARDEN_SLOTS, REWARDS, type DecorId, type GardenSnapshot } from './economy';
+export type { DecorId } from './economy';
 
 const KEY = 'blokbahcesi.v1';
 
-export type DecorId = 'fence' | 'fountain' | 'bench' | 'lantern' | 'birdhouse';
-export const DECORS: { id: DecorId; stars: number }[] = [
-  { id: 'fence', stars: 3 },
-  { id: 'bench', stars: 9 },
-  { id: 'lantern', stars: 18 },
-  { id: 'birdhouse', stars: 30 },
-  { id: 'fountain', stars: 45 },
-];
-export const GARDEN_SLOTS = 5;
 
 export interface SaveData {
   levels: Record<number, { stars: number; best: number }>;
@@ -21,7 +14,14 @@ export interface SaveData {
   classic: number[];
   zenBest: number;
   garden: (DecorId | null)[];
-  settings: { sound: boolean; haptics: boolean; symbols: boolean; lang: Lang };
+  owned: DecorId[];
+  house: number;
+  diamonds: number;
+  milestones: string[];
+  ads: { day: string; count: number };
+  rescues: Record<number, boolean>;
+  player: { id: string; name: string } | null;
+  settings: { sound: boolean; music: boolean; haptics: boolean; symbols: boolean; lang: Lang };
 }
 
 function defaults(): SaveData {
@@ -33,7 +33,14 @@ function defaults(): SaveData {
     classic: [],
     zenBest: 0,
     garden: Array(GARDEN_SLOTS).fill(null),
-    settings: { sound: true, haptics: true, symbols: true, lang: 'tr' },
+    owned: [],
+    house: 0,
+    diamonds: REWARDS.welcome,
+    milestones: [],
+    ads: { day: '', count: 0 },
+    rescues: {},
+    player: null,
+    settings: { sound: true, music: true, haptics: true, symbols: true, lang: 'tr' },
   };
 }
 
@@ -43,11 +50,15 @@ function load(): SaveData {
     if (!raw) return defaults();
     const d = JSON.parse(raw);
     const base = defaults();
+    const garden: (DecorId | null)[] = Array.from({ length: GARDEN_SLOTS }, (_, i) => d.garden?.[i] ?? null);
+    // v0.1 kayıtları: yıldızla açılan dekorlar artık "sahip olunan" sayılır
+    const owned: DecorId[] = Array.from(new Set([...(d.owned ?? []), ...garden.filter((x): x is DecorId => !!x)]));
     return {
       ...base, ...d,
       animals: { ...base.animals, ...d.animals },
       settings: { ...base.settings, ...d.settings },
-      garden: Array.from({ length: GARDEN_SLOTS }, (_, i) => d.garden?.[i] ?? null),
+      garden, owned,
+      ads: { ...base.ads, ...d.ads },
     };
   } catch {
     return defaults();
@@ -95,7 +106,48 @@ export function recordClassic(score: number): number {
   return save.classic.indexOf(score);
 }
 
-export function unlockedDecors(): DecorId[] {
-  const s = totalStars();
-  return DECORS.filter((d) => s >= d.stars).map((d) => d.id);
+export function levelsDone(): number {
+  return Object.keys(save.levels).filter((k) => Number(k) < 100 && save.levels[Number(k)].stars > 0).length;
+}
+
+// ---------- elmas ----------
+type Listener = () => void;
+const listeners = new Set<Listener>();
+export function onDiamonds(fn: Listener) { listeners.add(fn); return () => listeners.delete(fn); }
+
+export function addDiamonds(n: number) {
+  if (n <= 0) return;
+  save.diamonds += n;
+  persist();
+  listeners.forEach((f) => f());
+}
+
+export function spendDiamonds(n: number): boolean {
+  if (save.diamonds < n) return false;
+  save.diamonds -= n;
+  persist();
+  listeners.forEach((f) => f());
+  return true;
+}
+
+/** Açılmış ama henüz alınmamış kritik eşik ödülleri: alındı olarak işaretler ve toplamı döndürür. */
+export function claimMilestones(): { key: string; reward: number }[] {
+  const due = dueMilestones(save.milestones, totalStars(), levelsDone());
+  if (!due.length) return [];
+  save.milestones.push(...due.map((m) => m.key));
+  addDiamonds(due.reduce((a, m) => a + m.reward, 0));
+  return due;
+}
+
+export function adsLeftToday(today: string): number {
+  return save.ads.day === today ? Math.max(0, REWARDS.adsPerDay - save.ads.count) : REWARDS.adsPerDay;
+}
+export function recordAd(today: string) {
+  if (save.ads.day !== today) save.ads = { day: today, count: 0 };
+  save.ads.count++;
+  addDiamonds(REWARDS.ad);
+}
+
+export function gardenSnapshot(): GardenSnapshot {
+  return { house: save.house, slots: save.garden, animals: save.animals, sprouts: save.sprouts };
 }

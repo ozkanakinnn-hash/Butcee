@@ -3,7 +3,7 @@ import { Game, BOSS_EVERY } from '../game';
 import { findFullRows, parseMap } from '../board';
 import { lineBase, seasonForCombo, starsFor, stepPoints } from '../scoring';
 import { generateDaily, generateZen } from '../levelgen';
-import { LEVELS } from '../../levels';
+import { LEVELS, RESCUE_LEVELS } from '../../levels';
 import { COLS, ROWS, type LevelDef } from '../types';
 
 const lvl = (map: string[], extra: Partial<LevelDef> = {}): LevelDef => ({
@@ -15,7 +15,7 @@ describe('puan ve kombo', () => {
     expect([1, 2, 3, 4, 5].map(lineBase)).toEqual([100, 300, 600, 1000, 1000]);
   });
   it('taş puan vermez, çiçek 2 kat', () => {
-    const base = { before: [], rescued: [], sprouted: [], sunBreaks: [], weedHits: [], damage: 1 };
+    const base = { before: [], rescued: [], sprouted: [], sunBreaks: [], weedHits: [], damage: 1, gardener: null };
     expect(stepPoints({ ...base, rows: [11], flowerRows: [], stoneCounts: [0] }, 0, 0)).toBe(100);
     expect(stepPoints({ ...base, rows: [11], flowerRows: [], stoneCounts: [8] }, 0, 0)).toBe(0);
     expect(stepPoints({ ...base, rows: [11], flowerRows: [], stoneCounts: [4] }, 0, 0)).toBe(50);
@@ -144,7 +144,7 @@ describe('boss', () => {
 });
 
 describe('bölüm verisi', () => {
-  it.each(LEVELS.map((l) => [l.id, l] as const))('bölüm %i geçerli', (_id, l) => {
+  it.each([...LEVELS, ...RESCUE_LEVELS].map((l) => [l.id, l] as const))('bölüm %i geçerli', (_id, l) => {
     l.map.forEach((row) => expect(row).toHaveLength(COLS));
     expect(l.map.length).toBeLessThanOrEqual(ROWS);
     const grid = parseMap(l.map);
@@ -154,10 +154,17 @@ describe('bölüm verisi', () => {
     if (l.goal.type === 'seeds') expect(g.totalSeeds).toBeGreaterThanOrEqual(l.goal.count!);
     if (l.goal.type === 'animals') expect(g.totalAnimals).toBeGreaterThan(0);
     if (l.goal.type === 'boss') expect(l.bossHp).toBeGreaterThan(0);
+    if (l.goal.type === 'rescue') { expect(g.gardenerMargin()).toBeGreaterThan(0); expect(l.waterEvery).toBeGreaterThan(0); }
   });
-  it('20 bölüm, 10 ve 20 boss', () => {
-    expect(LEVELS).toHaveLength(20);
-    expect(LEVELS.filter((l) => l.goal.type === 'boss').map((l) => l.id)).toEqual([10, 20]);
+  it('60 bölüm, her 10. bölüm boss; 6 kurtarma bölümü', () => {
+    expect(LEVELS).toHaveLength(60);
+    expect(LEVELS.map((l) => l.id)).toEqual(Array.from({ length: 60 }, (_, i) => i + 1));
+    expect(LEVELS.filter((l) => l.goal.type === 'boss').map((l) => l.id)).toEqual([10, 20, 30, 40, 50, 60]);
+    expect(RESCUE_LEVELS).toHaveLength(6);
+  });
+  it('hamle sınırları kademeli artar (ilk 10 ortalaması < son 10 ortalaması)', () => {
+    const avg = (a: typeof LEVELS) => a.reduce((x, l) => x + (l.moves ?? 0), 0) / a.length;
+    expect(avg(LEVELS.slice(0, 10))).toBeLessThan(avg(LEVELS.slice(50)));
   });
   it('günlük bölüm aynı tohumla aynıdır ve geçerlidir', () => {
     for (let s = 0; s < 50; s++) {

@@ -1,6 +1,8 @@
 import { t } from '../i18n';
-import { sfx } from '../audio';
-import { LEVELS } from '../levels';
+import { music, sfx } from '../audio';
+import { LEVELS, RESCUE_LEVELS, RESCUE_AFTER } from '../levels';
+import { gardenerIcon } from '../render/characters';
+import { diamondChip } from './diamonds';
 import { highestUnlocked, save, totalStars } from '../storage';
 import { drawCloud, iconCanvas } from '../render/draw';
 import { h } from './dom';
@@ -77,12 +79,46 @@ export function mapScreen(router: Router): Screen {
       }
       wrap.append(node);
     });
+    // Bölüm (chapter) tabelaları
+    for (let c = 0; c * 10 < n; c++) {
+      const p = pos[c * 10];
+      wrap.append(h('div', { class: 'chapter', style: { top: (p.y + 30) + 'px', left: p.x > 50 ? '4%' : 'auto', right: p.x > 50 ? 'auto' : '4%' } },
+        h('small', {}, `${c * 10 + 1}–${c * 10 + 10}`), t('map.chapter.' + (c + 1))));
+    }
+    // Bahçıvanı Kurtar düğümleri: ilgili bölümün yanında, yola dal ile bağlı
+    for (const r of RESCUE_LEVELS) {
+      const after = RESCUE_AFTER[r.id];
+      const i = after - 1;
+      if (!pos[i]) continue;
+      const side = pos[i].x > 50 ? -1 : 1;
+      const x = Math.max(12, Math.min(88, pos[i].x + side * 34)), y = pos[i].y - SPACING * 0.45;
+      const open = !!save.levels[after]?.stars;
+      const done = !!save.rescues[r.id];
+      const branch = document.createElementNS(ns, 'path');
+      branch.setAttribute('d', `M ${pos[i].x} ${pos[i].y} Q ${(pos[i].x + x) / 2} ${pos[i].y}, ${x} ${y}`);
+      branch.setAttribute('fill', 'none'); branch.setAttribute('stroke', open ? '#7fd3f7' : '#8a7a68');
+      branch.setAttribute('stroke-width', '6'); branch.setAttribute('stroke-dasharray', '2 8'); branch.setAttribute('stroke-linecap', 'round');
+      branch.setAttribute('vector-effect', 'non-scaling-stroke');
+      svg.append(branch);
+      wrap.append(h('button', {
+        class: `node rescue${open ? '' : ' locked'}${open && !done ? ' current' : ''}${done ? ' done' : ''}`,
+        style: { left: x + '%', top: y + 'px' },
+        'aria-label': t('goal.rescue'),
+        onclick: () => {
+          if (!open) { sfx.lose(); return; }
+          sfx.click();
+          router.push(playScreen(router, { mode: 'adventure', levelId: r.id }));
+        },
+      }, gardenerIcon(54, done ? 'cheer' : open ? 'scared' : 'happy'),
+        h('span', { class: 'rescue-label' }, done ? '✓' : t('rescue.node'))));
+    }
     scroller = h('div', { class: 'scroll' }, wrap);
     el.append(
       h('div', { class: 'topbar' },
         h('button', { class: 'btn icon-btn', onclick: () => router.back(), 'aria-label': t('btn.back') }, '‹'),
         h('h2', {}, t('map.title')),
-        h('span', { class: 'chip' }, iconCanvas('star', 22), `${totalStars()} / ${LEVELS.length * 3}`),
+        h('span', { class: 'chip' }, iconCanvas('star', 22), `${totalStars()}`),
+        diamondChip(() => el),
       ),
       scroller,
     );
@@ -104,5 +140,5 @@ export function mapScreen(router: Router): Screen {
   }
 
   render();
-  return { el, onShow: render };
+  return { el, onShow: () => { render(); music.play('calm'); } };
 }

@@ -83,7 +83,109 @@ export const sfx = {
   win: () => [0, 4, 7, 12, 16].forEach((s, i) => tone(523 * Math.pow(2, s / 12), 0.35, { type: 'triangle', delay: i * 0.11, vol: 0.3 })),
   lose: () => [0, -3, -7].forEach((s, i) => tone(330 * Math.pow(2, s / 12), 0.4, { type: 'triangle', delay: i * 0.18, vol: 0.25 })),
   star: (i: number) => tone(784 * Math.pow(2, (i * 4) / 12), 0.25, { type: 'triangle', vol: 0.3 }),
+  gem: () => { tone(1568, 0.12, { type: 'sine', vol: 0.25 }); tone(2093, 0.18, { type: 'sine', vol: 0.2, delay: 0.07 }); tone(2637, 0.25, { type: 'triangle', vol: 0.15, delay: 0.14 }); },
+  buy: () => { tone(880, 0.08, { type: 'square', vol: 0.12 }); tone(1320, 0.18, { type: 'triangle', vol: 0.25, delay: 0.08 }); },
+  splash: () => { noise(0.35, 0.3, 0, 900); tone(300, 0.3, { type: 'sine', vol: 0.15, slide: 0.5 }); },
+  bubble: () => [0, 0.08, 0.17].forEach((d, i) => tone(500 + i * 180, 0.08, { type: 'sine', vol: 0.18, slide: 1.8, delay: d })),
+  cheer: () => [0, 4, 7, 12, 7, 12, 16].forEach((st, i) => tone(392 * Math.pow(2, st / 12), 0.2, { type: 'triangle', vol: 0.25, delay: i * 0.08 })),
+  drop2: () => tone(320, 0.09, { type: 'triangle', vol: 0.25, slide: 0.5 }),
+  whoosh: () => noise(0.25, 0.2, 0, 2500),
 };
+
+// ---------------- prosedürel müzik ----------------
+// Pentatonik, yumuşak bir bahçe ezgisi: bas + arpej + ara sıra çan. Mod: sakin (menü/bahçe), oyun, gergin (boss/kurtarma).
+type MusicMode = 'calm' | 'game' | 'tense';
+const SCALES: Record<MusicMode, number[]> = {
+  calm: [0, 2, 4, 7, 9, 12, 14, 16],
+  game: [0, 2, 4, 7, 9, 12, 14, 16],
+  tense: [0, 3, 5, 7, 10, 12, 15, 17],
+};
+const CHORDS: Record<MusicMode, number[]> = { calm: [0, -3, -7, -5], game: [0, -5, -3, -7], tense: [0, -2, -4, -2] };
+
+class Music {
+  private timer: number | null = null;
+  private mode: MusicMode = 'calm';
+  private nextTime = 0;
+  private step = 0;
+  private gain: GainNode | null = null;
+  private seed = 1;
+  private wanted = false;
+
+  play(mode: MusicMode) {
+    this.mode = mode;
+    this.wanted = true;
+    if (!save.settings.music || !save.settings.sound) { this.stop(); return; }
+    const a = ac();
+    if (!a || !master) return;
+    if (!this.gain) {
+      this.gain = a.createGain();
+      this.gain.gain.value = 0.0001;
+      this.gain.connect(master);
+    }
+    this.gain.gain.cancelScheduledValues(a.currentTime);
+    this.gain.gain.setTargetAtTime(mode === 'calm' ? 0.42 : 0.34, a.currentTime, 0.6);
+    if (this.timer !== null) return;
+    this.nextTime = a.currentTime + 0.1;
+    this.timer = window.setInterval(() => this.schedule(), 120);
+  }
+
+  /** Uygulama arka plana gidince durur, dönünce aynı modda sürer. */
+  pause() { const w = this.wanted; this.stop(); this.wanted = w; }
+  resume() { if (this.wanted) this.play(this.mode); }
+  /** Ayar değişince */
+  refresh() { if (this.wanted) this.play(this.mode); }
+
+  stop() {
+    this.wanted = false;
+    if (this.timer !== null) { clearInterval(this.timer); this.timer = null; }
+    if (ctx && this.gain) this.gain.gain.setTargetAtTime(0.0001, ctx.currentTime, 0.3);
+  }
+
+  private rnd() { this.seed = (this.seed * 16807) % 2147483647; return this.seed / 2147483647; }
+
+  private note(freq: number, t: number, dur: number, type: OscillatorType, vol: number) {
+    if (!ctx || !this.gain) return;
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.type = type;
+    o.frequency.setValueAtTime(freq, t);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(vol, t + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g).connect(this.gain);
+    o.start(t);
+    o.stop(t + dur + 0.05);
+  }
+
+  private schedule() {
+    if (!ctx) return;
+    const bpm = this.mode === 'tense' ? 118 : this.mode === 'game' ? 100 : 84;
+    const eighth = 60 / bpm / 2;
+    const root = this.mode === 'tense' ? 220 : 261.63;
+    const scale = SCALES[this.mode];
+    while (this.nextTime < ctx.currentTime + 0.35) {
+      const t = this.nextTime;
+      const bar = Math.floor(this.step / 8) % 4;
+      const chord = CHORDS[this.mode][bar];
+      const pos = this.step % 8;
+      if (pos === 0 || (this.mode !== 'calm' && pos === 4)) this.note(root * Math.pow(2, (chord - 12) / 12), t, eighth * 3.5, 'sine', 0.35);
+      const arp = [0, 2, 4, 5, 4, 2, 1, 3][pos];
+      if (this.mode !== 'calm' || pos % 2 === 0) {
+        const deg = scale[(arp + bar) % scale.length];
+        this.note(root * Math.pow(2, (deg + chord) / 12), t, eighth * 1.6, 'triangle', 0.13);
+      }
+      if (pos === 6 && this.rnd() < 0.5) this.note(root * 4 * Math.pow(2, scale[Math.floor(this.rnd() * 5)] / 12), t, 0.9, 'sine', 0.05);
+      this.nextTime += eighth;
+      this.step++;
+    }
+  }
+}
+
+export const music = new Music();
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) { music.pause(); void ctx?.suspend(); }
+  else { void ctx?.resume(); music.resume(); }
+});
 
 const native = Capacitor.isNativePlatform();
 

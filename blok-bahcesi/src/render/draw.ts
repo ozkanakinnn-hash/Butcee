@@ -345,8 +345,16 @@ function render(cell: Cell, s: number, symbols: boolean, variant: number, ctx: C
       break;
     case 'weed': drawWeed(ctx, s, cell.hp); break;
     case 'ice': drawIce(ctx, s, cell.hp); break;
+    case 'gardener':
+      bevelTile(ctx, s, '#ffe9a8', 0.04);
+      gardenerHook?.(ctx, s);
+      break;
   }
 }
+
+/** Bahçıvan hücresi çizimi characters.ts'ten bağlanır (döngüsel içe aktarmayı önlemek için). */
+let gardenerHook: ((ctx: C2D, s: number) => void) | null = null;
+export function setGardenerCellDrawer(fn: (ctx: C2D, s: number) => void) { gardenerHook = fn; cache.clear(); }
 
 /** Hücreyi önbellekten çizer (her boyut/tür için bir kez oluşturulur). */
 export function drawCell(ctx: C2D, cell: Cell, x: number, y: number, s: number, symbols: boolean, variant = 0) {
@@ -365,7 +373,7 @@ export function drawCell(ctx: C2D, cell: Cell, x: number, y: number, s: number, 
 }
 
 /** Küçük HUD/menü simgesi üretir. */
-export function iconCanvas(kind: 'animals' | 'seeds' | 'lines' | 'boss' | 'star' | 'score', size = 28): HTMLCanvasElement {
+export function iconCanvas(kind: 'animals' | 'seeds' | 'lines' | 'boss' | 'star' | 'score' | 'rescue', size = 28): HTMLCanvasElement {
   const dpr = Math.min(3, window.devicePixelRatio || 1);
   const cv = document.createElement('canvas');
   cv.width = cv.height = size * dpr;
@@ -384,6 +392,7 @@ export function iconCanvas(kind: 'animals' | 'seeds' | 'lines' | 'boss' | 'star'
     }
   } else if (kind === 'boss') drawCloud(ctx, s / 2, s / 2, s);
   else if (kind === 'star') drawStar(ctx, s / 2, s / 2, s * 0.45, '#ffcc33');
+  else if (kind === 'rescue') gardenerHook?.(ctx, s);
   return cv;
 }
 

@@ -23,6 +23,8 @@ export interface ViewInput {
   t: number;
   attackWarn: boolean;
   dimHand: boolean;
+  /** Kurtarma bölümü: alttan su seviyesi (satır, ondalıklı animasyon) */
+  water?: number;
 }
 
 export class BoardView {
@@ -122,6 +124,36 @@ export class BoardView {
         const cell = v.grid[r][col];
         if (cell) drawCell(ctx, cell, b.x + col * c, b.y + r * c, c, v.symbols, r * 3 + col * 5);
       }
+    }
+
+    // yükselen su
+    if (v.water && v.water > 0.01) {
+      const top = b.y + b.h - v.water * c;
+      ctx.save();
+      roundRect(ctx, b.x, b.y, b.w, b.h, 9);
+      ctx.clip();
+      const g = ctx.createLinearGradient(0, top, 0, b.y + b.h);
+      g.addColorStop(0, 'rgba(90,190,255,0.55)');
+      g.addColorStop(1, 'rgba(20,90,180,0.7)');
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.moveTo(b.x, b.y + b.h);
+      for (let x = 0; x <= b.w; x += 6) ctx.lineTo(b.x + x, top + Math.sin(x / c * 2.2 + v.t * 3) * c * 0.08);
+      ctx.lineTo(b.x + b.w, b.y + b.h);
+      ctx.closePath();
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(220,245,255,0.85)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      for (let x = 0; x <= b.w; x += 6) ctx.lineTo(b.x + x, top + Math.sin(x / c * 2.2 + v.t * 3) * c * 0.08);
+      ctx.stroke();
+      ctx.fillStyle = 'rgba(255,255,255,0.5)';
+      for (let i = 0; i < 10; i++) {
+        const k = (v.t * 0.4 + i * 0.137) % 1;
+        const bx = b.x + ((i * 0.618) % 1) * b.w, by = b.y + b.h - k * v.water * c;
+        ctx.beginPath(); ctx.arc(bx, by, c * 0.05 + (i % 3) * 1.2, 0, Math.PI * 2); ctx.fill();
+      }
+      ctx.restore();
     }
 
     // temizlenen satır parlaması

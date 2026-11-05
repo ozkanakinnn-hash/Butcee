@@ -13,6 +13,7 @@ export type Cell =
   | { k: 'soil' }
   | { k: 'rock' }
   | { k: 'animal'; a: AnimalKind }
+  | { k: 'gardener' }
   | { k: 'seed' }
   | { k: 'weed'; hp: number }
   | { k: 'ice'; hp: number };
@@ -27,17 +28,22 @@ export interface Piece {
   el: Element;
 }
 
-export type GoalType = 'animals' | 'seeds' | 'lines' | 'boss' | 'none';
+export type GoalType = 'animals' | 'seeds' | 'lines' | 'boss' | 'rescue' | 'none';
 
 export interface LevelDef {
   id: number;
   /** 12 satır x 8 karakter. . boş, T toprak, K kaya, H/P/U hayvan, S tohum, O yabani ot, I buz,
-   *  b/g/y/s/p/r önceden yerleştirilmiş renkli blok (su/yaprak/güneş/taş/mor/kırmızı) */
+   *  G bahçıvan (kurtarma bölümü)
+ *  b/g/y/s/p/r önceden yerleştirilmiş renkli blok (su/yaprak/güneş/taş/mor/kırmızı) */
   map: string[];
   goal: { type: GoalType; count?: number };
   /** null = sınırsız */
   moves: number | null;
   bossHp?: number;
+  /** Bahçıvanı Kurtar bölümü: su her `waterEvery` hamlede 1 satır yükselir. */
+  waterEvery?: number;
+  /** Bölüm adı anahtarı (kurtarma bölümleri için) */
+  title?: string;
   /** Element ağırlıkları (verilmezse eşit, taş biraz daha az) */
   colors?: Partial<Record<Element, number>>;
   /** Öğretici: elde başlayan parçalar */
@@ -48,4 +54,4 @@ export interface LevelDef {
 
 export type Mode = 'adventure' | 'daily' | 'zen' | 'classic';
 export type Status = 'playing' | 'won' | 'lost';
-export type LoseReason = 'moves' | 'stuck' | 'overflow' | null;
+export type LoseReason = 'moves' | 'stuck' | 'overflow' | 'flooded' | null;

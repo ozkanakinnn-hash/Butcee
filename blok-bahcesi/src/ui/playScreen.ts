@@ -1,17 +1,22 @@
 import { t } from '../i18n';
-import { haptic, sfx } from '../audio';
-import { fitsAt, landingRow } from '../game/board';
+import { haptic, music, sfx } from '../audio';
+import { findCell, fitsAt, landingRow } from '../game/board';
 import { Game, type MoveResult } from '../game/game';
 import { classicInterval, dailySeed, dateKey, generateClassic, generateDaily, generateZen } from '../game/levelgen';
 import { shapeCells, shapeSize } from '../game/pieces';
 import { COLS, type Cell, type Grid, type LevelDef, type Mode } from '../game/types';
 import { getLevel, LEVELS } from '../levels';
+import { drawGardener, gardenerIcon, type GardenerMood } from '../render/characters';
+import { levelReward, PRICES } from '../economy';
+import { submitGardenScore } from '../playgames';
+import { diamondChip, payDiamonds, priceTag } from './diamonds';
 import { drawBackground } from '../render/background';
 import { BoardView, setNextLabel, type Rect } from '../render/boardView';
 import { EL_COLOR } from '../render/colors';
 import { clearSpriteCache, iconCanvas } from '../render/draw';
 import { Effects } from '../render/effects';
-import { recordClassic, recordCollection, recordLevel, persist, save } from '../storage';
+import { addDiamonds, claimMilestones, recordClassic, recordCollection, recordLevel, persist, save } from '../storage';
+import { MILESTONES } from '../economy';
 import { h } from './dom';
 import type { Router, Screen } from './router';
 
@@ -57,6 +62,10 @@ export function playScreen(router: Router, opts: PlayOpts): Screen {
   let flash: { rows: number[]; k: number } | null = null;
   let drop: { piece: NonNullable<Game['state']['hand'][number]>; rot: number; col: number; row: number; k: number } | null = null;
   let seasonVis = 0;
+  let waterVis = 0;
+  let waterTarget = 0;
+  let gardenerMoodUntil = 0;
+  let gardenerMood: GardenerMood = 'happy';
   let seasonTarget = 0;
   let paused = false;
   let overlay: HTMLElement | null = null;
@@ -91,11 +100,16 @@ export function playScreen(router: Router, opts: PlayOpts): Screen {
     sel = null; rot = 0; col = 0; pieceRow = null; lastSlot = 0; classicTimer = 0;
     flash = null; drop = null; queue = []; cur = null;
     seasonVis = seasonTarget = 0;
+    waterVis = waterTarget = 0;
     finalized = false; warned = false; paused = false;
     closeOverlay();
     buildControls();
     updateHud();
-    if (mode === 'adventure' && level.hints?.length && (level.id <= 3 || !save.levels[level.id])) showHints(level.hints);
+    music.play(game.isBoss || game.isRescue ? 'tense' : 'game');
+    const hints = [...(level.hints ?? [])];
+    if (game.isRescue && !save.rescues[level.id]) hints.push('rescue.intro', 'rescue.intro2');
+    if (mode === 'adventure' && level.id === 4 && !save.levels[4]) hints.push('hint.doubletap');
+    if (mode === 'adventure' && hints.length && (level.id <= 3 || level.id > 100 || !save.levels[level.id])) showHints(hints);
   }
 
   // ---------- HUD ----------
@@ -108,8 +122,15 @@ export function playScreen(router: Router, opts: PlayOpts): Screen {
     const right = h('div', { class: 'grow' });
     if (mode === 'adventure' || mode === 'daily') {
       const g = level.goal.type;
-      if (g !== 'boss' && g !== 'none') right.append(chip(iconCanvas(g, 26), String(game.goalRemaining())));
-      right.append(chip(h('small', {}, t('hud.moves')), String(game.movesLeft)));
+      if (g === 'rescue') {
+        const m = game.gardenerMargin() ?? 0;
+        const c = chip(gardenerIcon(28, m <= 1 ? 'scared' : 'happy'), h('small', {}, t('hud.danger')), String(Math.max(0, m)));
+        if (m <= 1) c.classList.add('danger');
+        right.append(c);
+      } else {
+        if (g !== 'boss' && g !== 'none') right.append(chip(iconCanvas(g, 26), String(game.goalRemaining())));
+        right.append(chip(h('small', {}, t('hud.moves')), String(game.movesLeft)));
+      }
     } else if (mode === 'classic') {
       right.append(chip(h('small', {}, t('hud.lines')), String(s.lines)));
       right.append(chip(h('small', {}, t('hud.speed')), String(Math.floor(s.lines / 10) + 1)));
@@ -127,7 +148,8 @@ export function playScreen(router: Router, opts: PlayOpts): Screen {
         h('div', { class: 'bar' }, h('div', { class: 'fill', style: { width: `${(100 * s.bossHp) / max}%` } })),
         h('b', {}, `${s.bossHp}/${max}`));
     }
-    const soon = game.attackSoon();
+    const soon = game.attackSoon() || (game.waterRisesNext() && (game.gardenerMargin() ?? 9) <= 2);
+    banner.textContent = game.isRescue ? t('fx.waterSoon') : t('fx.attackSoon');
     banner.style.display = soon ? '' : 'none';
     if (soon && !warned) { sfx.warn(); haptic('medium'); }
     warned = soon;
@@ -139,7 +161,10 @@ export function playScreen(router: Router, opts: PlayOpts): Screen {
   function buildControls() {
     controls.innerHTML = '';
     if (mode !== 'classic') {
-      btnUndo = h('button', { class: 'btn', onclick: () => doUndo() });
+      btnUndo = h('button', { class: 'btn', onclick: () => {
+        if (game.state.undoLeft === 0 && !animating()) payDiamonds(el, PRICES.extraUndo, () => { game.grantUndo(); doUndo(); });
+        else doUndo();
+      } });
       controls.append(btnUndo);
     } else btnUndo = null;
     btnRot = h('button', { class: 'btn', onclick: () => rotate() }, '⟳ ' + t('btn.rotate'));
@@ -148,9 +173,12 @@ export function playScreen(router: Router, opts: PlayOpts): Screen {
   }
   function updateButtons() {
     if (btnUndo) {
-      btnUndo.textContent = `↶ ${game.state.undoLeft}`;
+      btnUndo.innerHTML = '';
+      const buyable = game.state.undoLeft === 0 && game.state.movesUsed > 0 && game.state.status === 'playing';
+      if (buyable) btnUndo.append('↶+1 ', priceTag(PRICES.extraUndo));
+      else btnUndo.append(`↶ ${game.state.undoLeft}`);
       btnUndo.setAttribute('aria-label', `${t('btn.undo')} (${game.state.undoLeft})`);
-      btnUndo.disabled = !game.canUndo();
+      btnUndo.disabled = !game.canUndo() && !buyable;
     }
     btnRot.disabled = sel === null;
     btnDrop.disabled = sel === null;
@@ -320,6 +348,15 @@ export function playScreen(router: Router, opts: PlayOpts): Screen {
             fx.flowerBloom(bx(), by() + r * c, view.board.w);
             fx.text(t('fx.flower'), w / 2, by() + r * c - c * 0.6, '#ffb3d0', 30, 1.4);
           }
+          if (st.gardener) {
+            const gx = bx() + (st.gardener.c + 0.5) * c, gy = by() + (st.gardener.r + 0.5) * c;
+            for (let k = 0; k < 4; k++) fx.cellBurst(gx - c + k * c * 0.6, gy - c * 0.5, c, ['#ffd54a', '#7ee0ff', '#ff8fb1', '#b9f59a'][k]);
+            fx.flowerBloom(bx(), gy, view.board.w);
+            fx.text(t('rescue.saved'), w / 2, gy - c * 1.5, '#fff7b0', 30, 2);
+            gardenerMood = 'cheer'; gardenerMoodUntil = performance.now() + 4000;
+            sfx.cheer();
+            haptic('heavy');
+          }
           if (st.rescued.length) { sfx.rescue(); fx.text(t('fx.rescued'), w / 2, by() + st.rows[0] * c - c, '#fff7b0', 24); }
           if (st.sprouted.length) { sfx.sprout(); fx.text(t('fx.sprout'), w / 2, by() + st.sprouted[0].r * c - c * 0.5, '#b9f59a', 24); }
           if (st.sunBreaks.length) sfx.sunBreak();
@@ -366,6 +403,17 @@ export function playScreen(router: Router, opts: PlayOpts): Screen {
         },
       });
     }
+    if (res.waterRose) {
+      queue.push({
+        dur: 0.45,
+        start: () => {
+          waterTarget = game.state.water;
+          sfx.bubble();
+          fx.text(t('fx.waterRise'), w / 2, by() + view.board.h - game.state.water * c - c * 0.6, '#bfe9ff', 26, 1.2);
+          if ((game.gardenerMargin() ?? 9) <= 1) { gardenerMood = 'scared'; gardenerMoodUntil = performance.now() + 2500; haptic('medium'); }
+        },
+      });
+    }
     if (res.zenRelief.length) {
       queue.push({
         dur: 0.55,
@@ -385,7 +433,9 @@ export function playScreen(router: Router, opts: PlayOpts): Screen {
       dur: 0,
       start: () => {
         displayGrid = game.grid;
+        waterTarget = game.state.water;
         updateHud();
+        if (res.status === 'lost' && res.final && game.isRescue) { gardenerMood = 'wet'; gardenerMoodUntil = performance.now() + 60000; sfx.splash(); }
         if (res.status === 'won') setTimeout(() => endGame(true), 550);
         else if (res.status === 'lost') setTimeout(() => endGame(false), 450);
       },
@@ -399,6 +449,8 @@ export function playScreen(router: Router, opts: PlayOpts): Screen {
     displayGrid = game.grid;
     sel = null;
     seasonTarget = game.state.season;
+    waterTarget = game.state.water;
+    gardenerMood = 'happy';
     closeOverlay();
     updateHud();
   }
@@ -453,15 +505,37 @@ export function playScreen(router: Router, opts: PlayOpts): Screen {
     drag = null;
     if (e.type === 'pointercancel' || blocked()) return;
     if (dy > view.cell * 1.1 && dy > Math.abs(dx) * 1.2 && performance.now() - d.t0 < 600) { doDrop(); return; }
-    if (!d.moved) {
-      const pr = pieceRect();
-      const m = view.cell * 0.4;
-      if (pr && x >= pr.x - m && x <= pr.x + pr.w + m && y >= pr.y - m && y <= pr.y + pr.h + m) rotate();
-      else if (x >= view.board.x && x <= view.board.x + view.board.w) {
-        moveTo(Math.floor((x - view.board.x) / view.cell - pieceW(rot) / 2 + 0.5));
-      }
-    }
+    if (!d.moved) handleTap(x, y);
   };
+
+  // Tek dokunuş: parçaya → döndür, tahtaya → o sütuna taşı. Çift dokunuş: (o sütuna taşı ve) BIRAK.
+  const DOUBLE_TAP_MS = 260;
+  let pendingTap: { t: number; x: number; y: number; timer: number } | null = null;
+  const onPiece = (x: number, y: number) => {
+    const pr = pieceRect();
+    const m = view.cell * 0.4;
+    return !!pr && x >= pr.x - m && x <= pr.x + pr.w + m && y >= pr.y - m && y <= pr.y + pr.h + m;
+  };
+  const colAt = (x: number) => Math.floor((x - view.board.x) / view.cell - pieceW(rot) / 2 + 0.5);
+  const inBoardX = (x: number) => x >= view.board.x && x <= view.board.x + view.board.w;
+  function singleTap(x: number, y: number) {
+    if (blocked() || sel === null) return;
+    if (onPiece(x, y)) rotate();
+    else if (inBoardX(x)) moveTo(colAt(x));
+  }
+  function handleTap(x: number, y: number) {
+    const now = performance.now();
+    if (pendingTap && now - pendingTap.t < DOUBLE_TAP_MS && Math.hypot(x - pendingTap.x, y - pendingTap.y) < view.cell * 1.5) {
+      clearTimeout(pendingTap.timer);
+      pendingTap = null;
+      if (!onPiece(x, y) && inBoardX(x)) moveTo(colAt(x));
+      sfx.drop2();
+      doDrop();
+      return;
+    }
+    if (pendingTap) clearTimeout(pendingTap.timer);
+    pendingTap = { t: now, x, y, timer: window.setTimeout(() => { pendingTap = null; singleTap(x, y); }, DOUBLE_TAP_MS) };
+  }
   canvas.addEventListener('pointerup', endDrag);
   canvas.addEventListener('pointercancel', endDrag);
 
@@ -500,6 +574,7 @@ export function playScreen(router: Router, opts: PlayOpts): Screen {
       }
       fx.update(dt);
       seasonVis += (seasonTarget - seasonVis) * Math.min(1, dt * 1.5);
+      waterVis += (waterTarget - waterVis) * Math.min(1, dt * 3);
     }
     draw(now / 1000);
     raf = requestAnimationFrame(frame);
@@ -525,7 +600,19 @@ export function playScreen(router: Router, opts: PlayOpts): Screen {
       t: time,
       attackWarn: game.attackSoon() && !animating(),
       dimHand: animating(),
+      water: waterVis,
     });
+    // Bahçıvan Dede: tahtadaki hücresinde canlı (korkunca titrer, su yaklaşınca terler)
+    const gp = findCell(displayGrid, 'gardener');
+    if (gp) {
+      const c = view.cell, x = view.board.x + gp.c * c, y = view.board.y + gp.r * c;
+      const margin = game.gardenerMargin() ?? 9;
+      const mood: GardenerMood = performance.now() < gardenerMoodUntil ? gardenerMood : margin <= 1 ? 'scared' : 'happy';
+      ctx.save();
+      ctx.beginPath(); ctx.rect(x + c * 0.05, y - c * 0.6, c * 0.9, c * 1.55); ctx.clip();
+      drawGardener(ctx, x + c / 2, y + c * 0.98, c * 1.45, mood, time, mood === 'happy' && Math.sin(time * 1.3) > 0.5);
+      ctx.restore();
+    }
     fx.draw(ctx, save.settings.symbols);
     ctx.restore();
   }
@@ -545,7 +632,7 @@ export function playScreen(router: Router, opts: PlayOpts): Screen {
       if (i >= keys.length) return;
       const k = keys[i++];
       overlay = h('div', { class: 'hint', onclick: () => { sfx.click(); next(); } },
-        h('div', { class: 'bubble' }, t(k), h('small', {}, `${t('hint.tap')} (${i}/${keys.length})`)));
+        h('div', { class: 'bubble' }, k.startsWith('rescue.intro') ? h('span', { class: 'hint-row' }, gardenerIcon(64, 'scared'), t(k, { n: level.waterEvery ?? 2 })) : t(k), h('small', {}, `${t('hint.tap')} (${i}/${keys.length})`)));
       el.append(overlay);
     };
     next();
@@ -564,32 +651,88 @@ export function playScreen(router: Router, opts: PlayOpts): Screen {
   }
   function resume() { paused = false; lastT = 0; closeOverlay(); sfx.click(); }
 
-  /** Kalıcı kayıtlar (bir oyun için bir kez). */
-  function finalize() {
-    if (finalized) return;
+  /** Kalıcı kayıtlar (bir oyun için bir kez). Kazanılan elmasları döndürür. */
+  function finalize(): { label: string; amount: number }[] {
+    if (finalized) return [];
     finalized = true;
     const s = game.state;
-    if (s.movesUsed === 0) return;
+    const gains: { label: string; amount: number }[] = [];
+    if (s.movesUsed === 0) return gains;
     recordCollection(s.rescued, s.sprouted);
-    if (mode === 'adventure' && s.status === 'won') recordLevel(level.id, game.stars(), s.score);
+    if (mode === 'adventure' && s.status === 'won') {
+      if (game.isRescue) {
+        const first = !save.rescues[level.id];
+        save.rescues[level.id] = true;
+        persist();
+        const n = levelReward('rescue', first, false);
+        if (n) gains.push({ label: t('rescue.saved'), amount: n });
+      } else {
+        const prev = save.levels[level.id];
+        const stars = game.stars();
+        const n = levelReward(game.isBoss ? 'boss' : 'normal', !prev?.stars, stars === 3 && (prev?.stars ?? 0) < 3);
+        recordLevel(level.id, stars, s.score);
+        if (n) gains.push({ label: `${t('map.level')} ${level.id}`, amount: n });
+      }
+      addDiamonds(gains.reduce((x, g) => x + g.amount, 0)); // bölüm/kurtarma ödülü
+      for (const m of claimMilestones()) { // kritik eşikler (claimMilestones elmasları kendisi ekler)
+        const def = MILESTONES.find((x) => x.key === m.key)!;
+        gains.push({ label: def.kind === 'stars' ? t('dia.stars', { n: def.at }) : t('dia.levels', { n: def.at }), amount: m.reward });
+      }
+      void submitGardenScore();
+    }
     if (mode === 'daily') {
       const key = dateKey();
       save.daily[key] = Math.max(save.daily[key] ?? 0, s.score);
       persist();
     }
     if (mode === 'zen' && s.score > save.zenBest) { save.zenBest = s.score; persist(); }
+    return gains;
+  }
+
+  /** Kaybedince elmasla devam seçenekleri. */
+  function continueOptions(): HTMLElement | null {
+    const s = game.state;
+    const box = h('div', { class: 'continue' }, h('b', {}, t('dia.continue')));
+    let any = false;
+    const resumeAfter = () => { sfx.cheer(); closeOverlay(); gardenerMood = 'happy'; waterTarget = game.state.water; updateHud(); };
+    if (s.loseReason === 'moves') {
+      any = true;
+      box.append(h('button', { class: 'btn orange', onclick: () => payDiamonds(el, PRICES.extraMoves, () => { game.addMoves(5); resumeAfter(); }) },
+        t('dia.moves'), ' ', priceTag(PRICES.extraMoves)));
+    }
+    if (s.loseReason === 'flooded') {
+      any = true;
+      box.append(h('button', { class: 'btn orange', onclick: () => payDiamonds(el, PRICES.recedeWater, () => { game.recedeWater(2); resumeAfter(); }) },
+        t('dia.water'), ' ', priceTag(PRICES.recedeWater)));
+    }
+    if (game.canUndo()) {
+      any = true;
+      box.append(h('button', { class: 'btn', onclick: () => doUndo() }, `↶ ${t('btn.undo')} (${s.undoLeft})`));
+    } else if (mode !== 'classic' && s.movesUsed > 0) {
+      any = true;
+      box.append(h('button', { class: 'btn', onclick: () => payDiamonds(el, PRICES.extraUndo, () => { game.grantUndo(); doUndo(); }) },
+        t('dia.buyUndo'), ' ', priceTag(PRICES.extraUndo)));
+    }
+    return any ? box : null;
   }
 
   function endGame(won: boolean) {
     const s = game.state;
     const prevBest = mode === 'adventure' ? save.levels[level.id]?.best ?? 0 : mode === 'daily' ? save.daily[dateKey()] ?? 0 : 0;
     let classicRank = -1;
-    if (won) finalize();
+    let gains: { label: string; amount: number }[] = [];
+    if (won) gains = finalize();
     if (mode === 'classic') { finalize(); classicRank = recordClassic(s.score); }
     won ? (sfx.win(), haptic('medium')) : (sfx.lose(), haptic('heavy'));
+    music.play('calm');
 
-    const panel = h('div', { class: 'panel' }, h('h2', {}, won ? t('end.won') : t('end.lost')));
-    if (won && mode !== 'classic') {
+    const rescue = game.isRescue;
+    const title = rescue ? (won ? t('rescue.saved') : t('rescue.lost')) : won ? t('end.won') : t('end.lost');
+    const panel = h('div', { class: 'panel' + (rescue ? ' rescue-end' : '') }, h('h2', {}, title));
+    if (rescue) {
+      panel.append(h('div', { class: 'gardener-big' }, gardenerIcon(130, won ? 'cheer' : 'wet')));
+      if (won) panel.append(h('p', { class: 'quote' }, t('rescue.thanks')));
+    } else if (won && mode !== 'classic') {
       const stars = game.stars();
       const row = h('div', { class: 'big-stars' }, h('span', {}, '★'), h('span', {}, '★'), h('span', {}, '★'));
       panel.append(row);
@@ -598,8 +741,13 @@ export function playScreen(router: Router, opts: PlayOpts): Screen {
       });
     }
     if (!won && s.loseReason) panel.append(h('p', {}, t('end.reason.' + s.loseReason)));
-    panel.append(h('div', {}, t('end.score')), h('div', { class: 'score' }, String(s.score)));
-    if ((mode === 'adventure' || mode === 'daily') && s.score > prevBest && (won || mode === 'daily') && s.movesUsed > 0)
+    if (!rescue) panel.append(h('div', {}, t('end.score')), h('div', { class: 'score' }, String(s.score)));
+    if (gains.length) {
+      const total = gains.reduce((a, g) => a + g.amount, 0);
+      panel.append(h('div', { class: 'gem-gain' }, priceTag(total), h('small', {}, gains.map((g) => g.label).join(' · '))));
+      setTimeout(() => sfx.gem(), 900);
+    }
+    if ((mode === 'adventure' || mode === 'daily') && !rescue && s.score > prevBest && (won || mode === 'daily') && s.movesUsed > 0)
       panel.append(h('p', { style: { fontWeight: '800', color: '#c0571b' } }, t('end.newBest')));
     if (mode === 'daily') panel.append(h('p', {}, `${t('daily.best')}: ${Math.max(prevBest, s.score)}`));
     if (mode === 'classic') {
@@ -607,16 +755,16 @@ export function playScreen(router: Router, opts: PlayOpts): Screen {
       save.classic.slice(0, 5).forEach((sc, i) => tb.append(h('tr', { class: i === classicRank ? 'me' : '' }, h('td', {}, `${i + 1}.`), h('td', {}, String(sc)))));
       panel.append(h('b', {}, t('classic.scores')), tb);
     }
-    if (!won && game.canUndo()) {
-      panel.append(h('p', { style: { fontSize: '14px', opacity: '.8' } }, t('end.undoHint')),
-        h('button', { class: 'btn orange', onclick: () => doUndo() }, `↶ ${t('btn.undo')} (${s.undoLeft})`));
+    if (!won) {
+      const opts = continueOptions();
+      if (opts) panel.append(opts, h('div', { class: 'gem-line' }, diamondChip(() => el)));
     }
     const btns = h('div', { class: 'row' });
     btns.append(h('button', { class: 'btn', onclick: () => { sfx.click(); finalize(); setup(); } }, t('end.retry')));
     if (mode === 'adventure') {
-      const next = LEVELS.find((l) => l.id === level.id + 1);
+      const next = rescue ? null : LEVELS.find((l) => l.id === level.id + 1);
       if (won && next) btns.append(h('button', { class: 'btn green', onclick: () => { sfx.click(); router.replace(playScreen(router, { mode, levelId: next.id })); } }, t('end.next')));
-      btns.append(h('button', { class: 'btn', onclick: () => { sfx.click(); finalize(); router.back(); } }, t('end.map')));
+      btns.append(h('button', { class: 'btn' + (won && rescue ? ' green' : ''), onclick: () => { sfx.click(); finalize(); router.back(); } }, t('end.map')));
     } else {
       btns.append(h('button', { class: 'btn', onclick: () => { sfx.click(); finalize(); router.popToRoot(); } }, t('end.menu')));
     }

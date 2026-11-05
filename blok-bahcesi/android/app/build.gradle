@@ -1,5 +1,11 @@
 apply plugin: 'com.android.application'
 
+// Ortam değişkenleri / gradle özellikleri (CI'da GitHub Secrets)
+def envOr = { String k, String d -> System.getenv(k) ?: (project.findProperty(k) ?: d) }
+def pgsAppId = envOr('PGS_APP_ID', '')
+def pgsLeaderboard = envOr('PGS_LEADERBOARD_ID', '')
+def admobAppId = envOr('ADMOB_APP_ID', 'ca-app-pub-3940256099942544~3347511713')
+
 android {
     namespace = "com.blokbahcesi.app"
     compileSdk = rootProject.ext.compileSdkVersion
@@ -10,13 +16,29 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        resValue "string", "game_services_project_id", pgsAppId
+        resValue "string", "leaderboard_garden", pgsLeaderboard
+        manifestPlaceholders = [admobAppId: admobAppId]
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
              // Default: https://android.googlesource.com/platform/frameworks/base/+/282e181b58cf72b6ca770dc7ca5f91f135444502/tools/aapt/AaptAssets.cpp#61
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    // Sabit debug anahtarı (deponun kökündeki standart debug.keystore): her derlemede aynı SHA-1,
+    // Play Games'in uygulamayı tanıması için Play Console'a bu parmak izi eklenir.
+    signingConfigs {
+        debug {
+            storeFile file('../../../debug.keystore')
+            storePassword 'android'
+            keyAlias 'androiddebugkey'
+            keyPassword 'android'
+        }
+    }
     buildTypes {
+        debug {
+            signingConfig signingConfigs.debug
+        }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
@@ -36,6 +58,7 @@ dependencies {
     implementation "androidx.coordinatorlayout:coordinatorlayout:$androidxCoordinatorLayoutVersion"
     implementation "androidx.core:core-splashscreen:$coreSplashScreenVersion"
     implementation project(':capacitor-android')
+    implementation "com.google.android.gms:play-games-v2:21.0.0"
     testImplementation "junit:junit:$junitVersion"
     androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"
     androidTestImplementation "androidx.test.espresso:espresso-core:$androidxEspressoCoreVersion"

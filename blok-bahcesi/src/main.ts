@@ -7,6 +7,8 @@ import { save } from './storage';
 import { unlockAudio } from './audio';
 import { Router } from './ui/router';
 import { menuScreen } from './ui/menu';
+import { pgStatus, signIn, submitGardenScore } from './playgames';
+import './render/characters';
 
 setLang(save.settings.lang);
 
@@ -39,3 +41,9 @@ window.addEventListener('keydown', (e) => {
 });
 window.addEventListener('pointerdown', unlockAudio, { once: true });
 document.addEventListener('contextmenu', (e) => e.preventDefault());
+
+// Play Games: platform kimliğiyle sessiz giriş (yapılandırılmışsa)
+void (async () => {
+  const st = await pgStatus();
+  if (st === 'signed_out' || st === 'ready') { if (await signIn()) await submitGardenScore(); }
+})();

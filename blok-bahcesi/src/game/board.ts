@@ -33,6 +33,7 @@ function charToCell(ch: string): Cell | null {
   if (ch === 'T') return { k: 'soil' };
   if (ch === 'K') return { k: 'rock' };
   if (ch === 'S') return { k: 'seed' };
+  if (ch === 'G') return { k: 'gardener' };
   if (ch === 'O') return { k: 'weed', hp: 2 };
   if (ch === 'I') return { k: 'ice', hp: 2 };
   if (CHAR_TO_ANIMAL[ch]) return { k: 'animal', a: CHAR_TO_ANIMAL[ch] };
@@ -94,6 +95,8 @@ export interface ClearStep {
   sprouted: Pos[];
   sunBreaks: Pos[];
   weedHits: Pos[];
+  /** Bahçıvan bu adımda kurtarıldıysa konumu */
+  gardener: Pos | null;
   /** Fırtınaya verilen hasar (satır başı 1, çiçek satırı 2). */
   damage: number;
 }
@@ -107,7 +110,7 @@ export function resolveStep(g: Grid, rows: number[]): { grid: Grid; step: ClearS
   const cleared: boolean[][] = Array.from({ length: ROWS }, () => Array(COLS).fill(false));
   const step: ClearStep = {
     before: g, rows: [...rows], flowerRows: [], stoneCounts: [], rescued: [], sprouted: [],
-    sunBreaks: [], weedHits: [], damage: 0,
+    sunBreaks: [], weedHits: [], damage: 0, gardener: null,
   };
 
   // GÜNEŞ: satırdaki her turuncu hücre kendi sütunundaki en yakın ot/buzu kırar.
@@ -167,6 +170,10 @@ export function resolveStep(g: Grid, rows: number[]): { grid: Grid; step: ClearS
           step.rescued.push({ r, c, a: cell.a });
           cleared[r][c] = true;
           break;
+        case 'gardener':
+          step.gardener = { r, c };
+          cleared[r][c] = true;
+          break;
         default:
           cleared[r][c] = true;
       }
@@ -224,4 +231,9 @@ export function bossAttack(g: Grid, rng: Rng): { grid: Grid; overflow: boolean; 
   const newRow: (Cell | null)[] = [];
   for (let c = 0; c < COLS; c++) newRow.push(c === gap || stoneCols.has(c) ? null : { k: 'weed', hp: 2 });
   return { grid: [...cloneGrid(g).slice(1), newRow], overflow, gap };
+}
+
+export function findCell(g: Grid, k: Cell['k']): Pos | null {
+  for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) if (g[r][c]?.k === k) return { r, c };
+  return null;
 }

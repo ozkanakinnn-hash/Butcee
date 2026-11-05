@@ -42,6 +42,9 @@ jobs:
         run: npm test
 
       - name: Web derlemesi
+        env:
+          # Boşsa Google'ın TEST ödüllü reklam kimliği kullanılır
+          VITE_ADMOB_REWARDED_ID: ${{ secrets.ADMOB_REWARDED_ID }}
         run: npm run build
 
       - name: Capacitor sync
@@ -51,6 +54,11 @@ jobs:
 
       - name: Debug APK
         working-directory: blok-bahcesi/android
+        env:
+          # İsteğe bağlı GitHub Secrets: boşsa Play Games sıralaması devre dışı, AdMob test kimliği kullanılır
+          PGS_APP_ID: ${{ secrets.PGS_APP_ID }}
+          PGS_LEADERBOARD_ID: ${{ secrets.PGS_LEADERBOARD_ID }}
+          ADMOB_APP_ID: ${{ secrets.ADMOB_APP_ID }}
         run: |
           chmod +x gradlew
           ./gradlew --no-daemon assembleDebug
