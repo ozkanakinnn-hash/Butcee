@@ -90,6 +90,7 @@ fun HomeScreen(
       prefs.getFastingDates().contains(com.example.data.RamadanCalendar.dateKey(java.util.Calendar.getInstance()))
   }
   val mahya = FestivalCalendar.mahya(prefs)
+  val ramadanDay = remember { com.example.data.RamadanCalendar.dayOfRamadan() }
 
   LazyColumn(
     modifier = modifier
@@ -98,6 +99,11 @@ fun HomeScreen(
   ) {
     if (festival != null) {
       item { FestiveGarland(festival = festival) }
+    }
+
+    // Ramazan süsü: ip üzerinde ışıldayan fanuslar
+    if (ramadanDay != null) {
+      item { com.example.ui.components.RamadanLanternGarland() }
     }
 
     // 1. Üst bölüm: konum + kısayol ikonları; altında tam genişlikte selamlama
@@ -224,6 +230,16 @@ fun HomeScreen(
       }
     }
 
+    // Ramazan: gün rozeti ve mahya
+    if (ramadanDay != null) {
+      item {
+        Column {
+          com.example.ui.components.RamadanDayBadge(ramadanDay, modifier = Modifier.padding(start = 16.dp, top = 2.dp))
+          com.example.ui.components.RamadanMahyaBar(ramadanDay)
+        }
+      }
+    }
+
     if (festival != null) {
       item { FestiveGreetingCard(festival = festival, name = greetingName) }
     }
@@ -244,13 +260,19 @@ fun HomeScreen(
             .weight(1f)
             .fillMaxHeight()
         )
-        CompactCountdownCard(
-          countdown = countdown,
-          onFireCannon = onFireCannon,
-          modifier = Modifier
-            .weight(1f)
-            .fillMaxHeight()
-        )
+        androidx.compose.foundation.layout.Box(modifier = Modifier.weight(1f).fillMaxHeight()) {
+          CompactCountdownCard(
+            countdown = countdown,
+            onFireCannon = onFireCannon,
+            modifier = Modifier.fillMaxSize()
+          )
+          // Ramazan'da sayaç kartının köşesinde hilal filigranı
+          if (ramadanDay != null) {
+            com.example.ui.components.CrescentWatermark(
+              modifier = Modifier.matchParentSize().clip(androidx.compose.foundation.shape.RoundedCornerShape(24.dp))
+            )
+          }
+        }
       }
     }
 
@@ -262,6 +284,11 @@ fun HomeScreen(
         onOpenZikirmatik = onOpenZikirmatik,
         refreshKey = zikirRefreshKey
       )
+    }
+
+    // 2c. Oruç ilerleme çubuğu: Ramazan'da veya oruç planlı günde, imsak–iftar arası
+    if (showIftarMenu) item {
+      com.example.ui.components.FastingProgressCard(prayerTimes = prayerTimes, tick = countdown.totalSecondsRemaining)
     }
 
     // 3. Günlük Vakit Namazları tablosu (eski geri sayım panosunun yeri)

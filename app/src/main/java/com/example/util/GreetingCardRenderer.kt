@@ -19,6 +19,7 @@ import androidx.core.content.res.ResourcesCompat
 import com.example.R
 import com.example.data.GreetingMessage
 import com.example.data.GreetingOccasion
+import com.example.data.quote
 import java.io.File
 import java.io.FileOutputStream
 import java.util.Locale
@@ -45,7 +46,8 @@ object GreetingCardRenderer {
       load(R.font.amiri_bold, Typeface.create(Typeface.SERIF, Typeface.BOLD)),
       load(R.font.playfair_display_bold, Typeface.create(Typeface.SERIF, Typeface.BOLD)),
       load(R.font.inter_regular, Typeface.SANS_SERIF),
-      load(R.font.inter_extrabold, Typeface.create(Typeface.SANS_SERIF, Typeface.BOLD))
+      load(R.font.inter_extrabold, Typeface.create(Typeface.SANS_SERIF, Typeface.BOLD)),
+      load(R.font.playfair_display_italic, Typeface.create(Typeface.SERIF, Typeface.ITALIC))
     ).also { fonts = it }
   }
 
@@ -58,46 +60,87 @@ object GreetingCardRenderer {
     return bmp
   }
 
+  // Yerleşim (540x960 tasarım ölçeği): kemerli fotoğraf görselde; metin 500'den, ayet paneli 728'den başlar
+  private const val TEXT_TOP = 500f
+  private const val PANEL_TOP = 728f
+  private const val FOOTER_Y = 912f
+  private const val SIDE = 60f
+  private val GOLD = 0xFFA8762A.toInt()
+  private val GOLD_LIGHT = 0xFFF5D98F.toInt()
+
   private fun draw(context: Context, canvas: Canvas, occasion: GreetingOccasion, message: GreetingMessage, scale: Float) {
     val st = occasion.style
-    val (amiri, playfair, interRegular, interBold) = fonts(context)
+    val f = fonts(context)
+    val amiri = f[0]; val playfair = f[1]; val inter = f[2]; val interBold = f[3]; val playfairItalic = f[4]
+    val accent = if (st.dark) GOLD_LIGHT else GOLD
 
-    // 1. Arka plan sahnesi
+    // 1. Arka plan (fotoğraf, kemer, çerçeve, süslemeler)
     val bg = decode(context, occasion.bgRes, scale)
     if (bg != null) {
       canvas.drawBitmap(bg, null, RectF(0f, 0f, W.toFloat(), H.toFloat()), Paint(Paint.FILTER_BITMAP_FLAG))
       bg.recycle()
     } else {
-      canvas.drawColor(st.footerColor.toInt())
+      canvas.drawColor(if (st.dark) 0xFF0B0910.toInt() else 0xFFFBF6EC.toInt())
     }
 
-    // 2. Metin bloğu: Arapça hat + başlık + mesaj
-    val width = (W - 2 * st.inset * K).toInt()
-    val arPaint = TextPaint().apply { isAntiAlias = true; typeface = amiri; color = st.arabicColor.toInt(); textSize = st.arabicSize * K }
-    val headPaint = TextPaint().apply { isAntiAlias = true; typeface = playfair; color = st.headColor.toInt(); textSize = st.headSize * K }
-    val bodyPaint = TextPaint().apply { isAntiAlias = true; typeface = interRegular; color = st.bodyColor.toInt(); textSize = 15 * K }
-    val top = st.top * K
-    val limit = (st.footerY - 34) * K
+    // 2. Arapça hat + başlık + mesaj (panelin üstüne taşmayana kadar küçültülür)
+    val width = (W - 2 * SIDE * K).toInt()
+    val arPaint = TextPaint().apply { isAntiAlias = true; typeface = amiri; color = st.arabic.toInt(); textSize = 40 * K }
+    val headPaint = TextPaint().apply { isAntiAlias = true; typeface = playfair; color = st.ink.toInt(); textSize = 28 * K }
+    val bodyPaint = TextPaint().apply { isAntiAlias = true; typeface = inter; color = st.muted.toInt(); textSize = 15 * K }
     var ar: StaticLayout; var hd: StaticLayout; var bd: StaticLayout
+    val top = TEXT_TOP * K
+    val limit = (PANEL_TOP - 22) * K
     while (true) {
-      ar = layout(occasion.arabic, arPaint, width, 1.25f)
+      ar = layout(occasion.arabic, arPaint, width, 1.2f)
       hd = layout(message.headline.text, headPaint, width, 1.12f)
       bd = layout(message.body.text, bodyPaint, width, 1.4f)
-      val total = ar.height + 6 * K + hd.height + 12 * K + bd.height
+      val total = ar.height + 2 * K + hd.height + 8 * K + bd.height
       if (top + total <= limit || headPaint.textSize < 18 * K) break
       arPaint.textSize *= 0.93f; headPaint.textSize *= 0.93f; bodyPaint.textSize *= 0.95f
     }
     var y = top
-    for ((l, gap) in listOf(ar to 6 * K, hd to 12 * K, bd to 0f)) {
-      canvas.save(); canvas.translate(st.inset * K, y); l.draw(canvas); canvas.restore()
+    for ((l, gap) in listOf(ar to 2 * K, hd to 8 * K, bd to 0f)) {
+      canvas.save(); canvas.translate(SIDE * K, y); l.draw(canvas); canvas.restore()
       y += l.height + gap
     }
 
-    // 3. Alt bilgi
+    // 3. Ayet / hadis paneli
+    val q = occasion.quote
+    val pLeft = 58 * K; val pRight = W - 58 * K
+    val inner = (pRight - pLeft - 44 * K).toInt()
+    val quotePaint = TextPaint().apply { isAntiAlias = true; typeface = playfairItalic; color = st.ink.toInt(); textSize = 16 * K }
+    val srcPaint = TextPaint().apply {
+      isAntiAlias = true; typeface = interBold; color = accent; textSize = 10.5f * K; letterSpacing = 0.19f
+    }
+    var ql: StaticLayout
+    var sl: StaticLayout
+    val maxPanelBottom = (FOOTER_Y - 30) * K
+    while (true) {
+      ql = layout("“" + q.text.text + "”", quotePaint, inner, 1.35f)
+      sl = layout(q.source.uppercase(Locale.forLanguageTag("tr")), srcPaint, inner, 1f)
+      val h = 20 * K + ql.height + 8 * K + sl.height + 14 * K
+      if (PANEL_TOP * K + h <= maxPanelBottom || quotePaint.textSize < 11 * K) break
+      quotePaint.textSize *= 0.93f
+    }
+    val panelH = 20 * K + ql.height + 8 * K + sl.height + 14 * K
+    val rect = RectF(pLeft, PANEL_TOP * K, pRight, PANEL_TOP * K + panelH)
+    canvas.drawRoundRect(rect, 16 * K, 16 * K, Paint().apply { isAntiAlias = true; color = st.panel.toInt() })
+    canvas.drawRoundRect(rect, 16 * K, 16 * K, Paint().apply { isAntiAlias = true; style = Paint.Style.STROKE; strokeWidth = 1.2f * K; color = GOLD })
+    // Panelin üstünde sekiz köşeli yıldız rozeti
+    val badge = StoryImageGenerator.eightPointStarPath(W / 2f, PANEL_TOP * K, 13 * K)
+    canvas.drawPath(badge, Paint().apply { isAntiAlias = true; color = if (st.dark) 0xFF141018.toInt() else 0xFFFBF6EC.toInt() })
+    canvas.drawPath(badge, Paint().apply { isAntiAlias = true; style = Paint.Style.STROKE; strokeWidth = 1.6f * K; color = GOLD })
+    var py = PANEL_TOP * K + 20 * K
+    canvas.save(); canvas.translate(pLeft + 22 * K, py); ql.draw(canvas); canvas.restore()
+    py += ql.height + 8 * K
+    canvas.save(); canvas.translate(pLeft + 22 * K, py); sl.draw(canvas); canvas.restore()
+
+    // 4. Alt bilgi
     val name = context.getString(R.string.app_name).uppercase(Locale.forLanguageTag("tr"))
-    canvas.drawText("✦  $name  ✦", W / 2f, (st.footerY + 10) * K, Paint().apply {
-      isAntiAlias = true; typeface = interBold; color = st.footerColor.toInt()
-      textSize = 12 * K; textAlign = Paint.Align.CENTER; letterSpacing = 0.33f
+    canvas.drawText("✦  $name  ✦", W / 2f, FOOTER_Y * K + 10 * K, Paint().apply {
+      isAntiAlias = true; typeface = interBold; color = accent
+      textSize = 11 * K; textAlign = Paint.Align.CENTER; letterSpacing = 0.36f
     })
   }
 

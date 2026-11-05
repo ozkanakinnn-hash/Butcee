@@ -154,6 +154,7 @@ adb shell am force-stop $PKG
 adb push /tmp/p.xml /data/local/tmp/p.xml
 adb shell "run-as $PKG sh -c 'cat /data/local/tmp/p.xml > shared_prefs/ramazan_rehberi_prefs.xml'"
 launch
+adb shell input swipe 540 1700 540 900 400; shot 06l2_oruc_ilerleme 2
 tap_text "Dahası"; sleep 2; tap_text "Ramazan Rehberi"; sleep 3
 for i in 1 2 3 4 5 6; do adb shell input swipe 540 1900 540 500 400; sleep 1; done
 shot 06m_rehber_iftar_menu 2
@@ -174,6 +175,26 @@ adb shell input swipe 540 1800 540 400 600; shot 10h_english_fatiha_meaning
 
 adb logcat -d -b crash >> $OUT/crash_log.txt
 ls -la $OUT; cat $OUT/crash_log.txt | head -80
+
+# Özel gün kartları (yeni tasarım): Kadir ve Ramazan
+write_prefs "" "DARK"
+launch
+tap_text "Dahası"; sleep 2; tap_text "Özel Gün Kartları"; sleep 5
+tap_text "Kadir"; shot 15_kart_kadir 5
+tap_text "Ramazan"; shot 15b_kart_ramazan 5
+adb shell input keyevent KEYCODE_BACK; sleep 1
+
+# Ramazan görünümü: emülatör tarihini Ramazan 2027'nin 12. gününe (19 Şubat 2027, 14:00) al
+adb root >/dev/null 2>&1; sleep 3
+adb shell settings put global auto_time 0
+adb shell "date 021914002027.00" || adb shell "toybox date 021914002027.00"
+write_prefs "" "DARK"
+launch
+shot 16_ramazan_anasayfa 3
+adb shell input swipe 540 1700 540 900 400; shot 16b_ramazan_oruc_ilerleme 2
+write_prefs "" "LIGHT"
+launch
+shot 16c_ramazan_anasayfa_aydinlik 3
 
 # Uygulama ikonu: ana ekrana çık, uygulama çekmecesini aç
 adb shell input keyevent KEYCODE_HOME; sleep 2
