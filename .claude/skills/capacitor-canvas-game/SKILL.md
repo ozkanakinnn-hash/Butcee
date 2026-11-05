@@ -54,3 +54,28 @@ description: Vite + TypeScript + saf Canvas ile mobil oyun (veya web tabanlı uy
 android-actions/setup-android@v3 with packages: "platform-tools"` (varsayılan "tools" paketi artık yok, çöker) →
 `npm ci → npm test → npm run build → npx cap sync android → gradle/actions/setup-gradle@v5 → ./gradlew assembleDebug →
 upload-artifact@v5`. Capacitor'ın `android/.gitignore`'u `assets/public`'i dışlar; CI'da `cap sync` şart.
+
+## 6. Ekonomi, reklam, sıralama (v0.2'den öğrenilenler)
+- **Zorluğu botla kalibre et**: açgözlü bot (tüm el × döndürme × sütun, sezgisel puan: delik, yükseklik, pürüzlülük,
+  hedef ilerlemesi) her bölümü ~40 kez oynar; hamle ihtiyacı dağılımının hedef-oran yüzdeliği = hamle sınırı.
+  Hedef eğri (ör. %98 → %55) + "çözülemez" haritaları reddet. `vite-node scripts/x.ts` TS betiklerini doğrudan çalıştırır.
+  Bot bulguları gerçek hataları yakalar (çözülemez bölüm, 1 hamlede biten "hedef" bölümleri).
+- **Karakter kurtarma bölümü** tasarımı: hedef satır tahtanın üst yüzeyindeyse geniş parçalar tek hamlede bitirir →
+  boşlukların üstünü "çatı" satırlarıyla kapat (aşamalı bulmaca). Kaya ASLA hedef boşluğun üstüne konmaz (kalıcı kapatır).
+- **AdMob**: `@capacitor-community/admob@8` (Cap 8 uyumlu). Manifest'te `com.google.android.gms.ads.APPLICATION_ID`
+  ZORUNLU (yoksa açılışta çöker) → `manifestPlaceholders` + ortam değişkeni, varsayılan Google test kimliği.
+  UMP: `requestConsentInfo` → gerekirse `showConsentForm`. Tarayıcıda reklam yerine etiketli simülasyon.
+- **Play Games v2** Maven adı: `com.google.android.gms:play-services-games-v2:20.1.2` (`play-games-v2` YANLIŞ).
+  Hazır Capacitor eklentileri eski → küçük yerel eklenti yaz (`@CapacitorPlugin`, MainActivity'de `registerPlugin` super.onCreate'ten ÖNCE).
+  Proje kimliği `resValue` ile; boşsa `PlayGamesSdk.initialize` çağırma. CI'da sabit `debug.keystore` ile imzala
+  (runner her seferinde yeni anahtar üretir → SHA-1 değişir → Play Games girişi başarısız olur).
+- **Başka oyuncunun bahçesi** gibi küçük profil verisi için sunucu gerekmez: sıralama skor etiketi (scoreTag, ≤64 URL-güvenli karakter)
+  içine kodla (`encodeGarden`), okurken çöz.
+- **Tarayıcı önizlemesinde sahte sıralama** gösterilecekse "ÖRNEK VERİ" diye açıkça etiketle.
+- **Prosedürel müzik**: lookahead zamanlayıcı (setInterval 120 ms, 0,35 sn ileri planla), pentatonik arpej + bas;
+  `visibilitychange` ile duraklat/sürdür; mod (sakin/oyun/gergin).
+- **Çift dokunuş**: tek dokunuş eylemini ~260 ms beklet; ikinci dokunuş gelirse iptal edip "bırak" yap.
+- **Tuzaklar**: Playwright `text=Bahçem` alt dize eşleşir ("Bahçemizi" balonuna tıklar) → `.kapsayıcı >> text=`.
+  Ekran `render()` iki kez çağrılırsa (kurulum + onShow) açılış penceresi silinir → ödül/pencere yalnız onShow'da.
+  Genel `.danger { color: red }` sınıfı kırmızı çipte yazıyı görünmez yapar → bileşene özel sınıf adı kullan.
+  Ahşap dokulu tam ekran açılış PNG'leri APK'yı ~10 MB şişirir → düz gradyan, yalnız dikey varyant.

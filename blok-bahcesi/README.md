@@ -17,13 +17,31 @@ npm run build      # dist/
   testleri koşar, web'i derler, `cap sync` + `assembleDebug` yapar ve `BlokBahcesi-debug` artifact'ını yükler.
 - **Yerelde (Android SDK + JDK 21 varsa):** `npm run build && npx cap sync android && cd android && ./gradlew assembleDebug`
 
+## v0.2 yenilikleri (ayrıntı: `docs/RAPOR.md`)
+- **Bahçıvan Dede**: ana menüde el sallayan, dokununca konuşan karakter.
+- **Bahçıvanı Kurtar**: 6 ekstra bölüm; su yükselir, Dede'yi kurtarınca +30 elmas.
+- **Elmas ekonomisi**: kritik eşikler, boss/kurtarma ödülleri, ödüllü reklam (AdMob, test kimlikleri). Harcama: geri alma, +5 hamle, suyu çekme, bahçe objeleri, ev geliştirme.
+- **Bahçem**: 5 seviyeli ev, 12 obje, 8 yuva, mağaza.
+- **Bahçe Ligi**: Google Play Games kimliği + sıralama; ilk üçe madalya, bahçelerini ziyaret (bahçe, skor etiketine 64 karakterle kodlanır).
+- **60 bölüm** (21–60 üretilip bot ile kalibre edildi), prosedürel müzik, çift dokunuşla bırakma.
+
+### Bölüm kalibrasyonu
+```bash
+npx vite-node scripts/calibrate.ts   # src/levels-extra.ts ve docs/difficulty.tsv dosyalarını yeniden üretir (~1,5 dk)
+```
+
+### İsteğe bağlı GitHub Secrets
+`PGS_APP_ID`, `PGS_LEADERBOARD_ID` (Play Games), `ADMOB_APP_ID`, `ADMOB_REWARDED_ID` (yayın reklamı). Boşsa: sıralama kapalı, AdMob test kimliği.
+
 ## Kod düzeni
 | Klasör | İçerik |
 |---|---|
 | `src/game/` | DOM'dan bağımsız kurallar: tahta, parçalar, temizleme/yerçekimi, elementler, puan, boss, bölüm üretici + `__tests__` |
 | `src/render/` | Canvas çizimi: hücre sprite önbelleği, ahşap arka plan + mevsim tonu, parçacıklar, bahçe sahnesi |
 | `src/ui/` | Ekranlar (menü, harita, oyun, ayarlar, Bahçem, Günlük/Klasik), yönlendirici + Android geri tuşu |
-| `src/levels.ts` | 20 el yapımı bölüm (metin haritası) |
+| `src/levels.ts`, `levels-base.ts`, `levels-extra.ts` | El yapımı 1–20 + kurtarma haritaları; kalibre edilmiş 60 bölüm |
+| `src/economy.ts`, `ads.ts`, `playgames.ts` | Elmas/katalog kuralları, ödüllü reklam, Play Games köprüsü |
+| `android/.../PlayGamesPlugin.java` | Yerel Capacitor eklentisi (giriş, skor gönder, ilk 25, kendi sıram) |
 | `src/storage.ts` / `src/audio.ts` / `src/i18n.ts` | localStorage kaydı, Web Audio efektleri + Haptics, TR/EN metinler |
 | `scripts/gen-icons.cjs` | Uygulama simgesi ve açılış ekranını oyunun çizim kodundan üretir |
 

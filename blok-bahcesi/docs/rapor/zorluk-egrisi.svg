@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="420" viewBox="0 0 900 420" font-family="system-ui,sans-serif">
+<rect width="900" height="420" fill="#fcfcfb"/>
+<text x="60" y="26" font-size="18" font-weight="700" fill="#0b0b0b">Bölüm zorluğu: bot kazanma oranı (%)</text>
+<text x="60" y="46" font-size="13" fill="#52514e">Açgözlü bot, her bölümde 40 oyun · kesikli çizgi = hedef eğri · büyük nokta = boss bölümü</text>
+<line x1="60" x2="870" y1="360.0" y2="360.0" stroke="#e6e5e1" stroke-width="1"/>
+<text x="52" y="364.0" font-size="12" text-anchor="end" fill="#52514e">0</text>
+<line x1="60" x2="870" y1="285.0" y2="285.0" stroke="#e6e5e1" stroke-width="1"/>
+<text x="52" y="289.0" font-size="12" text-anchor="end" fill="#52514e">25</text>
+<line x1="60" x2="870" y1="210.0" y2="210.0" stroke="#e6e5e1" stroke-width="1"/>
+<text x="52" y="214.0" font-size="12" text-anchor="end" fill="#52514e">50</text>
+<line x1="60" x2="870" y1="135.0" y2="135.0" stroke="#e6e5e1" stroke-width="1"/>
+<text x="52" y="139.0" font-size="12" text-anchor="end" fill="#52514e">75</text>
+<line x1="60" x2="870" y1="60.0" y2="60.0" stroke="#e6e5e1" stroke-width="1"/>
+<text x="52" y="64.0" font-size="12" text-anchor="end" fill="#52514e">100</text>
+<text x="60.0" y="380" font-size="12" text-anchor="middle" fill="#52514e">1</text>
+<text x="183.5593220338983" y="380" font-size="12" text-anchor="middle" fill="#52514e">10</text>
+<text x="320.8474576271186" y="380" font-size="12" text-anchor="middle" fill="#52514e">20</text>
+<text x="458.135593220339" y="380" font-size="12" text-anchor="middle" fill="#52514e">30</text>
+<text x="595.4237288135594" y="380" font-size="12" text-anchor="middle" fill="#52514e">40</text>
+<text x="732.7118644067797" y="380" font-size="12" text-anchor="middle" fill="#52514e">50</text>
+<text x="870.0" y="380" font-size="12" text-anchor="middle" fill="#52514e">60</text>
+<text x="465.0" y="406" font-size="13" text-anchor="middle" fill="#52514e">Bölüm</text>
+<polyline points="60.0,66.0 73.72881355932203,68.1864406779661 87.45762711864407,70.37288135593221 101.1864406779661,72.55932203389831 114.91525423728814,74.74576271186442 128.64406779661016,76.93220338983052 142.3728813559322,79.11864406779662 156.10169491525426,81.30508474576273 169.83050847457628,83.49152542372883 183.5593220338983,85.67796610169493 197.28813559322035,87.864406779661 211.01694915254237,90.05084745762714 224.74576271186442,92.2372881355932 238.47457627118644,94.42372881355931 252.20338983050848,96.61016949152545 265.93220338983053,98.79661016949152 279.66101694915255,100.98305084745762 293.3898305084746,103.16949152542372 307.1186440677966,105.35593220338987 320.8474576271186,107.54237288135593 334.5762711864407,109.72881355932203 348.3050847457627,111.91525423728814 362.03389830508473,114.10169491525424 375.7627118644068,116.28813559322035 389.49152542372883,118.47457627118645 403.22033898305085,120.66101694915255 416.9491525423729,122.84745762711866 430.6779661016949,125.03389830508476 444.40677966101697,127.22033898305087 458.135593220339,129.4067796610169 471.864406779661,131.5932203389831 485.5932203389831,133.77966101694918 499.3220338983051,135.96610169491524 513.050847457627,138.15254237288133 526.7796610169491,140.33898305084745 540.5084745762712,142.5254237288136 554.2372881355932,144.71186440677968 567.9661016949153,146.89830508474574 581.6949152542372,149.08474576271186 595.4237288135594,151.27118644067798 609.1525423728814,153.4576271186441 622.8813559322034,155.64406779661016 636.6101694915254,157.83050847457628 650.3389830508474,160.0169491525424 664.0677966101695,162.20338983050848 677.7966101694915,164.3898305084746 691.5254237288136,166.57627118644064 705.2542372881355,168.76271186440678 718.9830508474577,170.9491525423729 732.7118644067797,173.135593220339 746.4406779661017,175.32203389830505 760.1694915254237,177.50847457627117 773.8983050847457,179.6949152542373 787.6271186440679,181.8813559322034 801.3559322033898,184.0677966101695 815.0847457627118,186.25423728813558 828.8135593220339,188.4406779661017 842.542372881356,190.62711864406782 856.271186440678,192.8135593220339 870.0,195.0" fill="none" stroke="#8a8984" stroke-width="2" stroke-dasharray="6 5"/>
+<text x="866.0" y="215.0" font-size="12" text-anchor="end" fill="#52514e">Hedef</text>
+<polyline points="60.0,60.0 73.72881355932203,60.0 87.45762711864407,60.0 101.1864406779661,60.0 114.91525423728814,81.0 128.64406779661016,66.0 142.3728813559322,66.0 156.10169491525426,90.0 169.83050847457628,60.0 183.5593220338983,66.0 197.28813559322035,81.0 211.01694915254237,66.0 224.74576271186442,66.0 238.47457627118644,75.0 252.20338983050848,81.0 265.93220338983053,60.0 279.66101694915255,126.0 293.3898305084746,66.0 307.1186440677966,111.0 320.8474576271186,195.0 334.5762711864407,60.0 348.3050847457627,75.0 362.03389830508473,75.0 375.7627118644068,96.0 389.49152542372883,60.0 403.22033898305085,96.0 416.9491525423729,105.0 430.6779661016949,66.0 444.40677966101697,66.0 458.135593220339,96.0 471.864406779661,111.0 485.5932203389831,120.0 499.3220338983051,111.0 513.050847457627,111.0 526.7796610169491,171.0 540.5084745762712,111.0 554.2372881355932,126.0 567.9661016949153,135.0 581.6949152542372,75.0 595.4237288135594,171.0 609.1525423728814,171.0 622.8813559322034,90.0 636.6101694915254,171.0 650.3389830508474,135.0 664.0677966101695,66.0 677.7966101694915,195.0 691.5254237288136,141.0 705.2542372881355,90.0 718.9830508474577,171.0 732.7118644067797,180.0 746.4406779661017,111.0 760.1694915254237,141.0 773.8983050847457,189.0 787.6271186440679,111.0 801.3559322033898,201.0 815.0847457627118,165.0 828.8135593220339,171.0 842.542372881356,156.0 856.271186440678,135.0 870.0,171.0" fill="none" stroke="#2a78d6" stroke-width="2" stroke-linejoin="round"/>
+<circle cx="60.0" cy="60.0" r="3" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>Bölüm 1 (lines) · hamle 12 · bot %100</title></circle>
+<circle cx="73.72881355932203" cy="60.0" r="3" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>Bölüm 2 (animals) · hamle 12 · bot %100</title></circle>
+<circle cx="87.45762711864407" cy="60.0" r="3" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>Bölüm 3 (seeds) · hamle 12 · bot %100</title></circle>
+<circle cx="101.1864406779661" cy="60.0" r="3" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>Bölüm 4 (lines) · hamle 14 · bot %100</title></circle>
+<circle cx="114.91525423728814" cy="81.0" r="3" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>Bölüm 5 (animals) · hamle 8 · bot %93</title></circle>
+<circle cx="128.64406779661016" cy="66.0" r="3" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>Bölüm 6 (seeds) · hamle 10 · bot %98</title></circle>
+<circle cx="142.3728813559322" cy="66.0" r="3" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>Bölüm 7 (lines) · hamle 11 · bot %98</title></circle>
+<circle cx="156.10169491525426" cy="90.0" r="3" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>Bölüm 8 (animals) · hamle 22 · bot %90</title></circle>
+<circle cx="169.83050847457628" cy="60.0" r="3" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>Bölüm 9 (seeds) · hamle 13 · bot %100</title></circle>
+<circle cx="183.5593220338983" cy="66.0" r="6" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>Bölüm 10 (boss) · hamle 23 · bot %98</title></circle>
+<circle cx="197.28813559322035" cy="81.0" r="3" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>Bölüm 11 (lines) · hamle 20 · bot %93</title></circle>
+<circle cx="211.01694915254237" cy="66.0" r="3" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>Bölüm 12 (lines) · hamle 13 · bot %98</title></circle>
+<circle cx="224.74576271186442" cy="66.0" r="3" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>Bölüm 13 (animals) · hamle 9 · bot %98</title></circle>
+<circle cx="238.47457627118644" cy="75.0" r="3" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>Bölüm 14 (seeds) · hamle 9 · bot %95</title></circle>
+<circle cx="252.20338983050848" cy="81.0" r="3" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>Bölüm 15 (lines) · hamle 24 · bot %93</title></circle>
+<circle cx="265.93220338983053" cy="60.0" r="3" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>Bölüm 16 (animals) · hamle 8 · bot %100</title></circle>
+<circle cx="279.66101694915255" cy="126.0" r="3" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>Bölüm 17 (seeds) · hamle 11 · bot %78</title></circle>
+<circle cx="293.3898305084746" cy="66.0" r="3" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>Bölüm 18 (lines) · hamle 32 · bot %98</title></circle>
+<circle cx="307.1186440677966" cy="111.0" r="3" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>Bölüm 19 (animals) · hamle 32 · bot %83</title></circle>
+<circle cx="320.8474576271186" cy="195.0" r="6" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>Bölüm 20 (boss) · hamle 50 · bot %55</title></circle>
+<circle cx="334.5762711864407" cy="60.0" r="3" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>Bölüm 21 (lines) · hamle 23 · bot %100</title></circle>
+<circle cx="348.3050847457627" cy="75.0" r="3" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>Bölüm 22 (animals) · hamle 14 · bot %95</title></circle>
+<circle cx="362.03389830508473" cy="75.0" r="3" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>Bölüm 23 (seeds) · hamle 12 · bot %95</title></circle>
+<circle cx="375.7627118644068" cy="96.0" r="3" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>Bölüm 24 (lines) · hamle 20 · bot %88</title></circle>
+<circle cx="389.49152542372883" cy="60.0" r="3" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>Bölüm 25 (animals) · hamle 12 · bot %100</title></circle>
+<circle cx="403.22033898305085" cy="96.0" r="3" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>Bölüm 26 (seeds) · hamle 8 · bot %88</title></circle>
+<circle cx="416.9491525423729" cy="105.0" r="3" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>Bölüm 27 (lines) · hamle 25 · bot %85</title></circle>
+<circle cx="430.6779661016949" cy="66.0" r="3" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>Bölüm 28 (animals) · hamle 15 · bot %98</title></circle>
+<circle cx="444.40677966101697" cy="66.0" r="3" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>Bölüm 29 (seeds) · hamle 9 · bot %98</title></circle>
+<circle cx="458.135593220339" cy="96.0" r="6" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>Bölüm 30 (boss) · hamle 29 · bot %88</title></circle>
+<circle cx="471.864406779661" cy="111.0" r="3" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>Bölüm 31 (animals) · hamle 13 · bot %83</title></circle>
+<circle cx="485.5932203389831" cy="120.0" r="3" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>Bölüm 32 (seeds) · hamle 20 · bot %80</title></circle>
+<circle cx="499.3220338983051" cy="111.0" r="3" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>Bölüm 33 (lines) · hamle 27 · bot %83</title></circle>
+<circle cx="513.050847457627" cy="111.0" r="3" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>Bölüm 34 (animals) · hamle 23 · bot %83</title></circle>
+<circle cx="526.7796610169491" cy="171.0" r="3" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>Bölüm 35 (seeds) · hamle 16 · bot %63</title></circle>
+<circle cx="540.5084745762712" cy="111.0" r="3" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>Bölüm 36 (lines) · hamle 29 · bot %83</title></circle>
+<circle cx="554.2372881355932" cy="126.0" r="3" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>Bölüm 37 (animals) · hamle 10 · bot %78</title></circle>
+<circle cx="567.9661016949153" cy="135.0" r="3" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>Bölüm 38 (seeds) · hamle 16 · bot %75</title></circle>
+<circle cx="581.6949152542372" cy="75.0" r="3" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>Bölüm 39 (lines) · hamle 30 · bot %95</title></circle>
+<circle cx="595.4237288135594" cy="171.0" r="6" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>Bölüm 40 (boss) · hamle 30 · bot %63</title></circle>
+<circle cx="609.1525423728814" cy="171.0" r="3" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>Bölüm 41 (seeds) · hamle 13 · bot %63</title></circle>
+<circle cx="622.8813559322034" cy="90.0" r="3" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>Bölüm 42 (lines) · hamle 32 · bot %90</title></circle>
+<circle cx="636.6101694915254" cy="171.0" r="3" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>Bölüm 43 (animals) · hamle 17 · bot %63</title></circle>
+<circle cx="650.3389830508474" cy="135.0" r="3" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>Bölüm 44 (seeds) · hamle 13 · bot %75</title></circle>
+<circle cx="664.0677966101695" cy="66.0" r="3" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>Bölüm 45 (lines) · hamle 34 · bot %98</title></circle>
+<circle cx="677.7966101694915" cy="195.0" r="3" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>Bölüm 46 (animals) · hamle 12 · bot %55</title></circle>
+<circle cx="691.5254237288136" cy="141.0" r="3" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>Bölüm 47 (seeds) · hamle 16 · bot %73</title></circle>
+<circle cx="705.2542372881355" cy="90.0" r="3" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>Bölüm 48 (lines) · hamle 34 · bot %90</title></circle>
+<circle cx="718.9830508474577" cy="171.0" r="3" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>Bölüm 49 (animals) · hamle 25 · bot %63</title></circle>
+<circle cx="732.7118644067797" cy="180.0" r="6" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>Bölüm 50 (boss) · hamle 35 · bot %60</title></circle>
+<circle cx="746.4406779661017" cy="111.0" r="3" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>Bölüm 51 (lines) · hamle 34 · bot %83</title></circle>
+<circle cx="760.1694915254237" cy="141.0" r="3" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>Bölüm 52 (animals) · hamle 13 · bot %73</title></circle>
+<circle cx="773.8983050847457" cy="189.0" r="3" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>Bölüm 53 (seeds) · hamle 33 · bot %57</title></circle>
+<circle cx="787.6271186440679" cy="111.0" r="3" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>Bölüm 54 (lines) · hamle 36 · bot %83</title></circle>
+<circle cx="801.3559322033898" cy="201.0" r="3" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>Bölüm 55 (animals) · hamle 20 · bot %53</title></circle>
+<circle cx="815.0847457627118" cy="165.0" r="3" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>Bölüm 56 (seeds) · hamle 22 · bot %65</title></circle>
+<circle cx="828.8135593220339" cy="171.0" r="3" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>Bölüm 57 (lines) · hamle 36 · bot %63</title></circle>
+<circle cx="842.542372881356" cy="156.0" r="3" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>Bölüm 58 (animals) · hamle 19 · bot %68</title></circle>
+<circle cx="856.271186440678" cy="135.0" r="3" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>Bölüm 59 (seeds) · hamle 20 · bot %75</title></circle>
+<circle cx="870.0" cy="171.0" r="6" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>Bölüm 60 (boss) · hamle 31 · bot %63</title></circle>
+</svg>
