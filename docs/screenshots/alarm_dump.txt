@@ -1,54 +1,54 @@
-      whenElapsed=+56s220ms maxWhenElapsed=+56s220ms
-      listener=com.android.server.alarm.AlarmManagerService$3@efa7138
-    RTC_WAKEUP #6: Alarm{8717511 type 0 origWhen 1793853303456 whenElapsed 542687 com.abacusai.ramazanrehberi.t1793533738}
+      whenElapsed=+39s145ms maxWhenElapsed=+3m39s811ms
+      operation=PendingIntent{57d1c8f: PendingIntentRecord{a92eb1c com.google.android.gms/com.google.android.gms.scheduler broadcastIntent}}
+    RTC_WAKEUP #5: Alarm{7d8d325 type 0 origWhen 1793855393964 whenElapsed 669923 com.abacusai.ramazanrehberi.t1793533738}
       tag=*walarm*:com.example.reminder.TEST
-      type=RTC_WAKEUP origWhen=2026-11-05 04:35:03.456 window=0 exactAllowReason=policy_permission repeatInterval=0 count=0 flags=0x3
-      policyWhenElapsed: requester=+59s676ms app_standby=-323ms device_idle=-- battery_saver=-- tare=-323ms
-      whenElapsed=+59s676ms maxWhenElapsed=+59s676ms
+      type=RTC_WAKEUP origWhen=2026-11-05 05:09:53.964 window=0 exactAllowReason=policy_permission repeatInterval=0 count=0 flags=0x3
+      policyWhenElapsed: requester=+59s846ms app_standby=-153ms device_idle=-- battery_saver=-- tare=-153ms
+      whenElapsed=+59s846ms maxWhenElapsed=+59s846ms
       Alarm clock:
-        triggerTime=2026-11-05 04:35:03.456
-        showIntent=PendingIntent{6203676: PendingIntentRecord{1935477 com.abacusai.ramazanrehberi.t1793533738 startActivity}}
-      operation=PendingIntent{a8168e4: PendingIntentRecord{b67514d com.abacusai.ramazanrehberi.t1793533738 broadcastIntent}}
+        triggerTime=2026-11-05 05:09:53.964
+        showIntent=PendingIntent{b455cfa: PendingIntentRecord{238f2ab com.abacusai.ramazanrehberi.t1793533738 startActivity}}
+      operation=PendingIntent{7719d08: PendingIntentRecord{5687ca1 com.abacusai.ramazanrehberi.t1793533738 broadcastIntent}}
       idle-options=Bundle[{android.pendingIntent.backgroundActivityAllowed=false, android:broadcast.temporaryAppAllowlistReasonCode=301, android:broadcast.temporaryAppAllowlistDuration=10000, android:broadcast.temporaryAppAllowlistReason=, android:broadcast.temporaryAppAllowlistType=0, android:broadcast.flags=8}]
-    ELAPSED #7: Alarm{4514402 type 3 origWhen 608232 whenElapsed 608232 com.google.android.gms}
-      tag=*alarm*:com.google.android.gms.vision.DEPENDENCY
-      type=ELAPSED origWhen=+2m5s221ms window=+2m0s0ms repeatInterval=0 count=0 flags=0x0
-      policyWhenElapsed: requester=+2m5s221ms app_standby=-34s779ms device_idle=-- battery_saver=-34s779ms tare=-34s779ms
-      whenElapsed=+2m5s221ms maxWhenElapsed=+4m5s221ms
-      operation=PendingIntent{4dec113: PendingIntentRecord{95e2f50 com.google.android.gms/com.google.android.gms.vision broadcastIntent}}
-    ELAPSED #8: Alarm{764b549 type 3 origWhen 620477 whenElapsed 620477 com.google.android.gms}
+    ELAPSED_WAKEUP #6: Alarm{8fc4ec6 type 2 origWhen 695520 whenElapsed 695520 com.google.android.gms}
+      tag=*walarm*:com.google.android.gms.gcm.HEARTBEAT_ALARM
+      type=ELAPSED_WAKEUP origWhen=+1m25s443ms window=0 exactAllowReason=allow-listed repeatInterval=0 count=0 flags=0x21
+      policyWhenElapsed: requester=+1m25s443ms app_standby=-3m21s975ms device_idle=-- battery_saver=-7m54s557ms tare=-7m54s557ms
+      whenElapsed=+1m25s443ms maxWhenElapsed=+1m25s443ms
+      operation=PendingIntent{6920e87: PendingIntentRecord{781b4 com.google.android.gms/com.google.android.gms.gcm broadcastIntent}}
+      idle-options=Bundle[{android.pendingIntent.backgroundActivityAllowed=false, android:broadcast.temporaryAppAllowlistReasonCode=-1, android:broadcast.temporaryAppAllowlistDuration=10000, android:broadcast.temporaryAppAllowlistReason=, android:broadcast.temporaryAppAllowlistType=1, android:broadcast.flags=8}]
 --
-      whenElapsed=+13h12m19s279ms maxWhenElapsed=+14h12m19s279ms
-      operation=PendingIntent{fbc99a4: PendingIntentRecord{2f5930d com.google.android.gms/com.google.android.gms.location_base broadcastIntent}}
-    RTC_WAKEUP #30: Alarm{e6bc2c2 type 0 origWhen 1793901480000 whenElapsed 48719230 com.abacusai.ramazanrehberi.t1793533738}
+      whenElapsed=+11h51m8s117ms maxWhenElapsed=+12h51m8s117ms
+      operation=PendingIntent{e3713dc: PendingIntentRecord{da8ace5 com.google.android.gms/com.google.android.gms.core_download startService}}
+    RTC_WAKEUP #29: Alarm{39d93ba type 0 origWhen 1793901480000 whenElapsed 46755958 com.abacusai.ramazanrehberi.t1793533738}
       tag=*walarm*:com.example.reminder.IFTAR
       type=RTC_WAKEUP origWhen=2026-11-05 17:58:00.000 window=0 exactAllowReason=policy_permission repeatInterval=0 count=0 flags=0x3
-      policyWhenElapsed: requester=+13h23m56s219ms app_standby=-25s897ms device_idle=-- battery_saver=-- tare=-25s897ms
-      whenElapsed=+13h23m56s219ms maxWhenElapsed=+13h23m56s219ms
+      policyWhenElapsed: requester=+12h49m5s881ms app_standby=-24s895ms device_idle=-- battery_saver=-- tare=-24s895ms
+      whenElapsed=+12h49m5s881ms maxWhenElapsed=+12h49m5s881ms
       Alarm clock:
         triggerTime=2026-11-05 17:58:00.000
-        showIntent=PendingIntent{d4538d3: PendingIntentRecord{1935477 com.abacusai.ramazanrehberi.t1793533738 startActivity}}
-      operation=PendingIntent{3fbac10: PendingIntentRecord{4f55309 com.abacusai.ramazanrehberi.t1793533738 broadcastIntent}}
+        showIntent=PendingIntent{8f6c26b: PendingIntentRecord{238f2ab com.abacusai.ramazanrehberi.t1793533738 startActivity}}
+      operation=PendingIntent{a0f91c8: PendingIntentRecord{fbc3261 com.abacusai.ramazanrehberi.t1793533738 broadcastIntent}}
       idle-options=Bundle[{android.pendingIntent.backgroundActivityAllowed=false, android:broadcast.temporaryAppAllowlistReasonCode=301, android:broadcast.temporaryAppAllowlistDuration=10000, android:broadcast.temporaryAppAllowlistReason=, android:broadcast.temporaryAppAllowlistType=0, android:broadcast.flags=8}]
-    ELAPSED #31: Alarm{db7490e type 3 origWhen 64841173 whenElapsed 64841173 android}
-      tag=*alarm*:com.android.server.timedetector.NetworkTimeUpdateService.action.POLL
-      type=ELAPSED origWhen=+17h52m38s162ms window=+1h0m0s0ms repeatInterval=0 count=0 flags=0x8
-      policyWhenElapsed: requester=+17h52m38s162ms app_standby=-7m21s145ms device_idle=-- battery_saver=-- tare=-7m21s145ms
-      whenElapsed=+17h52m38s162ms maxWhenElapsed=+18h52m38s162ms
-      operation=PendingIntent{e208f2f: PendingIntentRecord{cd7793c android broadcastIntent}}
-    ELAPSED #32: Alarm{f1716c5 type 3 origWhen 66876346 whenElapsed 66876346 android}
+    ELAPSED #30: Alarm{2813186 type 3 origWhen 46907341 whenElapsed 46907341 com.google.android.gms}
+      tag=*alarm*:com.google.android.location.ALARM_WAKEUP_DAILY_UPLOADER
+      type=ELAPSED origWhen=+12h51m37s264ms window=+1h0m0s0ms repeatInterval=0 count=0 flags=0x0
+      policyWhenElapsed: requester=+12h51m37s264ms app_standby=-3m21s975ms device_idle=-- battery_saver=-7m53s876ms tare=-7m53s876ms
+      whenElapsed=+12h51m37s264ms maxWhenElapsed=+13h51m37s264ms
+      operation=PendingIntent{1bd1a47: PendingIntentRecord{5700274 com.google.android.gms/com.google.android.gms.location_base broadcastIntent}}
+    ELAPSED #31: Alarm{b28939d type 3 origWhen 64846518 whenElapsed 64846518 android}
 --
   Temporary Quota Reserves:
   
-  Next wake from idle: Alarm{8717511 type 0 origWhen 1793853303456 whenElapsed 542687 com.abacusai.ramazanrehberi.t1793533738}
+  Next wake from idle: Alarm{7d8d325 type 0 origWhen 1793855393964 whenElapsed 669923 com.abacusai.ramazanrehberi.t1793533738}
     tag=*walarm*:com.example.reminder.TEST
-    type=RTC_WAKEUP origWhen=2026-11-05 04:35:03.456 window=0 exactAllowReason=policy_permission repeatInterval=0 count=0 flags=0x3
-    policyWhenElapsed: requester=+59s676ms app_standby=-323ms device_idle=-- battery_saver=-- tare=-323ms
-    whenElapsed=+59s676ms maxWhenElapsed=+59s676ms
+    type=RTC_WAKEUP origWhen=2026-11-05 05:09:53.964 window=0 exactAllowReason=policy_permission repeatInterval=0 count=0 flags=0x3
+    policyWhenElapsed: requester=+59s846ms app_standby=-153ms device_idle=-- battery_saver=-- tare=-153ms
+    whenElapsed=+59s846ms maxWhenElapsed=+59s846ms
     Alarm clock:
-      triggerTime=2026-11-05 04:35:03.456
-      showIntent=PendingIntent{6203676: PendingIntentRecord{1935477 com.abacusai.ramazanrehberi.t1793533738 startActivity}}
-    operation=PendingIntent{a8168e4: PendingIntentRecord{b67514d com.abacusai.ramazanrehberi.t1793533738 broadcastIntent}}
+      triggerTime=2026-11-05 05:09:53.964
+      showIntent=PendingIntent{b455cfa: PendingIntentRecord{238f2ab com.abacusai.ramazanrehberi.t1793533738 startActivity}}
+    operation=PendingIntent{7719d08: PendingIntentRecord{5687ca1 com.abacusai.ramazanrehberi.t1793533738 broadcastIntent}}
     idle-options=Bundle[{android.pendingIntent.backgroundActivityAllowed=false, android:broadcast.temporaryAppAllowlistReasonCode=301, android:broadcast.temporaryAppAllowlistDuration=10000, android:broadcast.temporaryAppAllowlistReason=, android:broadcast.temporaryAppAllowlistType=0, android:broadcast.flags=8}]
   
   Past-due non-wakeup alarms: (none)
@@ -56,6 +56,6 @@
     Max delay time: 0, max non-interactive time: 0
   
   Broadcast ref count: 0
-  PendingIntent send count: 28
+  PendingIntent send count: 33
 INACTIVE
 DOZE_TEST: bildirim 65 saniyede geldi (hedef ~60 sn)
