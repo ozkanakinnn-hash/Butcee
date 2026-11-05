@@ -94,13 +94,13 @@ fun SahurMenuCard(menu: SahurMenu, imsakTime: String?, ramadanDay: Int?, modifie
           val y = rnd.nextFloat() * size.height * 0.55f
           drawCircle(ink.copy(alpha = 0.25f + rnd.nextFloat() * 0.5f), radius = 0.8f + rnd.nextFloat() * 1.8f, center = Offset(x, y))
         }
-        val c = Offset(size.width * 0.78f, size.width * 0.32f)
-        val r = size.width * 0.07f
+        val c = Offset(size.width * 0.84f, size.width * 0.36f)
+        val r = size.width * 0.055f
         drawCircle(gold.copy(alpha = 0.18f), radius = r * 2.2f, center = c)
         drawCircle(gold, radius = r, center = c)
         drawCircle(skyTop, radius = r * 0.86f, center = Offset(c.x + r * 0.42f, c.y - r * 0.18f))
         // Küçük sekiz köşeli yıldız
-        val s = Offset(size.width * 0.86f, size.width * 0.2f)
+        val s = Offset(size.width * 0.9f, size.width * 0.26f)
         val star = Path().apply {
           for (k in 0 until 16) {
             val a = Math.PI / 8 * k - Math.PI / 2
