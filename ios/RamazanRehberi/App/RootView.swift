@@ -1,0 +1,86 @@
+import SwiftUI
+
+/// Alt alt sekmelerden açılan alt ekranlar.
+enum Route: Hashable {
+  case qibla, mosques, zikirmatik, esma, kaza, kandil, hatim, notificationWizard, premium
+  case greetingCards, ramadanGuide, notes, settings, widgets
+  case quranList(tab: Int)
+  case quranReader(page: Int)
+  case surah(Int)
+}
+
+struct RootView: View {
+  @EnvironmentObject var store: AppData
+  @Environment(\.palette) var p
+  @State private var tab = 0
+
+  var isRamadan: Bool { RamadanCalendar.isRamadanDay(date: Date()) }
+
+  var body: some View {
+    TabView(selection: $tab) {
+      NavigationStack { HomeView(selectTab: { tab = $0 }).withRoutes() }
+        .tabItem { Label(t("Ana Sayfa"), systemImage: "house.fill") }.tag(0)
+      NavigationStack {
+        Group { if isRamadan { RamadanGuideView() } else { QuranListView(initialTab: 0) } }.withRoutes()
+      }
+      .tabItem {
+        if isRamadan { Label(t("Ramazan Rehberi"), image: "ic_ramadan_guide") } else { Label(t("Kur'an-ı Kerim"), image: "ic_quran_tab") }
+      }.tag(1)
+      NavigationStack { FastingCalendarView().withRoutes() }
+        .tabItem { Label(t("Takvim"), systemImage: "calendar") }.tag(2)
+      NavigationStack { SpiritualView().withRoutes() }
+        .tabItem { Label(t("Ayet & Dua"), systemImage: "book") }.tag(3)
+      NavigationStack { MoreHubView().withRoutes() }
+        .tabItem { Label(t("Dahası"), systemImage: "ellipsis") }.tag(4)
+    }
+    .onAppear { styleTabBar() }
+  }
+
+  private func styleTabBar() {
+    let a = UITabBarAppearance()
+    a.configureWithOpaqueBackground()
+    a.backgroundColor = UIColor(p.surface)
+    UITabBar.appearance().standardAppearance = a
+    UITabBar.appearance().scrollEdgeAppearance = a
+  }
+}
+
+extension View {
+  func withRoutes() -> some View {
+    navigationDestination(for: Route.self) { r in
+      Group {
+        switch r {
+        case .qibla: QiblaView()
+        case .mosques: NearbyMosquesView()
+        case .zikirmatik: ZikirmatikView()
+        case .esma: EsmaView()
+        case .kaza: KazaView()
+        case .kandil: KandilView()
+        case .hatim: QuranListView(initialTab: 1)
+        case .notificationWizard: NotificationWizardView()
+        case .premium: PremiumView()
+        case .greetingCards: GreetingCardsView()
+        case .ramadanGuide: RamadanGuideView()
+        case .notes: NotesView()
+        case .settings: SettingsView()
+        case .widgets: WidgetsInfoView()
+        case .quranList(let tab): QuranListView(initialTab: tab)
+        case .quranReader(let page): QuranReaderView(startPage: page)
+        case .surah(let n): QuranReaderView(startPage: QuranText.shared.firstPage(ofSurah: n))
+        }
+      }
+    }
+  }
+}
+
+/// Ekran arka planı + başlık stili.
+struct ScreenBackground: ViewModifier {
+  @Environment(\.palette) var p
+  func body(content: Content) -> some View {
+    content.background(p.background.ignoresSafeArea()).foregroundStyle(p.onBackground)
+  }
+}
+
+extension View {
+  func screen() -> some View { modifier(ScreenBackground()) }
+}

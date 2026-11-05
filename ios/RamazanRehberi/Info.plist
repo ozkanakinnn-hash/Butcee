@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>CFBundleDevelopmentRegion</key><string>tr</string>
+  <key>CFBundleDisplayName</key><string>Ramazan Rehberi</string>
+  <key>CFBundleExecutable</key><string>$(EXECUTABLE_NAME)</string>
+  <key>CFBundleIdentifier</key><string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+  <key>CFBundleInfoDictionaryVersion</key><string>6.0</string>
+  <key>CFBundleName</key><string>$(PRODUCT_NAME)</string>
+  <key>CFBundlePackageType</key><string>APPL</string>
+  <key>CFBundleShortVersionString</key><string>$(MARKETING_VERSION)</string>
+  <key>CFBundleVersion</key><string>$(CURRENT_PROJECT_VERSION)</string>
+  <key>CFBundleLocalizations</key><array><string>tr</string><string>en</string></array>
+  <key>LSRequiresIPhoneOS</key><true/>
+  <key>ITSAppUsesNonExemptEncryption</key><false/>
+  <key>UILaunchScreen</key><dict><key>UIColorName</key><string>LaunchBackground</string></dict>
+  <key>UISupportedInterfaceOrientations</key><array><string>UIInterfaceOrientationPortrait</string></array>
+  <key>UIAppFonts</key>
+  <array>
+    <string>amiri_bold.ttf</string><string>amiri_regular.ttf</string>
+    <string>inter_extrabold.ttf</string><string>inter_regular.ttf</string>
+    <string>playfair_display_bold.ttf</string><string>playfair_display_italic.ttf</string>
+  </array>
+  <key>NSLocationWhenInUseUsageDescription</key>
+  <string>Kıble yönünü ve yakınızdaki camileri bulmak için konumunuz kullanılır. / Your location is used to find the qibla direction and nearby mosques.</string>
+  <key>NSPhotoLibraryAddUsageDescription</key>
+  <string>Özel gün kartlarını fotoğraflarınıza kaydetmek için. / To save special day cards to your photos.</string>
+  <key>NSUserTrackingUsageDescription</key>
+  <string>Reklamların size daha uygun olması için. / To show you more relevant ads.</string>
+  <key>GADApplicationIdentifier</key><string>ca-app-pub-3940256099942544~1458002511</string>
+  <key>AdMobBannerId</key><string>ca-app-pub-3940256099942544/2934735716</string>
+  <key>SKAdNetworkItems</key>
+  <array>
+    <dict><key>SKAdNetworkIdentifier</key><string>cstr6suwn9.skadnetwork</string></dict>
+  </array>
+  <key>UIBackgroundModes</key><array><string>fetch</string></array>
+  <key>BGTaskSchedulerPermittedIdentifiers</key><array><string>com.ozkanakin.ramazanrehberi.refresh</string></array>
+  <key>LSApplicationQueriesSchemes</key><array><string>instagram-stories</string><string>whatsapp</string></array>
+</dict>
+</plist>

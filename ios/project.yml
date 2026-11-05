@@ -1,0 +1,59 @@
+name: RamazanRehberi
+options:
+  bundleIdPrefix: com.ozkanakin
+  deploymentTarget:
+    iOS: "16.0"
+  developmentLanguage: tr
+settings:
+  base:
+    MARKETING_VERSION: "1.0.0"
+    CURRENT_PROJECT_VERSION: "1"
+    SWIFT_VERSION: "5.0"
+    DEVELOPMENT_TEAM: ""
+    CODE_SIGN_STYLE: Manual
+    ENABLE_USER_SCRIPT_SANDBOXING: NO
+packages:
+  GoogleMobileAds:
+    url: https://github.com/googleads/swift-package-manager-google-mobile-ads
+    exactVersion: 11.13.0
+  GoogleUMP:
+    url: https://github.com/googleads/swift-package-manager-google-user-messaging-platform
+    exactVersion: 2.7.0
+targets:
+  RamazanRehberi:
+    type: application
+    platform: iOS
+    sources:
+      - path: RamazanRehberi
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.ozkanakin.ramazanrehberi
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        TARGETED_DEVICE_FAMILY: "1"
+        INFOPLIST_FILE: RamazanRehberi/Info.plist
+        CODE_SIGN_ENTITLEMENTS: RamazanRehberi/RamazanRehberi.entitlements
+        OTHER_LDFLAGS: ["-ObjC"]
+    dependencies:
+      - package: GoogleMobileAds
+      - package: GoogleUMP
+        product: UserMessagingPlatform
+      - target: RamazanWidget
+        embed: true
+  RamazanWidget:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: RamazanWidget
+      - path: RamazanRehberi/Core/PrayerCore.swift
+      - path: RamazanRehberi/Core/LocalPrayerCalc.swift
+      - path: RamazanRehberi/Core/Calendars.swift
+      - path: RamazanRehberi/Core/Content.swift
+      - path: RamazanRehberi/Core/L10n.swift
+      - path: RamazanRehberi/Resources/Data/content.json
+        buildPhase: resources
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.ozkanakin.ramazanrehberi.widget
+        INFOPLIST_FILE: RamazanWidget/Info.plist
+        CODE_SIGN_ENTITLEMENTS: RamazanWidget/RamazanWidget.entitlements
+        SWIFT_ACTIVE_COMPILATION_CONDITIONS: WIDGET

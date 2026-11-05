@@ -13,3 +13,7 @@
 .env
 /my-upload-key.jks
 app/google-services.json
+ios/build/
+ios/*.xcodeproj/
+ios/Payload/
+ios/*.ipa
