@@ -155,6 +155,7 @@ struct QiblaView: View {
       ForEach(Array(zip(["K", "D", "G", "B"], [0.0, 90, 180, 270])), id: \.0) { l, a in
         Text(L10n.isEnglish ? ["K": "N", "D": "E", "G": "S", "B": "W"][l]! : l)
           .font(.system(size: 16, weight: .bold)).foregroundStyle(l == "K" ? .red : p.onBackground)
+          .rotationEffect(.degrees(-a + loc.heading))
           .offset(y: -112).rotationEffect(.degrees(a))
       }
       // Kıble ibresi

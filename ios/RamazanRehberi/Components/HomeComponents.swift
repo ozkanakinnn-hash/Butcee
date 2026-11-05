@@ -142,7 +142,7 @@ struct ShortcutsRow: View {
           VStack(alignment: .leading, spacing: 4) {
             iconChip("ic_hub_mosque")
             Spacer(minLength: 0)
-            Text(t("Yakındaki Camiler")).font(.system(size: 16, weight: .bold)).foregroundStyle(p.onBackground).lineLimit(2)
+            Text(t("Yakındaki Camiler")).font(.system(size: 15, weight: .bold)).foregroundStyle(p.onBackground).lineLimit(2).minimumScaleFactor(0.7)
             Text(t("Harita & yol tarifi")).font(.system(size: 12)).foregroundStyle(p.onSurfaceVariant)
           }
           .padding(14).frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
@@ -155,7 +155,7 @@ struct ShortcutsRow: View {
           VStack(alignment: .trailing, spacing: 4) {
             iconChip("ic_hub_tasbih")
             Spacer(minLength: 0)
-            Text(t("Zikirmatik")).font(.system(size: 16, weight: .bold)).foregroundStyle(p.onBackground)
+            Text(t("Zikirmatik")).font(.system(size: 15, weight: .bold)).foregroundStyle(p.onBackground).lineLimit(2).minimumScaleFactor(0.7).multilineTextAlignment(.trailing)
             (Text(t("Toplam") + " ").foregroundColor(p.onSurfaceVariant) + Text("\(store.zikirTotal)").foregroundColor(p.primary).bold())
               .font(.system(size: 12))
           }

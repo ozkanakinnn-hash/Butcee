@@ -102,7 +102,7 @@ struct FastingCalendarView: View {
       .foregroundStyle(p.onBackground)
       LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 4), count: 7), spacing: 8) {
         ForEach(DateUtil.weekdaysShort, id: \.self) { Text($0).font(.system(size: 11)).foregroundStyle(p.onSurfaceVariant) }
-        ForEach(0..<firstWeekday, id: \.self) { _ in Color.clear.frame(height: 44) }
+        ForEach(Array(0..<firstWeekday).map { -100 - $0 }, id: \.self) { _ in Color.clear.frame(height: 44) }
         ForEach(1...days, id: \.self) { d in
           let key = String(format: "%04d-%02d-%02d", comps.year!, comps.month!, d)
           let ramadan = RamadanCalendar.isRamadanDay(key)

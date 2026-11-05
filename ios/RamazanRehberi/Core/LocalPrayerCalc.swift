@@ -35,7 +35,8 @@ enum LocalPrayerCalc {
 
   static func times(city: String, district: String, date: Date) -> PrayerTimes {
     let (lat, lon) = coords(city: city)
-    let tz = Double(TimeZone.current.secondsFromGMT(for: date)) / 3600
+    // Türkiye illeri her zaman TSİ (UTC+3); yurt dışı için cihaz saat dilimi
+    let tz = provinceCoords[city] != nil ? 3.0 : Double(TimeZone.current.secondsFromGMT(for: date)) / 3600
     let jd = julian(date)
     let (decl, eqt) = sun(jd)
     let noon = 12 + tz - lon / 15 - eqt
