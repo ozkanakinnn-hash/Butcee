@@ -55,6 +55,23 @@ news-aggregator/
    npx firebase-tools deploy --only firestore,functions
    ```
 
+### 1b. Otomatik kurulum (bilgisayara bir şey kurmadan, GitHub Actions ile)
+Yalnızca şu 4 adımı siz yaparsınız, gerisini iş akışı yapar:
+1. **Firebase projesi** açın: [console.firebase.google.com](https://console.firebase.google.com) → Proje ekle.
+   Proje kimliğini not edin (ör. `haber-akisi-12345`).
+2. **Blaze planına** geçin (sol alttaki "Spark" → Yükselt) ve bir bütçe uyarısı koyun.
+3. **Hizmet hesabı anahtarı** oluşturun:
+   [console.cloud.google.com/iam-admin/serviceaccounts](https://console.cloud.google.com/iam-admin/serviceaccounts)
+   → projenizi seçin → **Hizmet hesabı oluştur** → ad: `github-deploy` → roller:
+   **Düzenleyici (Editor)**, **Hizmet Hesabı Kullanıcısı (Service Account User)**, **Firebase Admin** →
+   Bitti → hesabı açın → **Anahtarlar → Anahtar ekle → JSON**. İnen dosyayı kimseyle paylaşmayın.
+4. GitHub deposu → **Settings → Secrets and variables → Actions → New repository secret** →
+   ad: `FIREBASE_SERVICE_ACCOUNT`, değer: JSON dosyasının **tüm içeriği**.
+
+Sonra GitHub → **Actions → "Haber Akışı - Firebase'e Kur" → Run workflow** → proje kimliğini yazın → Çalıştır.
+İş akışı; Firestore veritabanını (europe-west1) oluşturur, kuralları/dizinleri ve fonksiyonları yayınlar,
+örnek kategori/kaynakları yükler ve ilk haberleri çeker. Kod değiştikçe aynı düğmeyle tekrar yayınlayabilirsiniz.
+
 ### 2. İlk verileri yükleme
 Firebase Console → Proje Ayarları → Hizmet hesapları → **Yeni özel anahtar oluştur** (dosyayı depoya koymayın).
 ```bash

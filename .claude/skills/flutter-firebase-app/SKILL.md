@@ -71,3 +71,12 @@ description: Flutter/FlutterFlow + Firebase (Firestore, Cloud Functions) uygulam
 - Ayarlar'da KVKK/GDPR gizlilik, kullanım koşulları ve "Uyar-Kaldır" telif e-postası (`mailto:` konu/gövde
   `Uri.encodeComponent` ile — `queryParameters` boşluğu "+" yapar).
 - Yalnızca RSS'ini herkese açık sunan kaynaklar; seed'deki RSS adreslerini yayından önce doğrulat.
+
+## 6. Kullanıcı "Firebase'e girip sen yap" derse
+- Konteynerde Google oturumu yok (`gcloud auth list` boş); `firebase login` tarayıcı onayı ister → ajan giriş yapamaz.
+  Proje açma ve Blaze (kredi kartı) de kullanıcıya ait. Bunu dürüstçe söyle, kalan her şeyi otomatikleştir.
+- Çözüm: `workflow_dispatch` iş akışı (`news-firebase-deploy.yml`): `FIREBASE_SERVICE_ACCOUNT` gizli değişkeni →
+  `GOOGLE_APPLICATION_CREDENTIALS` dosyası → `firestore:databases:get` yoksa `firestore:databases:create "(default)" --location europe-west1`
+  → `firebase deploy --only firestore,functions --non-interactive --force` → seed → ilk çekim → anahtarı sil.
+- Hizmet hesabı rolleri: Editor + Service Account User + Firebase Admin. Kullanıcının adımları: proje aç, Blaze,
+  hizmet hesabı JSON anahtarı, GitHub secret, "Run workflow".
