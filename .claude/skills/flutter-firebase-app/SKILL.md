@@ -97,3 +97,8 @@ description: Flutter/FlutterFlow + Firebase (Firestore, Cloud Functions) uygulam
   `$RUNNER_TEMP` ile kur, `echo "VAR=..." >> "$GITHUB_ENV"` ile sonraki adımlara aktar. Job `env:`'de yalnızca
   github/needs/strategy/matrix/vars/secrets/inputs. Push'tan sonra yeni iş akışının adla listelendiğini kontrol et.
 - Deponun varsayılan dalı `main` olmayabilir: `git remote show origin | grep HEAD` ile bak; PR'ı ve "main'e al" talimatını ona göre ver.
+- **Tabletten/telefondan kopyalanan JSON secret'ı sık bozulur** (eksik kopya, akıllı tırnak). Okuyan betik anahtarı
+  ASLA yazdırmadan teşhis vermeli: uzunluk, `{`/`}` ile başlayıp bitme, `"private_key"`/`"client_email"` var mı,
+  akıllı tırnak var mı, hata konumu (JSON.parse mesajı metinden parça içerebilir — yalnızca position'ı al).
+  BOM ve baştaki/sondaki boşlukları tolere et; `cert(json)` ile başlat. Kullanıcıya en güvenilir kopyalama yolu:
+  dosyayı Chrome'da `file://` ile değil, bir metin düzenleyicide açıp "Tümünü seç".
