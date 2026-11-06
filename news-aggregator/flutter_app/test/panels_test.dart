@@ -158,7 +158,7 @@ void main() {
     final settings = await AppSettings.load();
     final db = FakeFirebaseFirestore();
     await db.doc('market/latest').set({
-      'source': 'Yahoo Finance',
+      'source': 'Truncgil Finans',
       'updated_at': Timestamp.fromDate(DateTime(2026, 11, 6, 14, 30)),
       'items': [
         {'id': 'usdtry', 'label': 'Dolar', 'unit': '₺', 'value': 42.1234, 'change_pct': 0.35, 'decimals': 4},

@@ -56,7 +56,10 @@ news-aggregator/
 - **Bildirimler sekmesi:** Bot gönderdiği her bildirimi `notifications` koleksiyonuna yazar (7 gün saklanır);
   uygulama kullanıcının konularını (`news_*`, `team_*`) süzerek yeniden eskiye listeler.
 - **Sağ üst panel (☰):** Dolar/TL, Euro/TL, gram altın (TL), ons altın ($), BIST 100, Brent; bot 30 dakikada bir
-  Yahoo Finance'ten çeker (`src/market.js`, ~15 dk gecikmeli, resmi olmayan arayüz) → `market/latest`.
+  Truncgil Finans'tan (ücretsiz, anahtarsız) çeker (`src/market.js`) → `market/latest`. Ons fiyatı gram altın ve
+  dolardan hesaplanır; Brent'in fiyatı bu kaynakta çoğu zaman yok → fiyat yoksa gösterilmez.
+  (Yahoo Finance GitHub sunucularını HTTP 429 ile reddediyor; koruması aşılmaz.)
+  Kaynakları denemek için: Actions → **Piyasa Kaynak Kontrolü** (`scripts/probe-market.js`).
   Altında konumdaki hava durumu. Panelden Ayarlar'a da gidilir.
 - **Haber dizilimi:** Ayarlar → Haber dizilimi: Standart (ilk haber büyük) / Büyük kart / Sade liste.
 - **Kategoriler (14):** Son Dakika, Gündem, Ekonomi, Teknoloji, Spor, Futbol, Dünya, Sağlık, Bilim, Kültür-Sanat,

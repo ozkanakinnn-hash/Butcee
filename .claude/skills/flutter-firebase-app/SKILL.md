@@ -168,9 +168,12 @@ description: Flutter/FlutterFlow + Firebase (Firestore, Cloud Functions) uygulam
 - **Birleşik dizinsiz "en yeni önce" liste:** belge kimliği ters zaman damgası (`9999999999999-ms`); sıralama
   belirtilmeyen sorgu kimliğe göre sıralanır → `arrayContainsAny` + limit yeterli. AMA istemcide de `sentAt`'e göre
   sırala (fake_cloud_firestore ve olası değişikliklere karşı).
-- **Piyasa verisi:** Yahoo chart `/v8/finance/chart/{sym}` (USDTRY=X, EURTRY=X, XU100.IS, BZ=F, GC=F), gerçekçi
-  User-Agent; gram altın = ons × USDTRY / 31,1035. Bot tek belgeye yazar, uygulama tek belge dinler. Kullanıcıya
-  resmi olmadığını söyle (kullanıcı seçti). Türkçe sayı biçimi: binlik nokta, ondalık virgül.
+- **Piyasa verisi:** Yahoo GitHub Actions IP'lerini HTTP 429 ile reddediyor; çerez/crumb ile aşmaya ÇALIŞMA
+  (bot korumasını atlatmak; izin reddedildi). Herkese açık kaynakları dürüst User-Agent ile dene (probe betiği + iş akışı).
+  Çalışan: **Truncgil** `finans.truncgil.com/v4/today.json` (USD, EUR, GRA gram altın, XU100 + Change; ONS ve BRENT
+  fiyatı 0 gelir, yalnızca değişim) — yanıt bazen bozuk JSON → kalemleri regex ile tek tek ayıkla. TCMB `kurlar/today.xml`
+  resmi ama günlük. Stooq CSV 404. Ons = gram × 31,1035 ÷ USD/TL. Fiyatı olmayan kalemi gösterme, kullanıcıya söyle.
+  Kullanıcının seçtiği kaynak çalışmazsa açıkça bildir, alternatifi doğrulayıp öner. Türkçe sayı: binlik nokta, ondalık virgül.
 - **Kart ızgarası taşması:** `GridView` + `childAspectRatio` büyük yazıda taşar → satırları `IntrinsicHeight` + `Row` +
   `Expanded` ile kur, sütunu `mainAxisSize.min`. Widget testleri (Ahem yazı tipi) bunu yakalar.
 - **Alt menü:** `NavigationBar` + `IndexedStack` (sekme durumu korunur); sağ üst ☰ → `endDrawer`

@@ -1,76 +1,74 @@
 'use strict';
 
 /**
- * Piyasa verileri (Yahoo Finance, ~15 dk gecikmeli) → Firestore `market/latest` tek belge.
- * Uygulamanın sağ üst panelinde gösterilir. Yahoo'nun resmi olmayan "chart" arayüzü kullanılır;
- * değişirse bu modül hata verir ve son geçerli veri belgede kalır.
+ * Piyasa verileri → Firestore `market/latest` tek belge (uygulamanın sağ üst paneli).
+ *
+ * Kaynak: Truncgil Finans (finans.truncgil.com/v4/today.json) — ücretsiz, anahtarsız, herkese açık.
+ * Yahoo Finance GitHub sunucularından gelen istekleri HTTP 429 ile reddettiği için kullanılmıyor
+ * (koruması aşılmaz). Truncgil'de:
+ *  - USD, EUR, GRA (gram altın), XU100 (BIST 100): fiyat + günlük değişim
+ *  - ONS: yalnızca değişim → fiyat gram altın ve dolardan hesaplanır (gram × 31,1035 ÷ USD/TL)
+ *  - BRENT: çoğu zaman fiyat 0 gelir → fiyat yoksa gösterilmez
+ * Yanıt zaman zaman tümüyle geçerli JSON olmadığından kalemler tek tek ayıklanır.
  */
 
 const { Timestamp } = require('firebase-admin/firestore');
 
+const SOURCE_URL = 'https://finans.truncgil.com/v4/today.json';
+const UA = 'HaberAkisi/1.0 (+https://github.com/ozkanakinnn-hash/Butcee)';
 const TROY_OUNCE_GRAMS = 31.1034768;
-const SYMBOLS = {
-  usdtry: 'USDTRY=X',
-  eurtry: 'EURTRY=X',
-  bist100: 'XU100.IS',
-  brent: 'BZ=F',
-  gold_oz: 'GC=F',
-};
-const UA = 'Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130 Mobile Safari/537.36';
 
-async function fetchQuote(symbol, fetchImpl = fetch) {
-  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?interval=1d&range=5d`;
-  const res = await fetchImpl(url, { headers: { 'User-Agent': UA, Accept: 'application/json' }, signal: AbortSignal.timeout(15_000) });
-  if (!res.ok) throw new Error(`${symbol}: HTTP ${res.status}`);
-  const json = await res.json();
-  return parseChart(json, symbol);
-}
-
-/** Yahoo chart yanıtından fiyat ve önceki kapanış (saf fonksiyon). */
-function parseChart(json, symbol = '') {
-  const meta = json && json.chart && json.chart.result && json.chart.result[0] && json.chart.result[0].meta;
-  if (!meta || typeof meta.regularMarketPrice !== 'number') throw new Error(`${symbol}: fiyat yok`);
-  const prev = meta.chartPreviousClose ?? meta.previousClose ?? null;
-  return { price: meta.regularMarketPrice, previousClose: typeof prev === 'number' ? prev : null, time: meta.regularMarketTime || null };
-}
-
-const pct = (price, prev) => (prev ? ((price - prev) / prev) * 100 : null);
-
-/** Ham fiyatlardan uygulamanın gösterdiği listeyi kurar; gram altın = ons($) × USD/TRY ÷ 31,1035. */
-function buildMarketItems(q) {
-  const items = [];
-  const add = (id, label, unit, price, prev, decimals) =>
-    items.push({ id, label, unit, value: Number(price.toFixed(decimals)), change_pct: prev === null ? null : Number(pct(price, prev).toFixed(2)), decimals });
-  if (q.usdtry) add('usdtry', 'Dolar', '₺', q.usdtry.price, q.usdtry.previousClose, 4);
-  if (q.eurtry) add('eurtry', 'Euro', '₺', q.eurtry.price, q.eurtry.previousClose, 4);
-  if (q.gold_oz && q.usdtry) {
-    const gram = (q.gold_oz.price * q.usdtry.price) / TROY_OUNCE_GRAMS;
-    const prevGram = q.gold_oz.previousClose && q.usdtry.previousClose
-      ? (q.gold_oz.previousClose * q.usdtry.previousClose) / TROY_OUNCE_GRAMS
-      : null;
-    add('gram_gold', 'Gram Altın', '₺', gram, prevGram, 2);
+/** Yanıttaki `"ANAHTAR":{...}` kalemlerini tek tek okur; bozuk kalemleri atlar (saf fonksiyon). */
+function parseTruncgil(text) {
+  const out = {};
+  for (const [, key, obj] of String(text).matchAll(/"([^"{}]+)":(\{[^{}]*\})/g)) {
+    try {
+      out[key] = JSON.parse(obj);
+    } catch {
+      // bozuk kalem — atla
+    }
   }
-  if (q.gold_oz) add('gold_oz', 'Ons Altın', '$', q.gold_oz.price, q.gold_oz.previousClose, 2);
-  if (q.bist100) add('bist100', 'BIST 100', '', q.bist100.price, q.bist100.previousClose, 2);
-  if (q.brent) add('brent', 'Brent Petrol', '$', q.brent.price, q.brent.previousClose, 2);
+  const date = /"Update_Date":"([^"]+)"/.exec(text);
+  return { items: out, updateDate: date ? date[1] : null };
+}
+
+const num = (v) => (typeof v === 'number' && Number.isFinite(v) && v > 0 ? v : null);
+const chg = (v) => (typeof v === 'number' && Number.isFinite(v) ? v : null);
+
+/** Uygulamanın gösterdiği sıralı liste (saf fonksiyon). */
+function buildMarketItems(t) {
+  const items = [];
+  const add = (id, label, unit, value, change, decimals) => {
+    if (value === null) return;
+    items.push({ id, label, unit, value: Number(value.toFixed(decimals)), change_pct: change, decimals });
+  };
+  const usd = num(t.USD && t.USD.Selling);
+  const gram = num(t.GRA && t.GRA.Selling);
+  add('usdtry', 'Dolar', '₺', usd, chg(t.USD && t.USD.Change), 4);
+  add('eurtry', 'Euro', '₺', num(t.EUR && t.EUR.Selling), chg(t.EUR && t.EUR.Change), 4);
+  add('gram_gold', 'Gram Altın', '₺', gram, chg(t.GRA && t.GRA.Change), 2);
+  const ons = num(t.ONS && t.ONS.Selling) ?? (gram && usd ? (gram * TROY_OUNCE_GRAMS) / usd : null);
+  add('gold_oz', 'Ons Altın', '$', ons, chg(t.ONS && t.ONS.Change), 2);
+  add('bist100', 'BIST 100', '', num(t.XU100 && t.XU100.Selling), chg(t.XU100 && t.XU100.Change), 2);
+  add('brent', 'Brent Petrol', '$', num(t.BRENT && t.BRENT.Selling), chg(t.BRENT && t.BRENT.Change), 2);
   return items;
 }
 
 async function updateMarket(db, { fetchImpl = fetch } = {}) {
-  const quotes = {};
-  const errors = [];
-  await Promise.all(Object.entries(SYMBOLS).map(async ([id, sym]) => {
-    try {
-      quotes[id] = await fetchQuote(sym, fetchImpl);
-    } catch (err) {
-      errors.push(err.message);
-    }
-  }));
-  const items = buildMarketItems(quotes);
+  const res = await fetchImpl(SOURCE_URL, { headers: { 'User-Agent': UA }, signal: AbortSignal.timeout(15_000) });
+  if (!res.ok) return { count: 0, errors: [`Truncgil: HTTP ${res.status}`] };
+  const { items: raw, updateDate } = parseTruncgil(await res.text());
+  const items = buildMarketItems(raw);
+  const missing = ['usdtry', 'eurtry', 'gram_gold', 'gold_oz', 'bist100', 'brent'].filter((id) => !items.some((i) => i.id === id));
   if (items.length) {
-    await db.doc('market/latest').set({ items, source: 'Yahoo Finance', delayed_minutes: 15, updated_at: Timestamp.now() });
+    await db.doc('market/latest').set({
+      items,
+      source: 'Truncgil Finans',
+      source_updated: updateDate || '',
+      updated_at: Timestamp.now(),
+    });
   }
-  return { count: items.length, errors };
+  return { count: items.length, missing };
 }
 
-module.exports = { parseChart, buildMarketItems, updateMarket, SYMBOLS };
+module.exports = { parseTruncgil, buildMarketItems, updateMarket, TROY_OUNCE_GRAMS };

@@ -166,7 +166,7 @@ class S {
   String get breakingLabel => _t('SON DAKİKA', 'BREAKING');
   String get matchLabel => _t('MAÇ', 'MATCH');
   String get markets => _t('Piyasalar', 'Markets');
-  String marketUpdated(String t) => _t('Güncelleme: $t · ~15 dk gecikmeli', 'Updated: $t · ~15 min delayed');
+  String marketUpdated(String t) => _t('Güncelleme: $t', 'Updated: $t');
   String get marketUnavailable => _t('Piyasa verileri henüz yok.', 'Market data not available yet.');
   String get weather => _t('Hava Durumu', 'Weather');
   String get showWeather => _t('Konumundaki hava durumunu göster', 'Show weather for your location');
