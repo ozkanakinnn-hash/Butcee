@@ -1,16 +1,17 @@
-2026-11-06 11:44:37.086879+0000 RamazanRehberi[8619:31096] [Client] Synchronous remote object proxy returned error: Error Domain=NSCocoaErrorDomain Code=4099 "The connection to service named com.apple.commcenter.coretelephony.xpc was invalidated: failed at lookup with error 3 - No such process." UserInfo={NSDebugDescription=The connection to service named com.apple.commcenter.coretelephony.xpc was invalidated: failed at lookup with error 3 - No such process.}
-2026-11-06 11:44:39.003746+0000 RamazanRehberi[8619:31096] [Client] Synchronous remote object proxy returned error: Error Domain=NSCocoaErrorDomain Code=4099 "The connection to service named com.apple.commcenter.coretelephony.xp2026-11-06 11:44:39.003802+0000 RamazanRehberi[8619:30322] SecTaskCopyDebugDescription: RamazanRehberi[8619]/0#-1 LF=22
-Test Case '-[RamazanRehberiTests.CoreTests testAutoLocationMatching]' passed (0.008 seconds).
-Test Case '-[RamazanRehberiTests.CoreTests testCleanTime]' passed (0.003 seconds).
+2026-11-06 15:23:46.625756+0000 RamazanRehberi[4570:23492] [Client] Synchronous remote object proxy returned error: Error Domain=NSCocoaErrorDomain Code=4099 "The connection to service named com.apple.commcenter.coretelephony.xpc was invalidated: failed at lookup with error 3 - No such process." UserInfo={NSDebugDescription=The connection to service named com.apple.commcenter.coretelephony.xpc was invalidated: failed at lookup with error 3 - No such process.}
+2026-11-06 15:23:46.627995+0000 RamazanRehberi[4570:23492] [Client] Synchronous remote object proxy returned error: Error Domain=NSCocoaErrorDomain Code=4099 "The connection to service named com.apple.commcenter.coretelephony.xpc was invalidated: failed at lookup with error 3 - No such process." UserInfo={NSDebugDescription=The connection to service named com.apple.commcenter.coretelephony.xpc was invalidated: failed at lookup with error 3 - No such process.}
+Test Case '-[RamazanRehberiTests.CoreTests testAutoLocationMatching]' passed (0.007 seconds).
+Test Case '-[RamazanRehberiTests.CoreTests testCleanTime]' passed (0.002 seconds).
 Test Case '-[RamazanRehberiTests.CoreTests testContentAndTranslations]' passed (0.002 seconds).
 Test Case '-[RamazanRehberiTests.CoreTests testCountdownModes]' passed (0.004 seconds).
-Test Case '-[RamazanRehberiTests.CoreTests testGreetingCardsRender]' passed (1.052 seconds).
-Test Case '-[RamazanRehberiTests.CoreTests testHolidayCountdown]' passed (0.033 seconds).
+Test Case '-[RamazanRehberiTests.CoreTests testGreetingCardsRender]' passed (0.438 seconds).
+Test Case '-[RamazanRehberiTests.CoreTests testHolidayCountdown]' passed (0.060 seconds).
 Test Case '-[RamazanRehberiTests.CoreTests testIslamicDays2026]' passed (0.003 seconds).
-Test Case '-[RamazanRehberiTests.CoreTests testNotificationScheduling]' passed (2.562 seconds).
-Test Case '-[RamazanRehberiTests.CoreTests testOfflineCalcCloseToDiyanet]' passed (0.012 seconds).
-Test Case '-[RamazanRehberiTests.CoreTests testQiblaBearing]' passed (0.003 seconds).
-Test Case '-[RamazanRehberiTests.CoreTests testQuranText]' passed (0.037 seconds).
-Test Case '-[RamazanRehberiTests.CoreTests testRamadanCalendar]' passed (0.003 seconds).
-Test Case '-[RamazanRehberiTests.CoreTests testStores]' passed (0.043 seconds).
+Test Case '-[RamazanRehberiTests.CoreTests testMaghribRoundedUpLikeDiyanet]' passed (0.005 seconds).
+Test Case '-[RamazanRehberiTests.CoreTests testNotificationScheduling]' passed (1.662 seconds).
+Test Case '-[RamazanRehberiTests.CoreTests testOfflineCalcCloseToDiyanet]' passed (0.009 seconds).
+Test Case '-[RamazanRehberiTests.CoreTests testQiblaBearing]' passed (0.002 seconds).
+Test Case '-[RamazanRehberiTests.CoreTests testQuranText]' passed (0.002 seconds).
+Test Case '-[RamazanRehberiTests.CoreTests testRamadanCalendar]' passed (0.001 seconds).
+Test Case '-[RamazanRehberiTests.CoreTests testStores]' passed (0.030 seconds).
 ** TEST SUCCEEDED **
