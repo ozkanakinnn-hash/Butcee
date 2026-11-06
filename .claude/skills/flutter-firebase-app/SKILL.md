@@ -217,3 +217,10 @@ description: Flutter/FlutterFlow + Firebase (Firestore, Cloud Functions) uygulam
   tüm `CachedNetworkImage`'lara `cacheManager:`; `imageCache.maximumSizeBytes` 50 MB; `memCacheWidth` ile küçük çöz.
 - Kullanılmayan paketleri sil (cupertino_icons); Ayarlar'da önbellek boyutu + "Önbelleği temizle"
   (görsel önbelleği, eski DefaultCacheManager, imageCache, WebView clearCache/clearLocalStorage).
+- **Release APK açılışta çöktü (2026-11):** `Unable to get provider androidx.startup.InitializationProvider … Failed to create
+  an instance of androidx.work.impl.WorkDatabase` → R8, Room'un yansıma ile yüklediği `WorkDatabase_Impl`'i sildi (AdMob/
+  Firebase WorkManager kullanır). Çözüm: `proguard-rules.pro` (`-keep class * extends androidx.room.RoomDatabase { <init>(); }`,
+  `-keep class androidx.work.** { *; }`, flutter_local_notifications için `com.dexterous.**` + Gson TypeToken/Signature) ve
+  release `proguardFiles(...)`. Debug testleri bunu YAKALAMAZ → release APK'yı emülatörde aç
+  (`news-crash-check.yml`: reactivecircus/android-emulator-runner, x86_64 release, `adb logcat -b crash`) ve kullanıcıya
+  vermeden önce "UYGULAMA ÇALIŞIYOR" gör.
