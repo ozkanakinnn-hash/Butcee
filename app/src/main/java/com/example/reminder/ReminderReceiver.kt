@@ -74,6 +74,7 @@ class ReminderReceiver : BroadcastReceiver() {
 /** Cihaz yeniden başladığında veya uygulama güncellendiğinde alarmları yeniden kurar. */
 class ReminderBootReceiver : BroadcastReceiver() {
   override fun onReceive(context: Context, intent: Intent) {
+    // Yalnızca sistem olayları kabul edilir (dışarıdan gelen başka eylemler yok sayılır)
     when (intent.action) {
       Intent.ACTION_BOOT_COMPLETED, Intent.ACTION_MY_PACKAGE_REPLACED,
       Intent.ACTION_TIME_CHANGED, Intent.ACTION_TIMEZONE_CHANGED,

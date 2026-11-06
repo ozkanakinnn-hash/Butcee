@@ -51,7 +51,12 @@ struct RamazanRehberiApp: App {
           AutoLocator.shared.refreshIfEnabled()
           prayers.reload()
           premium.start()
-          if !UserDefaults.standard.bool(forKey: "debug_no_ads") { Ads.gatherConsentAndStart() }
+          #if DEBUG
+          let skipAds = UserDefaults.standard.bool(forKey: "debug_no_ads")
+          #else
+          let skipAds = false
+          #endif
+          if !skipAds { Ads.gatherConsentAndStart() }
           AppDelegate.scheduleRefresh()
         }
     }

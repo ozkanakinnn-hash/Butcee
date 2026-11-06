@@ -77,7 +77,10 @@ android {
     unitTests {
       isIncludeAndroidResources = true
       all {
-        it.systemProperty("robolectric.dependency.repo.url", "file:///home/appuser/.m2/repository")
+        // Yerel Maven deposu varsa Robolectric oradan, yoksa Maven Central'dan indirir (CI)
+        if (file("/home/appuser/.m2/repository").exists()) {
+          it.systemProperty("robolectric.dependency.repo.url", "file:///home/appuser/.m2/repository")
+        }
       }
     }
   }

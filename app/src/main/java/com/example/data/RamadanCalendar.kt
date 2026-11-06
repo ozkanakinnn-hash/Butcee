@@ -40,6 +40,9 @@ object RamadanCalendar {
     return (((today.timeInMillis - start.timeInMillis) / 86_400_000L) + 1).toInt()
   }
 
+  /** Bugünden ([todayKey]) sonraki ilk Ramazan başlangıcı (tabloda yoksa null). */
+  fun nextStartKey(todayKey: String): String? = ranges.map { it.start }.filter { it > todayKey }.minOrNull()
+
   /** Verilen miladi yılda başlayan Ramazan'ın (ilk oruç, son oruç) anahtarları; tabloda yoksa null. */
   fun rangeForYear(year: Int): Pair<String, String>? =
     ranges.firstOrNull { it.start.startsWith("$year-") }?.let { it.start to it.end }

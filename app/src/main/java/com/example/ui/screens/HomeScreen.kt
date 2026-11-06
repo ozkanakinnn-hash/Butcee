@@ -80,7 +80,7 @@ fun HomeScreen(
   onFireCannon: () -> Unit,
   modifier: Modifier = Modifier
 ) {
-  val isRamadanSeason = holidayInfo.title.contains("Bayramı", ignoreCase = true)
+  val isRamadanSeason = remember { com.example.data.RamadanCalendar.isRamadanDay(java.util.Calendar.getInstance()) }
   val greetingName = if (prefs.userName.isNotBlank()) prefs.userName else t("Değerli Kardeşimiz")
 
   // Bayram süslemesi ve mahya (her saniyelik yeniden çizimde ucuz: yıllık takvim önbellekte)

@@ -30,7 +30,12 @@ object IslamicDays {
   private const val SEVVAL = 9
   private const val ZILHICCE = 11
 
-  fun forYear(year: Int): Map<String, SpecialCalendarDay> {
+  private val cache = java.util.concurrent.ConcurrentHashMap<Int, Map<String, SpecialCalendarDay>>()
+
+  /** Yıllık liste önbellekli (geri sayımlar her saniye çağırır). */
+  fun forYear(year: Int): Map<String, SpecialCalendarDay> = cache.getOrPut(year) { compute(year) }
+
+  private fun compute(year: Int): Map<String, SpecialCalendarDay> {
     val map = linkedMapOf<String, SpecialCalendarDay>()
 
     fun put(cal: Calendar, title: String, category: String, emoji: String) {

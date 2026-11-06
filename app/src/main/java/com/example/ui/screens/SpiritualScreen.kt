@@ -60,7 +60,7 @@ fun SpiritualScreen(
   val clipboardManager = LocalClipboardManager.current
 
   val holidayInfo = remember { HolidayCountdownCalculator.calculate() }
-  val isRamadan = holidayInfo.title.contains("Bayramı", ignoreCase = true)
+  val isRamadan = remember { com.example.data.RamadanCalendar.isRamadanDay(java.util.Calendar.getInstance()) }
 
   // Today's item based on day of year / Ramadan day
   val todayItem = remember { SpiritualQuotes.forToday() }

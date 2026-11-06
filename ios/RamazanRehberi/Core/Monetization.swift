@@ -80,6 +80,18 @@ enum Ads {
     startIfAllowed()
   }
 
+  /** GDPR vb.: kullanıcının reklam onayını sonradan değiştirebilmesi için gerekli mi? */
+  static var privacyOptionsRequired: Bool {
+    UMPConsentInformation.sharedInstance.privacyOptionsRequirementStatus == .required
+  }
+
+  static func showPrivacyOptions() {
+    guard let root = UIApplication.shared.connectedScenes.compactMap({ ($0 as? UIWindowScene)?.keyWindow?.rootViewController }).first else { return }
+    var top = root
+    while let presented = top.presentedViewController { top = presented }
+    UMPConsentForm.presentPrivacyOptionsForm(from: top) { _ in }
+  }
+
   private static func startIfAllowed() {
     guard !started, UMPConsentInformation.sharedInstance.canRequestAds else { return }
     started = true

@@ -11,6 +11,10 @@ name: Play Store Release (AAB)
 on:
   workflow_dispatch:
 
+# Güvenlik: iş akışı belirteci varsayılan olarak salt okunur
+permissions:
+  contents: read
+
 jobs:
   bundle:
     runs-on: ubuntu-latest

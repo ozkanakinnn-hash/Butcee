@@ -34,6 +34,11 @@ shot 13_hatim -key_theme_mode DARK -debug_route hatim
 shot 14_kaza -key_theme_mode LIGHT -debug_route kaza
 shot 15_ayarlar -key_theme_mode DARK -debug_route settings
 SHOT_LANG=en shot 16_english -key_theme_mode DARK
+shot 17_esma -key_theme_mode DARK -debug_route esma
+shot 18_kandil -key_theme_mode DARK -debug_route kandil
+shot 19_sihirbaz -key_theme_mode DARK -debug_route wizard
+shot 20_premium -key_theme_mode DARK -debug_route premium
+shot 21_camiler -key_theme_mode DARK -debug_route mosques
 # İlk açılış ekranı
 xcrun simctl terminate "$DEV" $BID; xcrun simctl launch "$DEV" $BID -debug_no_ads YES -key_auto_location NO -key_language tr -key_theme_mode DARK; sleep 12
 xcrun simctl io "$DEV" screenshot "$OUT/00_ilk_acilis.png"

@@ -6,6 +6,10 @@ on:
   pull_request:
   workflow_dispatch:
 
+# Güvenlik: iş akışı belirteci varsayılan olarak salt okunur
+permissions:
+  contents: read
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -40,6 +44,26 @@ jobs:
 
       - name: Debug APK derle
         run: ./gradlew --no-daemon --stacktrace assembleDebug
+
+      # Fonksiyon testleri: vakit/sayaç hesapları, takvim, içerik, depolar (JUnit + Robolectric)
+      - name: Birim testleri
+        run: ./gradlew --no-daemon :app:testDebugUnitTest
+
+      - name: Test raporu
+        if: always()
+        run: |
+          python3 - <<'PY'
+          import glob, xml.etree.ElementTree as ET
+          tot=fail=0
+          for f in glob.glob('app/build/test-results/testDebugUnitTest/*.xml'):
+              r=ET.parse(f).getroot()
+              tot+=int(r.get('tests',0)); fail+=int(r.get('failures',0))+int(r.get('errors',0))
+              for tc in r.iter('testcase'):
+                  bad=[c for c in tc if c.tag in ('failure','error')]
+                  print(('FAIL ' if bad else 'ok   ')+tc.get('classname').split('.')[-1]+'.'+tc.get('name'))
+                  for b in bad: print('      '+(b.get('message') or '')[:300])
+          print(f'TOPLAM {tot} test, {fail} hata')
+          PY
 
       # Yayın (release) sürümünün R8 küçültme/karartma adımı hatasız mı? (imza gerektirmez)
       - name: Yayın sürümü R8 kontrolü

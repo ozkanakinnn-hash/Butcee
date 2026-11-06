@@ -13,10 +13,17 @@ struct RootView: View {
   @EnvironmentObject var store: AppData
   @Environment(\.palette) var p
   // Test/ekran görüntüsü için başlatma argümanları: -debug_start_tab N, -debug_route qibla
+  #if DEBUG
   @State private var tab = UserDefaults.standard.integer(forKey: "debug_start_tab")
+  #else
+  @State private var tab = 0
+  #endif
   @State private var debugPath: [Route] = RootView.debugRoute()
 
   static func debugRoute() -> [Route] {
+    #if !DEBUG
+    return []  // Yayın sürümünde test argümanları devre dışı
+    #endif
     switch UserDefaults.standard.string(forKey: "debug_route") ?? "" {
     case "qibla": return [.qibla]
     case "zikirmatik": return [.zikirmatik]

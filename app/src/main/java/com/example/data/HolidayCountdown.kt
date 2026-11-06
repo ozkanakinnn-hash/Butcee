@@ -22,98 +22,38 @@ object HolidayCountdownCalculator {
    * 3. If during/after Ramadan Bayramı -> "Kurban Bayramı'na Kalan"
    */
   fun calculate(now: Calendar = Calendar.getInstance()): HolidayCountdownInfo {
-    val currentYear = now.get(Calendar.YEAR)
-    val nowMillis = now.timeInMillis
+    // Tarihler sabit değil: Diyanet Ramazan tablosu + hicri takvimden (IslamicDays) bulunur
+    val todayKey = RamadanCalendar.dateKey(now)
+    val year = now.get(Calendar.YEAR)
+    val days = (IslamicDays.forYear(year).values + IslamicDays.forYear(year + 1).values).sortedBy { it.dateKey }
+    fun firstAfter(prefix: String) = days.firstOrNull { it.title.startsWith(prefix) && it.dateKey > todayKey }?.dateKey
+    val nextRamadan = listOfNotNull(RamadanCalendar.nextStartKey(todayKey), firstAfter("Ramazan Başlangıcı")).minOrNull()
+    val fitr = firstAfter("Ramazan Bayramı 1.")
+    val adha = firstAfter("Kurban Bayramı 1.")
 
-    // Key Hijri-Gregorian approximate anchor dates for the calendar
-    // 2026/2027/2028 anchors
-    val calRamadanStart = Calendar.getInstance().apply {
-      set(Calendar.YEAR, currentYear)
-      set(Calendar.MONTH, Calendar.FEBRUARY)
-      set(Calendar.DAY_OF_MONTH, 18)
-      set(Calendar.HOUR_OF_DAY, 0)
-      set(Calendar.MINUTE, 0)
-      set(Calendar.SECOND, 0)
+    val (title, subtitle, targetKey, targetName) = when {
+      RamadanCalendar.isRamadanDay(todayKey) && fitr != null ->
+        Tuple4("🌙 Ramazan Bayramı'na Kalan", "Mübarek Ramazan Bayramı ve Bayram Namazı", fitr, "Ramazan Bayramı")
+      adha != null && (nextRamadan == null || adha < nextRamadan) ->
+        Tuple4("🐑 Kurban Bayramı'na Kalan", "Mübarek Kurban Bayramı 1. Günü", adha, "Kurban Bayramı")
+      nextRamadan != null -> Tuple4(
+        "🌙 Ramazan-ı Şerif'e Kalan",
+        if (nextRamadan.startsWith("$year-")) "11 Ayın Sultanı Mübarek Ramazan Ayı Başlangıcı" else "Gelecek Yılın Mübarek Ramazan Ayı",
+        nextRamadan, "Ramazan Başlangıcı"
+      )
+      else -> Tuple4("🌙 Ramazan-ı Şerif'e Kalan", "", todayKey, "Ramazan Başlangıcı")
     }
-
-    val calEidFitr = Calendar.getInstance().apply {
-      set(Calendar.YEAR, currentYear)
-      set(Calendar.MONTH, Calendar.MARCH)
-      set(Calendar.DAY_OF_MONTH, 20)
-      set(Calendar.HOUR_OF_DAY, 0)
-      set(Calendar.MINUTE, 0)
-      set(Calendar.SECOND, 0)
-    }
-
-    val calEidAdha = Calendar.getInstance().apply {
-      set(Calendar.YEAR, currentYear)
-      set(Calendar.MONTH, Calendar.MAY)
-      set(Calendar.DAY_OF_MONTH, 27)
-      set(Calendar.HOUR_OF_DAY, 0)
-      set(Calendar.MINUTE, 0)
-      set(Calendar.SECOND, 0)
-    }
-
-    // If all dates in current year passed, project to next year's Ramadan
-    val (title, subtitle, targetMillis, targetName) = when {
-      nowMillis < calRamadanStart.timeInMillis -> {
-        Tuple4(
-          "🌙 Ramazan-ı Şerif'e Kalan",
-          "11 Ayın Sultanı Mübarek Ramazan Ayı Başlangıcı",
-          calRamadanStart.timeInMillis,
-          "Ramazan Başlangıcı"
-        )
-      }
-      nowMillis < calEidFitr.timeInMillis -> {
-        Tuple4(
-          "🌙 Ramazan Bayramı'na Kalan",
-          "Mübarek Ramazan Bayramı ve Bayram Namazı",
-          calEidFitr.timeInMillis,
-          "Ramazan Bayramı"
-        )
-      }
-      nowMillis < calEidAdha.timeInMillis -> {
-        Tuple4(
-          "🐑 Kurban Bayramı'na Kalan",
-          "Mübarek Kurban Bayramı 1. Günü",
-          calEidAdha.timeInMillis,
-          "Kurban Bayramı"
-        )
-      }
-      else -> {
-        // Next year's Ramadan
-        val nextRamadan = Calendar.getInstance().apply {
-          set(Calendar.YEAR, currentYear + 1)
-          set(Calendar.MONTH, Calendar.FEBRUARY)
-          set(Calendar.DAY_OF_MONTH, 8)
-          set(Calendar.HOUR_OF_DAY, 0)
-          set(Calendar.MINUTE, 0)
-          set(Calendar.SECOND, 0)
-        }
-        Tuple4(
-          "🌙 Ramazan-ı Şerif'e Kalan",
-          "Gelecek Yılın Mübarek Ramazan Ayı",
-          nextRamadan.timeInMillis,
-          "Ramazan Başlangıcı"
-        )
-      }
-    }
-
-    val diffMillis = (targetMillis - nowMillis).coerceAtLeast(0L)
+    val p = targetKey.split("-").map { it.toInt() }
+    val target = Calendar.getInstance().apply { clear(); set(p[0], p[1] - 1, p[2], 0, 0, 0) }
+    val diffMillis = (target.timeInMillis - now.timeInMillis).coerceAtLeast(0L)
     val totalSec = diffMillis / 1000L
-    val days = totalSec / (24 * 3600L)
-    val remSec = totalSec % (24 * 3600L)
-    val hours = remSec / 3600L
-    val minutes = (remSec % 3600L) / 60L
-    val seconds = remSec % 60L
-
     return HolidayCountdownInfo(
       title = title,
       subtitle = subtitle,
-      days = days,
-      hours = hours,
-      minutes = minutes,
-      seconds = seconds,
+      days = totalSec / 86400L,
+      hours = (totalSec % 86400L) / 3600L,
+      minutes = (totalSec % 3600L) / 60L,
+      seconds = totalSec % 60L,
       targetName = targetName
     )
   }

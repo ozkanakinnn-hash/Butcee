@@ -23,6 +23,9 @@ targets:
   RamazanRehberi:
     type: application
     platform: iOS
+    scheme:
+      testTargets:
+        - RamazanRehberiTests
     sources:
       - path: RamazanRehberi
     settings:
@@ -39,6 +42,17 @@ targets:
         product: GoogleUserMessagingPlatform
       - target: RamazanWidget
         embed: true
+  RamazanRehberiTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: RamazanRehberiTests
+    dependencies:
+      - target: RamazanRehberi
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.ozkanakin.ramazanrehberi.tests
+        GENERATE_INFOPLIST_FILE: YES
   RamazanWidget:
     type: app-extension
     platform: iOS

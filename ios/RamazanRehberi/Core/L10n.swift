@@ -101,6 +101,7 @@ enum L10n {
     "Kart Paylaş": "Share Card",
     "Ana Ekran Widget'ları": "Home Screen Widgets",
     "Kıble": "Qibla",
+    "Reklam gizlilik seçenekleri": "Ad privacy options",
     "📖 Sureler": "📖 Surahs",
     "🏆 Hatim Takibi": "🏆 Khatm Tracker",
     "Oku": "Read",

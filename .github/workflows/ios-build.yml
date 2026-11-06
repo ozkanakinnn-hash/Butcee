@@ -10,6 +10,10 @@ concurrency:
   group: ios-${{ github.ref }}
   cancel-in-progress: true
 
+# Güvenlik: iş akışı belirteci varsayılan olarak salt okunur
+permissions:
+  contents: read
+
 jobs:
   build:
     runs-on: macos-15-intel
@@ -72,11 +76,25 @@ jobs:
           xcodebuild -project RamazanRehberi.xcodeproj -scheme RamazanRehberi -configuration Debug \
             -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' -derivedDataPath simbuild \
             -skipPackagePluginValidation -skipMacroValidation CODE_SIGNING_ALLOWED=NO build 2>&1 | tail -5
+      - name: Birim testleri (simülatör)
+        run: |
+          cd ios
+          DEV=$(xcrun simctl list devices available | grep -E "iPhone 16 \(|iPhone 16 Pro \(|iPhone 15 \(" | head -1 | grep -oE "[0-9A-F-]{36}")
+          set -o pipefail
+          xcodebuild test -project RamazanRehberi.xcodeproj -scheme RamazanRehberi -configuration Debug \
+            -destination "id=$DEV" -derivedDataPath simbuild -skipPackagePluginValidation -skipMacroValidation \
+            CODE_SIGNING_ALLOWED=NO 2>&1 | tee test.log | grep -E "Test Case .*(passed|failed)|error:|\*\* TEST" || true
+          mkdir -p ../docs/screenshots-ios
+          grep -E "Test Case .*(passed|failed)|error:|XCTAssert|\*\* TEST" test.log > ../docs/screenshots-ios/test_results.txt || true
+          grep -q "TEST SUCCEEDED" test.log
+
       - name: Ekran görüntüleri
+        if: always()
         run: |
           APP=$(find ios/simbuild/Build/Products/Debug-iphonesimulator -maxdepth 1 -name "*.app" | head -1)
           bash ios/scripts/sim_screenshots.sh "$APP" docs/screenshots-ios
       - name: Görüntüleri kaydet
+        if: always()
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
