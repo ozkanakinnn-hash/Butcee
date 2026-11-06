@@ -92,3 +92,8 @@ description: Flutter/FlutterFlow + Firebase (Firestore, Cloud Functions) uygulam
 - Zamanlanmış/elle tetiklenen iş akışları yalnızca varsayılan dalda tanımlıysa görünür → kullanıcıya merge gerektiğini söyle.
 - Kota: 50k okuma / 20k yazma / gün; getAll ile var olan kimlik kontrolü her belge için okuma sayar → sıklığı 30 dk tut.
   Kota dolarsa ücret çıkmaz, istek reddedilir. GitHub 60 gün commit olmazsa cron'u durdurur.
+- **GitHub Actions tuzağı:** `runner` bağlamı iş (job) düzeyindeki `env:` içinde KULLANILAMAZ → dosya geçersiz sayılır,
+  Actions listesinde ad yerine dosya yolu görünür ve her push'ta ❌ "failure" üretir. Geçici yolu adım içinde
+  `$RUNNER_TEMP` ile kur, `echo "VAR=..." >> "$GITHUB_ENV"` ile sonraki adımlara aktar. Job `env:`'de yalnızca
+  github/needs/strategy/matrix/vars/secrets/inputs. Push'tan sonra yeni iş akışının adla listelendiğini kontrol et.
+- Deponun varsayılan dalı `main` olmayabilir: `git remote show origin | grep HEAD` ile bak; PR'ı ve "main'e al" talimatını ona göre ver.
