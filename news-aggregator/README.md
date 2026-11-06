@@ -44,6 +44,9 @@ news-aggregator/
 
 ## Kurulum
 
+> **Ücret ödemeden test etmek için:** [`docs/UCRETSIZ_KURULUM.md`](docs/UCRETSIZ_KURULUM.md) — Spark (ücretsiz) plan,
+> RSS botu GitHub Actions'ta 30 dakikada bir çalışır. Aşağıdaki adımlar Blaze (Cloud Functions) içindir.
+
 ### 1. Firebase
 1. [console.firebase.google.com](https://console.firebase.google.com) → yeni proje → **Firestore** (europe-west1).
 2. **Blaze** planına geçin (zamanlanmış fonksiyon için şart) ve bir bütçe uyarısı koyun.

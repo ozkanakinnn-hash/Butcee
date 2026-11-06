@@ -80,3 +80,15 @@ description: Flutter/FlutterFlow + Firebase (Firestore, Cloud Functions) uygulam
   → `firebase deploy --only firestore,functions --non-interactive --force` → seed → ilk çekim → anahtarı sil.
 - Hizmet hesabı rolleri: Editor + Service Account User + Firebase Admin. Kullanıcının adımları: proje aç, Blaze,
   hizmet hesabı JSON anahtarı, GitHub secret, "Run workflow".
+
+## 7. Ücretsiz (Spark) test modu — kullanıcı ödeme yapmak istemezse
+- Spark'ta Cloud Functions YAYINLANAMAZ; Firestore + Admin SDK erişimi serbest. Aynı ingest kodunu GitHub Actions
+  `schedule` ile çalıştır (`news-fetch-free.yml`, cron `7,37 * * * *`); herkese açık depoda dakika ücretsiz.
+- Anahtar: Firebase Console → Proje ayarları → Hizmet hesapları → "Yeni özel anahtar" (Cloud Console'a gerek yok).
+  JSON'u `${{ runner.temp }}`'e yaz (workspace'e değil; checkout'tan önce yazılırsa karışır), sonunda sil.
+  Secret yoksa iş akışı hata vermesin: `::notice::` + adımları atla (yoksa her 30 dk'da hata e-postası gider).
+- Proje kimliğini SA JSON'undaki `project_id`'den oku (`scripts/init-admin.js`); Admin SDK `options.projectId`'yi boş bırakır.
+- Kurallar ve birleşik dizin Console'dan elle (yapıştır/oluştur) — ücretsiz ve ek yetki gerektirmez.
+- Zamanlanmış/elle tetiklenen iş akışları yalnızca varsayılan dalda tanımlıysa görünür → kullanıcıya merge gerektiğini söyle.
+- Kota: 50k okuma / 20k yazma / gün; getAll ile var olan kimlik kontrolü her belge için okuma sayar → sıklığı 30 dk tut.
+  Kota dolarsa ücret çıkmaz, istek reddedilir. GitHub 60 gün commit olmazsa cron'u durdurur.

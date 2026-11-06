@@ -6,11 +6,11 @@
  *   veya emülatörde: FIRESTORE_EMULATOR_HOST=127.0.0.1:8080 GCLOUD_PROJECT=demo-haber npm run fetch:once
  */
 
-const { initializeApp } = require('firebase-admin/app');
+const { initAdmin } = require('./init-admin');
 const { getFirestore } = require('firebase-admin/firestore');
 const { ingestAllSources } = require('../src/ingest');
 
-initializeApp(process.env.GCLOUD_PROJECT ? { projectId: process.env.GCLOUD_PROJECT } : undefined);
+initAdmin();
 
 ingestAllSources(getFirestore())
   .then(({ summary, results }) => {

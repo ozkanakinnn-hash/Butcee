@@ -12,12 +12,12 @@
  *   FIRESTORE_EMULATOR_HOST=127.0.0.1:8080 GCLOUD_PROJECT=demo-haber npm run seed
  */
 
-const { initializeApp } = require('firebase-admin/app');
+const { initAdmin } = require('./init-admin');
 const { getFirestore, FieldValue } = require('firebase-admin/firestore');
 const data = require('./seed-data.json');
 
 async function main() {
-  initializeApp(process.env.GCLOUD_PROJECT ? { projectId: process.env.GCLOUD_PROJECT } : undefined);
+  initAdmin();
   const db = getFirestore();
   const batch = db.batch();
 

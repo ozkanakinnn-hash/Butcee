@@ -1,0 +1,71 @@
+name: Haber Akışı - Ücretsiz RSS Çekimi
+
+# Firebase Spark (ücretsiz) planında Cloud Functions yayınlanamaz. Bu iş akışı aynı RSS kodunu
+# GitHub'ın sunucularında 30 dakikada bir çalıştırıp haberleri Firestore'a yazar.
+# Gerekli gizli değişken: FIREBASE_SERVICE_ACCOUNT (Firebase Console → Proje ayarları →
+# Hizmet hesapları → "Yeni özel anahtar oluştur" ile inen JSON'un tamamı).
+# Not: Zamanlanmış çalışmalar yalnızca varsayılan dalda (main) tanımlıysa tetiklenir.
+on:
+  schedule:
+    - cron: "7,37 * * * *" # 30 dakikada bir (ücretsiz okuma kotasını korumak için)
+  workflow_dispatch:
+    inputs:
+      seed:
+        description: "Önce örnek kategori ve kaynakları yükle (ilk çalıştırmada işaretleyin)"
+        type: boolean
+        default: false
+
+concurrency:
+  group: news-fetch-free
+  cancel-in-progress: false
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: news-aggregator/firebase/functions
+    env:
+      GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/sa.json
+    steps:
+      - name: Anahtar kontrolü
+        id: key
+        working-directory: .
+        env:
+          SA: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          if [ -z "$SA" ]; then
+            echo "::notice::FIREBASE_SERVICE_ACCOUNT eklenmemiş; çekim atlandı. docs/UCRETSIZ_KURULUM.md'ye bakın."
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          else
+            printf '%s' "$SA" > "$GOOGLE_APPLICATION_CREDENTIALS"
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v5
+        if: steps.key.outputs.ready == 'true'
+
+      - uses: actions/setup-node@v5
+        if: steps.key.outputs.ready == 'true'
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: news-aggregator/firebase/functions/package-lock.json
+
+      - name: Bağımlılıklar
+        if: steps.key.outputs.ready == 'true'
+        run: npm ci --omit=dev
+
+      - name: Örnek kategori ve kaynakları yükle
+        if: steps.key.outputs.ready == 'true' && inputs.seed
+        run: npm run seed
+
+      - name: RSS çekimi
+        if: steps.key.outputs.ready == 'true'
+        run: npm run fetch:once
+
+      - name: Anahtarı sil
+        if: always()
+        working-directory: .
+        run: rm -f "$GOOGLE_APPLICATION_CREDENTIALS"
