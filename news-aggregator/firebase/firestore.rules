@@ -1,0 +1,35 @@
+rules_version = '2';
+
+// Haber Toplayıcı — Firestore güvenlik kuralları
+// - categories / sources / articles: herkes OKUR, kimse uygulamadan YAZAMAZ.
+//   (Cloud Function, Admin SDK ile çalıştığı için bu kurallardan etkilenmez.)
+// - users/{uid}: yalnızca oturum açmış kullanıcının kendisi okur/yazar.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /categories/{id} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    match /sources/{id} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    match /articles/{id} {
+      allow get: if true;
+      // Tek seferde en fazla 50 haber listelenebilir (kötüye kullanım ve maliyet koruması).
+      allow list: if request.query.limit <= 50;
+      allow write: if false;
+    }
+
+    match /users/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    match /user_preferences/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+  }
+}
