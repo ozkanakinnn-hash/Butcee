@@ -17,7 +17,6 @@ import '../widgets/article_card.dart';
 import '../widgets/category_icons.dart';
 import 'article_webview_page.dart';
 import 'match_detail_page.dart';
-import 'settings_page.dart';
 import 'team_picker_page.dart';
 
 /// Ana ekran: üstte "Tümü" + kullanıcının ilgi alanları (seçtiği sırayla), altında haber akışı.
@@ -47,25 +46,16 @@ class HomePage extends StatelessWidget {
               key: ValueKey(tabs.map((c) => c.id).join(',')),
               length: tabs.length + 1,
               child: Scaffold(
-                // Sol üst ☰ → piyasa + hava durumu paneli (soldan açılır); sağ üst ⚙ → Ayarlar
-                drawer: MarketPanel(settings: settings, repository: repository, weather: WeatherService.shared),
+                endDrawer: MarketPanel(settings: settings, repository: repository, weather: WeatherService.shared),
                 appBar: AppBar(
-                  centerTitle: true,
                   title: Text(s.appName),
-                  leading: Builder(
-                    builder: (context) => IconButton(
-                      icon: const Icon(Icons.menu_rounded),
-                      tooltip: s.menu,
-                      onPressed: () => Scaffold.of(context).openDrawer(),
-                    ),
-                  ),
                   actions: [
-                    IconButton(
-                      icon: const Icon(Icons.settings_outlined),
-                      tooltip: s.settings,
-                      onPressed: () =>
-                          Navigator.of(context)
-                              .push(MaterialPageRoute<void>(builder: (_) => SettingsPage(settings: settings))),
+                    Builder(
+                      builder: (context) => IconButton(
+                        icon: const Icon(Icons.menu_rounded),
+                        tooltip: s.menu,
+                        onPressed: () => Scaffold.of(context).openEndDrawer(),
+                      ),
                     ),
                     const SizedBox(width: 4),
                   ],
