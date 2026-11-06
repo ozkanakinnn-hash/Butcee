@@ -146,7 +146,7 @@ async function markBreaking(db, existing) {
 }
 
 /** Yeni haberleri yazar. ALREADY_EXISTS (eşzamanlı çalışmada) hata sayılmaz. */
-async function writeArticles(db, articles) {
+async function writeArticles(db, articles, onWritten) {
   if (articles.length === 0) return 0;
   let written = 0;
   const writer = db.bulkWriter();
@@ -158,7 +158,7 @@ async function writeArticles(db, articles) {
   const tasks = articles.map((a) =>
     writer
       .create(col.doc(a.id), { ...a.data, created_at: FieldValue.serverTimestamp() })
-      .then(() => { written += 1; })
+      .then(() => { written += 1; if (onWritten) onWritten(a); })
       .catch((err) => {
         if (err.code !== 6) logger.warn('Haber yazılamadı', { id: a.id, error: err.message });
       })
@@ -222,8 +222,16 @@ async function ingestSource(db, sourceDoc, categories, { fetchImpl, now = new Da
     result.skippedSeen = built.length - candidates.length;
     const newestMs = Math.max(lastSeenMs, ...built.map((a) => a.data.published_at.toMillis()));
     const { fresh, existing } = await findExisting(db, candidates);
-    result.added = await writeArticles(db, fresh);
-    if (source.is_breaking) result.markedBreaking = await markBreaking(db, existing);
+    // Bildirim modülü için: bu çalışmada yazılan haberler ve Son Dakika olarak işaretlenenler.
+    result.addedArticles = [];
+    result.added = await writeArticles(db, fresh, (a) => result.addedArticles.push(a));
+    if (source.is_breaking) {
+      result.markedBreaking = await markBreaking(db, existing);
+      result.breakingArticles = [
+        ...result.addedArticles,
+        ...existing.filter((e) => !e.hasBreaking).map((e) => ({ id: e.ref.id, data: e.candidate.data })),
+      ];
+    }
 
     await sourceDoc.ref.update({
       last_fetched_at: FieldValue.serverTimestamp(),
@@ -274,7 +282,14 @@ async function ingestAllSources(db, options = {}) {
     failed: results.filter((r) => r.error).length,
     notModified: results.filter((r) => r.notModified).length,
   };
-  logger.info('RSS çekimi tamamlandı', { ...summary, details: results });
+  if (options.notify !== false) {
+    const { sendNewsNotifications } = require('./notify');
+    summary.notifications = await sendNewsNotifications(db, results, categories, options.notifyOptions);
+  }
+  logger.info('RSS çekimi tamamlandı', {
+    ...summary,
+    details: results.map(({ addedArticles, breakingArticles, ...rest }) => rest),
+  });
   return { summary, results };
 }
 

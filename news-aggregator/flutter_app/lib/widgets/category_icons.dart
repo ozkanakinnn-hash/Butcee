@@ -9,6 +9,7 @@ const Map<String, IconData> categoryIcons = {
   'smart_toy': Icons.smart_toy_outlined,
   'memory': Icons.smart_toy_outlined,
   'sports_soccer': Icons.sports_soccer_outlined,
+  'sports': Icons.sports_basketball_outlined,
   'public': Icons.public_rounded,
   'volunteer_activism': Icons.volunteer_activism_outlined,
   'health': Icons.volunteer_activism_outlined,

@@ -9,6 +9,7 @@ Hem açık hem koyu ana ekranda belirgin kalır. Android 13+ tema ikonu için te
   mipmap-*/ic_launcher_round.png        yuvarlak ikon
   mipmap-*/ic_launcher_foreground.png   uyarlanabilir ikon ön planı (108dp, güvenli alan içinde)
   mipmap-*/ic_launcher_monochrome.png   Android 13+ tema ikonu (tek renk)
+  drawable-*/ic_stat_news.png           bildirim çubuğu simgesi (beyaz)
   design/play_store_icon_512.png        Play Store ikonu
 Kullanım: python3 design/make_icon.py   (news-aggregator klasöründen)
 """
@@ -100,6 +101,15 @@ def main() -> None:
         render(round(108 * scale), "foreground").save(folder / "ic_launcher_foreground.png")
         render(round(108 * scale), "background").save(folder / "ic_launcher_background.png")
         render(round(108 * scale), "monochrome").save(folder / "ic_launcher_monochrome.png")
+    # Bildirim çubuğu simgesi: 24dp, beyaz + şeffaf (Android rengi kendisi verir)
+    for name, scale in DENSITIES.items():
+        folder = RES / f"drawable-{name}"
+        folder.mkdir(parents=True, exist_ok=True)
+        size = round(24 * scale)
+        big = size * SS
+        img = Image.new("RGBA", (big, big), (0, 0, 0, 0))
+        draw_glyph(ImageDraw.Draw(img), big, 0.84, mono=True)
+        img.resize((size, size), Image.LANCZOS).save(folder / "ic_stat_news.png")
     render(512, "store").save(ROOT / "design/play_store_icon_512.png")
 
     anydpi = RES / "mipmap-anydpi-v26"

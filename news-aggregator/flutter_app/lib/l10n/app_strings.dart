@@ -96,6 +96,55 @@ class S {
   String get themeLight => _t('Açık', 'Light');
   String get themeDark => _t('Koyu', 'Dark');
 
+  // Bildirimler ve izinler
+  String get notifications => _t('Bildirimler', 'Notifications');
+  String get notificationPermission => _t('Bildirim izni', 'Notification permission');
+  String get permissionGranted => _t('İzin verildi', 'Allowed');
+  String get permissionDenied => _t('İzin verilmedi — dokunarak izin ver', 'Not allowed — tap to allow');
+  String get permissionBlocked => _t('Kapalı — sistem ayarlarından aç', 'Blocked — enable in system settings');
+  String get newsNotifications => _t('İlgi alanı haberleri', 'Interest news');
+  String get newsNotificationsDesc => _t(
+    'Her ilgi alanı için en fazla 2 saatte bir özet; Son Dakika hemen.',
+    'A digest per interest at most every 2 hours; breaking news instantly.',
+  );
+  String get matchNotifications => _t('Maç ve gol bildirimleri', 'Match & goal alerts');
+  String get matchNotificationsDesc => _t(
+    'Takımlarının golleri (sesli), maç başlangıcı, devre ve sonuç.',
+    "Your teams' goals (with sound), kick-off, half-time and full-time.",
+  );
+  String get location => _t('Konum', 'Location');
+  String get locationPermission => _t('Konum izni', 'Location permission');
+  String get locationDesc => _t(
+    'Yalnızca bulunduğun ilin hava durumunu göstermek için, yaklaşık konum kullanılır.',
+    'Approximate location is used only to show the weather for your city.',
+  );
+  String get weatherCard => _t('Hava durumu kartı', 'Weather card');
+  String get weatherSource => _t('Hava durumu: MET Norway', 'Weather: MET Norway');
+
+  // Futbol
+  String get myTeams => _t('Takımların', 'Your teams');
+  String get chooseTeams => _t('Takımını seç', 'Choose your team');
+  String get chooseTeamsDesc => _t(
+    'Seçtiğin takımların canlı skorunu görürsün, golde sesli bildirim alırsın.',
+    'See live scores for your teams and get a sound alert on every goal.',
+  );
+  String teamsSelected(int n) => _t('$n takım seçildi', '$n teams selected');
+  String maxTeams(int n) => _t('En fazla $n takım seçebilirsin.', 'You can pick up to $n teams.');
+  String get searchTeam => _t('Takım ara', 'Search team');
+  String get noTeamsYet => _t(
+    'Takım listesi henüz yüklenmedi. Canlı skor botu ilk çalıştığında gelecek.',
+    'Team list is not loaded yet. It arrives when the live-score bot first runs.',
+  );
+  String get live => _t('CANLI', 'LIVE');
+  String get halfTime => _t('Devre', 'HT');
+  String get fullTime => _t('MS', 'FT');
+  String get today => _t('Bugün', 'Today');
+  String get tomorrow => _t('Yarın', 'Tomorrow');
+  String get goals => _t('Goller', 'Goals');
+  String get noGoals => _t('Henüz gol yok', 'No goals yet');
+  String get matchNotStarted => _t('Maç henüz başlamadı', 'Match has not started');
+  String get done => _t('Tamam', 'Done');
+
   // Firebase kurulmamış
   String get setupRequired => _t('Firebase yapılandırması bulunamadı', 'Firebase is not configured');
   String get setupRequiredDesc => _t(

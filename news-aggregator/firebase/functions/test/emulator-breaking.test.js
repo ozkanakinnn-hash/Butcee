@@ -28,7 +28,7 @@ test('Son Dakika kaynağı var olan haberleri işaretler, yenilerini breaking_at
   });
 
   // 1) Normal kaynak haberleri yazar; hiçbiri Son Dakika değil.
-  const r1 = await ingestAllSources(db, { fetchImpl, now });
+  const r1 = await ingestAllSources(db, { fetchImpl, now, notify: false });
   assert.equal(r1.summary.added, 4);
   let docs = (await db.collection('articles').get()).docs;
   assert.equal(docs.filter((d) => d.get('breaking_at')).length, 0);
@@ -38,7 +38,7 @@ test('Son Dakika kaynağı var olan haberleri işaretler, yenilerini breaking_at
     source_name: 'SD', rss_url: 'https://b/rss', category_id: db.doc('categories/gundem'),
     is_active: true, is_breaking: true,
   });
-  const r2 = await ingestAllSources(db, { fetchImpl, now });
+  const r2 = await ingestAllSources(db, { fetchImpl, now, notify: false });
   assert.equal(r2.summary.added, 0);
   const sd = r2.results.find((r) => r.source === 'SD');
   assert.equal(sd.markedBreaking, 4);
@@ -51,7 +51,7 @@ test('Son Dakika kaynağı var olan haberleri işaretler, yenilerini breaking_at
   assert.equal(breaking.size, 4);
 
   // 3) Okuma kotası koruması: üçüncü çalıştırmada zaten görülmüş haberler veritabanına sorulmadan atlanır.
-  const r3 = await ingestAllSources(db, { fetchImpl, now });
+  const r3 = await ingestAllSources(db, { fetchImpl, now, notify: false });
   for (const r of r3.results) {
     assert.equal(r.added, 0);
     assert.ok(r.skippedSeen >= 3, `${r.source}: görülmüş haberler atlanmalı (atlanan: ${r.skippedSeen})`);

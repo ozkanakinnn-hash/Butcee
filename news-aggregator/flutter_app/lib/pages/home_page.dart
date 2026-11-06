@@ -7,11 +7,17 @@ import '../app_settings.dart';
 import '../backend/news_repository.dart';
 import '../backend/schema/articles_record.dart';
 import '../backend/schema/categories_record.dart';
+import '../backend/schema/football_records.dart';
+import '../services/weather_service.dart';
+import '../widgets/live_matches.dart';
+import '../widgets/weather_card.dart';
 import '../l10n/app_strings.dart';
 import '../widgets/article_card.dart';
 import '../widgets/category_icons.dart';
 import 'article_webview_page.dart';
 import 'interests_page.dart';
+import 'match_detail_page.dart';
+import 'team_picker_page.dart';
 import 'settings_page.dart';
 
 /// Ana ekran: üstte "Tümü" + kullanıcının ilgi alanları (seçtiği sırayla), altında haber akışı.
@@ -94,9 +100,20 @@ class HomePage extends StatelessWidget {
                 ),
                 body: TabBarView(
                   children: [
-                    ArticleFeed(key: const PageStorageKey('feed-all'), repository: repository),
+                    ArticleFeed(
+                      key: const PageStorageKey('feed-all'),
+                      repository: repository,
+                      header: _AllHeader(settings: settings, repository: repository),
+                    ),
                     for (final c in tabs)
-                      ArticleFeed(key: PageStorageKey('feed-${c.id}'), repository: repository, category: c),
+                      ArticleFeed(
+                        key: PageStorageKey('feed-${c.id}'),
+                        repository: repository,
+                        category: c,
+                        header: c.id == AppSettings.footballCategoryId
+                            ? _FootballHeader(settings: settings, repository: repository)
+                            : null,
+                      ),
                   ],
                 ),
               ),
@@ -108,12 +125,118 @@ class HomePage extends StatelessWidget {
   }
 }
 
+/// "Tümü" sekmesinin üstü: hava durumu kartı + takip edilen takımların canlı maçları.
+class _AllHeader extends StatelessWidget {
+  const _AllHeader({required this.settings, required this.repository});
+
+  final AppSettings settings;
+  final NewsRepository repository;
+
+  static final _weather = WeatherService();
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (settings.weatherEnabled) WeatherCard(service: _weather),
+        if (settings.followsFootball && settings.followedTeams.isNotEmpty)
+          _MatchesStream(
+            settings: settings,
+            repository: repository,
+            // Tümü sekmesinde yalnızca canlı veya bugünkü maçlar
+            filter: (m) => m.isLive || DateUtils.isSameDay(m.kickoff.toLocal(), DateTime.now()),
+          ),
+      ],
+    );
+  }
+}
+
+/// "Futbol" sekmesinin üstü: takım seçimi + maçlar.
+class _FootballHeader extends StatelessWidget {
+  const _FootballHeader({required this.settings, required this.repository});
+
+  final AppSettings settings;
+  final NewsRepository repository;
+
+  @override
+  Widget build(BuildContext context) {
+    final s = S.of(context);
+    final teams = settings.followedTeams;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(8, 4, 8, 0),
+          child: TextButton.icon(
+            style: TextButton.styleFrom(alignment: Alignment.centerLeft),
+            icon: const Icon(Icons.shield_outlined),
+            label: Text(teams.isEmpty ? s.chooseTeams : '${s.myTeams} · ${s.teamsSelected(teams.length)}'),
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) => TeamPickerPage(settings: settings, repository: repository),
+              ),
+            ),
+          ),
+        ),
+        if (teams.isNotEmpty) _MatchesStream(settings: settings, repository: repository),
+      ],
+    );
+  }
+}
+
+class _MatchesStream extends StatefulWidget {
+  const _MatchesStream({required this.settings, required this.repository, this.filter});
+
+  final AppSettings settings;
+  final NewsRepository repository;
+  final bool Function(MatchRecord)? filter;
+
+  @override
+  State<_MatchesStream> createState() => _MatchesStreamState();
+}
+
+class _MatchesStreamState extends State<_MatchesStream> {
+  late List<int> _teams = widget.settings.followedTeams;
+  late Stream<List<MatchRecord>> _stream = widget.repository.watchMatches(_teams);
+
+  @override
+  void didUpdateWidget(covariant _MatchesStream old) {
+    super.didUpdateWidget(old);
+    final teams = widget.settings.followedTeams;
+    if (teams.join(',') != _teams.join(',')) {
+      _teams = teams;
+      _stream = widget.repository.watchMatches(teams);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => StreamBuilder<List<MatchRecord>>(
+    stream: _stream,
+    builder: (context, snap) {
+      final list = (snap.data ?? const <MatchRecord>[]).where(widget.filter ?? (_) => true).toList();
+      return LiveMatchesStrip(
+        matches: list,
+        onTap: (m) => Navigator.of(context).push(
+          MaterialPageRoute<void>(
+            builder: (_) => MatchDetailPage(fixtureId: m.fixtureId, repository: widget.repository),
+          ),
+        ),
+      );
+    },
+  );
+}
+
 /// Tek bir sekmenin haber listesi: sonsuz kaydırma (20'şer) + aşağı çekip yenileme.
 class ArticleFeed extends StatefulWidget {
-  const ArticleFeed({super.key, required this.repository, this.category});
+  const ArticleFeed({super.key, required this.repository, this.category, this.header});
 
   final NewsRepository repository;
   final CategoriesRecord? category;
+
+  /// Listenin en üstünde gösterilecek içerik (hava durumu, canlı skorlar).
+  final Widget? header;
 
   @override
   State<ArticleFeed> createState() => _ArticleFeedState();
@@ -206,6 +329,7 @@ class _ArticleFeedState extends State<ArticleFeed> with AutomaticKeepAliveClient
         child: ListView(
           physics: const AlwaysScrollableScrollPhysics(),
           children: [
+            ?widget.header,
             const SizedBox(height: 120),
             Icon(_error != null ? Icons.cloud_off : icon, size: 48),
             const SizedBox(height: 12),
@@ -224,9 +348,11 @@ class _ArticleFeedState extends State<ArticleFeed> with AutomaticKeepAliveClient
       child: ListView.separated(
         controller: _scroll,
         physics: const AlwaysScrollableScrollPhysics(),
-        itemCount: _items.length + 1,
-        separatorBuilder: (_, i) => i == 0 ? const SizedBox(height: 4) : const Divider(indent: 20, endIndent: 20),
-        itemBuilder: (context, i) {
+        itemCount: _items.length + 2,
+        separatorBuilder: (_, i) => i <= 1 ? const SizedBox.shrink() : const Divider(indent: 20, endIndent: 20),
+        itemBuilder: (context, index) {
+          if (index == 0) return widget.header ?? const SizedBox.shrink();
+          final i = index - 1;
           if (i == _items.length) return _footer(s);
           final a = _items[i];
           return ArticleCard(

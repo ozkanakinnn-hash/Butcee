@@ -38,8 +38,16 @@
       "id": "spor",
       "name": "Spor",
       "name_en": "Sports",
-      "icon_name": "sports_soccer",
+      "icon_name": "sports",
       "order_index": 4,
+      "placeholder_image_url": ""
+    },
+    {
+      "id": "futbol",
+      "name": "Futbol",
+      "name_en": "Football",
+      "icon_name": "sports_soccer",
+      "order_index": 5,
       "placeholder_image_url": ""
     },
     {
@@ -47,7 +55,7 @@
       "name": "Dünya",
       "name_en": "World",
       "icon_name": "public",
-      "order_index": 5,
+      "order_index": 6,
       "placeholder_image_url": ""
     },
     {
@@ -55,7 +63,7 @@
       "name": "Sağlık",
       "name_en": "Health",
       "icon_name": "volunteer_activism",
-      "order_index": 6,
+      "order_index": 7,
       "placeholder_image_url": ""
     },
     {
@@ -63,7 +71,7 @@
       "name": "Bilim",
       "name_en": "Science",
       "icon_name": "science",
-      "order_index": 7,
+      "order_index": 8,
       "placeholder_image_url": ""
     },
     {
@@ -71,7 +79,7 @@
       "name": "Kültür-Sanat",
       "name_en": "Arts & Culture",
       "icon_name": "palette",
-      "order_index": 8,
+      "order_index": 9,
       "placeholder_image_url": ""
     },
     {
@@ -79,7 +87,7 @@
       "name": "Magazin",
       "name_en": "Entertainment",
       "icon_name": "star",
-      "order_index": 9,
+      "order_index": 10,
       "placeholder_image_url": ""
     },
     {
@@ -87,7 +95,7 @@
       "name": "Otomobil",
       "name_en": "Automotive",
       "icon_name": "directions_car",
-      "order_index": 10,
+      "order_index": 11,
       "placeholder_image_url": ""
     },
     {
@@ -95,7 +103,7 @@
       "name": "Eğitim",
       "name_en": "Education",
       "icon_name": "school",
-      "order_index": 11,
+      "order_index": 12,
       "placeholder_image_url": ""
     },
     {
@@ -103,7 +111,7 @@
       "name": "Yaşam",
       "name_en": "Lifestyle",
       "icon_name": "spa",
-      "order_index": 12,
+      "order_index": 13,
       "placeholder_image_url": ""
     }
   ],
@@ -350,6 +358,34 @@
       "rss_url": "https://www.cnnturk.com/feed/rss/yasam/news",
       "category": "yasam",
       "domain": "cnnturk.com"
+    },
+    {
+      "id": "cnn-futbol",
+      "source_name": "CNN Türk",
+      "rss_url": "https://www.cnnturk.com/feed/rss/spor/futbol/news",
+      "category": "futbol",
+      "domain": "cnnturk.com"
+    },
+    {
+      "id": "aspor-futbol",
+      "source_name": "A Spor",
+      "rss_url": "https://www.aspor.com.tr/rss/futbol.xml",
+      "category": "futbol",
+      "domain": "aspor.com.tr"
+    },
+    {
+      "id": "aa-spor",
+      "source_name": "Anadolu Ajansı",
+      "rss_url": "https://www.aa.com.tr/tr/rss/default?cat=spor",
+      "category": "spor",
+      "domain": "aa.com.tr"
+    },
+    {
+      "id": "haberturk-spor",
+      "source_name": "Habertürk",
+      "rss_url": "https://www.haberturk.com/rss/kategori/spor.xml",
+      "category": "spor",
+      "domain": "haberturk.com"
     }
   ]
 }

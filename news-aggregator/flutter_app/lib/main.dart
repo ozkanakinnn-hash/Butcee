@@ -5,7 +5,10 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'app_settings.dart';
 import 'l10n/app_strings.dart';
 import 'pages/home_page.dart';
+import 'pages/article_webview_page.dart';
 import 'pages/interests_page.dart';
+import 'pages/match_detail_page.dart';
+import 'services/notification_service.dart';
 import 'theme.dart';
 
 Future<void> main() async {
@@ -22,6 +25,26 @@ Future<void> main() async {
   }
 
   runApp(NewsApp(settings: settings, firebaseReady: firebaseReady));
+
+  if (firebaseReady) {
+    // Bildirim kanalları, dokunma yönlendirmesi ve konu abonelikleri (hata uygulamayı durdurmaz).
+    NotificationService.instance.taps.listen(_openTarget);
+    NotificationService.instance.init(settings).catchError((Object e) => debugPrint('Bildirim başlatılamadı: $e'));
+  }
+}
+
+/// Bildirime dokunulunca ilgili sayfayı aç.
+final navigatorKey = GlobalKey<NavigatorState>();
+
+void _openTarget(NotificationTarget target) {
+  final nav = navigatorKey.currentState;
+  if (nav == null) return;
+  switch (target) {
+    case ArticleTarget(:final url, :final title, :final source):
+      nav.push(ArticleWebViewPage.route(url: url, sourceName: source, articleTitle: title));
+    case MatchTarget(:final fixtureId):
+      nav.push(MaterialPageRoute<void>(builder: (_) => MatchDetailPage(fixtureId: fixtureId)));
+  }
 }
 
 class NewsApp extends StatelessWidget {
@@ -35,6 +58,7 @@ class NewsApp extends StatelessWidget {
     return ListenableBuilder(
       listenable: settings,
       builder: (context, _) => MaterialApp(
+        navigatorKey: navigatorKey,
         title: 'Haber Akışı',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.light(),

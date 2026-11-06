@@ -138,3 +138,24 @@ description: Flutter/FlutterFlow + Firebase (Firestore, Cloud Functions) uygulam
   `mipmap-anydpi-v26/ic_launcher.xml` (monochrome = Android 13 tema ikonu) + Play 512px. Açık/koyu ana ekran ve
   daire/squircle/kare maskeli önizleme üretip kullanıcıya göster. Siyah zeminli ikon koyu ana ekranda kaybolur →
   renkli zemin seç.
+
+## 10. Bildirimler, izinler, canlı skor (news-aggregator 3. tur)
+- **Spark'ta push:** FCM ücretsiz; GitHub Actions'taki Admin SDK (`firebase-adminsdk` hizmet hesabı) `getMessaging().sendEach`
+  ile konuya gönderir. Uygulama konu aboneliği: `news_<kategori>`, `team_<id>`; ayarlar değişince yalnızca FARKI
+  abone et/çık (son durumu prefs'te tut). İki takımı birden izleyen tek bildirim alsın: `condition: "'team_a' in topics || 'team_b' in topics"`.
+- **Bildirim yağmurunu önle:** kategori başına bekleme (2 sa) + özet ("ve N haber daha"); Son Dakika hemen ama aynı
+  haber iki kez gitmesin (`last_breaking_id`), eski haber "son dakika" diye gitmesin. Durum tek belgede (1 okuma+1 yazma).
+- **Android kanalları** (sunucu `android.notification.channelId` ile eşleşmeli) uygulama açılışında oluşturulur; özel ses
+  kanal oluştururken verilir (`RawResourceAndroidNotificationSound`) ve sonradan değişmez. `res/raw/keep.xml` ile
+  sesin küçültmede silinmesini engelle. Ön planda FCM bildirimi görünmez → `onMessage` + flutter_local_notifications.
+  flutter_local_notifications 22: `initialize(settings:)`, `show(id:, title:, ...)` adlandırılmış parametre;
+  `isCoreLibraryDesugaringEnabled` + `desugar_jdk_libs` zorunlu. Bildirim simgesi beyaz+şeffaf `ic_stat_*`.
+- **İzin ekranı:** permission_handler (bildirim) + geolocator (konum); `WidgetsBindingObserver` ile uygulamaya dönünce
+  durumu yenile; kalıcı redde `openAppSettings`. Konum iznini MUTLAKA bir özelliğe bağla (Play reddeder) → yalnızca
+  `ACCESS_COARSE_LOCATION`. Hava durumu: Open-Meteo ücretsiz sürümü ticari kullanıma kapalı → **MET Norway**
+  (api.met.no; ticari serbest, User-Agent zorunlu, CC BY atıf, en fazla 4 ondalık koordinat).
+- **Canlı skor ücretsiz mimari:** cron (15 dk) → maç yoksa API isteği harcamadan çık; maç varsa tek iş içinde döngü
+  (≤5,5 sa). API-Football `/fixtures?ids=a-b-c` tek istekte tüm maçlar + olaylar. Aralık = kalan istek / kalan maç
+  süresi (60 sn–10 dk). Sezon erişimini anahtar gelince `check` moduyla doğrula (ücretsiz plan sezon sınırlı olabilir;
+  konteyner api-football.com'a erişemez). Testte `sleep` enjekte et — `global.setTimeout` ezmek gRPC zaman aşımlarını bozar.
+- Kullanıcıya sor: veri kaynağı (resmi/anahtarlı vs resmi olmayan), konum amacı, bildirim sıklığı, kategori yapısı.

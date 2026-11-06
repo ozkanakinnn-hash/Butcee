@@ -38,8 +38,28 @@ news-aggregator/
   (ek dizin gerekmez).
 - **Uygulama ikonu:** `design/make_icon.py` üretir (mavi degrade + beyaz akış simgesi; uyarlanabilir ikon,
   yuvarlak ikon, Android 13 tema ikonu ve `design/play_store_icon_512.png`). Önizleme: `design/icon_preview.png`.
-- **Kategoriler (13):** Son Dakika, Gündem, Ekonomi, Teknoloji, Spor, Dünya, Sağlık, Bilim, Kültür-Sanat,
+- **Bildirimler (FCM, ücretsiz):** Uygulama her ilgi alanı için `news_<kategori>` konusuna abone olur.
+  RSS botu her çalışmada kategori başına en fazla 2 saatte bir özet gönderir (en yeni başlık + "ve N haber daha");
+  Son Dakika beklemeden gider (`firebase/functions/src/notify.js`). Kanallar: news, breaking, goals (özel ses), match.
+- **İzinler (Ayarlar):** Bildirim izni (Android 13+) ve yaklaşık konum izni; durum görünür, reddedildiyse sistem
+  ayarlarına yönlendirir. Konum yalnızca **hava durumu kartı** için kullanılır (MET Norway, ücretsiz, ticari kullanıma açık).
+- **Futbol:** "Futbol" ilgi alanı seçilince takım seçimi açılır (Süper Lig, en fazla 10 takım). Takımların maçları
+  Tümü ve Futbol sekmelerinin üstünde canlı skorla görünür (Firestore'dan anlık). Golde sesli bildirim
+  (`res/raw/goal_whistle.wav`, `design/make_goal_sound.py` ile sentezlenir), ayrıca maç başladı/devre/sonuç.
+  Veri: API-Football; `news-football.yml` 15 dakikada bir başlar, maç varsa bitene kadar izler
+  (`scripts/football-watch.js`). Ücretsiz planda günde 100 istek → güncelleme aralığı kalan isteğe göre
+  otomatik ayarlanır (tek maçta ~1 dk, yoğun günde 3–5 dk). Daha sık güncelleme için ücretli plan gerekir.
+- **Kategoriler (14):** Son Dakika, Gündem, Ekonomi, Teknoloji, Spor, Futbol, Dünya, Sağlık, Bilim, Kültür-Sanat,
   Magazin, Otomobil, Eğitim, Yaşam.
+
+## Canlı skor kurulumu (API-Football)
+1. [dashboard.api-football.com](https://dashboard.api-football.com/register) → ücretsiz hesap → **Account → My Access**
+   sayfasındaki API anahtarını kopyalayın.
+2. GitHub → Settings → Secrets and variables → Actions → **New repository secret**: `FOOTBALL_API_KEY`.
+3. Actions → **Haber Akışı - Canlı Skor** → Run workflow → mode: **check**. Kayıtta planınız, kalan istek ve
+   "Güncel sezona erişim VAR/YOK" yazar. YOK ise ücretsiz plan bu sezonu kapsamıyordur.
+4. mode: **sync-teams** ile takım listesini yükleyin (uygulamadaki takım seçimi bu listeyi kullanır).
+5. Firestore kurallarına `football_teams` ve `matches` okuma izni ekleyin (`docs/UCRETSIZ_KURULUM.md` Adım 3).
 
 ## Yeni RSS kaynağı eklemek
 1. Adayı `firebase/functions/scripts/feed-candidates.json` dosyasına ekleyin ve gönderin (push).

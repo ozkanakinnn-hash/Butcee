@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../config.dart';
 import 'schema/articles_record.dart';
 import 'schema/categories_record.dart';
+import 'schema/football_records.dart';
 
 /// Bir sayfa haber + sonraki sayfa için imleç.
 class ArticlePage {
@@ -57,4 +58,35 @@ class NewsRepository {
       snap.docs.length == pageSize,
     );
   }
+
+  /// Süper Lig takımları (ada göre).
+  Stream<List<TeamRecord>> watchTeams() => _db
+      .collection('football_teams')
+      .orderBy('name')
+      .snapshots()
+      .map((qs) => qs.docs.map(TeamRecord.fromSnapshot).toList());
+
+  /// Takip edilen takımların son/sıradaki maçları (bot 3 günden eskileri siler).
+  /// arrayContainsAny en fazla 10 değer alır; sıralama istemcide yapılır (ek dizin gerekmez).
+  Stream<List<MatchRecord>> watchMatches(List<int> teamIds) {
+    if (teamIds.isEmpty) return Stream.value(const []);
+    return _db
+        .collection('matches')
+        .where('team_ids', arrayContainsAny: teamIds.take(10).toList())
+        .limit(30)
+        .snapshots()
+        .map((qs) {
+          final list = qs.docs.map(MatchRecord.fromSnapshot).toList();
+          // Canlı olanlar önce, sonra başlama saatine göre (yakın olan önce)
+          final now = DateTime.now();
+          list.sort((a, b) {
+            if (a.isLive != b.isLive) return a.isLive ? -1 : 1;
+            return a.kickoff.difference(now).abs().compareTo(b.kickoff.difference(now).abs());
+          });
+          return list;
+        });
+  }
+
+  Stream<MatchRecord?> watchMatch(int fixtureId) =>
+      _db.doc('matches/$fixtureId').snapshots().map((d) => d.exists ? MatchRecord.fromSnapshot(d) : null);
 }

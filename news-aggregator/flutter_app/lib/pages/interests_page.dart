@@ -5,6 +5,7 @@ import '../backend/news_repository.dart';
 import '../backend/schema/categories_record.dart';
 import '../l10n/app_strings.dart';
 import '../widgets/category_icons.dart';
+import 'team_picker_page.dart';
 
 /// İlgi alanları: üstte takip edilenler (sürükleyerek sıralanır, − ile çıkarılır),
 /// altta keşfedilecekler (+ ile eklenir). Değişiklikler anında kaydedilir.
@@ -150,6 +151,31 @@ class _InterestsPageState extends State<InterestsPage> {
                             ),
                           );
                         },
+                      ),
+                    if (followed.contains(AppSettings.footballCategoryId))
+                      SliverToBoxAdapter(
+                        child: ListenableBuilder(
+                          listenable: widget.settings,
+                          builder: (context, _) {
+                            final n = widget.settings.followedTeams.length;
+                            return ListTile(
+                              contentPadding: const EdgeInsets.fromLTRB(20, 4, 16, 4),
+                              leading: Icon(Icons.shield_outlined, color: theme.colorScheme.primary, size: 26),
+                              title: Text(
+                                n == 0 ? s.chooseTeams : s.myTeams,
+                                style: TextStyle(color: theme.colorScheme.primary, fontWeight: FontWeight.w700),
+                              ),
+                              subtitle: Text(n == 0 ? s.chooseTeamsDesc : s.teamsSelected(n)),
+                              trailing: const Icon(Icons.chevron_right_rounded),
+                              onTap: () => Navigator.of(context).push(
+                                MaterialPageRoute<void>(
+                                  builder: (_) =>
+                                      TeamPickerPage(settings: widget.settings, repository: widget.repository),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
                       ),
                     _SectionHeader(title: s.discover),
                     if (others.isEmpty)

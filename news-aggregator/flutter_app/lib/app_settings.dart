@@ -9,6 +9,17 @@ class AppSettings extends ChangeNotifier {
   static const _languageKey = 'language';
   static const _themeKey = 'theme_mode';
   static const _interestsKey = 'interests';
+  static const _newsNotifKey = 'notify_news';
+  static const _matchNotifKey = 'notify_matches';
+  static const _weatherKey = 'weather_card';
+  static const _teamsKey = 'followed_teams';
+  static const _topicsKey = 'subscribed_topics';
+
+  /// Futbol takım seçimi bu ilgi alanına bağlıdır.
+  static const footballCategoryId = 'futbol';
+
+  /// Takip edilebilecek en fazla takım (Firestore arrayContainsAny sınırı 10).
+  static const maxTeams = 10;
   static const supportedLocales = [Locale('tr'), Locale('en')];
 
   /// İlk açılışta önerilen ilgi alanları (kullanıcı değiştirebilir).
@@ -60,4 +71,51 @@ class AppSettings extends ChangeNotifier {
     await _prefs.setStringList(_interestsKey, List.unmodifiable(ids));
     notifyListeners();
   }
+
+  // ── Bildirimler ──────────────────────────────────────────────────────────
+  /// İlgi alanı haber bildirimleri (varsayılan açık; sistem izni ayrıca gerekir).
+  bool get newsNotifications => _prefs.getBool(_newsNotifKey) ?? true;
+  Future<void> setNewsNotifications(bool v) async {
+    await _prefs.setBool(_newsNotifKey, v);
+    notifyListeners();
+  }
+
+  /// Takip edilen takımların maç/gol bildirimleri.
+  bool get matchNotifications => _prefs.getBool(_matchNotifKey) ?? true;
+  Future<void> setMatchNotifications(bool v) async {
+    await _prefs.setBool(_matchNotifKey, v);
+    notifyListeners();
+  }
+
+  // ── Konum / hava durumu ──────────────────────────────────────────────────
+  /// Ana ekrandaki hava durumu kartı (konum izni verildiğinde açılır).
+  bool get weatherEnabled => _prefs.getBool(_weatherKey) ?? false;
+  Future<void> setWeatherEnabled(bool v) async {
+    await _prefs.setBool(_weatherKey, v);
+    notifyListeners();
+  }
+
+  // ── Futbol ───────────────────────────────────────────────────────────────
+  bool get followsFootball => interests.contains(footballCategoryId);
+
+  /// Takip edilen takımların API-Football kimlikleri.
+  List<int> get followedTeams =>
+      (_prefs.getStringList(_teamsKey) ?? const []).map(int.tryParse).whereType<int>().toList();
+
+  Future<void> setFollowedTeams(List<int> ids) async {
+    await _prefs.setStringList(_teamsKey, ids.take(maxTeams).map((e) => '$e').toList());
+    notifyListeners();
+  }
+
+  /// Bildirim konuları: ilgi alanları → `news_<id>`, takımlar → `team_<id>` (ilgili ayar açıksa).
+  Set<String> get desiredTopics => {
+    if (newsNotifications)
+      for (final id in interests) 'news_$id',
+    if (matchNotifications && followsFootball)
+      for (final t in followedTeams) 'team_$t',
+  };
+
+  /// En son abone olunan konular (fark hesaplamak için; NotificationService kullanır).
+  Set<String> get subscribedTopics => (_prefs.getStringList(_topicsKey) ?? const []).toSet();
+  Future<void> setSubscribedTopics(Set<String> topics) => _prefs.setStringList(_topicsKey, topics.toList());
 }
