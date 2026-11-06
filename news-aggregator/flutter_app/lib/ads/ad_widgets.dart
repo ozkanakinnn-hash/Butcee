@@ -87,7 +87,7 @@ class _NativeAdSlotState extends State<NativeAdSlot> {
   }
 }
 
-/// Alt menünün üstündeki uyarlanabilir banner. Yüklenemezse yer kaplamaz.
+/// Alt menünün üstündeki ince banner (320x50). Yüklenemezse yer kaplamaz.
 class BottomBannerAd extends StatefulWidget {
   const BottomBannerAd({super.key});
 
@@ -116,9 +116,9 @@ class _BottomBannerAdState extends State<BottomBannerAd> {
     final id = AdsConfig.bannerId;
     if (_requested || !mounted || !AdsService.instance.ready || id == null || !AdsConfig.bannerEnabled) return;
     _requested = true;
-    final width = MediaQuery.sizeOf(context).width.truncate();
-    final size = await AdSize.getLargeAnchoredAdaptiveBannerAdSize(width);
-    if (size == null || !mounted) return;
+    // Klasik ince banner (320x50): okumayı en az bölen boyut (kullanıcı tercihi).
+    const size = AdSize.banner;
+    if (!mounted) return;
     _ad = BannerAd(
       adUnitId: id,
       size: size,

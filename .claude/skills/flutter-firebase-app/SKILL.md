@@ -204,7 +204,7 @@ description: Flutter/FlutterFlow + Firebase (Firestore, Cloud Functions) uygulam
   `System.getenv("ADMOB_APP_ID") ?: test`. Birim kimlikleri `--dart-define`; release'te kimlik yoksa alan hiç gösterilmez.
 - Doğal reklam: `NativeAd(nativeTemplateStyle: NativeTemplateStyle(templateType: TemplateType.medium, ...))` — platform
   kodu gerekmez; görünür "Reklam" etiketi; yüklenemezse `SizedBox.shrink`. Banner:
-  `AdSize.getLargeAnchoredAdaptiveBannerAdSize(width)` (getCurrentOrientation… kullanımdan kalktı).
+  `AdSize.getLargeAnchoredAdaptiveBannerAdSize(width)` ekranın ~1/5ini kaplar → kullanıcı ince istedi: `AdSize.banner` (320x50).
 - Geçiş reklamı yalnızca doğal geçişte (WebView kapanınca), N okumada bir + minimum aralık; açılış/çıkışta asla.
 - Testlerde reklam servisi başlatılmaz (`ready=false`) → reklam widget'ları boş; eklenti çağrısı yapılmaz.
 - Test sürümünde çıkan 'AdMob native ad validator' penceresi: manifest'e `com.google.android.gms.ads.flag.NATIVE_AD_DEBUGGER_ENABLED=false`. Kullanıcıya bunun SDK'nın geliştirici aracı olduğunu açıkla.
