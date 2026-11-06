@@ -15,6 +15,7 @@ const { getFirestore, Timestamp } = require('firebase-admin/firestore');
 const { getMessaging } = require('firebase-admin/messaging');
 const { initAdmin } = require('./init-admin');
 const fb = require('../src/football');
+const { logSentMessages } = require('../src/notification-log');
 
 const MAX_RUN_MS = 5.5 * 60 * 60 * 1000; // GitHub işi 6 saatte kesilir
 const START_EARLY_MS = 35 * 60 * 1000; // maçtan bu kadar önce başlayan çalışma bekler
@@ -167,6 +168,7 @@ async function watch(db, api, messaging, { sleep: wait_ = sleep } = {}) {
     if (messages.length) {
       const res = await messaging.sendEach(messages);
       log(`Bildirim: ${res.successCount} gönderildi, ${res.failureCount} hata`);
+      await logSentMessages(db, messages, res.responses);
     }
 
     active = await activeMatches(db);

@@ -3,7 +3,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../config.dart';
 import 'schema/articles_record.dart';
 import 'schema/categories_record.dart';
+import 'schema/extra_records.dart';
 import 'schema/football_records.dart';
+import '../utils/search_text.dart';
 
 /// Bir sayfa haber + sonraki sayfa için imleç.
 class ArticlePage {
@@ -89,4 +91,42 @@ class NewsRepository {
 
   Stream<MatchRecord?> watchMatch(int fixtureId) =>
       _db.doc('matches/$fixtureId').snapshots().map((d) => d.exists ? MatchRecord.fromSnapshot(d) : null);
+
+  /// Haberlerde arama: en uzun kelimenin ön ekiyle `array-contains` sorgusu (birleşik dizin:
+  /// search_keywords + published_at DESC), diğer kelimeler istemcide başlık+kaynakta süzülür.
+  Future<List<ArticlesRecord>> searchArticles(String query, {int limit = 40}) async {
+    final plan = searchPlan(query);
+    if (plan == null) return const [];
+    final snap = await _db
+        .collection('articles')
+        .where('search_keywords', arrayContains: plan.key)
+        .orderBy('published_at', descending: true)
+        .limit(limit)
+        .get();
+    return snap.docs.map(ArticlesRecord.fromSnapshot).where((a) {
+      final hay = foldForSearch('${a.title} ${a.sourceName}');
+      return plan.words.every(hay.contains);
+    }).toList();
+  }
+
+  /// Kullanıcının konularına giden son bildirimler (en yeni önce; belge kimliği ters zaman damgası).
+  Stream<List<NotificationRecord>> watchNotifications(Set<String> topics, {int limit = 60}) {
+    if (topics.isEmpty) return Stream.value(const []);
+    return _db
+        .collection('notifications')
+        .where('topics', arrayContainsAny: topics.take(30).toList())
+        .limit(limit)
+        .snapshots()
+        .map((qs) {
+          // Sunucu kimlikleri zaten yeniden eskiye sıralar; cihazda da garantiye al.
+          final list = qs.docs.map(NotificationRecord.fromSnapshot).toList();
+          final epoch = DateTime.fromMillisecondsSinceEpoch(0);
+          list.sort((a, b) => (b.sentAt ?? epoch).compareTo(a.sentAt ?? epoch));
+          return list;
+        });
+  }
+
+  /// Piyasa verileri (bot 30 dakikada bir günceller).
+  Stream<MarketSnapshot?> watchMarket() =>
+      _db.doc('market/latest').snapshots().map((d) => d.exists ? MarketSnapshot.fromMap(d.data()!) : null);
 }

@@ -4,7 +4,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'app_settings.dart';
 import 'l10n/app_strings.dart';
-import 'pages/home_page.dart';
+import 'pages/root_shell.dart';
 import 'pages/article_webview_page.dart';
 import 'pages/interests_page.dart';
 import 'pages/match_detail_page.dart';
@@ -74,7 +74,7 @@ class NewsApp extends StatelessWidget {
         home: !firebaseReady
             ? const _SetupRequiredPage()
             : settings.hasChosenInterests
-            ? HomePage(settings: settings)
+            ? RootShell(settings: settings)
             // İlk açılış: ilgi alanı seçimi; "Devam et" kaydedince ana ekran açılır.
             : InterestsPage(settings: settings, onboarding: true),
       ),

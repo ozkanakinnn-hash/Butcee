@@ -25,6 +25,9 @@ class Weather {
 class WeatherService {
   WeatherService({http.Client? client}) : _client = client ?? http.Client();
 
+  /// Uygulama genelinde paylaşılan örnek (önbellek ortak olsun).
+  static final shared = WeatherService();
+
   final http.Client _client;
   Weather? _cache;
   DateTime? _cachedAt;

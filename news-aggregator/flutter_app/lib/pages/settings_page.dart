@@ -221,6 +221,22 @@ class _SettingsPageState extends State<SettingsPage> with WidgetsBindingObserver
               ),
             ),
             const Divider(),
+            _Header(s.feedLayout),
+            RadioGroup<FeedLayout>(
+              groupValue: settings.feedLayout,
+              onChanged: (v) => settings.setFeedLayout(v ?? FeedLayout.standard),
+              child: Column(
+                children: [
+                  for (final (l, label, icon) in [
+                    (FeedLayout.standard, s.layoutStandard, Icons.view_agenda_outlined),
+                    (FeedLayout.large, s.layoutLarge, Icons.crop_landscape_outlined),
+                    (FeedLayout.compact, s.layoutCompact, Icons.view_headline_rounded),
+                  ])
+                    RadioListTile<FeedLayout>(value: l, title: Text(label), secondary: Icon(icon)),
+                ],
+              ),
+            ),
+            const Divider(),
             _Header(s.language),
             RadioGroup<String>(
               groupValue: settings.locale?.languageCode ?? 'system',

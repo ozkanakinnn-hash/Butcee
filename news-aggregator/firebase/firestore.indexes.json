@@ -4,16 +4,42 @@
       "collectionGroup": "articles",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "category_id", "order": "ASCENDING" },
-        { "fieldPath": "published_at", "order": "DESCENDING" }
+        {
+          "fieldPath": "category_id",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "published_at",
+          "order": "DESCENDING"
+        }
       ]
     },
     {
       "collectionGroup": "sources",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "is_active", "order": "ASCENDING" },
-        { "fieldPath": "source_name", "order": "ASCENDING" }
+        {
+          "fieldPath": "is_active",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "source_name",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "articles",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "search_keywords",
+          "arrayConfig": "CONTAINS"
+        },
+        {
+          "fieldPath": "published_at",
+          "order": "DESCENDING"
+        }
       ]
     }
   ],

@@ -16,12 +16,16 @@ class InterestsPage extends StatefulWidget {
     super.key,
     required this.settings,
     this.onboarding = false,
+    this.embedded = false,
     this.onDone,
     this.repository = const NewsRepository(),
   });
 
   final AppSettings settings;
   final bool onboarding;
+
+  /// Alt menü sekmesi olarak gösteriliyorsa geri düğmesi yok.
+  final bool embedded;
   final VoidCallback? onDone;
   final NewsRepository repository;
 
@@ -82,7 +86,7 @@ class _InterestsPageState extends State<InterestsPage> {
 
         return Scaffold(
           appBar: AppBar(
-            automaticallyImplyLeading: !widget.onboarding,
+            automaticallyImplyLeading: !widget.onboarding && !widget.embedded,
             title: widget.onboarding ? null : Text(s.interests),
           ),
           body: !snap.hasData

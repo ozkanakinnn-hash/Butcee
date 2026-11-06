@@ -49,6 +49,16 @@ news-aggregator/
   Veri: API-Football; `news-football.yml` 15 dakikada bir başlar, maç varsa bitene kadar izler
   (`scripts/football-watch.js`). Ücretsiz planda günde 100 istek → güncelleme aralığı kalan isteğe göre
   otomatik ayarlanır (tek maçta ~1 dk, yoğun günde 3–5 dk). Daha sık güncelleme için ücretli plan gerekir.
+- **Alt menü:** Ana Sayfa · Ara · Bildirimler · İlgi Alanları.
+- **Arama:** Haber başlığı ve kaynakta, Türkçe karakterden bağımsız ("istanbul" = "İSTANBUL").
+  Bot her habere `search_keywords` (kelimelerin 3–10 harflik ön ekleri) yazar; eski haberlere bir kerelik eklenir.
+  Firestore'da `search_keywords (array-contains) + published_at DESC` birleşik dizini gerekir.
+- **Bildirimler sekmesi:** Bot gönderdiği her bildirimi `notifications` koleksiyonuna yazar (7 gün saklanır);
+  uygulama kullanıcının konularını (`news_*`, `team_*`) süzerek yeniden eskiye listeler.
+- **Sağ üst panel (☰):** Dolar/TL, Euro/TL, gram altın (TL), ons altın ($), BIST 100, Brent; bot 30 dakikada bir
+  Yahoo Finance'ten çeker (`src/market.js`, ~15 dk gecikmeli, resmi olmayan arayüz) → `market/latest`.
+  Altında konumdaki hava durumu. Panelden Ayarlar'a da gidilir.
+- **Haber dizilimi:** Ayarlar → Haber dizilimi: Standart (ilk haber büyük) / Büyük kart / Sade liste.
 - **Kategoriler (14):** Son Dakika, Gündem, Ekonomi, Teknoloji, Spor, Futbol, Dünya, Sağlık, Bilim, Kültür-Sanat,
   Magazin, Otomobil, Eğitim, Yaşam.
 

@@ -145,6 +145,37 @@ class S {
   String get matchNotStarted => _t('Maç henüz başlamadı', 'Match has not started');
   String get done => _t('Tamam', 'Done');
 
+  // Alt menü, arama, bildirim listesi, piyasa paneli
+  String get home => _t('Ana Sayfa', 'Home');
+  String get search => _t('Ara', 'Search');
+  String get searchHint => _t('Haber, kaynak, konu ara', 'Search news, sources, topics');
+  String get searchMinChars => _t('En az 3 harf yaz', 'Type at least 3 letters');
+  String get noResults => _t('Sonuç bulunamadı', 'No results');
+  String get recentSearches => _t('Son aramalar', 'Recent searches');
+  String get clear => _t('Temizle', 'Clear');
+  String get searchIndexNotReady => _t(
+    'Arama dizini hazırlanıyor, birkaç dakika sonra tekrar dene.',
+    'Search index is being prepared, try again in a few minutes.',
+  );
+  String get noNotifications => _t(
+    'Henüz bildirim yok. İlgi alanlarına haber geldikçe burada görünecek.',
+    'No notifications yet. News for your interests will appear here.',
+  );
+  String get notificationsOff =>
+      _t('Bildirimler kapalı. Ayarlar\'dan açabilirsin.', 'Notifications are off. Turn them on in Settings.');
+  String get breakingLabel => _t('SON DAKİKA', 'BREAKING');
+  String get matchLabel => _t('MAÇ', 'MATCH');
+  String get markets => _t('Piyasalar', 'Markets');
+  String marketUpdated(String t) => _t('Güncelleme: $t · ~15 dk gecikmeli', 'Updated: $t · ~15 min delayed');
+  String get marketUnavailable => _t('Piyasa verileri henüz yok.', 'Market data not available yet.');
+  String get weather => _t('Hava Durumu', 'Weather');
+  String get showWeather => _t('Konumundaki hava durumunu göster', 'Show weather for your location');
+  String get feedLayout => _t('Haber dizilimi', 'News layout');
+  String get layoutStandard => _t('Standart', 'Standard');
+  String get layoutLarge => _t('Büyük kart', 'Large cards');
+  String get layoutCompact => _t('Sade liste', 'Compact');
+  String get menu => _t('Menü', 'Menu');
+
   // Firebase kurulmamış
   String get setupRequired => _t('Firebase yapılandırması bulunamadı', 'Firebase is not configured');
   String get setupRequiredDesc => _t(

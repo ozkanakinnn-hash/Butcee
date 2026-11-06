@@ -24,6 +24,7 @@ const {
   articleIdForUrl,
   contentHash,
   parsePublishedAt,
+  searchKeywords,
 } = require('./text');
 
 const MAX_ITEMS_PER_FEED = 40;
@@ -69,6 +70,7 @@ function buildArticle(item, { source, categoryRef, placeholderImageUrl, feedLink
       category_id: categoryRef || null,
       published_at: Timestamp.fromDate(publishedAt),
       content_hash: contentHash(title, publishedAt),
+      search_keywords: searchKeywords(title, source.source_name || ''),
       // "Son Dakika" kaynaklarından gelen haberler işaretlenir; uygulamadaki Son Dakika sekmesi
       // orderBy('breaking_at') ile yalnızca bu alana sahip haberleri listeler (ek dizin gerekmez).
       ...(source.is_breaking ? { breaking_at: Timestamp.fromDate(publishedAt) } : {}),

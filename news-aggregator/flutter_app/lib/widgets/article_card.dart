@@ -9,12 +9,22 @@ import '../utils/time_ago.dart';
 /// - Normal: solda başlık + "kaynak · zaman", sağda kare kapak görseli.
 /// - [featured]: akışın ilk haberi; tam genişlikte 16:9 görsel, altında büyük başlık.
 class ArticleCard extends StatelessWidget {
-  const ArticleCard({super.key, required this.article, required this.onTap, this.fallbackIcon, this.featured = false});
+  const ArticleCard({
+    super.key,
+    required this.article,
+    required this.onTap,
+    this.fallbackIcon,
+    this.featured = false,
+    this.compact = false,
+  });
 
   final ArticlesRecord article;
   final VoidCallback onTap;
   final IconData? fallbackIcon;
   final bool featured;
+
+  /// Görselsiz sade satır.
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
@@ -39,6 +49,28 @@ class ArticleCard extends StatelessWidget {
           );
 
     final meta = _Meta(article: article, time: timeAgo(article.publishedAt, s), color: muted);
+
+    if (compact) {
+      return InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                article.title,
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700, height: 1.28),
+              ),
+              const SizedBox(height: 6),
+              meta,
+            ],
+          ),
+        ),
+      );
+    }
 
     if (featured) {
       return InkWell(

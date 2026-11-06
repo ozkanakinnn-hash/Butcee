@@ -159,3 +159,19 @@ description: Flutter/FlutterFlow + Firebase (Firestore, Cloud Functions) uygulam
   süresi (60 sn–10 dk). Sezon erişimini anahtar gelince `check` moduyla doğrula (ücretsiz plan sezon sınırlı olabilir;
   konteyner api-football.com'a erişemez). Testte `sleep` enjekte et — `global.setTimeout` ezmek gRPC zaman aşımlarını bozar.
 - Kullanıcıya sor: veri kaynağı (resmi/anahtarlı vs resmi olmayan), konum amacı, bildirim sıklığı, kategori yapısı.
+
+## 11. Arama, bildirim geçmişi, piyasa paneli (news-aggregator 4. tur)
+- **Firestore'da tam metin arama yok:** yazarken kelimelerin 3–10 harflik ön eklerini `search_keywords` dizisine yaz;
+  sorguda en uzun kelimenin ön ekiyle `array-contains` + `orderBy(published_at)` (birleşik dizin), diğer kelimeleri
+  istemcide süz. Sadeleştirme (İ/I→i, ç ğ ı ö ş ü katlama) JS ve Dart'ta BİREBİR aynı olmalı → test beklentilerini
+  JS çıktısından üret. Eski belgelere tek seferlik doldurma (`app_meta` imleci, sayfa sayfa).
+- **Birleşik dizinsiz "en yeni önce" liste:** belge kimliği ters zaman damgası (`9999999999999-ms`); sıralama
+  belirtilmeyen sorgu kimliğe göre sıralanır → `arrayContainsAny` + limit yeterli. AMA istemcide de `sentAt`'e göre
+  sırala (fake_cloud_firestore ve olası değişikliklere karşı).
+- **Piyasa verisi:** Yahoo chart `/v8/finance/chart/{sym}` (USDTRY=X, EURTRY=X, XU100.IS, BZ=F, GC=F), gerçekçi
+  User-Agent; gram altın = ons × USDTRY / 31,1035. Bot tek belgeye yazar, uygulama tek belge dinler. Kullanıcıya
+  resmi olmadığını söyle (kullanıcı seçti). Türkçe sayı biçimi: binlik nokta, ondalık virgül.
+- **Kart ızgarası taşması:** `GridView` + `childAspectRatio` büyük yazıda taşar → satırları `IntrinsicHeight` + `Row` +
+  `Expanded` ile kur, sütunu `mainAxisSize.min`. Widget testleri (Ahem yazı tipi) bunu yakalar.
+- **Alt menü:** `NavigationBar` + `IndexedStack` (sekme durumu korunur); sağ üst ☰ → `endDrawer`
+  (`Builder` içinden `Scaffold.of(context).openEndDrawer()`).

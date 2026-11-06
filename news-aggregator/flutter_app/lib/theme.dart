@@ -87,6 +87,15 @@ class AppTheme {
         contentTextStyle: text.bodyMedium?.copyWith(color: onSurface),
       ),
       popupMenuTheme: PopupMenuThemeData(color: surfaceHigh, surfaceTintColor: Colors.transparent),
+      navigationBarTheme: NavigationBarThemeData(
+        backgroundColor: background,
+        surfaceTintColor: Colors.transparent,
+        indicatorColor: accent.withValues(alpha: 0.16),
+        iconTheme: WidgetStateProperty.resolveWith(
+          (states) => IconThemeData(size: 28, color: states.contains(WidgetState.selected) ? accent : onSurface),
+        ),
+      ),
+      drawerTheme: DrawerThemeData(backgroundColor: background, surfaceTintColor: Colors.transparent, width: 320),
       bottomSheetTheme: BottomSheetThemeData(backgroundColor: background, surfaceTintColor: Colors.transparent),
     );
   }
