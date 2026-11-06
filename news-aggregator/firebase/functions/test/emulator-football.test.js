@@ -48,3 +48,25 @@ test('canlı maç izlenir, goller bildirilir, maç bitince döngü sona erer', {
   assert.deepEqual(doc.goals, { home: 1, away: 0 });
   assert.equal(doc.is_finished, true);
 });
+
+test('plan güncel sezonu kapsamıyorsa 24 saat beklenir, istek harcanmaz', { skip }, async () => {
+  const { getFirestore } = require('firebase-admin/firestore');
+  const { watch } = require('../scripts/football-watch');
+  const db = getFirestore();
+  await db.doc('football_meta/state').set({ season: null, teams_synced_at: null, fixtures_date: null, plan_blocked_until: null });
+  let calls = 0;
+  const api = {
+    remaining: 100,
+    used: 0,
+    get: async () => {
+      calls++;
+      throw new Error('/fixtures: Free plans do not have access to this season, try from 2022 to 2024.');
+    },
+  };
+  await watch(db, api, { sendEach: async () => ({}) }, { sleep: async () => {} });
+  assert.equal(calls, 1);
+  const meta = (await db.doc('football_meta/state').get()).data();
+  assert.ok(meta.plan_blocked_until.toMillis() > Date.now() + 23 * 3_600_000);
+  await watch(db, api, { sendEach: async () => ({}) }, { sleep: async () => {} });
+  assert.equal(calls, 1, 'beklemedeyken API çağrılmaz');
+});

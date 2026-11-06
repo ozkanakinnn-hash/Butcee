@@ -16,6 +16,7 @@ const { getMessaging } = require('firebase-admin/messaging');
 const { initAdmin } = require('./init-admin');
 const fb = require('../src/football');
 const { logSentMessages } = require('../src/notification-log');
+const { isPlanSeasonError } = fb;
 
 const MAX_RUN_MS = 5.5 * 60 * 60 * 1000; // GitHub işi 6 saatte kesilir
 const START_EARLY_MS = 35 * 60 * 1000; // maçtan bu kadar önce başlayan çalışma bekler
@@ -129,12 +130,27 @@ async function watch(db, api, messaging, { sleep: wait_ = sleep } = {}) {
   const metaRef = db.doc('football_meta/state');
   const meta = (await metaRef.get()).data() || {};
 
-  const teamsAge = meta.teams_synced_at ? Date.now() - meta.teams_synced_at.toMillis() : Infinity;
-  if (!meta.season || teamsAge > TEAMS_TTL_MS) await syncTeams(db, api, meta);
-  if (meta.fixtures_date !== fb.istanbulDate()) {
-    await syncTodayFixtures(db, api, meta);
-    await cleanupOldMatches(db);
+  // Plan güncel sezonu kapsamıyorsa her 15 dakikada istek harcayıp hata vermek yerine 24 saat bekle.
+  if (meta.plan_blocked_until && meta.plan_blocked_until.toMillis() > Date.now()) {
+    log(`Plan bu sezonu kapsamıyor (${meta.plan_blocked_reason || ''}); ${meta.plan_blocked_until.toDate().toISOString()} tarihine kadar beklemede.`);
+    return;
   }
+  try {
+    const teamsAge = meta.teams_synced_at ? Date.now() - meta.teams_synced_at.toMillis() : Infinity;
+    if (!meta.season || teamsAge > TEAMS_TTL_MS) await syncTeams(db, api, meta);
+    if (meta.fixtures_date !== fb.istanbulDate()) await syncTodayFixtures(db, api, meta);
+  } catch (err) {
+    if (isPlanSeasonError(err)) {
+      await metaRef.set(
+        { plan_blocked_until: Timestamp.fromMillis(Date.now() + 24 * 3_600_000), plan_blocked_reason: err.message.slice(0, 200) },
+        { merge: true }
+      );
+      log(`Plan güncel sezonu kapsamıyor; 24 saat beklenecek. (${err.message})`);
+      return;
+    }
+    throw err;
+  }
+  if (meta.fixtures_date !== fb.istanbulDate()) await cleanupOldMatches(db);
 
   let active = await activeMatches(db);
   if (active.length === 0) {

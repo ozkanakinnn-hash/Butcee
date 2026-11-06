@@ -187,3 +187,7 @@ description: Flutter/FlutterFlow + Firebase (Firestore, Cloud Functions) uygulam
   Varlıkları KENDİ kimliğinle (`galatasaray`) sabit listeyle tohumla; API adlarını takma ad tablosu + Türkçe katlama ile
   bu kimliğe eşle (bilinmeyen ad → addan kimlik). Bildirim konusu ve kullanıcı seçimi API değişse de bozulmaz.
   Kullanıcı rozet istemedi: logo/rozet yerine düz kısaltma metni (GS, FB, BJK; yoksa adın ilk 3 harfi). Ligden düşenler `active:false`.
+- **API-Football ücretsiz plan (2026-11 doğrulandı):** güncel sezona ERİŞİM YOK — "Free plans do not have access to this
+  season, try from 2022 to 2024". /status ve /leagues çalışır, /fixtures ve /teams güncel sezonda reddedilir. Canlı skor
+  için ücretli plan şart. Kullanıcıya üyelikten ÖNCE bunu söyle. Bot: plan hatasında `plan_blocked_until` (24 sa) yaz, cron her
+  çalıştığında istek harcamadan çık (yoksa 15 dk'da bir hata e-postası ve boşa istek).

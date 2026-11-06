@@ -27,6 +27,9 @@ const LIVE = new Set(['1H', 'HT', '2H', 'ET', 'BT', 'P', 'SUSP', 'INT', 'LIVE'])
 
 class FootballApiError extends Error {}
 
+/** Ücretsiz planın güncel sezonu kapsamadığını söyleyen API hatası mı? */
+const isPlanSeasonError = (err) => /do not have access to this season|plan/i.test(String(err && err.message));
+
 /** API-Football istemcisi; kalan günlük istek sayısını başlıklardan izler. */
 class ApiFootball {
   constructor({ key, fetchImpl = fetch, base = API_BASE } = {}) {
@@ -214,6 +217,7 @@ function pollIntervalMs({ remaining, liveMinutesLeft, reserve = 6 }) {
 module.exports = {
   ApiFootball,
   FootballApiError,
+  isPlanSeasonError,
   SUPER_LIG_ID,
   FINISHED,
   LIVE,
