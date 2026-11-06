@@ -23,21 +23,60 @@ function describeKeyText(text) {
   ].join('\n  - ');
 }
 
-/** Hizmet hesabı dosyasını okur; BOM ve baştaki/sondaki boşlukları tolere eder. */
+/**
+ * Metin düzenleyiciler bazen private_key içindeki "\n" kaçışlarını gerçek satır sonuna çevirir;
+ * JSON dizgesi içinde ham satır sonu geçersizdir. Yalnızca DİZGE İÇİNDEKİ satır sonlarını "\n" yapar.
+ */
+function escapeNewlinesInStrings(text) {
+  let out = '';
+  let inString = false;
+  let escaped = false;
+  for (const ch of text) {
+    if (inString) {
+      if (escaped) { escaped = false; out += ch; continue; }
+      if (ch === '\\') { escaped = true; out += ch; continue; }
+      if (ch === '"') { inString = false; out += ch; continue; }
+      if (ch === '\n') { out += '\\n'; continue; }
+      if (ch === '\r') continue;
+      if (ch === '\t') { out += '\\t'; continue; }
+      out += ch;
+    } else {
+      if (ch === '"') inString = true;
+      out += ch;
+    }
+  }
+  return out;
+}
+
+/** Hata türünü, metinden parça içermeden Türkçe açıklar. */
+function describeParseError(err) {
+  const m = err.message;
+  if (/control character/i.test(m)) return 'metin içinde izin verilmeyen satır sonu/kontrol karakteri';
+  if (/end of (json|data)|unterminated/i.test(m)) return 'metin yarıda kesilmiş';
+  if (/unexpected token|unexpected character|expected/i.test(m)) return 'beklenmeyen karakter';
+  return 'bilinmeyen biçim hatası';
+}
+
+/** Hizmet hesabı dosyasını okur; BOM, boşluklar ve dizge içindeki ham satır sonlarını tolere eder. */
 function readServiceAccount(keyFile) {
   const text = fs.readFileSync(keyFile, 'utf8').replace(/^﻿/, '').trim();
   let json;
   try {
     json = JSON.parse(text);
-  } catch (err) {
-    // JSON.parse mesajı metinden parça içerebilir; yalnızca konumu alıyoruz.
-    const pos = /position (\d+)/.exec(err.message);
-    throw new Error(
-      'FIREBASE_SERVICE_ACCOUNT geçerli bir JSON değil' +
-        (pos ? ` (${pos[1]}. karakterde bozuk)` : '') +
+  } catch (firstErr) {
+    try {
+      json = JSON.parse(escapeNewlinesInStrings(text));
+      console.warn('Uyarı: anahtar metnindeki satır sonları onarıldı (kopyalama sırasında bozulmuş).');
+    } catch {
+      // JSON.parse mesajı metinden parça içerebilir; yalnızca konumu ve türü alıyoruz.
+      const pos = /position (\d+)/.exec(firstErr.message);
+      throw new Error(
+        'FIREBASE_SERVICE_ACCOUNT geçerli bir JSON değil' +
+          (pos ? ` (${pos[1]}. karakterde: ${describeParseError(firstErr)})` : ` (${describeParseError(firstErr)})`) +
         '.\n  - ' + describeKeyText(text) +
         '\nÇözüm: Firebase\'den indirdiğiniz .json dosyasının TAMAMINI kopyalayıp GitHub secret\'ını güncelleyin.'
-    );
+      );
+    }
   }
   if (json.type !== 'service_account' || !json.private_key || !json.client_email || !json.project_id) {
     throw new Error(
@@ -58,4 +97,4 @@ function initAdmin() {
   return initializeApp(projectId ? { projectId } : undefined);
 }
 
-module.exports = { initAdmin, readServiceAccount, describeKeyText };
+module.exports = { initAdmin, readServiceAccount, describeKeyText, escapeNewlinesInStrings };
