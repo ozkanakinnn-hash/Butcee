@@ -1,0 +1,70 @@
+name: Haber Akışı - Emülatör Açılış Kontrolü
+
+# Release APK'yı Android emülatöründe açar, çökme kaydını (logcat) ve ekran görüntüsünü toplar.
+on:
+  push:
+    paths:
+      - ".github/workflows/news-crash-check.yml"
+  workflow_dispatch:
+
+jobs:
+  launch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    defaults:
+      run:
+        working-directory: news-aggregator/flutter_app
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Firebase yapılandırması
+        env:
+          NEWS_GOOGLE_SERVICES_JSON: ${{ secrets.NEWS_GOOGLE_SERVICES_JSON }}
+        run: node tool/write_google_services.js android/app/google-services.json com.haberakisi.haber_akisi
+      - run: flutter pub get
+      # Emülatör x86_64 olduğu için aynı ayarlarla x64 release derlenir (R8 davranışı aynıdır)
+      - name: Release APK (x64)
+        run: >
+          flutter build apk --release --split-per-abi --target-platform android-x64
+          --dart-define=ADMOB_BANNER_ID=ca-app-pub-3940256099942544/6300978111
+          --dart-define=ADMOB_NATIVE_ID=ca-app-pub-3940256099942544/2247696110
+          --dart-define=ADMOB_INTERSTITIAL_ID=ca-app-pub-3940256099942544/1033173712
+      - name: KVM etkinleştir
+        working-directory: .
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules && sudo udevadm trigger --name-match=kvm
+      - name: Emülatörde aç ve kayıtları topla
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          working-directory: news-aggregator/flutter_app
+          script: |
+            mkdir -p ../crash-check
+            adb install -r build/app/outputs/flutter-apk/app-x86_64-release.apk
+            adb logcat -c
+            adb shell monkey -p com.haberakisi.haber_akisi -c android.intent.category.LAUNCHER 1
+            sleep 25
+            adb exec-out screencap -p > ../crash-check/acilis.png
+            adb logcat -d -b crash > ../crash-check/crash.txt || true
+            adb logcat -d > ../crash-check/logcat.txt || true
+            echo "===== ÇÖKME KAYDI ====="; cat ../crash-check/crash.txt | head -120
+            echo "===== HATALAR ====="; grep -E "FATAL|AndroidRuntime|E flutter|Exception|ClassNotFound|NoSuchMethod|Missing type" ../crash-check/logcat.txt | head -80 || true
+            adb shell pidof com.haberakisi.haber_akisi && echo "UYGULAMA ÇALIŞIYOR" || echo "UYGULAMA ÇALIŞMIYOR"
+      - uses: actions/upload-artifact@v5
+        if: always()
+        with:
+          name: crash-check
+          path: news-aggregator/crash-check/
