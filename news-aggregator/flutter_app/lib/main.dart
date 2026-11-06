@@ -76,7 +76,12 @@ class NewsApp extends StatelessWidget {
             : settings.hasChosenInterests
             ? RootShell(settings: settings)
             // İlk açılış: ilgi alanı seçimi; "Devam et" kaydedince ana ekran açılır.
-            : InterestsPage(settings: settings, onboarding: true),
+            : InterestsPage(
+                settings: settings,
+                onboarding: true,
+                // Kurulumda bildirim izni de sorulur (Android 13+ sistem penceresi)
+                requestNotifications: firebaseReady ? () => NotificationService.instance.requestPermission() : null,
+              ),
       ),
     );
   }

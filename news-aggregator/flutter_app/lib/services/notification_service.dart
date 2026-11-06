@@ -127,6 +127,14 @@ class NotificationService {
 
     settings.addListener(syncTopics);
     await syncTopics();
+
+    // Daha önce kurulmuş (ilgi alanlarını seçmiş) ama izni hiç sorulmamış kullanıcıya bir kez sor.
+    if (settings.hasChosenInterests) {
+      final prefs = await SharedPreferences.getInstance();
+      if (!prefs.containsKey(_askedKey) && await permissionStatus() != NotificationPermission.granted) {
+        WidgetsBinding.instance.addPostFrameCallback((_) => requestPermission());
+      }
+    }
   }
 
   void _emit(Map<String, dynamic> data) {
