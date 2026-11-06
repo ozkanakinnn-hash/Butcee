@@ -2,6 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
+import 'ads/ads_service.dart';
 import 'app_settings.dart';
 import 'l10n/app_strings.dart';
 import 'pages/root_shell.dart';
@@ -31,6 +32,10 @@ Future<void> main() async {
     NotificationService.instance.taps.listen(_openTarget);
     NotificationService.instance.init(settings).catchError((Object e) => debugPrint('Bildirim başlatılamadı: $e'));
   }
+  // Reklamlar: önce onay (UMP), sonra AdMob. İlk kare çizildikten sonra; hata uygulamayı durdurmaz.
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    AdsService.instance.init().catchError((Object e) => debugPrint('Reklamlar başlatılamadı: $e'));
+  });
 }
 
 /// Bildirime dokunulunca ilgili sayfayı aç.

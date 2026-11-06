@@ -37,6 +37,9 @@ android {
         // flag during build.
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        // AdMob uygulama kimliği: mağaza sürümünde ADMOB_APP_ID ortam değişkeni; yoksa Google TEST kimliği.
+        manifestPlaceholders["admobAppId"] =
+            System.getenv("ADMOB_APP_ID") ?: "ca-app-pub-3940256099942544~3347511713"
     }
 
     buildTypes {

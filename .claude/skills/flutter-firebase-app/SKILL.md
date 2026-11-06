@@ -195,3 +195,15 @@ description: Flutter/FlutterFlow + Firebase (Firestore, Cloud Functions) uygulam
   Gündem hem Son Dakika'da. Çözüm: Son Dakika kaynaklarının haberi `son-dakika` kategorisine; eski kayıtları bir kerelik
   taşı; kategori sekmelerinde işaretli olanları istemcide ele (kısa kalan sayfayı birkaç turla doldur).
   fake_cloud_firestore `orderBy(alan)` alanı olmayan belgeleri de döndürür (gerçek Firestore dışlar) → istemcide de süz.
+
+## 12. AdMob (Flutter, google_mobile_ads 9.x — compileSdk 36 ile uyumlu)
+- Önce paketin `android/build.gradle` compileSdk'sine bak (proje 36). UMP `ConsentInformation.requestConsentInfoUpdate` →
+  `ConsentForm.loadAndShowConsentFormIfRequired` → `canRequestAds` true ise `MobileAds.initialize`; Ayarlar'da
+  `getPrivacyOptionsRequirementStatus()==required` ise `ConsentForm.showPrivacyOptionsForm`.
+- Manifest `com.google.android.gms.ads.APPLICATION_ID` ZORUNLU (yoksa açılışta çöker) → `manifestPlaceholders` +
+  `System.getenv("ADMOB_APP_ID") ?: test`. Birim kimlikleri `--dart-define`; release'te kimlik yoksa alan hiç gösterilmez.
+- Doğal reklam: `NativeAd(nativeTemplateStyle: NativeTemplateStyle(templateType: TemplateType.medium, ...))` — platform
+  kodu gerekmez; görünür "Reklam" etiketi; yüklenemezse `SizedBox.shrink`. Banner:
+  `AdSize.getLargeAnchoredAdaptiveBannerAdSize(width)` (getCurrentOrientation… kullanımdan kalktı).
+- Geçiş reklamı yalnızca doğal geçişte (WebView kapanınca), N okumada bir + minimum aralık; açılış/çıkışta asla.
+- Testlerde reklam servisi başlatılmaz (`ready=false`) → reklam widget'ları boş; eklenti çağrısı yapılmaz.
