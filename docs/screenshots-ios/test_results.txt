@@ -1,16 +1,16 @@
-2026-11-06 01:10:14.497937+0000 RamazanRehberi[10439:35553] [Client] Synchronous remote object proxy returned error: Error Domain=NSCocoaErrorDomain Code=4099 "The connection to service named com.apple.commcenter.coretelephony.xpc was invalidated: failed at lookup with error 3 - No such process." UserInfo={NSDebugDescription=The connection to service named com.apple.commcenter.coretelephony.xpc was invalidated: failed at lookup with error 3 - No such process.}
-2026-11-06 01:10:15.840915+0000 RamazanRehberi[10439:35553] [Client] Synchronous remote object proxy returned error: Error Domain=NSCocoaErrorDomain Code=4099 "The connection to service named com.apple.commcenter.coretelephony.xpc was invalidated: failed at lookup with error 3 - No such process." UserInfo={NSDebugDescription=The connection to service named com.apple.commcenter.coretelephony.xpc was invalidated: failed at lookup with error 3 - No such process.}
+2026-11-06 01:24:03.302606+0000 RamazanRehberi[10113:34890] [Client] Synchronous remote object proxy returned error: Error Domain=NSCocoaErrorDomain Code=4099 "The connection to service named com.apple.commcenter.coretelephony.xpc was invalidated: failed at lookup with error 3 - No such process." UserInfo={NSDebugDescription=The connection to service named com.apple.commcenter.coretelephony.xpc was invalidated: failed at lookup2026-11-06 01:24:05.278898+0000 RamazanRehberi[10113:34097] SecTaskCopyDebugDescription: RamazanRehberi[10113]/0#-1 LF=22
+2026-11-06 01:24:05.316060+0000 RamazanRehberi[10113:34890] [Client] Synchronous remote object proxy returned error: Error Domain=NSCocoaErrorDomain Code=4099 "The connection to service named com.apple.commcenter.coretelephony.xpc was invalidated: failed at lookup with error 3 - No such process." UserInfo={NSDebugDescription=The connection to service named com.apple.commcenter.coretelephony.xpc was invalidated: failed at lookup with error 3 - No such process.}
 Test Case '-[RamazanRehberiTests.CoreTests testAutoLocationMatching]' passed (0.008 seconds).
-Test Case '-[RamazanRehberiTests.CoreTests testCleanTime]' passed (0.003 seconds).
-Test Case '-[RamazanRehberiTests.CoreTests testContentAndTranslations]' passed (0.003 seconds).
-Test Case '-[RamazanRehberiTests.CoreTests testCountdownModes]' passed (0.008 seconds).
-Test Case '-[RamazanRehberiTests.CoreTests testGreetingCardsRender]' passed (1.065 seconds).
-Test Case '-[RamazanRehberiTests.CoreTests testHolidayCountdown]' passed (0.028 seconds).
+Test Case '-[RamazanRehberiTests.CoreTests testCleanTime]' passed (0.005 seconds).
+Test Case '-[RamazanRehberiTests.CoreTests testContentAndTranslations]' passed (0.002 seconds).
+Test Case '-[RamazanRehberiTests.CoreTests testCountdownModes]' passed (0.005 seconds).
+Test Case '-[RamazanRehberiTests.CoreTests testGreetingCardsRender]' passed (0.885 seconds).
+Test Case '-[RamazanRehberiTests.CoreTests testHolidayCountdown]' passed (0.149 seconds).
 Test Case '-[RamazanRehberiTests.CoreTests testIslamicDays2026]' passed (0.003 seconds).
-Test Case '-[RamazanRehberiTests.CoreTests testNotificationScheduling]' passed (1.754 seconds).
-Test Case '-[RamazanRehberiTests.CoreTests testOfflineCalcCloseToDiyanet]' passed (0.012 seconds).
-Test Case '-[RamazanRehberiTests.CoreTests testQiblaBearing]' passed (0.003 seconds).
-Test Case '-[RamazanRehberiTests.CoreTests testQuranText]' passed (0.003 seconds).
-Test Case '-[RamazanRehberiTests.CoreTests testRamadanCalendar]' passed (0.003 seconds).
-Test Case '-[RamazanRehberiTests.CoreTests testStores]' passed (0.038 seconds).
+Test Case '-[RamazanRehberiTests.CoreTests testNotificationScheduling]' passed (1.581 seconds).
+Test Case '-[RamazanRehberiTests.CoreTests testOfflineCalcCloseToDiyanet]' passed (0.008 seconds).
+Test Case '-[RamazanRehberiTests.CoreTests testQiblaBearing]' passed (0.001 seconds).
+Test Case '-[RamazanRehberiTests.CoreTests testQuranText]' passed (0.002 seconds).
+Test Case '-[RamazanRehberiTests.CoreTests testRamadanCalendar]' passed (0.001 seconds).
+Test Case '-[RamazanRehberiTests.CoreTests testStores]' passed (0.028 seconds).
 ** TEST SUCCEEDED **
