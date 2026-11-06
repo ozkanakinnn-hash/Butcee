@@ -1,8 +1,10 @@
 /// Resmi bayramlar ve anma günleri — cihazda zamanlanan kutlama/anma bildirimleri ve ana sayfa şeridi.
 ///
 /// Sabit tarihli günler her yıl aynı gün; dini bayramlar ay takvimine göre değiştiği için yıl tablosuyla
-/// verilir (Diyanet takvimi). Tablo bitince bayram bildirimi gönderilmez — yeni yılları eklemeyi unutmayın.
+/// verilir (Diyanet takvimi). Dini bayram ve kandiller de tabloyla verilir; tablo bitince bildirim gönderilmez — yeni yılları eklemeyi unutmayın.
 library;
+
+import 'dart:ui' show Color;
 
 enum ObservanceKind {
   /// Bayram / kutlama
@@ -10,6 +12,9 @@ enum ObservanceKind {
 
   /// Anma (sade, saygılı görünüm)
   commemoration,
+
+  /// Kandil / mübarek gece
+  holyNight,
 }
 
 class Observance {
@@ -22,7 +27,7 @@ class Observance {
     required this.bodyEn,
     this.month,
     this.day,
-    this.dates = const {},
+    this.dates = const [],
     this.hour = 9,
     this.minute = 0,
     this.sinceYear,
@@ -35,8 +40,9 @@ class Observance {
   final int? month;
   final int? day;
 
-  /// Dini bayramlar: yıl → (ay, gün).
-  final Map<int, (int, int)> dates;
+  /// Ay takvimine bağlı günler (dini bayramlar, kandiller): (yıl, ay, gün). Bir yılda birden fazla olabilir
+  /// (ör. 2027'de iki Miraç Kandili).
+  final List<(int, int, int)> dates;
 
   /// Bildirim saati (İstanbul).
   final int hour;
@@ -52,11 +58,20 @@ class Observance {
 
   bool get isCommemoration => kind == ObservanceKind.commemoration;
 
-  /// Bu yılki tarihi (yoksa null).
-  DateTime? dateIn(int year) {
-    if (month != null && day != null) return DateTime(year, month!, day!, hour, minute);
-    final d = dates[year];
-    return d == null ? null : DateTime(year, d.$1, d.$2, hour, minute);
+  /// Şerit / bildirim rengi: anma siyah, kandil koyu yeşil, bayram kırmızı.
+  Color get color => switch (kind) {
+    ObservanceKind.commemoration => const Color(0xFF111111),
+    ObservanceKind.holyNight => const Color(0xFF0B5D4B),
+    ObservanceKind.celebration => const Color(0xFFE30A17),
+  };
+
+  /// Bu yıldaki tarihleri (yoksa boş).
+  List<DateTime> datesIn(int year) {
+    if (month != null && day != null) return [DateTime(year, month!, day!, hour, minute)];
+    return [
+      for (final d in dates)
+        if (d.$1 == year) DateTime(year, d.$2, d.$3, hour, minute),
+    ];
   }
 
   String _fill(String s, int year) => sinceYear == null ? s : s.replaceAll('{n}', '${year - sinceYear!}');
@@ -67,13 +82,16 @@ class Observance {
 
 /// Belirli bir yıldaki gerçekleşme.
 class ObservanceOccurrence {
-  const ObservanceOccurrence(this.observance, this.date);
+  const ObservanceOccurrence(this.observance, this.date, [this.nth = 0]);
 
   final Observance observance;
   final DateTime date;
 
+  /// Aynı gün bu yıl kaçıncı kez (0, 1, 2).
+  final int nth;
+
   /// Bildirim kimliği: yıl + gün sırasına göre sabit (5000–5999 aralığı bayram/anma bildirimlerine ayrıldı).
-  int get notificationId => 5000 + (date.year % 10) * 100 + observances.indexOf(observance);
+  int get notificationId => 5000 + (date.year % 10) * 100 + observances.indexOf(observance) * 3 + nth;
 
   String title({bool english = false}) => observance.title(date.year, english: english);
   String body({bool english = false}) => observance.body(date.year, english: english);
@@ -197,7 +215,7 @@ const observances = <Observance>[
   Observance(
     id: 'ramazan-bayrami',
     kind: ObservanceKind.celebration,
-    dates: {2026: (3, 20), 2027: (3, 9), 2028: (2, 26)},
+    dates: [(2026, 3, 20), (2027, 3, 9), (2028, 2, 26)],
     titleTr: '🌙 Ramazan Bayramınız Mübarek Olsun',
     titleEn: '🌙 Happy Eid al-Fitr',
     bodyTr: 'Ramazan Bayramınızı en içten dileklerimizle kutlar, sağlık ve huzur dolu bir bayram dileriz.',
@@ -206,11 +224,62 @@ const observances = <Observance>[
   Observance(
     id: 'kurban-bayrami',
     kind: ObservanceKind.celebration,
-    dates: {2026: (5, 27), 2027: (5, 16), 2028: (5, 4)},
+    dates: [(2026, 5, 27), (2027, 5, 16), (2028, 5, 4)],
     titleTr: '🌙 Kurban Bayramınız Mübarek Olsun',
     titleEn: '🌙 Happy Eid al-Adha',
     bodyTr: 'Kurban Bayramınızı en içten dileklerimizle kutlar, sağlık ve huzur dolu bir bayram dileriz.',
     bodyEn: 'Wishing you a blessed and peaceful Eid al-Adha.',
+  ),
+  // Kandiller (Diyanet dinî günler takvimi; kandil gecesinin başladığı gün). Bildirim gün içinde gider.
+  Observance(
+    id: 'regaip',
+    kind: ObservanceKind.holyNight,
+    dates: [(2026, 12, 10), (2027, 12, 2)],
+    hour: 10,
+    titleTr: '🕌 Regaip Kandiliniz Mübarek Olsun',
+    titleEn: '🕌 Blessed Raghaib Night',
+    bodyTr: 'Üç ayların ilk kandili Regaip Kandili bu gece. Dualarınızın kabul olması dileğiyle.',
+    bodyEn: 'Tonight is the Night of Raghaib, the first holy night of the three sacred months.',
+  ),
+  Observance(
+    id: 'mirac',
+    kind: ObservanceKind.holyNight,
+    dates: [(2026, 1, 15), (2027, 1, 4), (2027, 12, 24)],
+    hour: 10,
+    titleTr: '🕌 Miraç Kandiliniz Mübarek Olsun',
+    titleEn: '🕌 Blessed Night of Miraj',
+    bodyTr: 'Miraç Kandili bu gece. Hayırlara vesile olması dileğiyle.',
+    bodyEn: 'Tonight is the Night of Miraj (the Ascension).',
+  ),
+  Observance(
+    id: 'berat',
+    kind: ObservanceKind.holyNight,
+    dates: [(2026, 2, 2), (2027, 1, 22)],
+    hour: 10,
+    titleTr: '🕌 Berat Kandiliniz Mübarek Olsun',
+    titleEn: '🕌 Blessed Night of Bara\'at',
+    bodyTr: 'Berat Kandili bu gece. Huzur ve bereket dileriz.',
+    bodyEn: 'Tonight is the Night of Bara\'at. Wishing you peace and blessings.',
+  ),
+  Observance(
+    id: 'kadir-gecesi',
+    kind: ObservanceKind.holyNight,
+    dates: [(2026, 3, 16), (2027, 3, 5)],
+    hour: 10,
+    titleTr: '🕌 Kadir Geceniz Mübarek Olsun',
+    titleEn: '🕌 Blessed Laylat al-Qadr',
+    bodyTr: 'Bin aydan hayırlı Kadir Gecesi bu gece. Dualarınızın kabul olması dileğiyle.',
+    bodyEn: 'Tonight is Laylat al-Qadr, the Night of Power.',
+  ),
+  Observance(
+    id: 'mevlid',
+    kind: ObservanceKind.holyNight,
+    dates: [(2026, 8, 24), (2027, 8, 13)],
+    hour: 10,
+    titleTr: '🕌 Mevlid Kandiliniz Mübarek Olsun',
+    titleEn: '🕌 Blessed Mawlid Night',
+    bodyTr: 'Peygamber Efendimizin doğumunun yıl dönümü Mevlid Kandili bu gece.',
+    bodyEn: 'Tonight is Mawlid, marking the birth of the Prophet Muhammad.',
   ),
 ];
 
@@ -220,8 +289,10 @@ List<ObservanceOccurrence> upcomingObservances(DateTime from, {int days = 365}) 
   final out = <ObservanceOccurrence>[];
   for (final year in [from.year, from.year + 1]) {
     for (final o in observances) {
-      final d = o.dateIn(year);
-      if (d != null && d.isAfter(from) && d.isBefore(until)) out.add(ObservanceOccurrence(o, d));
+      final ds = o.datesIn(year);
+      for (var i = 0; i < ds.length; i++) {
+        if (ds[i].isAfter(from) && ds[i].isBefore(until)) out.add(ObservanceOccurrence(o, ds[i], i));
+      }
     }
   }
   out.sort((a, b) => a.date.compareTo(b.date));
@@ -231,8 +302,10 @@ List<ObservanceOccurrence> upcomingObservances(DateTime from, {int days = 365}) 
 /// Bugün (takvim günü) olan gün, yoksa null.
 ObservanceOccurrence? observanceOn(DateTime day) {
   for (final o in observances) {
-    final d = o.dateIn(day.year);
-    if (d != null && d.month == day.month && d.day == day.day) return ObservanceOccurrence(o, d);
+    final ds = o.datesIn(day.year);
+    for (var i = 0; i < ds.length; i++) {
+      if (ds[i].month == day.month && ds[i].day == day.day) return ObservanceOccurrence(o, ds[i], i);
+    }
   }
   return null;
 }

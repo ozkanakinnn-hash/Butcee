@@ -36,12 +36,15 @@ class NewsRepository {
   /// [category] null ise "Tümü" sekmesi. Kategori filtresi için
   /// (category_id ASC, published_at DESC) birleşik dizini gerekir — firestore.indexes.json.
   ///
+  /// [fromCache]: yalnızca cihazdaki önbellekten (ağ beklemeden, açılışta anında göstermek için).
+  ///
   /// Son Dakika ([CategoriesRecord.isBreaking]): orderBy('breaking_at') yalnızca bu alana sahip
   /// haberleri döndürür; tek alanlı otomatik dizin yeterlidir.
   Future<ArticlePage> fetchArticles({
     CategoriesRecord? category,
     DocumentSnapshot<Map<String, dynamic>>? startAfter,
     int pageSize = AppConfig.pageSize,
+    bool fromCache = false,
   }) async {
     Query<Map<String, dynamic>> base = _db.collection('articles');
     final breakingTab = category != null && category.isBreaking;
@@ -60,7 +63,7 @@ class NewsRepository {
     for (var round = 0; round < 3 && hasMore && items.length < pageSize; round++) {
       var q = base.limit(pageSize);
       if (cursor != null) q = q.startAfterDocument(cursor);
-      final snap = await q.get();
+      final snap = await q.get(fromCache ? const GetOptions(source: Source.cache) : null);
       final page = snap.docs.map(ArticlesRecord.fromSnapshot);
       items.addAll(
         hideBreaking

@@ -36,6 +36,7 @@ async function main() {
         logo_url: `https://www.google.com/s2/favicons?domain=${s.domain}&sz=128`,
         is_active: s.is_active !== false,
         is_breaking: s.is_breaking === true,
+        allow_images: s.allow_images !== false, // telif: false → yayıncı görseli kullanılmaz
         created_at: FieldValue.serverTimestamp(),
       },
       { merge: true }

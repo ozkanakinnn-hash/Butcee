@@ -60,7 +60,8 @@ jobs:
       - run: flutter pub get
       - run: flutter analyze
       - run: flutter test
-      - run: flutter build apk --debug
+      # Sürüm numarası = CI çalıştırma numarası → her yeni APK eskisinin üzerine güncelleme olarak kurulur.
+      - run: flutter build apk --debug --build-number=${{ github.run_number }}
       - uses: actions/upload-artifact@v5
         with:
           name: haber-akisi-debug-apk
@@ -70,6 +71,7 @@ jobs:
       - name: Release APK (arm64, test reklamları)
         run: >
           flutter build apk --release --split-per-abi --target-platform android-arm64
+          --build-number=${{ github.run_number }}
           --dart-define=ADMOB_BANNER_ID=ca-app-pub-3940256099942544/6300978111
           --dart-define=ADMOB_NATIVE_ID=ca-app-pub-3940256099942544/2247696110
           --dart-define=ADMOB_INTERSTITIAL_ID=ca-app-pub-3940256099942544/1033173712

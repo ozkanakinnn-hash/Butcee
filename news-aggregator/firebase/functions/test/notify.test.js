@@ -35,7 +35,7 @@ test('kategori başına tek özet: en yeni haber + "ve N haber daha"', () => {
   assert.equal(messages.length, 2);
   const saglik = messages.find((m) => m.topic === 'news_saglik');
   assert.equal(saglik.notification.title, 'Sağlık');
-  assert.equal(saglik.notification.body, 'Başlık b\nve 2 haber daha');
+  assert.equal(saglik.notification.body, 'Başlık b\nKaynak: Kaynak · ve 2 haber daha');
   assert.equal(saglik.data.url, 'https://ornek.com/b');
   assert.equal(saglik.android.notification.channelId, 'news');
   assert.equal(nextState.last_sent.saglik, NOW);
@@ -115,4 +115,14 @@ test('bildirim kaydı: yeniler önce sıralanır, koşullu (iki takım) mesajın
   assert.equal(e.data.type, 'match');
   assert.equal(e.data.fixture_id, '77');
   assert.equal(e.data.channel, 'goals');
+});
+
+test('bildirimin altında kaynak yazar (son dakika dahil)', () => {
+  const m = buildNewsMessage({
+    categoryId: 'son-dakika',
+    categoryName: 'Son Dakika',
+    breaking: true,
+    articles: [art('x', 'son-dakika', '2026-11-06T11:00:00Z', { title: 'Deprem', source_name: 'AA' })],
+  });
+  assert.equal(m.notification.body, 'Deprem\nKaynak: AA');
 });

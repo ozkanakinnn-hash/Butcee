@@ -25,7 +25,7 @@ void main() {
 
   test('yaklaşanlar: 6 Kasım 2026\'dan sonraki ilk günler sırayla; geçmiş günler yok', () {
     final list = upcomingObservances(DateTime(2026, 11, 6, 12));
-    expect(list.take(3).map((e) => e.observance.id), ['10-kasim', 'ogretmenler-gunu', 'yilbasi']);
+    expect(list.take(4).map((e) => e.observance.id), ['10-kasim', 'ogretmenler-gunu', 'regaip', 'yilbasi']);
     expect(list.first.date, DateTime(2026, 11, 10, 9));
     expect(list.every((e) => e.date.isAfter(DateTime(2026, 11, 6, 12))), isTrue);
     // Dini bayramlar tablodan: 2027 Ramazan 9 Mart, Kurban 16 Mayıs
@@ -35,6 +35,24 @@ void main() {
     final ids = list.map((e) => e.notificationId).toSet();
     expect(ids.length, list.length);
     expect(ids.every((id) => id >= 5000 && id <= 5999), isTrue);
+  });
+
+  test('kandiller: Regaip 10 Aralık 2026, 2027\'de iki Miraç; yeşil renk; kimlikler çakışmaz', () {
+    final regaip = observanceOn(DateTime(2026, 12, 10))!;
+    expect(regaip.observance.id, 'regaip');
+    expect(regaip.observance.kind, ObservanceKind.holyNight);
+    expect(regaip.observance.color, const Color(0xFF0B5D4B));
+    expect(regaip.title(), contains('Regaip Kandiliniz'));
+    final mirac = upcomingObservances(
+      DateTime(2026, 12, 31),
+      days: 365,
+    ).where((e) => e.observance.id == 'mirac').toList();
+    expect(mirac.map((e) => e.date), [DateTime(2027, 1, 4, 10), DateTime(2027, 12, 24, 10)]);
+    expect(mirac[0].notificationId, isNot(mirac[1].notificationId));
+    expect(observanceOn(DateTime(2027, 12, 24))!.observance.id, 'mirac');
+    final all = upcomingObservances(DateTime(2026, 11, 6), days: 420);
+    expect(all.map((e) => e.notificationId).toSet().length, all.length);
+    expect(all.map((e) => e.observance.id), containsAll(['berat', 'kadir-gecesi', 'mevlid']));
   });
 
   test('sıradan bir günde gün yok; ayar varsayılan açık', () async {

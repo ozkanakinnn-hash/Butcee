@@ -54,8 +54,8 @@ class S {
   String get terms => _t('Kullanım Koşulları', 'Terms of Use');
   String get copyrightNotice => _t('Telif Hakkı Bildirimi (Uyar-Kaldır)', 'Copyright Notice (Takedown)');
   String get copyrightNoticeDesc => _t(
-    'İçeriğinizin kaldırılmasını istiyorsanız bize e-posta gönderin.',
-    'Email us to request removal of your content.',
+    'İçeriğinizin kaldırılmasını istiyorsanız bize e-posta gönderin; talepler en geç 48 saat içinde işleme alınır.',
+    'Email us to request removal of your content; requests are handled within 48 hours.',
   );
   String get copyrightMailSubject => _t('Telif hakkı - içerik kaldırma talebi', 'Copyright - takedown request');
   String get copyrightMailBody => _t(
@@ -188,10 +188,10 @@ class S {
   String get cacheCleared => _t('Önbellek temizlendi', 'Cache cleared');
 
   // Bayram ve anma
-  String get observanceNotifications => _t('Bayram ve anma günleri', 'National holidays & commemorations');
+  String get observanceNotifications => _t('Bayram, kandil ve anma günleri', 'Holidays, holy nights & commemorations');
   String get observanceNotificationsDesc => _t(
-    'Resmi bayramlarda kutlama, 10 Kasım gibi anma günlerinde anma bildirimi.',
-    'Greetings on national holidays and remembrance on days like November 10.',
+    'Resmi ve dini bayramlarda kutlama, kandillerde tebrik, 10 Kasım gibi günlerde anma bildirimi.',
+    'Greetings on national and religious holidays and holy nights, remembrance on days like November 10.',
   );
 
   // Firebase kurulmamış

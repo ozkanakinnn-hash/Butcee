@@ -55,7 +55,10 @@ function buildArticle(item, { source, categoryRef, placeholderImageUrl, feedLink
   let summary = truncate(stripHtml(rawSummary));
   if (summary === title) summary = '';
 
-  const imageUrl = extractImage(item, feedLink || originalUrl) || placeholderImageUrl || '';
+  // Telif: kaynak görsel kullanımına izin vermiyorsa (`sources.allow_images: false`) yayıncının görseli
+  // alınmaz, kategori görseli kullanılır.
+  const publisherImage = source.allow_images === false ? '' : extractImage(item, feedLink || originalUrl);
+  const imageUrl = publisherImage || placeholderImageUrl || '';
 
   return {
     id: articleIdForUrl(originalUrl),

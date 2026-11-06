@@ -1,0 +1,49 @@
+name: Haber Akışı - Telif Kaldırma (Uyar-Kaldır)
+
+# Hak sahibinden telif bildirimi gelince: Actions → bu iş akışı → Run workflow.
+#  - article: tek haberi (ve aynı haberin kopyalarını) siler → hedef = haberin adresi
+#  - source : kaynağı kapatır ve tüm haberlerini siler → hedef = kaynak kimliği (Firestore sources/<id>)
+#  - images : kaynağın görsellerini kaldırır (kategori görseli kullanılır) → hedef = kaynak kimliği
+# Her işlem Firestore `takedowns` koleksiyonuna kaydedilir (5651 s. Kanun: kayıt tutma).
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "İşlem"
+        type: choice
+        options: [article, source, images]
+        default: article
+      target:
+        description: "Haber adresi veya kaynak kimliği"
+        required: true
+      note:
+        description: "Not (talep sahibi, e-posta tarihi vb.)"
+        required: false
+        default: ""
+
+jobs:
+  takedown:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: news-aggregator/firebase/functions
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: news-aggregator/firebase/functions/package-lock.json
+      - run: npm ci --omit=dev
+      - name: Kaldır
+        env:
+          SA: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          MODE: ${{ inputs.mode }}
+          TARGET: ${{ inputs.target }}
+          NOTE: ${{ inputs.note }}
+        run: |
+          KEY="$RUNNER_TEMP/sa.json"
+          printf '%s' "$SA" > "$KEY"
+          trap 'rm -f "$KEY"' EXIT
+          GOOGLE_APPLICATION_CREDENTIALS="$KEY" node scripts/takedown.js "$MODE" "$TARGET" "$NOTE"

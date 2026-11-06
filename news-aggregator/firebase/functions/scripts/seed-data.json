@@ -202,7 +202,8 @@
       "rss_url": "https://www.aa.com.tr/tr/rss/default?cat=guncel",
       "category": "gundem",
       "domain": "aa.com.tr",
-      "is_breaking": true
+      "is_breaking": true,
+      "allow_images": false
     },
     {
       "id": "haberturk-manset",
@@ -238,7 +239,8 @@
       "source_name": "Anadolu Ajansı",
       "rss_url": "https://www.aa.com.tr/tr/rss/default?cat=bilim-teknoloji",
       "category": "bilim",
-      "domain": "aa.com.tr"
+      "domain": "aa.com.tr",
+      "allow_images": false
     },
     {
       "id": "trt-bilim",
@@ -252,7 +254,8 @@
       "source_name": "Anadolu Ajansı",
       "rss_url": "https://www.aa.com.tr/tr/rss/default?cat=kultur",
       "category": "kultur-sanat",
-      "domain": "aa.com.tr"
+      "domain": "aa.com.tr",
+      "allow_images": false
     },
     {
       "id": "haberturk-kultur",
@@ -378,7 +381,8 @@
       "source_name": "Anadolu Ajansı",
       "rss_url": "https://www.aa.com.tr/tr/rss/default?cat=spor",
       "category": "spor",
-      "domain": "aa.com.tr"
+      "domain": "aa.com.tr",
+      "allow_images": false
     },
     {
       "id": "haberturk-spor",
