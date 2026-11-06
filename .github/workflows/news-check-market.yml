@@ -1,0 +1,22 @@
+name: Haber Akışı - Piyasa Kaynak Kontrolü
+
+# Herkese açık piyasa veri kaynaklarını GitHub sunucularından dener; Firestore'a dokunmaz.
+on:
+  push:
+    paths:
+      - "news-aggregator/firebase/functions/scripts/probe-market.js"
+  workflow_dispatch:
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    defaults:
+      run:
+        working-directory: news-aggregator/firebase/functions
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+      - run: node scripts/probe-market.js
