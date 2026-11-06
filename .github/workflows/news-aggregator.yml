@@ -55,10 +55,8 @@ jobs:
       - name: Firebase yapılandırması (varsa)
         env:
           NEWS_GOOGLE_SERVICES_JSON: ${{ secrets.NEWS_GOOGLE_SERVICES_JSON }}
-        run: |
-          if [ -n "$NEWS_GOOGLE_SERVICES_JSON" ]; then
-            echo "$NEWS_GOOGLE_SERVICES_JSON" > android/app/google-services.json
-          fi
+        # Dosyayı doğrular, tablette kopyalarken bozulan satır sonlarını onarır, paket adını kontrol eder.
+        run: node tool/write_google_services.js android/app/google-services.json com.haberakisi.haber_akisi
       - run: flutter pub get
       - run: flutter analyze
       - run: flutter test
