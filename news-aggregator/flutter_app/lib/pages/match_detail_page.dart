@@ -4,7 +4,6 @@ import '../backend/news_repository.dart';
 import '../backend/schema/football_records.dart';
 import '../l10n/app_strings.dart';
 import '../widgets/live_matches.dart';
-import 'team_picker_page.dart';
 
 /// Maç detayı: büyük skor, durum ve goller — Firestore'dan canlı güncellenir.
 class MatchDetailPage extends StatelessWidget {
@@ -27,7 +26,7 @@ class MatchDetailPage extends StatelessWidget {
           Widget team(MatchTeam t) => Expanded(
             child: Column(
               children: [
-                TeamLogo(url: t.logo, short: t.short, colors: t.colors, size: 64),
+                Text(t.code, style: theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w900)),
                 const SizedBox(height: 10),
                 Text(
                   t.name,

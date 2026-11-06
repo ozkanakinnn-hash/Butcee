@@ -1,4 +1,3 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../app_settings.dart';
@@ -99,7 +98,7 @@ class _TeamPickerPageState extends State<TeamPickerPage> {
                       padding: const EdgeInsets.fromLTRB(20, 10, 16, 10),
                       child: Row(
                         children: [
-                          TeamLogo(url: t.logo, short: t.short, colors: t.colors, size: 34),
+                          TeamCode(code: t.code, width: 52, fontSize: 16),
                           const SizedBox(width: 18),
                           Expanded(
                             child: Text(
@@ -131,71 +130,30 @@ class _TeamPickerPageState extends State<TeamPickerPage> {
   }
 }
 
-/// Takım rozeti: logo varsa logo, yoksa kulüp renklerinde kısa ad (GS, FB, BJK…).
-class TeamLogo extends StatelessWidget {
-  const TeamLogo({super.key, required this.url, this.short = '', this.colors = const [], this.size = 28});
+/// Takım kısaltması (GS, FB, BJK…) — rozet/logo kullanılmaz.
+class TeamCode extends StatelessWidget {
+  const TeamCode({super.key, required this.code, this.width = 48, this.fontSize = 15});
 
-  final String url;
-  final String short;
-  final List<Color> colors;
-  final double size;
+  final String code;
+  final double width;
+  final double fontSize;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final badge = colors.isEmpty && short.isEmpty
-        ? Icon(Icons.shield_outlined, size: size, color: theme.colorScheme.onSurfaceVariant)
-        : _Badge(short: short, colors: colors, size: size);
-    if (url.isEmpty) return badge;
-    return CachedNetworkImage(
-      imageUrl: url,
-      width: size,
-      height: size,
-      fit: BoxFit.contain,
-      placeholder: (_, _) => badge,
-      errorWidget: (_, _, _) => badge,
-    );
-  }
-}
-
-class _Badge extends StatelessWidget {
-  const _Badge({required this.short, required this.colors, required this.size});
-
-  final String short;
-  final List<Color> colors;
-  final double size;
-
-  @override
-  Widget build(BuildContext context) {
-    final c1 = colors.isNotEmpty ? colors[0] : Theme.of(context).colorScheme.surfaceContainerHighest;
-    final c2 = colors.length > 1 ? colors[1] : c1;
-    final text = c1.computeLuminance() > 0.5 ? Colors.black : Colors.white;
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        // Çapraz iki renk (kulüp renkleri)
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [c1, c1, c2, c2],
-          stops: const [0, 0.5, 0.5, 1],
-        ),
-        border: Border.all(color: Colors.white24, width: 1),
-      ),
-      alignment: Alignment.center,
-      child: Padding(
-        padding: EdgeInsets.all(size * 0.12),
-        child: FittedBox(
-          child: Text(
-            short,
-            style: TextStyle(
-              color: text,
-              fontWeight: FontWeight.w900,
-              shadows: [Shadow(color: c1.computeLuminance() > 0.5 ? Colors.white : Colors.black54, blurRadius: 2)],
-            ),
-          ),
+    return SizedBox(
+      width: width,
+      child: Text(
+        code,
+        maxLines: 1,
+        softWrap: false,
+        overflow: TextOverflow.fade,
+        style: TextStyle(
+          fontSize: fontSize,
+          fontWeight: FontWeight.w900,
+          letterSpacing: 0.3,
+          color: theme.colorScheme.onSurfaceVariant,
+          fontFeatures: const [FontFeature.tabularFigures()],
         ),
       ),
     );

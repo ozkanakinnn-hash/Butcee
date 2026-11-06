@@ -30,6 +30,16 @@ class TeamRecord {
 
   /// Bu sezon ligde mi (küme düşen takımlar false).
   final bool active;
+
+  /// Gösterilen kısaltma (GS, FB, BJK…); yoksa adın ilk 3 harfi.
+  String get code => teamCode(short, name);
+}
+
+/// Kısaltma; tanımlı değilse adın ilk 3 harfi (Türkçe büyük harf).
+String teamCode(String short, String name) {
+  if (short.isNotEmpty) return short;
+  final n = name.replaceAll('i', 'İ').replaceAll('ı', 'I').toUpperCase().replaceAll(RegExp(r'[^A-ZÇĞİÖŞÜ0-9]'), '');
+  return n.length <= 3 ? n : n.substring(0, 3);
 }
 
 class MatchTeam {
@@ -45,6 +55,8 @@ class MatchTeam {
   final String short;
   final List<Color> colors;
   final String logo;
+
+  String get code => teamCode(short, name);
 }
 
 class GoalEvent {

@@ -72,6 +72,12 @@ void main() {
     expect(s.desiredTopics, isEmpty);
   });
 
+  test('takım kısaltması: tanımlıysa o, yoksa adın ilk 3 harfi', () {
+    expect(teamCode('BJK', 'Beşiktaş'), 'BJK');
+    expect(teamCode('', 'Sivasspor'), 'SİV');
+    expect(teamCode('', 'İstanbulspor'), 'İST');
+  });
+
   test('takım sayısı en fazla 10', () async {
     SharedPreferences.setMockInitialValues({});
     final s = await AppSettings.load();
@@ -162,6 +168,7 @@ void main() {
     await tester.tap(find.text('Galatasaray'));
     await tester.pumpAndSettle();
     expect(settings.followedTeams, ['galatasaray']);
+    expect(find.text('GS'), findsOneWidget, reason: 'rozet değil, kısaltma gösterilir');
     expect(find.text('Hatayspor'), findsNothing, reason: 'ligde olmayan takım listelenmez');
 
     await tester.enterText(find.byType(TextField), 'fener');
