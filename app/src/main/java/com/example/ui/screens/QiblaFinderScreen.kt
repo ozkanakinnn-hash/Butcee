@@ -303,7 +303,9 @@ fun QiblaFinderScreen(
         )
         Text(
           text = (if (location.fromDevice) "📍 Cihaz konumu" else "${prefs.province} / ${prefs.district}") +
-            " • Kıble: ${qiblaBearing.toInt()}° (gerçek kuzey)",
+            " • Kıble: ${qiblaBearing.toInt()}° (gerçek kuzey) • " +
+            // Diyanet sitesindeki "Kıble Açısı" manyetik kuzeye göredir (pusulanın gösterdiği kuzey)
+            "${(((qiblaBearing - declination) % 360f + 360f) % 360f).toInt()}° (manyetik / Diyanet)",
           style = MaterialTheme.typography.bodySmall,
           color = MaterialTheme.colorScheme.primary,
           fontWeight = FontWeight.SemiBold

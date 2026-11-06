@@ -89,7 +89,7 @@ class CoreLogicTest {
   @Test fun offlineCalc_closeToDiyanet() {
     val c = PrayerCalc.provinceCoords.getValue("Manisa")
     val got = PrayerCalc.times(c.first, c.second, cal(2026, 11, 5), 3.0)
-    val expected = listOf("06:01", "07:34", "12:59", "15:48", "18:13", "19:31")
+    val expected = listOf("06:10", "07:34", "12:59", "15:48", "18:13", "19:31")
     got.zip(expected).forEach { (g, e) ->
       val diff = abs(PrayerTimeUtils.parseTimeToMinutes(g) - PrayerTimeUtils.parseTimeToMinutes(e))
       assertTrue("hesap $g / beklenen $e", diff <= 3)

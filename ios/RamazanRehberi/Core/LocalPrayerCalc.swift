@@ -57,7 +57,7 @@ enum LocalPrayerCalc {
       return String(format: "%02d:%02d", m / 60, m % 60)
     }
     return PrayerTimes(
-      imsak: fmt(fajr, -10), gunes: fmt(sunrise, -7), ogle: fmt(noon, 5), ikindi: fmt(asr, 4),
+      imsak: fmt(fajr, 0), gunes: fmt(sunrise, -7), ogle: fmt(noon, 5), ikindi: fmt(asr, 4),
       aksam: fmt(maghrib, 6), yatsi: fmt(isha, -1),
       dateStr: DateUtil.dateKey(date), city: city, district: district
     )

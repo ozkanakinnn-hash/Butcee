@@ -104,7 +104,7 @@ enum PrayerTimeUtils {
 
 /// Önbellek: "il/ilçe" için günlük vakitler (widget da okur).
 enum PrayerCache {
-  private static let key = "prayer_cache_v1"
+  private static let key = "prayer_cache_v2"
 
   static func all() -> [String: PrayerTimes] {
     guard let data = Shared.defaults.data(forKey: key),

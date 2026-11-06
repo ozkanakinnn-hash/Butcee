@@ -96,7 +96,7 @@ final class PrayerService: ObservableObject {
         guard p.count == 3 else { continue }
         let key = "\(p[2])-\(p[1])-\(p[0])"
         list.append(PrayerTimes(
-          imsak: PrayerTimeUtils.clean(tm["Imsak"], fallback: "05:45"),
+          imsak: PrayerTimeUtils.clean(tm["Fajr"], fallback: "05:45"),  // Diyanet İmsak = Aladhan Fajr
           gunes: PrayerTimeUtils.clean(tm["Sunrise"], fallback: "07:10"),
           ogle: PrayerTimeUtils.clean(tm["Dhuhr"], fallback: "13:05"),
           ikindi: PrayerTimeUtils.clean(tm["Asr"], fallback: "16:20"),

@@ -56,7 +56,8 @@ class PrayerRepository(private val context: Context) {
         val root = JSONObject(jsonStr)
         if (root.optInt("code") == 200) {
           val timings = root.getJSONObject("data").getJSONObject("timings")
-          val imsak = PrayerTimeUtils.cleanTimeString(timings.optString("Imsak"), "05:45")
+          // Diyanet "İmsak" = Aladhan "Fajr" (Aladhan'ın "Imsak" alanı Fajr'dan 10 dk önceki ihtiyat vaktidir)
+          val imsak = PrayerTimeUtils.cleanTimeString(timings.optString("Fajr"), "05:45")
           val sunrise = PrayerTimeUtils.cleanTimeString(timings.optString("Sunrise"), "07:10")
           val dhuhr = PrayerTimeUtils.cleanTimeString(timings.optString("Dhuhr"), "13:05")
           val asr = PrayerTimeUtils.cleanTimeString(timings.optString("Asr"), "16:20")
@@ -145,7 +146,7 @@ class PrayerRepository(private val context: Context) {
   }
 
   private fun saveCache(times: PrayerTimes) {
-    val prefs = context.getSharedPreferences("prayer_cache", Context.MODE_PRIVATE)
+    val prefs = context.getSharedPreferences("prayer_cache_v2", Context.MODE_PRIVATE)
     val key = "${times.city}_${times.district}_${times.dateStr}"
     val json = JSONObject().apply {
       put("imsak", times.imsak)
@@ -162,7 +163,7 @@ class PrayerRepository(private val context: Context) {
   }
 
   private fun getCachedPrayerTimes(city: String, district: String, dateStr: String): PrayerTimes? {
-    val prefs = context.getSharedPreferences("prayer_cache", Context.MODE_PRIVATE)
+    val prefs = context.getSharedPreferences("prayer_cache_v2", Context.MODE_PRIVATE)
     val key = "${city}_${district}_${dateStr}"
     val jsonStr = prefs.getString(key, null) ?: return null
     return try {

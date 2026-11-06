@@ -7,6 +7,8 @@ final class LocationHeading: NSObject, ObservableObject, CLLocationManagerDelega
   private let manager = CLLocationManager()
   @Published var heading: Double = 0           // gerçek kuzeye göre
   @Published var accuracy: Double = -1
+  /// Manyetik sapma (gerçek − manyetik kuzey), pusula verisinden
+  @Published var declination: Double?
   @Published var location: CLLocation?
   @Published var authorized = false
 
@@ -31,6 +33,7 @@ final class LocationHeading: NSObject, ObservableObject, CLLocationManagerDelega
   }
   func locationManager(_ m: CLLocationManager, didUpdateHeading h: CLHeading) {
     heading = h.trueHeading >= 0 ? h.trueHeading : h.magneticHeading
+    if h.trueHeading >= 0 { declination = ((h.trueHeading - h.magneticHeading + 540).truncatingRemainder(dividingBy: 360)) - 180 }
     accuracy = h.headingAccuracy
   }
   func locationManager(_ m: CLLocationManager, didUpdateLocations locs: [CLLocation]) { location = locs.last }
@@ -97,7 +100,8 @@ struct QiblaView: View {
     let aligned = abs(diff) < 4
     ScrollView {
       VStack(spacing: 14) {
-        Text("\(store.locationLabel) • \(t("Kıble")): \(Int(q))° (\(L10n.isEnglish ? "true north" : "gerçek kuzey"))")
+        Text("\(store.locationLabel) • \(t("Kıble")): \(Int(q))° (\(L10n.isEnglish ? "true north" : "gerçek kuzey"))"
+             + (loc.declination.map { " • \(Int(((q - $0).truncatingRemainder(dividingBy: 360) + 360).truncatingRemainder(dividingBy: 360)))° (" + (L10n.isEnglish ? "magnetic / Diyanet" : "manyetik / Diyanet") + ")" } ?? ""))
           .font(.system(size: 13, weight: .semibold)).foregroundStyle(p.primary)
         HStack(spacing: 14) {
           Image("ic_kaaba").resizable().scaledToFit().frame(width: 40, height: 40)

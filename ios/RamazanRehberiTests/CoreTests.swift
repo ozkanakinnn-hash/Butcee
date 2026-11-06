@@ -59,7 +59,7 @@ final class CoreTests: XCTestCase {
 
   func testOfflineCalcCloseToDiyanet() {
     let t = LocalPrayerCalc.times(city: "Manisa", district: "Saruhanlı", date: date(2026, 11, 5))
-    for (g, e) in zip(t.all, ["06:01", "07:34", "12:59", "15:48", "18:13", "19:31"]) {
+    for (g, e) in zip(t.all, ["06:10", "07:34", "12:59", "15:48", "18:13", "19:31"]) {
       XCTAssertLessThanOrEqual(abs(PrayerTimeUtils.minutes(g) - PrayerTimeUtils.minutes(e)), 3, "\(g) / \(e)")
     }
     for p in AppContent.shared.provinces { XCTAssertNotNil(LocalPrayerCalc.provinceCoords[p.name], "koordinat yok: \(p.name)") }

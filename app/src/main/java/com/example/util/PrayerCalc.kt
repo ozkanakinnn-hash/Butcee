@@ -131,7 +131,7 @@ object PrayerCalc {
       val mins = (((h * 60 + temkin).roundToInt() % 1440) + 1440) % 1440
       return String.format(Locale.ROOT, "%02d:%02d", mins / 60, mins % 60)
     }
-    return listOf(fmt(noon - ha(18.0), -10), fmt(noon - ha(0.833), -7), fmt(noon, 5),
+    return listOf(fmt(noon - ha(18.0), 0), fmt(noon - ha(0.833), -7), fmt(noon, 5),
       fmt(noon + ha(asrAlt), 4), fmt(noon + ha(0.833), 6), fmt(noon + ha(17.0), -1))
   }
 
