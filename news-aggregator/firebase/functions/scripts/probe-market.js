@@ -32,19 +32,12 @@ async function get(url) {
   console.log('--- Truncgil (ücretsiz finans API)');
   const tr = await get('https://finans.truncgil.com/v4/today.json');
   console.log('truncgil', tr.status, tr.text.slice(0, 160));
-  try {
-    const j = JSON.parse(tr.text.replace(/^\uFEFF/, ''));
-    console.log('  toplam anahtar:', Object.keys(j).length);
-    for (const [k, v] of Object.entries(j)) {
-      if (k === 'Update_Date') continue;
-      const t = v && v.Type;
-      if (t !== 'Currency' || ['USD', 'EUR'].includes(k)) console.log('  ', k, JSON.stringify(v).slice(0, 140));
-    }
-    for (const k of ['USD', 'EUR', 'GRA', 'gram-altin', 'ONS', 'ons', 'BIST100', 'XU100', 'BRENT']) {
-      if (j[k]) console.log('  ', k, JSON.stringify(j[k]).slice(0, 160));
-    }
-    console.log('  anahtarlar:', Object.keys(j).slice(0, 80).join(','));
-  } catch (e) {
-    console.log('  JSON okunamadı:', e.message);
+  // Yanıt bazen tümüyle geçerli JSON değil → her kalemi ayrı ayrı ayıkla.
+  const entries = [...tr.text.matchAll(/"([^"{}]+)":(\{[^{}]*\})/g)];
+  console.log('  kalem sayısı:', entries.length);
+  for (const [, key, obj] of entries) {
+    if (!/"Type":"Currency"/.test(obj) || ['USD', 'EUR'].includes(key)) console.log('  ', key, obj.slice(0, 150));
   }
+  const bad = tr.text.slice(6700, 6820);
+  console.log('  bozuk bölge:', bad);
 })();
