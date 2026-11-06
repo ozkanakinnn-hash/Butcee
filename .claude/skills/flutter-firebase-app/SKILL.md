@@ -106,3 +106,8 @@ description: Flutter/FlutterFlow + Firebase (Firestore, Cloud Functions) uygulam
   "Bad control character in string". Yalnızca dizge İÇİNDEKİ ham satır sonlarını `\n`'e çeviren küçük bir tarayıcı ile
   onar (`escapeNewlinesInStrings`), sonra `crypto.createPrivateKey` ile PEM'in geçerli olduğunu test et.
   Hata türünü (kontrol karakteri / kesik / beklenmeyen karakter) metinden parça göstermeden raporla.
+- İlk onarım denemesi tutmadı: tablet metin düzenleyicisi uzun satırları SARIP rastgele yerlerden bölüyor
+  (dizge ortası, `\` ile `n` arası). Sağlam çözüm: (1) olduğu gibi, (2) dizge içi satır sonlarını kaçışla, (3) dizge içi
+  satır sonlarını sil — sırayla dene; sonra private_key'i BEGIN/END arasındaki base64'ten 64'lük satırlarla yeniden kur ve
+  `crypto.createPrivateKey` ile doğrula; diğer alanlardaki satır sonlarını sil. Senaryoları (sarma 40/64/76 CRLF/100,
+  kaçışlar açılmış, BOM, kesik) birim testiyle sına; hata mesajında anahtar parçası olmadığını da test et.
