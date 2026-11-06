@@ -7,6 +7,7 @@ import '../app_settings.dart';
 import '../config.dart';
 import '../l10n/app_strings.dart';
 import '../services/notification_service.dart';
+import '../utils/storage.dart';
 import '../services/weather_service.dart';
 import 'interests_page.dart';
 import 'team_picker_page.dart';
@@ -256,6 +257,9 @@ class _SettingsPageState extends State<SettingsPage> with WidgetsBindingObserver
               ),
             ),
             const Divider(),
+            _Header(s.storage),
+            const _CacheTile(),
+            const Divider(),
             _Header(s.legal),
             ListTile(
               leading: const Icon(Icons.privacy_tip_outlined),
@@ -310,4 +314,51 @@ class _Header extends StatelessWidget {
       style: Theme.of(context).textTheme.labelLarge?.copyWith(color: Theme.of(context).colorScheme.primary),
     ),
   );
+}
+
+/// Önbellek boyutu + temizle.
+class _CacheTile extends StatefulWidget {
+  const _CacheTile();
+
+  @override
+  State<_CacheTile> createState() => _CacheTileState();
+}
+
+class _CacheTileState extends State<_CacheTile> {
+  int? _bytes;
+  bool _busy = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _measure();
+  }
+
+  Future<void> _measure() async {
+    final b = await AppStorage.cacheSizeBytes();
+    if (mounted) setState(() => _bytes = b);
+  }
+
+  Future<void> _clear() async {
+    final s = S.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    setState(() => _busy = true);
+    await AppStorage.clearCaches();
+    await _measure();
+    if (!mounted) return;
+    setState(() => _busy = false);
+    messenger.showSnackBar(SnackBar(content: Text(s.cacheCleared)));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final s = S.of(context);
+    return ListTile(
+      leading: const Icon(Icons.cleaning_services_outlined),
+      title: Text(s.clearCache),
+      subtitle: Text(_bytes == null ? '…' : s.cacheSize(AppStorage.formatBytes(_bytes!))),
+      trailing: _busy ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)) : null,
+      onTap: _busy ? null : _clear,
+    );
+  }
 }

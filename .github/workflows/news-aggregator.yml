@@ -65,3 +65,16 @@ jobs:
         with:
           name: haber-akisi-debug-apk
           path: news-aggregator/flutter_app/build/app/outputs/flutter-apk/app-debug.apk
+      # Küçük boyutlu, mağaza modunda (release) test APK'sı: yalnızca telefonun işlemci türü (arm64),
+      # R8 ile küçültülmüş, Dart AOT derlenmiş. Reklamlar Google TEST kimlikleriyle (gerçek kimlik yok).
+      - name: Release APK (arm64, test reklamları)
+        run: >
+          flutter build apk --release --split-per-abi --target-platform android-arm64
+          --dart-define=ADMOB_BANNER_ID=ca-app-pub-3940256099942544/6300978111
+          --dart-define=ADMOB_NATIVE_ID=ca-app-pub-3940256099942544/2247696110
+          --dart-define=ADMOB_INTERSTITIAL_ID=ca-app-pub-3940256099942544/1033173712
+      - run: ls -la build/app/outputs/flutter-apk/
+      - uses: actions/upload-artifact@v5
+        with:
+          name: haber-akisi-release-arm64-apk
+          path: news-aggregator/flutter_app/build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
