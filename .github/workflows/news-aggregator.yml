@@ -1,0 +1,69 @@
+name: News Aggregator
+
+on:
+  push:
+    paths:
+      - "news-aggregator/**"
+      - ".github/workflows/news-aggregator.yml"
+  pull_request:
+    paths:
+      - "news-aggregator/**"
+  workflow_dispatch:
+
+concurrency:
+  group: news-aggregator-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  functions:
+    name: Cloud Functions testleri
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: news-aggregator/firebase/functions
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: news-aggregator/firebase/functions/package-lock.json
+      - uses: actions/setup-java@v5   # Firestore emülatörü Java ister
+        with:
+          distribution: temurin
+          java-version: "21"
+      - run: npm ci
+      - name: Birim + emülatör testleri
+        run: npx -y firebase-tools@15 emulators:exec --only firestore --project demo-haber "npm test"
+
+  flutter:
+    name: Flutter analiz, test ve APK
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: news-aggregator/flutter_app
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Firebase yapılandırması (varsa)
+        env:
+          NEWS_GOOGLE_SERVICES_JSON: ${{ secrets.NEWS_GOOGLE_SERVICES_JSON }}
+        run: |
+          if [ -n "$NEWS_GOOGLE_SERVICES_JSON" ]; then
+            echo "$NEWS_GOOGLE_SERVICES_JSON" > android/app/google-services.json
+          fi
+      - run: flutter pub get
+      - run: flutter analyze
+      - run: flutter test
+      - run: flutter build apk --debug
+      - uses: actions/upload-artifact@v5
+        with:
+          name: haber-akisi-debug-apk
+          path: news-aggregator/flutter_app/build/app/outputs/flutter-apk/app-debug.apk

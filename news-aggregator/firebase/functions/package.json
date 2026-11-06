@@ -1,0 +1,23 @@
+{
+  "name": "haber-toplayici-functions",
+  "version": "1.0.0",
+  "description": "RSS kaynaklarından haber çekip Firestore 'articles' koleksiyonuna mükerrersiz yazan Cloud Functions",
+  "main": "index.js",
+  "private": true,
+  "engines": {
+    "node": "22"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "seed": "node scripts/seed.js",
+    "fetch:once": "node scripts/run-once.js",
+    "serve": "firebase emulators:start --only functions,firestore",
+    "deploy": "firebase deploy --only functions,firestore"
+  },
+  "dependencies": {
+    "firebase-admin": "^14.5.0",
+    "firebase-functions": "^7.4.0",
+    "html-entities": "^2.6.0",
+    "rss-parser": "^3.13.0"
+  }
+}
