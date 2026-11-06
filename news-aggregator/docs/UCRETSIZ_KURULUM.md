@@ -61,8 +61,8 @@ Firestore → **Dizinler (Indexes)** → **Birleşik (Composite) → Dizin oluş
 2. Name: `FIREBASE_SERVICE_ACCOUNT`
 3. Secret: indirilen JSON dosyasını Not Defteri ile açın, **tüm içeriği** kopyalayıp yapıştırın → **Add secret**.
 
-## Adım 7 — Kodu `main` dalına alın
-GitHub zamanlanmış iş akışlarını yalnızca varsayılan daldan (main) çalıştırır.
+## Adım 7 — Kodu varsayılan dala alın
+GitHub zamanlanmış iş akışlarını yalnızca deponun varsayılan dalından çalıştırır (bu depoda `claude/taslak-uygulamasi-vn0y2s`).
 `ccr-e3d7c6b8-cccl41` dalı için bir Pull Request açın (veya Claude'dan açmasını isteyin) ve **Merge** edin.
 
 ## Adım 8 — İlk çalıştırma
