@@ -27,6 +27,7 @@ class AppSettings extends ChangeNotifier {
   static const _teamsKey = 'followed_teams';
   static const _topicsKey = 'subscribed_topics';
   static const _layoutKey = 'feed_layout';
+  static const _observanceKey = 'notify_observances';
   static const _recentSearchKey = 'recent_searches';
 
   /// Futbol takım seçimi bu ilgi alanına bağlıdır.
@@ -152,4 +153,12 @@ class AppSettings extends ChangeNotifier {
   }
 
   Future<void> clearRecentSearches() => _prefs.remove(_recentSearchKey);
+
+  // ── Bayram ve anma günleri ───────────────────────────────────────────────
+  /// Resmi bayramlarda kutlama, anma günlerinde anma bildirimi (varsayılan açık).
+  bool get observanceNotifications => _prefs.getBool(_observanceKey) ?? true;
+  Future<void> setObservanceNotifications(bool v) async {
+    await _prefs.setBool(_observanceKey, v);
+    notifyListeners();
+  }
 }
