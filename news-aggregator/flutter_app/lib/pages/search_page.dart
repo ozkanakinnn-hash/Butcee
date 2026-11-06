@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../ads/ads_service.dart';
 import '../app_settings.dart';
 import '../backend/news_repository.dart';
 import '../backend/schema/articles_record.dart';
@@ -149,9 +150,9 @@ class _SearchPageState extends State<SearchPage> {
               article: a,
               onTap: () {
                 widget.settings.addRecentSearch(_query);
-                Navigator.of(
-                  context,
-                ).push(ArticleWebViewPage.route(url: a.originalUrl, sourceName: a.sourceName, articleTitle: a.title));
+                Navigator.of(context)
+                    .push(ArticleWebViewPage.route(url: a.originalUrl, sourceName: a.sourceName, articleTitle: a.title))
+                    .then((_) => AdsService.instance.onArticleClosed());
               },
             );
           },

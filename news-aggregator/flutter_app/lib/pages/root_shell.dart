@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../ads/ad_widgets.dart';
 import '../app_settings.dart';
 import '../backend/news_repository.dart';
 import '../l10n/app_strings.dart';
@@ -33,31 +34,37 @@ class _RootShellState extends State<RootShell> {
     ];
     return Scaffold(
       body: IndexedStack(index: _index, children: pages),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _index,
-        onDestinationSelected: (i) => setState(() => _index = i),
-        labelBehavior: NavigationDestinationLabelBehavior.alwaysHide,
-        height: 64,
-        destinations: [
-          NavigationDestination(
-            icon: const Icon(Icons.home_outlined),
-            selectedIcon: const Icon(Icons.home_rounded),
-            label: s.home,
-          ),
-          NavigationDestination(
-            icon: const Icon(Icons.search_rounded),
-            selectedIcon: const Icon(Icons.saved_search_rounded),
-            label: s.search,
-          ),
-          NavigationDestination(
-            icon: const Icon(Icons.notifications_none_rounded),
-            selectedIcon: const Icon(Icons.notifications_rounded),
-            label: s.notifications,
-          ),
-          NavigationDestination(
-            icon: const Icon(Icons.dashboard_customize_outlined),
-            selectedIcon: const Icon(Icons.dashboard_customize_rounded),
-            label: s.interests,
+      bottomNavigationBar: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const BottomBannerAd(),
+          NavigationBar(
+            selectedIndex: _index,
+            onDestinationSelected: (i) => setState(() => _index = i),
+            labelBehavior: NavigationDestinationLabelBehavior.alwaysHide,
+            height: 64,
+            destinations: [
+              NavigationDestination(
+                icon: const Icon(Icons.home_outlined),
+                selectedIcon: const Icon(Icons.home_rounded),
+                label: s.home,
+              ),
+              NavigationDestination(
+                icon: const Icon(Icons.search_rounded),
+                selectedIcon: const Icon(Icons.saved_search_rounded),
+                label: s.search,
+              ),
+              NavigationDestination(
+                icon: const Icon(Icons.notifications_none_rounded),
+                selectedIcon: const Icon(Icons.notifications_rounded),
+                label: s.notifications,
+              ),
+              NavigationDestination(
+                icon: const Icon(Icons.dashboard_customize_outlined),
+                selectedIcon: const Icon(Icons.dashboard_customize_rounded),
+                label: s.interests,
+              ),
+            ],
           ),
         ],
       ),

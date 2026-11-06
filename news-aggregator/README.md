@@ -168,7 +168,27 @@ cd ../../flutter_app && flutter analyze && flutter test
 ```
 GitHub Actions (`.github/workflows/news-aggregator.yml`) bunları her push'ta çalıştırır ve debug APK üretir.
 
+## Reklamlar (AdMob)
+`flutter_app/lib/ads/` — Play Store ve AdMob politikalarına uygun yerleşim:
+| Alan | Nerede | Kural |
+|---|---|---|
+| Doğal reklam | Akışta her 6 haberden sonra | Haber kartı genişliğinde, sarı **"Reklam"** etiketi; yüklenemezse yer kaplamaz |
+| Geçiş reklamı | Haber kapatılıp akışa dönülürken | Her 4 okumada bir, en az 3 dk arayla; açılışta/çıkışta asla |
+| Banner | Alt menünün hemen üstü | Uyarlanabilir boyut; içeriğin üstüne binmez |
+- **Onay (GDPR/KVKK):** Google UMP; gerekirse açılışta onay formu, onay yoksa reklam istenmez.
+  Ayarlar → *Reklam gizlilik seçenekleri* (gerektiğinde görünür). İçerik derecelendirmesi en fazla **T**.
+- **Kimlikler:** Debug'da Google test kimlikleri. Mağaza sürümü:
+  ```bash
+  export ADMOB_APP_ID=ca-app-pub-XXXX~YYYY          # AndroidManifest'e yazılır
+  flutter build appbundle --release \
+    --dart-define=ADMOB_BANNER_ID=ca-app-pub-XXXX/111 \
+    --dart-define=ADMOB_NATIVE_ID=ca-app-pub-XXXX/222 \
+    --dart-define=ADMOB_INTERSTITIAL_ID=ca-app-pub-XXXX/333
+  ```
+  Kimliği verilmeyen reklam alanı mağaza sürümünde gösterilmez (yanlışlıkla test reklamı yayına çıkmaz).
+- **Play Console:** "Uygulama reklam içeriyor" = Evet; Veri güvenliği formunda reklam kimliği (AD_ID) ve
+  "Reklam veya pazarlama" amaçlı veri toplama beyan edilmeli; geliştirici sitesinde `app-ads.txt`.
+
 ## Sonraki adımlar
-- **AdMob** (akış içi native reklam her 6 haberde bir, 4–5 okumada bir geçiş reklamı) — Google UMP onay formu ile.
 - `users` / `user_preferences`: favori kategoriler ve kaydedilen haberler (Firebase Auth ile; kurallar hazır).
 - Play Store: uygulama kimliği (`applicationId`) ilk yüklemeden sonra değişmez — yayından önce kesinleştirin.

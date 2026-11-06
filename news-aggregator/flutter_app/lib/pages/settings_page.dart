@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../ads/ads_service.dart';
 import '../app_settings.dart';
 import '../config.dart';
 import '../l10n/app_strings.dart';
@@ -193,6 +194,12 @@ class _SettingsPageState extends State<SettingsPage> with WidgetsBindingObserver
               },
             ),
             const Divider(),
+            if (AdsService.instance.privacyOptionsRequired)
+              ListTile(
+                leading: const Icon(Icons.privacy_tip_outlined),
+                title: Text(s.adPrivacy),
+                onTap: AdsService.instance.showPrivacyOptions,
+              ),
             _Header(s.appearance),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),

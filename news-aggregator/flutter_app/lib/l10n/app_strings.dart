@@ -176,6 +176,10 @@ class S {
   String get layoutCompact => _t('Sade liste', 'Compact');
   String get menu => _t('Menü', 'Menu');
 
+  // Reklam
+  String get ad => _t('Reklam', 'Ad');
+  String get adPrivacy => _t('Reklam gizlilik seçenekleri', 'Ad privacy options');
+
   // Firebase kurulmamış
   String get setupRequired => _t('Firebase yapılandırması bulunamadı', 'Firebase is not configured');
   String get setupRequiredDesc => _t(

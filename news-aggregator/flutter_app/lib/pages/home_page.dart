@@ -3,6 +3,9 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
+import '../ads/ad_widgets.dart';
+import '../ads/ads_config.dart';
+import '../ads/ads_service.dart';
 import '../app_settings.dart';
 import '../backend/news_repository.dart';
 import '../backend/schema/articles_record.dart';
@@ -310,11 +313,11 @@ class _ArticleFeedState extends State<ArticleFeed> with AutomaticKeepAliveClient
     }
   }
 
-  void _open(ArticlesRecord a) {
-    unawaited(
-      Navigator.of(context)
-          .push(ArticleWebViewPage.route(url: a.originalUrl, sourceName: a.sourceName, articleTitle: a.title)),
-    );
+  Future<void> _open(ArticlesRecord a) async {
+    await Navigator.of(context)
+        .push(ArticleWebViewPage.route(url: a.originalUrl, sourceName: a.sourceName, articleTitle: a.title));
+    // Haber kapanıp akışa dönülünce: belirli aralıkla geçiş reklamı (doğal geçiş noktası).
+    AdsService.instance.onArticleClosed();
   }
 
   @override
@@ -357,13 +360,22 @@ class _ArticleFeedState extends State<ArticleFeed> with AutomaticKeepAliveClient
           if (i == _items.length) return _footer(s);
           final a = _items[i];
           final layout = widget.layout;
-          return ArticleCard(
+          final card = ArticleCard(
             article: a,
             fallbackIcon: icon,
             compact: layout == FeedLayout.compact,
             featured:
                 a.imageUrl.isNotEmpty && (layout == FeedLayout.large || (layout == FeedLayout.standard && i == 0)),
             onTap: () => _open(a),
+          );
+          // Her N haberden sonra akış içi doğal reklam (yüklenemezse yer kaplamaz).
+          if ((i + 1) % AdsConfig.nativeEvery != 0) return card;
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              card,
+              NativeAdSlot(key: ValueKey('native-ad-$i')),
+            ],
           );
         },
       ),
