@@ -21,6 +21,8 @@ void main() {
     await add('gundem-normal', gundem, 10);
     await add('gundem-isaretli', gundem, 11, breaking: true); // Gündem kaynağından, Son Dakika'da da görüldü
     await add('sondakika', sd, 12, breaking: true);
+    await db.doc('categories/ekonomi').set({'name': 'Ekonomi', 'order_index': 2});
+    await add('ekonomi-sondakika', db.doc('categories/ekonomi'), 9, breaking: true); // konu sekmesinde gizlenmez
 
     final repo = NewsRepository(firestore: db);
     final cats = {for (final c in await repo.watchCategories().first) c.id: c};
@@ -28,7 +30,8 @@ void main() {
         (await repo.fetchArticles(category: c)).items.map((a) => a.title).toList();
 
     expect(await titles(cats['gundem']), ['gundem-normal']);
-    expect(await titles(cats['son-dakika']), ['sondakika', 'gundem-isaretli']);
-    expect(await titles(null), ['sondakika', 'gundem-isaretli', 'gundem-normal']);
+    expect(await titles(cats['son-dakika']), ['sondakika', 'gundem-isaretli', 'ekonomi-sondakika']);
+    expect(await titles(cats['ekonomi']), ['ekonomi-sondakika']);
+    expect(await titles(null), ['sondakika', 'gundem-isaretli', 'gundem-normal', 'ekonomi-sondakika']);
   });
 }

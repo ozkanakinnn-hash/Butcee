@@ -33,10 +33,25 @@ class ArticleCard extends StatelessWidget {
     final s = S.of(context);
     final muted = theme.colorScheme.onSurfaceVariant;
 
+    // Görseli olmayan (ör. telif nedeniyle görseli kapatılan) haberlerde kaynağın logosu gösterilir.
     final placeholder = Container(
       color: theme.colorScheme.surfaceContainerHighest,
       alignment: Alignment.center,
-      child: Icon(fallbackIcon ?? Icons.article_outlined, color: muted),
+      child: article.sourceLogoUrl.isNotEmpty
+          ? ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: CachedNetworkImage(
+                cacheManager: AppStorage.images,
+                imageUrl: article.sourceLogoUrl,
+                width: 44,
+                height: 44,
+                memCacheWidth: 132,
+                fadeInDuration: Duration.zero,
+                fit: BoxFit.contain,
+                errorWidget: (_, _, _) => Icon(fallbackIcon ?? Icons.article_outlined, color: muted),
+              ),
+            )
+          : Icon(fallbackIcon ?? Icons.article_outlined, color: muted),
     );
 
     Widget image({double? memWidth}) => article.imageUrl.isEmpty
