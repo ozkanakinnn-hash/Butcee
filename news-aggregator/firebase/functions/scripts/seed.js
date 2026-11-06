@@ -34,7 +34,8 @@ async function main() {
         rss_url: s.rss_url,
         category_id: db.collection('categories').doc(s.category),
         logo_url: `https://www.google.com/s2/favicons?domain=${s.domain}&sz=128`,
-        is_active: true,
+        is_active: s.is_active !== false,
+        is_breaking: s.is_breaking === true,
         created_at: FieldValue.serverTimestamp(),
       },
       { merge: true }

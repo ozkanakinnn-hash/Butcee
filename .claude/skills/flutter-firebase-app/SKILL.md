@@ -111,3 +111,51 @@ description: Flutter/FlutterFlow + Firebase (Firestore, Cloud Functions) uygulam
   satır sonlarını sil — sırayla dene; sonra private_key'i BEGIN/END arasındaki base64'ten 64'lük satırlarla yeniden kur ve
   `crypto.createPrivateKey` ile doğrula; diğer alanlardaki satır sonlarını sil. Senaryoları (sarma 40/64/76 CRLF/100,
   kaçışlar açılmış, BOM, kesik) birim testiyle sına; hata mesajında anahtar parçası olmadığını da test et.
+
+## 8. Kaynak doğrulama, Son Dakika, kota (news-aggregator 2. tur)
+- **RSS adresi tahmin etme, doğrula:** konteyner haber sitelerine erişemez → aday listesi + `check-feeds.js` +
+  push ile tetiklenen iş akışı; kayıttan HTTP durumu, yönlendirme hedefi, güncel haber ve görselli haber sayısını oku.
+  Bulgular (2026-11): NTV `/spor.rss`, `/sanat.rss`, `/seyahat.rss` 301 (Location yok) → `/sporskor.rss` çalışır;
+  Hürriyet `/rss/saglik|bilim|otomobil` 301 → son dakika sayfası (geçersiz); Habertürk `/rss/kategori/<ad>.xml`,
+  CNN Türk `/feed/rss/<kategori>/news`, TRT Haber `/<kategori>_articles.rss`, AA `/tr/rss/default?cat=<kategori>` çalışır.
+- **"Son Dakika" düz kategori olmaz:** haberler zaten başka akıştan kaydedildiği için mükerrer kontrolü sekmeyi
+  boşaltır. Kaynakta `is_breaking`, haberde `breaking_at` alanı; var olan haberi de işaretle; uygulamada
+  `orderBy('breaking_at')` (alanı olmayan belgeler dışlanır → birleşik dizin gerekmez).
+- **Spark okuma kotası:** kaynak sayısı artınca `getAll` her çalışmada her haberi okur (30 kaynak × 35 × 48 ≈ 50k/gün).
+  Kaynakta `last_seen_published_at` sakla, ondan (pay ile) eski haberleri sorgulamadan atla.
+
+## 9. Flutter arayüz kalıpları (kullanıcı tercihleri)
+- **Koyu mod tam siyah** (#000000), vurgu #0A84FF; `ColorScheme.fromSeed(...).copyWith(surface, surfaceContainer*,
+  onSurfaceVariant, outlineVariant)` ile M3 ton renklerini ez; AppBar `surfaceTintColor: transparent`.
+  Ayarlar'da Sistem/Açık/Koyu (`SegmentedButton<ThemeMode>`), SharedPreferences'ta sakla.
+- **İlgi alanı ekranı (kullanıcı referansı):** satır = gri çizgi ikon + ad + sağda mavi dolu "+" daire; takip edilenler
+  üstte `SliverReorderableList` (sürükleme tutamağı + "−"). Flutter 3.4x: `onReorder` kullanımdan kalktı →
+  `onReorderItem` (newIndex zaten düzeltilmiş gelir). İlk açılışta onboarding + "Devam et (n)"; sayıyı ve kaydı
+  sunucuda VAR OLAN kategorilerle sınırla (test bu hatayı yakaladı).
+- **Testte Firestore:** repository'ye `FirebaseFirestore? firestore` parametresi ver, `fake_cloud_firestore` (dev) ile
+  widget testi yaz; `SharedPreferences.setMockInitialValues`.
+- **Uygulama ikonu:** PIL ile süper örnekleme (4x) → mipmap ic_launcher/round/foreground/background/monochrome +
+  `mipmap-anydpi-v26/ic_launcher.xml` (monochrome = Android 13 tema ikonu) + Play 512px. Açık/koyu ana ekran ve
+  daire/squircle/kare maskeli önizleme üretip kullanıcıya göster. Siyah zeminli ikon koyu ana ekranda kaybolur →
+  renkli zemin seç.
+
+## 10. Bildirimler, izinler, canlı skor (news-aggregator 3. tur)
+- **Spark'ta push:** FCM ücretsiz; GitHub Actions'taki Admin SDK (`firebase-adminsdk` hizmet hesabı) `getMessaging().sendEach`
+  ile konuya gönderir. Uygulama konu aboneliği: `news_<kategori>`, `team_<id>`; ayarlar değişince yalnızca FARKI
+  abone et/çık (son durumu prefs'te tut). İki takımı birden izleyen tek bildirim alsın: `condition: "'team_a' in topics || 'team_b' in topics"`.
+- **Bildirim yağmurunu önle:** kategori başına bekleme (2 sa) + özet ("ve N haber daha"); Son Dakika hemen ama aynı
+  haber iki kez gitmesin (`last_breaking_id`), eski haber "son dakika" diye gitmesin. Durum tek belgede (1 okuma+1 yazma).
+- **Android kanalları** (sunucu `android.notification.channelId` ile eşleşmeli) uygulama açılışında oluşturulur; özel ses
+  kanal oluştururken verilir (`RawResourceAndroidNotificationSound`) ve sonradan değişmez. `res/raw/keep.xml` ile
+  sesin küçültmede silinmesini engelle. Ön planda FCM bildirimi görünmez → `onMessage` + flutter_local_notifications.
+  flutter_local_notifications 22: `initialize(settings:)`, `show(id:, title:, ...)` adlandırılmış parametre;
+  `isCoreLibraryDesugaringEnabled` + `desugar_jdk_libs` zorunlu. Bildirim simgesi beyaz+şeffaf `ic_stat_*`.
+- **İzin ekranı:** permission_handler (bildirim) + geolocator (konum); `WidgetsBindingObserver` ile uygulamaya dönünce
+  durumu yenile; kalıcı redde `openAppSettings`. Konum iznini MUTLAKA bir özelliğe bağla (Play reddeder) → yalnızca
+  `ACCESS_COARSE_LOCATION`. Hava durumu: Open-Meteo ücretsiz sürümü ticari kullanıma kapalı → **MET Norway**
+  (api.met.no; ticari serbest, User-Agent zorunlu, CC BY atıf, en fazla 4 ondalık koordinat).
+- **Canlı skor ücretsiz mimari:** cron (15 dk) → maç yoksa API isteği harcamadan çık; maç varsa tek iş içinde döngü
+  (≤5,5 sa). API-Football `/fixtures?ids=a-b-c` tek istekte tüm maçlar + olaylar. Aralık = kalan istek / kalan maç
+  süresi (60 sn–10 dk). Sezon erişimini anahtar gelince `check` moduyla doğrula (ücretsiz plan sezon sınırlı olabilir;
+  konteyner api-football.com'a erişemez). Testte `sleep` enjekte et — `global.setTimeout` ezmek gRPC zaman aşımlarını bozar.
+- Kullanıcıya sor: veri kaynağı (resmi/anahtarlı vs resmi olmayan), konum amacı, bildirim sıklığı, kategori yapısı.

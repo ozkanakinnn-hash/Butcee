@@ -1,0 +1,70 @@
+name: Haber Akışı - Canlı Skor
+
+# 15 dakikada bir başlar. Yakında/şu an Süper Lig maçı yoksa ~30 sn içinde çıkar (API isteği harcamaz).
+# Maç varsa maçlar bitene kadar (en fazla 5,5 saat) skoru izler, gol ve maç olaylarını bildirir.
+# Gerekli gizli değişkenler: FIREBASE_SERVICE_ACCOUNT, FOOTBALL_API_KEY (api-football.com ücretsiz anahtar)
+on:
+  schedule:
+    - cron: "4,19,34,49 * * * *"
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "check = anahtarı ve sezon erişimini test et | sync-teams = takımları yenile | watch = izle"
+        type: choice
+        options: [check, sync-teams, watch]
+        default: check
+
+concurrency:
+  group: news-football
+  cancel-in-progress: false
+
+jobs:
+  football:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    defaults:
+      run:
+        working-directory: news-aggregator/firebase/functions
+    steps:
+      - name: Anahtar kontrolü
+        id: key
+        working-directory: .
+        env:
+          SA: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          FOOTBALL_API_KEY: ${{ secrets.FOOTBALL_API_KEY }}
+        run: |
+          if [ -z "$FOOTBALL_API_KEY" ]; then
+            echo "::notice::FOOTBALL_API_KEY eklenmemiş; canlı skor atlandı."
+            echo "ready=false" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          if [ -n "$SA" ]; then
+            KEY="$RUNNER_TEMP/sa.json"
+            printf '%s' "$SA" > "$KEY"
+            echo "GOOGLE_APPLICATION_CREDENTIALS=$KEY" >> "$GITHUB_ENV"
+          fi
+          echo "ready=true" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@v5
+        if: steps.key.outputs.ready == 'true'
+
+      - uses: actions/setup-node@v5
+        if: steps.key.outputs.ready == 'true'
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: news-aggregator/firebase/functions/package-lock.json
+
+      - name: Bağımlılıklar
+        if: steps.key.outputs.ready == 'true'
+        run: npm ci --omit=dev
+
+      - name: Canlı skor
+        if: steps.key.outputs.ready == 'true'
+        env:
+          FOOTBALL_API_KEY: ${{ secrets.FOOTBALL_API_KEY }}
+        run: node scripts/football-watch.js "${{ inputs.mode || 'watch' }}"
+
+      - name: Anahtarı sil
+        if: always()
+        working-directory: .
+        run: rm -f "$RUNNER_TEMP/sa.json"

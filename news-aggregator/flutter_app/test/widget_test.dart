@@ -5,15 +5,15 @@ import 'package:haber_akisi/l10n/app_strings.dart';
 import 'package:haber_akisi/utils/time_ago.dart';
 
 Widget _localized(Locale locale, String Function(BuildContext) builder) => MaterialApp(
-      locale: locale,
-      supportedLocales: const [Locale('tr'), Locale('en')],
-      localizationsDelegates: const [
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      home: Builder(builder: (c) => Text(builder(c))),
-    );
+  locale: locale,
+  supportedLocales: const [Locale('tr'), Locale('en')],
+  localizationsDelegates: const [
+    GlobalMaterialLocalizations.delegate,
+    GlobalWidgetsLocalizations.delegate,
+    GlobalCupertinoLocalizations.delegate,
+  ],
+  home: Builder(builder: (c) => Text(builder(c))),
+);
 
 void main() {
   testWidgets('Türkçe ve İngilizce metinler', (tester) async {
@@ -33,4 +33,3 @@ void main() {
     expect(timeAgo(DateTime(2026, 10, 1), s, now: now), '01.10.2026');
   });
 }
-

@@ -3,11 +3,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 /// `categories` koleksiyonu — FlutterFlow'un ürettiği `CategoriesRecord` ile aynı alan adları.
 class CategoriesRecord {
   CategoriesRecord._(this.reference, Map<String, dynamic> data)
-      : name = data['name'] as String? ?? '',
-        nameEn = data['name_en'] as String? ?? '',
-        iconName = data['icon_name'] as String? ?? '',
-        orderIndex = (data['order_index'] as num?)?.toInt() ?? 0,
-        placeholderImageUrl = data['placeholder_image_url'] as String? ?? '';
+    : name = data['name'] as String? ?? '',
+      nameEn = data['name_en'] as String? ?? '',
+      iconName = data['icon_name'] as String? ?? '',
+      orderIndex = (data['order_index'] as num?)?.toInt() ?? 0,
+      placeholderImageUrl = data['placeholder_image_url'] as String? ?? '',
+      special = data['special'] as String? ?? '';
 
   static CollectionReference<Map<String, dynamic>> get collection =>
       FirebaseFirestore.instance.collection('categories');
@@ -21,6 +22,12 @@ class CategoriesRecord {
   final String iconName;
   final int orderIndex;
   final String placeholderImageUrl;
+
+  /// Özel liste türü. 'breaking' = Son Dakika: kategori filtresi yerine breaking_at alanına göre listelenir.
+  final String special;
+
+  String get id => reference.id;
+  bool get isBreaking => special == 'breaking';
 
   String localizedName(bool english) => english && nameEn.isNotEmpty ? nameEn : name;
 }

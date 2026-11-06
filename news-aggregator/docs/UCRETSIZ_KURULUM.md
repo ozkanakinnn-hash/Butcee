@@ -32,6 +32,8 @@ service cloud.firestore {
       allow list: if request.query.limit <= 50;
       allow write: if false;
     }
+    match /football_teams/{id} { allow read: if true;  allow write: if false; }
+    match /matches/{id}        { allow read: if true;  allow write: if false; }
     match /users/{uid}            { allow read, write: if request.auth != null && request.auth.uid == uid; }
     match /user_preferences/{uid} { allow read, write: if request.auth != null && request.auth.uid == uid; }
   }

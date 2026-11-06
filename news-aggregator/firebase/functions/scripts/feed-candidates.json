@@ -1,0 +1,65 @@
+{
+  "_not": "Aday RSS adresleri. scripts/check-feeds.js bunları dener; çalışanlar seed-data.json'a eklenir.",
+  "candidates": [
+    {
+      "category": "futbol",
+      "source_name": "Habertürk",
+      "rss_url": "https://www.haberturk.com/rss/kategori/spor/futbol.xml"
+    },
+    {
+      "category": "futbol",
+      "source_name": "Habertürk",
+      "rss_url": "https://www.haberturk.com/rss/kategori/spor.xml"
+    },
+    {
+      "category": "futbol",
+      "source_name": "CNN Türk",
+      "rss_url": "https://www.cnnturk.com/feed/rss/spor/futbol/news"
+    },
+    {
+      "category": "futbol",
+      "source_name": "CNN Türk",
+      "rss_url": "https://www.cnnturk.com/feed/rss/spor/news"
+    },
+    {
+      "category": "futbol",
+      "source_name": "Anadolu Ajansı",
+      "rss_url": "https://www.aa.com.tr/tr/rss/default?cat=spor"
+    },
+    {
+      "category": "futbol",
+      "source_name": "TRT Haber",
+      "rss_url": "https://www.trthaber.com/spor_articles.rss"
+    },
+    {
+      "category": "futbol",
+      "source_name": "TRT Haber",
+      "rss_url": "https://www.trthaber.com/futbol_articles.rss"
+    },
+    {
+      "category": "futbol",
+      "source_name": "NTV",
+      "rss_url": "https://www.ntv.com.tr/futbol.rss"
+    },
+    {
+      "category": "futbol",
+      "source_name": "Hürriyet",
+      "rss_url": "https://www.hurriyet.com.tr/rss/sporarena"
+    },
+    {
+      "category": "futbol",
+      "source_name": "Fanatik",
+      "rss_url": "https://www.fanatik.com.tr/rss/futbol"
+    },
+    {
+      "category": "futbol",
+      "source_name": "Fotomaç",
+      "rss_url": "https://www.fotomac.com.tr/rss/futbol.xml"
+    },
+    {
+      "category": "futbol",
+      "source_name": "A Spor",
+      "rss_url": "https://www.aspor.com.tr/rss/futbol.xml"
+    }
+  ]
+}

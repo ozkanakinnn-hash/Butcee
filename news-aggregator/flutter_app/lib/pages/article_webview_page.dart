@@ -20,12 +20,7 @@ import '../l10n/app_strings.dart';
 /// Üst bar: solda "X" (kapat), ortada kaynak adı + kilit simgesi (https), sağda paylaş ve menü.
 /// Telif açısından içerik kopyalanmaz; site kendi tasarımı ve reklamlarıyla gösterilir.
 class ArticleWebViewPage extends StatefulWidget {
-  const ArticleWebViewPage({
-    super.key,
-    required this.url,
-    this.sourceName = '',
-    this.articleTitle = '',
-  });
+  const ArticleWebViewPage({super.key, required this.url, this.sourceName = '', this.articleTitle = ''});
 
   /// Açılacak haber adresi (articles.original_url).
   final String url;
@@ -113,7 +108,9 @@ class _ArticleWebViewPageState extends State<ArticleWebViewPage> {
   Future<void> _share() async {
     final s = S.of(context);
     final box = context.findRenderObject() as RenderBox?;
-    final text = widget.articleTitle.isEmpty ? '${_safeUri(widget.url)}' : '${widget.articleTitle}\n${_safeUri(widget.url)}';
+    final text = widget.articleTitle.isEmpty
+        ? '${_safeUri(widget.url)}'
+        : '${widget.articleTitle}\n${_safeUri(widget.url)}';
     await SharePlus.instance.share(
       ShareParams(
         text: text,

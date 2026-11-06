@@ -24,6 +24,19 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // Futbol: takım listesi ve canlı maç skorları (yalnızca bot yazar)
+    match /football_teams/{id} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    match /matches/{id} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // notify_state ve football_meta: yalnızca bot (Admin SDK) kullanır; uygulamaya kapalı.
+
     match /users/{uid} {
       allow read, write: if request.auth != null && request.auth.uid == uid;
     }

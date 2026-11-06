@@ -30,6 +30,11 @@ const MAX_ITEMS_PER_FEED = 40;
 const MAX_ARTICLE_AGE_DAYS = 7;
 const FIRESTORE_IN_LIMIT = 30;
 const SOURCE_CONCURRENCY = 5;
+/**
+ * Okuma kotası koruması: kaynağın bir önceki çalışmada gördüğü en yeni haberden bu kadar eski
+ * haberler zaten işlenmiştir; veritabanına sorulmadan atlanır (geç yayınlananlar için pay bırakılır).
+ */
+const SEEN_WINDOW_MS = 45 * 60 * 1000;
 
 /**
  * Bir RSS öğesini `articles` belgesine çevirir. Başlığı veya geçerli bağlantısı
@@ -64,6 +69,9 @@ function buildArticle(item, { source, categoryRef, placeholderImageUrl, feedLink
       category_id: categoryRef || null,
       published_at: Timestamp.fromDate(publishedAt),
       content_hash: contentHash(title, publishedAt),
+      // "Son Dakika" kaynaklarından gelen haberler işaretlenir; uygulamadaki Son Dakika sekmesi
+      // orderBy('breaking_at') ile yalnızca bu alana sahip haberleri listeler (ek dizin gerekmez).
+      ...(source.is_breaking ? { breaking_at: Timestamp.fromDate(publishedAt) } : {}),
     },
   };
 }
@@ -86,26 +94,59 @@ function dedupeWithinBatch(articles) {
   });
 }
 
+/**
+ * Adayları veritabanıyla karşılaştırır.
+ * @returns {{fresh: Array, existing: Array<{ref, hasBreaking: boolean, candidate}>}}
+ *   fresh: yazılacak yeni haberler; existing: zaten var olanlar (Son Dakika işareti için).
+ */
+async function findExisting(db, articles) {
+  if (articles.length === 0) return { fresh: [], existing: [] };
+  const col = db.collection('articles');
+  const existing = [];
+
+  const snaps = await db.getAll(...articles.map((a) => col.doc(a.id)), { fieldMask: ['content_hash', 'breaking_at'] });
+  const byId = new Map(snaps.filter((s) => s.exists).map((s) => [s.id, s]));
+  let remaining = [];
+  for (const a of articles) {
+    const snap = byId.get(a.id);
+    if (snap) existing.push({ ref: snap.ref, hasBreaking: snap.get('breaking_at') != null, candidate: a });
+    else remaining.push(a);
+  }
+
+  const byHash = new Map();
+  for (const hashes of chunk(remaining.map((a) => a.data.content_hash), FIRESTORE_IN_LIMIT)) {
+    const qs = await col.where('content_hash', 'in', hashes).select('content_hash', 'breaking_at').get();
+    qs.forEach((d) => byHash.set(d.get('content_hash'), d));
+  }
+  const fresh = [];
+  for (const a of remaining) {
+    const snap = byHash.get(a.data.content_hash);
+    if (snap) existing.push({ ref: snap.ref, hasBreaking: snap.get('breaking_at') != null, candidate: a });
+    else fresh.push(a);
+  }
+  return { fresh, existing };
+}
+
 /** Veritabanında zaten bulunan haberleri listeden çıkarır. */
 async function filterExisting(db, articles) {
-  if (articles.length === 0) return [];
-  const col = db.collection('articles');
+  return (await findExisting(db, articles)).fresh;
+}
 
-  const snaps = await db.getAll(...articles.map((a) => col.doc(a.id)), { fieldMask: ['content_hash'] });
-  const existingIds = new Set(snaps.filter((s) => s.exists).map((s) => s.id));
-  let remaining = articles.filter((a) => !existingIds.has(a.id));
-
-  const existingHashes = new Set();
-  for (const hashes of chunk(remaining.map((a) => a.data.content_hash), FIRESTORE_IN_LIMIT)) {
-    const qs = await col.where('content_hash', 'in', hashes).select('content_hash').get();
-    qs.forEach((d) => existingHashes.add(d.get('content_hash')));
-  }
-  remaining = remaining.filter((a) => !existingHashes.has(a.data.content_hash));
-  return remaining;
+/**
+ * Son Dakika kaynağında görülen ama başka bir akıştan önce kaydedilmiş haberleri işaretler.
+ * Yalnızca işareti olmayanlara yazılır (her haber en fazla bir kez güncellenir).
+ */
+async function markBreaking(db, existing) {
+  const targets = existing.filter((e) => !e.hasBreaking);
+  if (targets.length === 0) return 0;
+  const batch = db.batch();
+  targets.forEach((e) => batch.update(e.ref, { breaking_at: e.candidate.data.published_at }));
+  await batch.commit();
+  return targets.length;
 }
 
 /** Yeni haberleri yazar. ALREADY_EXISTS (eşzamanlı çalışmada) hata sayılmaz. */
-async function writeArticles(db, articles) {
+async function writeArticles(db, articles, onWritten) {
   if (articles.length === 0) return 0;
   let written = 0;
   const writer = db.bulkWriter();
@@ -117,7 +158,7 @@ async function writeArticles(db, articles) {
   const tasks = articles.map((a) =>
     writer
       .create(col.doc(a.id), { ...a.data, created_at: FieldValue.serverTimestamp() })
-      .then(() => { written += 1; })
+      .then(() => { written += 1; if (onWritten) onWritten(a); })
       .catch((err) => {
         if (err.code !== 6) logger.warn('Haber yazılamadı', { id: a.id, error: err.message });
       })
@@ -175,9 +216,22 @@ async function ingestSource(db, sourceDoc, categories, { fetchImpl, now = new Da
     const items = (res.feed.items || []).slice(0, MAX_ITEMS_PER_FEED);
     result.fetched = items.length;
 
-    const candidates = dedupeWithinBatch(items.map((it) => buildArticle(it, ctx)).filter(Boolean));
-    const fresh = await filterExisting(db, candidates);
-    result.added = await writeArticles(db, fresh);
+    const built = dedupeWithinBatch(items.map((it) => buildArticle(it, ctx)).filter(Boolean));
+    const lastSeenMs = source.last_seen_published_at ? source.last_seen_published_at.toMillis() : 0;
+    const candidates = built.filter((a) => a.data.published_at.toMillis() > lastSeenMs - SEEN_WINDOW_MS);
+    result.skippedSeen = built.length - candidates.length;
+    const newestMs = Math.max(lastSeenMs, ...built.map((a) => a.data.published_at.toMillis()));
+    const { fresh, existing } = await findExisting(db, candidates);
+    // Bildirim modülü için: bu çalışmada yazılan haberler ve Son Dakika olarak işaretlenenler.
+    result.addedArticles = [];
+    result.added = await writeArticles(db, fresh, (a) => result.addedArticles.push(a));
+    if (source.is_breaking) {
+      result.markedBreaking = await markBreaking(db, existing);
+      result.breakingArticles = [
+        ...result.addedArticles,
+        ...existing.filter((e) => !e.hasBreaking).map((e) => ({ id: e.ref.id, data: e.candidate.data })),
+      ];
+    }
 
     await sourceDoc.ref.update({
       last_fetched_at: FieldValue.serverTimestamp(),
@@ -185,6 +239,7 @@ async function ingestSource(db, sourceDoc, categories, { fetchImpl, now = new Da
       etag: res.etag || null,
       last_modified: res.lastModified || null,
       last_added_count: result.added,
+      ...(newestMs > 0 ? { last_seen_published_at: Timestamp.fromMillis(newestMs) } : {}),
     });
   } catch (err) {
     result.error = err.message;
@@ -227,7 +282,14 @@ async function ingestAllSources(db, options = {}) {
     failed: results.filter((r) => r.error).length,
     notModified: results.filter((r) => r.notModified).length,
   };
-  logger.info('RSS çekimi tamamlandı', { ...summary, details: results });
+  if (options.notify !== false) {
+    const { sendNewsNotifications } = require('./notify');
+    summary.notifications = await sendNewsNotifications(db, results, categories, options.notifyOptions);
+  }
+  logger.info('RSS çekimi tamamlandı', {
+    ...summary,
+    details: results.map(({ addedArticles, breakingArticles, ...rest }) => rest),
+  });
   return { summary, results };
 }
 
@@ -251,7 +313,9 @@ async function deleteOldArticles(db, maxAgeDays = 30) {
 module.exports = {
   buildArticle,
   dedupeWithinBatch,
+  findExisting,
   filterExisting,
+  markBreaking,
   writeArticles,
   ingestSource,
   ingestAllSources,

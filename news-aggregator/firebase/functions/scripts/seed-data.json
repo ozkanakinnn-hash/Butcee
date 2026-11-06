@@ -1,19 +1,391 @@
 {
-  "_not": "RSS adreslerini yayına almadan önce tarayıcıda açıp doğrulayın; siteler adreslerini değiştirebilir. Yalnızca RSS yayınını herkese açık sunan kaynakları ekleyin.",
+  "_not": "RSS adresleri scripts/check-feeds.js ile GitHub Actions'ta doğrulandı (2026-11-06). is_breaking: Son Dakika sekmesinde gösterilir. is_active:false kaynak devre dışıdır.",
   "categories": [
-    { "id": "gundem",    "name": "Gündem",    "name_en": "Headlines", "icon_name": "newspaper",     "order_index": 1, "placeholder_image_url": "" },
-    { "id": "ekonomi",   "name": "Ekonomi",   "name_en": "Economy",   "icon_name": "trending_up",   "order_index": 2, "placeholder_image_url": "" },
-    { "id": "teknoloji", "name": "Teknoloji", "name_en": "Tech",      "icon_name": "memory",        "order_index": 3, "placeholder_image_url": "" },
-    { "id": "spor",      "name": "Spor",      "name_en": "Sports",    "icon_name": "sports_soccer", "order_index": 4, "placeholder_image_url": "" },
-    { "id": "dunya",     "name": "Dünya",     "name_en": "World",     "icon_name": "public",        "order_index": 5, "placeholder_image_url": "" }
+    {
+      "id": "son-dakika",
+      "name": "Son Dakika",
+      "name_en": "Breaking",
+      "icon_name": "bolt",
+      "order_index": 0,
+      "placeholder_image_url": "",
+      "special": "breaking"
+    },
+    {
+      "id": "gundem",
+      "name": "Gündem",
+      "name_en": "Headlines",
+      "icon_name": "newspaper",
+      "order_index": 1,
+      "placeholder_image_url": ""
+    },
+    {
+      "id": "ekonomi",
+      "name": "Ekonomi",
+      "name_en": "Economy",
+      "icon_name": "show_chart",
+      "order_index": 2,
+      "placeholder_image_url": ""
+    },
+    {
+      "id": "teknoloji",
+      "name": "Teknoloji",
+      "name_en": "Tech",
+      "icon_name": "smart_toy",
+      "order_index": 3,
+      "placeholder_image_url": ""
+    },
+    {
+      "id": "spor",
+      "name": "Spor",
+      "name_en": "Sports",
+      "icon_name": "sports",
+      "order_index": 4,
+      "placeholder_image_url": ""
+    },
+    {
+      "id": "futbol",
+      "name": "Futbol",
+      "name_en": "Football",
+      "icon_name": "sports_soccer",
+      "order_index": 5,
+      "placeholder_image_url": ""
+    },
+    {
+      "id": "dunya",
+      "name": "Dünya",
+      "name_en": "World",
+      "icon_name": "public",
+      "order_index": 6,
+      "placeholder_image_url": ""
+    },
+    {
+      "id": "saglik",
+      "name": "Sağlık",
+      "name_en": "Health",
+      "icon_name": "volunteer_activism",
+      "order_index": 7,
+      "placeholder_image_url": ""
+    },
+    {
+      "id": "bilim",
+      "name": "Bilim",
+      "name_en": "Science",
+      "icon_name": "science",
+      "order_index": 8,
+      "placeholder_image_url": ""
+    },
+    {
+      "id": "kultur-sanat",
+      "name": "Kültür-Sanat",
+      "name_en": "Arts & Culture",
+      "icon_name": "palette",
+      "order_index": 9,
+      "placeholder_image_url": ""
+    },
+    {
+      "id": "magazin",
+      "name": "Magazin",
+      "name_en": "Entertainment",
+      "icon_name": "star",
+      "order_index": 10,
+      "placeholder_image_url": ""
+    },
+    {
+      "id": "otomobil",
+      "name": "Otomobil",
+      "name_en": "Automotive",
+      "icon_name": "directions_car",
+      "order_index": 11,
+      "placeholder_image_url": ""
+    },
+    {
+      "id": "egitim",
+      "name": "Eğitim",
+      "name_en": "Education",
+      "icon_name": "school",
+      "order_index": 12,
+      "placeholder_image_url": ""
+    },
+    {
+      "id": "yasam",
+      "name": "Yaşam",
+      "name_en": "Lifestyle",
+      "icon_name": "spa",
+      "order_index": 13,
+      "placeholder_image_url": ""
+    }
   ],
   "sources": [
-    { "id": "bbc-turkce",      "source_name": "BBC Türkçe",  "rss_url": "https://feeds.bbci.co.uk/turkce/rss.xml",      "category": "gundem",    "domain": "bbc.com" },
-    { "id": "ntv-gundem",      "source_name": "NTV",         "rss_url": "https://www.ntv.com.tr/gundem.rss",            "category": "gundem",    "domain": "ntv.com.tr" },
-    { "id": "ntv-ekonomi",     "source_name": "NTV",         "rss_url": "https://www.ntv.com.tr/ekonomi.rss",           "category": "ekonomi",   "domain": "ntv.com.tr" },
-    { "id": "ntv-teknoloji",   "source_name": "NTV",         "rss_url": "https://www.ntv.com.tr/teknoloji.rss",         "category": "teknoloji", "domain": "ntv.com.tr" },
-    { "id": "ntv-spor",        "source_name": "NTV",         "rss_url": "https://www.ntv.com.tr/spor.rss",              "category": "spor",      "domain": "ntv.com.tr" },
-    { "id": "ntv-dunya",       "source_name": "NTV",         "rss_url": "https://www.ntv.com.tr/dunya.rss",             "category": "dunya",     "domain": "ntv.com.tr" },
-    { "id": "hurriyet-gundem", "source_name": "Hürriyet",    "rss_url": "https://www.hurriyet.com.tr/rss/gundem",       "category": "gundem",    "domain": "hurriyet.com.tr" }
+    {
+      "id": "bbc-turkce",
+      "source_name": "BBC Türkçe",
+      "rss_url": "https://feeds.bbci.co.uk/turkce/rss.xml",
+      "category": "gundem",
+      "domain": "bbc.com"
+    },
+    {
+      "id": "ntv-gundem",
+      "source_name": "NTV",
+      "rss_url": "https://www.ntv.com.tr/gundem.rss",
+      "category": "gundem",
+      "domain": "ntv.com.tr"
+    },
+    {
+      "id": "ntv-ekonomi",
+      "source_name": "NTV",
+      "rss_url": "https://www.ntv.com.tr/ekonomi.rss",
+      "category": "ekonomi",
+      "domain": "ntv.com.tr"
+    },
+    {
+      "id": "ntv-teknoloji",
+      "source_name": "NTV",
+      "rss_url": "https://www.ntv.com.tr/teknoloji.rss",
+      "category": "teknoloji",
+      "domain": "ntv.com.tr"
+    },
+    {
+      "id": "ntv-spor",
+      "source_name": "NTV",
+      "rss_url": "https://www.ntv.com.tr/spor.rss",
+      "category": "spor",
+      "domain": "ntv.com.tr",
+      "is_active": false
+    },
+    {
+      "id": "ntv-dunya",
+      "source_name": "NTV",
+      "rss_url": "https://www.ntv.com.tr/dunya.rss",
+      "category": "dunya",
+      "domain": "ntv.com.tr"
+    },
+    {
+      "id": "hurriyet-gundem",
+      "source_name": "Hürriyet",
+      "rss_url": "https://www.hurriyet.com.tr/rss/gundem",
+      "category": "gundem",
+      "domain": "hurriyet.com.tr"
+    },
+    {
+      "id": "ntv-sporskor",
+      "source_name": "NTV Spor",
+      "rss_url": "https://www.ntv.com.tr/sporskor.rss",
+      "category": "spor",
+      "domain": "ntv.com.tr"
+    },
+    {
+      "id": "hurriyet-spor",
+      "source_name": "Hürriyet",
+      "rss_url": "https://www.hurriyet.com.tr/rss/spor",
+      "category": "spor",
+      "domain": "hurriyet.com.tr"
+    },
+    {
+      "id": "ntv-son-dakika",
+      "source_name": "NTV",
+      "rss_url": "https://www.ntv.com.tr/son-dakika.rss",
+      "category": "gundem",
+      "domain": "ntv.com.tr",
+      "is_breaking": true
+    },
+    {
+      "id": "trt-son-dakika",
+      "source_name": "TRT Haber",
+      "rss_url": "https://www.trthaber.com/sondakika_articles.rss",
+      "category": "gundem",
+      "domain": "trthaber.com",
+      "is_breaking": true
+    },
+    {
+      "id": "aa-guncel",
+      "source_name": "Anadolu Ajansı",
+      "rss_url": "https://www.aa.com.tr/tr/rss/default?cat=guncel",
+      "category": "gundem",
+      "domain": "aa.com.tr",
+      "is_breaking": true
+    },
+    {
+      "id": "haberturk-manset",
+      "source_name": "Habertürk",
+      "rss_url": "https://www.haberturk.com/rss/manset.xml",
+      "category": "gundem",
+      "domain": "haberturk.com",
+      "is_breaking": true
+    },
+    {
+      "id": "haberturk-saglik",
+      "source_name": "Habertürk",
+      "rss_url": "https://www.haberturk.com/rss/kategori/saglik.xml",
+      "category": "saglik",
+      "domain": "haberturk.com"
+    },
+    {
+      "id": "cnn-saglik",
+      "source_name": "CNN Türk",
+      "rss_url": "https://www.cnnturk.com/feed/rss/saglik/news",
+      "category": "saglik",
+      "domain": "cnnturk.com"
+    },
+    {
+      "id": "trt-saglik",
+      "source_name": "TRT Haber",
+      "rss_url": "https://www.trthaber.com/saglik_articles.rss",
+      "category": "saglik",
+      "domain": "trthaber.com"
+    },
+    {
+      "id": "aa-bilim",
+      "source_name": "Anadolu Ajansı",
+      "rss_url": "https://www.aa.com.tr/tr/rss/default?cat=bilim-teknoloji",
+      "category": "bilim",
+      "domain": "aa.com.tr"
+    },
+    {
+      "id": "trt-bilim",
+      "source_name": "TRT Haber",
+      "rss_url": "https://www.trthaber.com/bilim_teknoloji_articles.rss",
+      "category": "bilim",
+      "domain": "trthaber.com"
+    },
+    {
+      "id": "aa-kultur",
+      "source_name": "Anadolu Ajansı",
+      "rss_url": "https://www.aa.com.tr/tr/rss/default?cat=kultur",
+      "category": "kultur-sanat",
+      "domain": "aa.com.tr"
+    },
+    {
+      "id": "haberturk-kultur",
+      "source_name": "Habertürk",
+      "rss_url": "https://www.haberturk.com/rss/kategori/kultur-sanat.xml",
+      "category": "kultur-sanat",
+      "domain": "haberturk.com"
+    },
+    {
+      "id": "cnn-kultur",
+      "source_name": "CNN Türk",
+      "rss_url": "https://www.cnnturk.com/feed/rss/kultur-sanat/news",
+      "category": "kultur-sanat",
+      "domain": "cnnturk.com"
+    },
+    {
+      "id": "trt-kultur",
+      "source_name": "TRT Haber",
+      "rss_url": "https://www.trthaber.com/kultur_sanat_articles.rss",
+      "category": "kultur-sanat",
+      "domain": "trthaber.com"
+    },
+    {
+      "id": "haberturk-magazin",
+      "source_name": "Habertürk",
+      "rss_url": "https://www.haberturk.com/rss/kategori/magazin.xml",
+      "category": "magazin",
+      "domain": "haberturk.com"
+    },
+    {
+      "id": "cnn-magazin",
+      "source_name": "CNN Türk",
+      "rss_url": "https://www.cnnturk.com/feed/rss/magazin/news",
+      "category": "magazin",
+      "domain": "cnnturk.com"
+    },
+    {
+      "id": "ntv-otomobil",
+      "source_name": "NTV",
+      "rss_url": "https://www.ntv.com.tr/otomobil.rss",
+      "category": "otomobil",
+      "domain": "ntv.com.tr"
+    },
+    {
+      "id": "cnn-otomobil",
+      "source_name": "CNN Türk",
+      "rss_url": "https://www.cnnturk.com/feed/rss/otomobil/news",
+      "category": "otomobil",
+      "domain": "cnnturk.com"
+    },
+    {
+      "id": "haberturk-otomobil",
+      "source_name": "Habertürk",
+      "rss_url": "https://www.haberturk.com/rss/kategori/otomobil.xml",
+      "category": "otomobil",
+      "domain": "haberturk.com"
+    },
+    {
+      "id": "hurriyet-egitim",
+      "source_name": "Hürriyet",
+      "rss_url": "https://www.hurriyet.com.tr/rss/egitim",
+      "category": "egitim",
+      "domain": "hurriyet.com.tr"
+    },
+    {
+      "id": "cnn-egitim",
+      "source_name": "CNN Türk",
+      "rss_url": "https://www.cnnturk.com/feed/rss/egitim/news",
+      "category": "egitim",
+      "domain": "cnnturk.com"
+    },
+    {
+      "id": "trt-egitim",
+      "source_name": "TRT Haber",
+      "rss_url": "https://www.trthaber.com/egitim_articles.rss",
+      "category": "egitim",
+      "domain": "trthaber.com"
+    },
+    {
+      "id": "ntv-egitim",
+      "source_name": "NTV",
+      "rss_url": "https://www.ntv.com.tr/egitim.rss",
+      "category": "egitim",
+      "domain": "ntv.com.tr"
+    },
+    {
+      "id": "ntv-yasam",
+      "source_name": "NTV",
+      "rss_url": "https://www.ntv.com.tr/yasam.rss",
+      "category": "yasam",
+      "domain": "ntv.com.tr"
+    },
+    {
+      "id": "haberturk-yasam",
+      "source_name": "Habertürk",
+      "rss_url": "https://www.haberturk.com/rss/kategori/yasam.xml",
+      "category": "yasam",
+      "domain": "haberturk.com"
+    },
+    {
+      "id": "cnn-yasam",
+      "source_name": "CNN Türk",
+      "rss_url": "https://www.cnnturk.com/feed/rss/yasam/news",
+      "category": "yasam",
+      "domain": "cnnturk.com"
+    },
+    {
+      "id": "cnn-futbol",
+      "source_name": "CNN Türk",
+      "rss_url": "https://www.cnnturk.com/feed/rss/spor/futbol/news",
+      "category": "futbol",
+      "domain": "cnnturk.com"
+    },
+    {
+      "id": "aspor-futbol",
+      "source_name": "A Spor",
+      "rss_url": "https://www.aspor.com.tr/rss/futbol.xml",
+      "category": "futbol",
+      "domain": "aspor.com.tr"
+    },
+    {
+      "id": "aa-spor",
+      "source_name": "Anadolu Ajansı",
+      "rss_url": "https://www.aa.com.tr/tr/rss/default?cat=spor",
+      "category": "spor",
+      "domain": "aa.com.tr"
+    },
+    {
+      "id": "haberturk-spor",
+      "source_name": "Habertürk",
+      "rss_url": "https://www.haberturk.com/rss/kategori/spor.xml",
+      "category": "spor",
+      "domain": "haberturk.com"
+    }
   ]
 }

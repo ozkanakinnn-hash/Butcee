@@ -5,6 +5,11 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'app_settings.dart';
 import 'l10n/app_strings.dart';
 import 'pages/home_page.dart';
+import 'pages/article_webview_page.dart';
+import 'pages/interests_page.dart';
+import 'pages/match_detail_page.dart';
+import 'services/notification_service.dart';
+import 'theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,6 +25,26 @@ Future<void> main() async {
   }
 
   runApp(NewsApp(settings: settings, firebaseReady: firebaseReady));
+
+  if (firebaseReady) {
+    // Bildirim kanalları, dokunma yönlendirmesi ve konu abonelikleri (hata uygulamayı durdurmaz).
+    NotificationService.instance.taps.listen(_openTarget);
+    NotificationService.instance.init(settings).catchError((Object e) => debugPrint('Bildirim başlatılamadı: $e'));
+  }
+}
+
+/// Bildirime dokunulunca ilgili sayfayı aç.
+final navigatorKey = GlobalKey<NavigatorState>();
+
+void _openTarget(NotificationTarget target) {
+  final nav = navigatorKey.currentState;
+  if (nav == null) return;
+  switch (target) {
+    case ArticleTarget(:final url, :final title, :final source):
+      nav.push(ArticleWebViewPage.route(url: url, sourceName: source, articleTitle: title));
+    case MatchTarget(:final fixtureId):
+      nav.push(MaterialPageRoute<void>(builder: (_) => MatchDetailPage(fixtureId: fixtureId)));
+  }
 }
 
 class NewsApp extends StatelessWidget {
@@ -28,21 +53,17 @@ class NewsApp extends StatelessWidget {
   final AppSettings settings;
   final bool firebaseReady;
 
-  static ThemeData _theme(Brightness brightness) => ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFFC62828), brightness: brightness),
-        appBarTheme: const AppBarTheme(scrolledUnderElevation: 0),
-      );
-
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
       listenable: settings,
       builder: (context, _) => MaterialApp(
+        navigatorKey: navigatorKey,
         title: 'Haber Akışı',
         debugShowCheckedModeBanner: false,
-        theme: _theme(Brightness.light),
-        darkTheme: _theme(Brightness.dark),
+        theme: AppTheme.light(),
+        darkTheme: AppTheme.dark(),
+        themeMode: settings.themeMode,
         locale: settings.locale,
         supportedLocales: AppSettings.supportedLocales,
         localizationsDelegates: const [
@@ -50,7 +71,12 @@ class NewsApp extends StatelessWidget {
           GlobalWidgetsLocalizations.delegate,
           GlobalCupertinoLocalizations.delegate,
         ],
-        home: firebaseReady ? HomePage(settings: settings) : const _SetupRequiredPage(),
+        home: !firebaseReady
+            ? const _SetupRequiredPage()
+            : settings.hasChosenInterests
+            ? HomePage(settings: settings)
+            // İlk açılış: ilgi alanı seçimi; "Devam et" kaydedince ana ekran açılır.
+            : InterestsPage(settings: settings, onboarding: true),
       ),
     );
   }

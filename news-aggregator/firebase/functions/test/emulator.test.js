@@ -33,11 +33,11 @@ test('iki ardışık çalıştırmada haberler mükerrer yazılmaz', { skip }, a
   });
   await db.collection('sources').doc('pasif').set({ source_name: 'Pasif', rss_url: 'https://x', is_active: false });
 
-  const first = await ingestAllSources(db, { fetchImpl, now });
+  const first = await ingestAllSources(db, { fetchImpl, now, notify: false });
   assert.equal(first.summary.sources, 1, 'pasif kaynak işlenmemeli');
   assert.equal(first.summary.added, 4);
 
-  const second = await ingestAllSources(db, { fetchImpl, now });
+  const second = await ingestAllSources(db, { fetchImpl, now, notify: false });
   assert.equal(second.summary.added, 0, 'ikinci çalıştırmada yeni haber yazılmamalı');
 
   const all = await db.collection('articles').get();
