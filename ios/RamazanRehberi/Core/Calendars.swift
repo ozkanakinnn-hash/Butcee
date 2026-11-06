@@ -97,11 +97,10 @@ enum IslamicDays {
       if let date = DateUtil.cal.date(from: DateComponents(year: year, month: m, day: d, hour: 12)) { put(date, title, cat, emoji) }
     }
     let hYears = hijriYearsOverlapping(year)
-    let shift = diyanetShift(year)
     func h(_ month: Int, _ day: Int, _ offset: Int, _ title: String, _ cat: String, _ emoji: String) {
       for hy in hYears {
-        guard let d = hijriToGregorian(hy, month, day) else { continue }
-        put(DateUtil.addDays(offset + shift, to: d), title, cat, emoji)
+        guard let d = anchoredDate(hy, month, day) else { continue }
+        put(DateUtil.addDays(offset, to: d), title, cat, emoji)
       }
     }
 
@@ -111,8 +110,7 @@ enum IslamicDays {
     for d in 1...4 { h(ZILHICCE, 9 + d, 0, "Kurban Bayramı \(d). Gün", "Dini Bayram", "🐑") }
 
     for hy in hYears {
-      guard var first = hijriToGregorian(hy, RECEP, 1) else { continue }
-      first = DateUtil.addDays(shift, to: first)
+      guard var first = anchoredDate(hy, RECEP, 1) else { continue }
       while DateUtil.cal.component(.weekday, from: first) != 6 { first = DateUtil.addDays(1, to: first) }
       put(DateUtil.addDays(-1, to: first), "Regaip Kandili", "Mübarek Gece", "✨")
     }
@@ -165,14 +163,23 @@ enum IslamicDays {
     return [start, start + 1]
   }
 
-  private static func diyanetShift(_ year: Int) -> Int {
-    guard let r = RamadanCalendar.rangeForYear(year), let diyanet = DateUtil.date(fromKey: r.start) else { return 0 }
-    for hy in hijriYearsOverlapping(year) {
-      guard let computed = hijriToGregorian(hy, RAMAZAN, 1), DateUtil.cal.component(.year, from: computed) == year else { continue }
-      let diff = DateUtil.cal.dateComponents([.day], from: DateUtil.startOfDay(computed), to: DateUtil.startOfDay(diyanet)).day ?? 0
-      return max(-2, min(2, diff))
+  private static func daysBetween(_ a: Date, _ b: Date) -> Int {
+    DateUtil.cal.dateComponents([.day], from: DateUtil.startOfDay(a), to: DateUtil.startOfDay(b)).day ?? 0
+  }
+
+  /// Hicri tarihi Diyanet'in Ramazan tablosuna sabitleyerek miladiye çevirir:
+  /// Şevval ve sonrası Diyanet'in Ramazan bitişinden, öncesi Ramazan başlangıcından sayılır
+  /// (Ümmü'l-Kura ile Diyanet ay başları 1-2 gün farklı olabilir). Tabloda yoksa Ümmü'l-Kura.
+  private static func anchoredDate(_ hy: Int, _ m: Int, _ d: Int) -> Date? {
+    guard let uq = hijriToGregorian(hy, m, d) else { return nil }
+    guard let uqRamadan = hijriToGregorian(hy, RAMAZAN, 1),
+          let range = RamadanCalendar.rangeForYear(DateUtil.cal.component(.year, from: uqRamadan)),
+          let start = DateUtil.date(fromKey: range.start), let end = DateUtil.date(fromKey: range.end),
+          abs(daysBetween(uqRamadan, start)) <= 3 else { return uq }
+    if m >= SEVVAL, let uqShawwal = hijriToGregorian(hy, SEVVAL, 1) {
+      return DateUtil.addDays(1 + daysBetween(uqShawwal, uq), to: end)
     }
-    return 0
+    return DateUtil.addDays(daysBetween(uqRamadan, uq), to: start)
   }
 
   private static func hijriToGregorian(_ y: Int, _ m: Int, _ d: Int) -> Date? {

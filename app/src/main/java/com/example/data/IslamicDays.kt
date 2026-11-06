@@ -56,12 +56,11 @@ object IslamicDays {
 
     // Diyanet düzeltmesi: tablodaki Ramazan başlangıcı ile hesaplanan 1 Ramazan arasındaki fark
     val hijriYears = hijriYearsOverlapping(year)
-    val shiftDays = diyanetShift(year)
 
     fun hijri(hMonth: Int, hDay: Int, offsetDays: Int, title: String, category: String, emoji: String) {
       for (hy in hijriYears) {
-        val cal = hijriToGregorian(hy, hMonth, hDay) ?: continue
-        cal.add(Calendar.DAY_OF_MONTH, offsetDays + shiftDays)
+        val cal = anchoredDate(hy, hMonth, hDay) ?: continue
+        cal.add(Calendar.DAY_OF_MONTH, offsetDays)
         put(cal, title, category, emoji)
       }
     }
@@ -75,8 +74,7 @@ object IslamicDays {
     // ── Kandiller (kandil gecesi, hicri günden önceki akşamdır) ──
     for (hy in hijriYears) {
       // Regaip: Recep ayının ilk cumasını bağlayan gece (perşembe akşamı)
-      val firstRecep = hijriToGregorian(hy, RECEP, 1) ?: continue
-      firstRecep.add(Calendar.DAY_OF_MONTH, shiftDays)
+      val firstRecep = anchoredDate(hy, RECEP, 1) ?: continue
       while (firstRecep.get(Calendar.DAY_OF_WEEK) != Calendar.FRIDAY) firstRecep.add(Calendar.DAY_OF_MONTH, 1)
       firstRecep.add(Calendar.DAY_OF_MONTH, -1)
       put(firstRecep, "Regaip Kandili", "Mübarek Gece", "✨")
@@ -131,18 +129,32 @@ object IslamicDays {
     return listOf(start, start + 1)
   }
 
-  /** Diyanet tablosundaki Ramazan başlangıcı ile Ümmü'l-Kura hesabı arasındaki gün farkı. */
-  private fun diyanetShift(year: Int): Int {
-    val (startKey, _) = RamadanCalendar.rangeForYear(year) ?: return 0
-    for (hy in hijriYearsOverlapping(year)) {
-      val computed = hijriToGregorian(hy, RAMAZAN, 1) ?: continue
-      if (computed.get(Calendar.YEAR) != year) continue
-      val parts = startKey.split("-").map { it.toInt() }
-      val diyanet = Calendar.getInstance().apply { clear(); set(parts[0], parts[1] - 1, parts[2]) }
-      val diff = ((diyanet.timeInMillis - computed.timeInMillis) / 86_400_000L).toInt()
-      return diff.coerceIn(-2, 2)
+  private fun daysBetween(a: Calendar, b: Calendar): Int {
+    fun dayStart(c: Calendar) = Calendar.getInstance().apply { clear(); set(c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH)) }
+    return Math.round((dayStart(b).timeInMillis - dayStart(a).timeInMillis) / 86_400_000.0).toInt()
+  }
+
+  private fun keyToCal(key: String): Calendar {
+    val p = key.split("-").map { it.toInt() }
+    return Calendar.getInstance().apply { clear(); set(p[0], p[1] - 1, p[2], 12, 0) }
+  }
+
+  /**
+   * Hicri tarihi Diyanet'in Ramazan tablosuna sabitleyerek miladiye çevirir: Şevval ve sonrası
+   * Diyanet'in Ramazan bitişinden, öncesi Ramazan başlangıcından sayılır. Tabloda yoksa Ümmü'l-Kura.
+   */
+  private fun anchoredDate(hy: Int, m: Int, d: Int): Calendar? {
+    val uq = hijriToGregorian(hy, m, d) ?: return null
+    val uqRamadan = hijriToGregorian(hy, RAMAZAN, 1) ?: return uq
+    val range = RamadanCalendar.rangeForYear(uqRamadan.get(Calendar.YEAR)) ?: return uq
+    val start = keyToCal(range.first)
+    val end = keyToCal(range.second)
+    if (kotlin.math.abs(daysBetween(uqRamadan, start)) > 3) return uq
+    if (m >= SEVVAL) {
+      val uqShawwal = hijriToGregorian(hy, SEVVAL, 1) ?: return uq
+      return end.apply { add(Calendar.DAY_OF_MONTH, 1 + daysBetween(uqShawwal, uq)) }
     }
-    return 0
+    return start.apply { add(Calendar.DAY_OF_MONTH, daysBetween(uqRamadan, uq)) }
   }
 
   private fun newIslamicCalendar(): IslamicCalendar = IslamicCalendar().apply {
