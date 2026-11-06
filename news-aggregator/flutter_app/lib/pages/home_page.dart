@@ -13,6 +13,7 @@ import '../backend/schema/categories_record.dart';
 import '../backend/schema/football_records.dart';
 import '../services/weather_service.dart';
 import '../widgets/live_matches.dart';
+import '../widgets/observance_banner.dart';
 import '../widgets/market_panel.dart';
 import '../widgets/weather_card.dart';
 import '../l10n/app_strings.dart';
@@ -134,6 +135,7 @@ class _AllHeader extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
+        const ObservanceBanner(),
         if (settings.weatherEnabled) WeatherCard(service: WeatherService.shared),
         if (settings.followsFootball && settings.followedTeams.isNotEmpty)
           _MatchesStream(

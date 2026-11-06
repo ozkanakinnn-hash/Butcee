@@ -6,8 +6,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:geolocator/geolocator.dart' show Geolocator;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:timezone/data/latest_all.dart' as tzdata;
+import 'package:timezone/timezone.dart' as tz;
 
 import '../app_settings.dart';
+import '../data/observances.dart';
 
 /// Arka planda gelen "notification" mesajlarını sistem kendisi gösterir; burada iş yok.
 /// (Top-level ve vm:entry-point olmalı.)
@@ -93,6 +96,12 @@ class NotificationService {
       description: 'Maç başladı, devre arası ve maç sonucu',
       importance: Importance.high,
     ),
+    AndroidNotificationChannel(
+      'observances',
+      'Bayram ve anma günleri',
+      description: 'Resmi bayramlarda kutlama, anma günlerinde anma bildirimi',
+      importance: Importance.high,
+    ),
   ];
 
   /// Uygulama açılışında bir kez çağrılır (Firebase başlatıldıktan sonra).
@@ -126,7 +135,9 @@ class NotificationService {
     }
 
     settings.addListener(syncTopics);
+    settings.addListener(scheduleObservances);
     await syncTopics();
+    await scheduleObservances();
 
     // Daha önce kurulmuş (ilgi alanlarını seçmiş) ama izni hiç sorulmamış kullanıcıya bir kez sor.
     if (settings.hasChosenInterests) {
@@ -174,6 +185,58 @@ class NotificationService {
         ),
       ),
     );
+  }
+
+  // ── Bayram ve anma günleri (cihazda zamanlanır, sunucu gerekmez) ─────────
+  static const _observanceIdMin = 5000;
+  static const _observanceIdMax = 5999;
+  String _scheduledKey = '';
+
+  /// Önümüzdeki 12 ayın bayram/anma bildirimlerini İstanbul saatiyle zamanlar.
+  /// "Yaklaşık zaman" modu: kesin alarm izni (Play'de yalnızca alarm/takvim uygulamalarına verilir) gerekmez;
+  /// birkaç dakika sapabilir — bu yüzden 10 Kasım bildirimi 09.00'da gider ve 09.05'i hatırlatır.
+  Future<void> scheduleObservances() async {
+    final settings = _settings;
+    if (settings == null) return;
+    final english = (settings.locale ?? WidgetsBinding.instance.platformDispatcher.locale).languageCode == 'en';
+    final key = '${settings.observanceNotifications}|$english|${DateTime.now().year}-${DateTime.now().month}';
+    if (key == _scheduledKey) return; // ayar/dil/ay değişmediyse yeniden kurmaya gerek yok
+    _scheduledKey = key;
+    try {
+      for (final p in await _local.pendingNotificationRequests()) {
+        if (p.id >= _observanceIdMin && p.id <= _observanceIdMax) await _local.cancel(id: p.id);
+      }
+      if (!settings.observanceNotifications) return;
+      tzdata.initializeTimeZones();
+      final ist = tz.getLocation('Europe/Istanbul');
+      final now = tz.TZDateTime.now(ist);
+      final channel = channels.firstWhere((c) => c.id == 'observances');
+      for (final o in upcomingObservances(DateTime(now.year, now.month, now.day, now.hour, now.minute))) {
+        final d = o.date;
+        await _local.zonedSchedule(
+          id: o.notificationId,
+          scheduledDate: tz.TZDateTime(ist, d.year, d.month, d.day, d.hour, d.minute),
+          title: o.title(english: english),
+          body: o.body(english: english),
+          androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+          notificationDetails: NotificationDetails(
+            android: AndroidNotificationDetails(
+              channel.id,
+              channel.name,
+              channelDescription: channel.description,
+              importance: Importance.high,
+              priority: Priority.high,
+              icon: 'ic_stat_news',
+              color: o.observance.isCommemoration ? const Color(0xFF111111) : const Color(0xFFE30A17),
+              styleInformation: BigTextStyleInformation(o.body(english: english)),
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      _scheduledKey = '';
+      debugPrint('Bayram/anma bildirimleri zamanlanamadı: $e');
+    }
   }
 
   // ── İzin ─────────────────────────────────────────────────────────────────

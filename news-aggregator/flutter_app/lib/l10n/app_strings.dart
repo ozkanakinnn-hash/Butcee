@@ -187,6 +187,13 @@ class S {
       _t('Önbellekte $size (haber görselleri ve sayfalar)', '$size cached (images and pages)');
   String get cacheCleared => _t('Önbellek temizlendi', 'Cache cleared');
 
+  // Bayram ve anma
+  String get observanceNotifications => _t('Bayram ve anma günleri', 'National holidays & commemorations');
+  String get observanceNotificationsDesc => _t(
+    'Resmi bayramlarda kutlama, 10 Kasım gibi anma günlerinde anma bildirimi.',
+    'Greetings on national holidays and remembrance on days like November 10.',
+  );
+
   // Firebase kurulmamış
   String get setupRequired => _t('Firebase yapılandırması bulunamadı', 'Firebase is not configured');
   String get setupRequiredDesc => _t(

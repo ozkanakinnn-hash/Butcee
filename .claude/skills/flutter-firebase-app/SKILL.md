@@ -228,3 +228,10 @@ description: Flutter/FlutterFlow + Firebase (Firestore, Cloud Functions) uygulam
   release `proguardFiles(...)`. Debug testleri bunu YAKALAMAZ → release APK'yı emülatörde aç
   (`news-crash-check.yml`: reactivecircus/android-emulator-runner, x86_64 release, `adb logcat -b crash`) ve kullanıcıya
   vermeden önce "UYGULAMA ÇALIŞIYOR" gör.
+
+## 14. Bayram / anma bildirimleri (sunucusuz, cihazda zamanlanır)
+- Türk kullanıcılı uygulamalarda resmi bayram + anma günlerini (10 Kasım, 18 Mart, 15 Temmuz…) varsayılan açık ayarla ekle; TR+EN metin.
+- `flutter_local_notifications.zonedSchedule` + `timezone` (Europe/Istanbul), `AndroidScheduleMode.inexactAllowWhileIdle` → SCHEDULE_EXACT_ALARM izni gerekmez (Play yalnızca alarm/takvim uygulamalarına verir). Birkaç dk sapar: 10 Kasım 09.00'da gönderilir, metin 09.05 saygı duruşunu hatırlatır.
+- Manifest: RECEIVE_BOOT_COMPLETED + `ScheduledNotificationReceiver` ve `ScheduledNotificationBootReceiver` (yeniden başlatmada kurulur). Kanal (`observances`) `channels` listesine eklenmeyi unutma.
+- Sabit id aralığı (5000–5999) → yeniden zamanlamadan önce yalnızca o aralığı iptal et. Dini bayramlar yıl tablosuyla (Diyanet); tablo biterse güncelle.
+- Anma = siyah sade şerit, bayram = kırmızı şerit; ana sayfa üstünde o gün gösterilir. `{n}` = yıl − başlangıç yılı (10 Kasım 2026 → 88. yıl).

@@ -50,6 +50,7 @@ dependencies:
   google_mobile_ads: ^9.2.0
   flutter_cache_manager: ^3.5.0
   path_provider: ^2.1.6
+  timezone: ^0.11.2
 dev_dependencies:
   flutter_test:
     sdk: flutter
