@@ -1,10 +1,10 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../app_settings.dart';
 import '../backend/news_repository.dart';
 import '../backend/schema/football_records.dart';
 import '../l10n/app_strings.dart';
+import '../utils/search_text.dart';
 
 /// Futbol ilgi alanı için takım seçimi (en fazla [AppSettings.maxTeams]). Seçim anında kaydedilir.
 class TeamPickerPage extends StatefulWidget {
@@ -19,10 +19,10 @@ class TeamPickerPage extends StatefulWidget {
 
 class _TeamPickerPageState extends State<TeamPickerPage> {
   late final _teams = widget.repository.watchTeams();
-  late final List<int> _selected = List.of(widget.settings.followedTeams);
+  late final List<String> _selected = List.of(widget.settings.followedTeams);
   String _query = '';
 
-  void _toggle(int id) {
+  void _toggle(String id) {
     final s = S.of(context);
     setState(() {
       if (_selected.contains(id)) {
@@ -51,11 +51,11 @@ class _TeamPickerPageState extends State<TeamPickerPage> {
         stream: _teams,
         builder: (context, snap) {
           if (!snap.hasData) return const Center(child: CircularProgressIndicator());
-          final q = _query.toLowerCase();
-          final teams = snap.data!.where((t) => q.isEmpty || t.name.toLowerCase().contains(q)).toList()
+          final q = foldForSearch(_query);
+          final teams = snap.data!.where((t) => q.isEmpty || foldForSearch('${t.name} ${t.short}').contains(q)).toList()
             ..sort((a, b) {
               final sa = _selected.contains(a.id), sb = _selected.contains(b.id);
-              return sa == sb ? a.name.compareTo(b.name) : (sa ? -1 : 1);
+              return sa == sb ? foldForSearch(a.name).compareTo(foldForSearch(b.name)) : (sa ? -1 : 1);
             });
           return CustomScrollView(
             slivers: [
@@ -98,7 +98,7 @@ class _TeamPickerPageState extends State<TeamPickerPage> {
                       padding: const EdgeInsets.fromLTRB(20, 10, 16, 10),
                       child: Row(
                         children: [
-                          TeamLogo(url: t.logo, size: 30),
+                          TeamCode(code: t.code, width: 52, fontSize: 16),
                           const SizedBox(width: 18),
                           Expanded(
                             child: Text(
@@ -130,24 +130,32 @@ class _TeamPickerPageState extends State<TeamPickerPage> {
   }
 }
 
-/// Takım logosu (yoksa kalkan ikonu).
-class TeamLogo extends StatelessWidget {
-  const TeamLogo({super.key, required this.url, this.size = 28});
+/// Takım kısaltması (GS, FB, BJK…) — rozet/logo kullanılmaz.
+class TeamCode extends StatelessWidget {
+  const TeamCode({super.key, required this.code, this.width = 48, this.fontSize = 15});
 
-  final String url;
-  final double size;
+  final String code;
+  final double width;
+  final double fontSize;
 
   @override
   Widget build(BuildContext context) {
-    final fallback = Icon(Icons.shield_outlined, size: size, color: Theme.of(context).colorScheme.onSurfaceVariant);
-    if (url.isEmpty) return fallback;
-    return CachedNetworkImage(
-      imageUrl: url,
-      width: size,
-      height: size,
-      fit: BoxFit.contain,
-      placeholder: (_, _) => SizedBox(width: size, height: size),
-      errorWidget: (_, _, _) => fallback,
+    final theme = Theme.of(context);
+    return SizedBox(
+      width: width,
+      child: Text(
+        code,
+        maxLines: 1,
+        softWrap: false,
+        overflow: TextOverflow.fade,
+        style: TextStyle(
+          fontSize: fontSize,
+          fontWeight: FontWeight.w900,
+          letterSpacing: 0.3,
+          color: theme.colorScheme.onSurfaceVariant,
+          fontFeatures: const [FontFeature.tabularFigures()],
+        ),
+      ),
     );
   }
 }

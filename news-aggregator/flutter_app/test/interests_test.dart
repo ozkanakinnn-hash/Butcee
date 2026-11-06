@@ -43,10 +43,19 @@ void main() {
     final settings = await AppSettings.load();
     final repo = await _repo();
     var done = false;
+    var permissionAsked = 0;
     expect(settings.hasChosenInterests, isFalse);
 
     await tester.pumpWidget(
-      _app(InterestsPage(settings: settings, repository: repo, onboarding: true, onDone: () => done = true)),
+      _app(
+        InterestsPage(
+          settings: settings,
+          repository: repo,
+          onboarding: true,
+          onDone: () => done = true,
+          requestNotifications: () async => permissionAsked++,
+        ),
+      ),
     );
     await tester.pumpAndSettle();
 
@@ -67,6 +76,7 @@ void main() {
     await tester.tap(find.text('Devam et (3)'));
     await tester.pumpAndSettle();
     expect(done, isTrue);
+    expect(permissionAsked, 1, reason: 'kurulumda bildirim izni bir kez sorulur');
     expect(settings.interests, ['son-dakika', 'spor', 'saglik']);
   });
 

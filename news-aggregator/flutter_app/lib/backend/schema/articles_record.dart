@@ -11,7 +11,8 @@ class ArticlesRecord {
       sourceLogoUrl = data['source_logo_url'] as String? ?? '',
       categoryId = data['category_id'] as DocumentReference<Map<String, dynamic>>?,
       publishedAt = (data['published_at'] as Timestamp?)?.toDate(),
-      contentHash = data['content_hash'] as String? ?? '';
+      contentHash = data['content_hash'] as String? ?? '',
+      breakingAt = (data['breaking_at'] as Timestamp?)?.toDate();
 
   static CollectionReference<Map<String, dynamic>> get collection => FirebaseFirestore.instance.collection('articles');
 
@@ -28,4 +29,8 @@ class ArticlesRecord {
   final DocumentReference<Map<String, dynamic>>? categoryId;
   final DateTime? publishedAt;
   final String contentHash;
+
+  /// Son Dakika olarak işaretlendiyse zamanı.
+  final DateTime? breakingAt;
+  bool get isBreaking => breakingAt != null;
 }

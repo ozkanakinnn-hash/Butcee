@@ -193,7 +193,46 @@ function parsePublishedAt(item, now = new Date()) {
   return d;
 }
 
+/**
+ * Arama için metni sadeleştirir: Türkçe büyük/küçük harf, aksan katlama (ç→c, ğ→g, ı/İ→i, ö→o, ş→s, ü→u),
+ * harf/rakam dışını boşluğa çevirir. Uygulamadaki Dart karşılığı (lib/utils/search_text.dart) ile AYNI olmalı.
+ */
+function foldForSearch(text) {
+  return String(text || '')
+    .replace(/İ/g, 'i')
+    .replace(/I/g, 'i')
+    .toLowerCase()
+    .replace(/[çğıöşüâîû]/g, (c) => ({ ç: 'c', ğ: 'g', ı: 'i', ö: 'o', ş: 's', ü: 'u', â: 'a', î: 'i', û: 'u' })[c])
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+}
+
+const SEARCH_PREFIX_MAX = 10;
+const SEARCH_KEYWORDS_MAX = 150;
+
+/**
+ * Başlıktan arama anahtarları: her kelimenin 3..10 harflik ön ekleri ("galatasaray" → gal, gala, … galatasara).
+ * Uygulama ilk kelimenin (en fazla 10 harf) ön ekiyle `array-contains` sorgusu yapar, kalan kelimeleri
+ * istemcide süzer. Firestore'da tam metin arama olmadığı için bu yöntem kullanılır.
+ */
+function searchKeywords(...texts) {
+  const out = new Set();
+  for (const word of foldForSearch(texts.join(' ')).split(' ')) {
+    if (word.length < 3) continue;
+    for (let n = 3; n <= Math.min(word.length, SEARCH_PREFIX_MAX); n++) {
+      out.add(word.slice(0, n));
+      if (out.size >= SEARCH_KEYWORDS_MAX) return [...out];
+    }
+  }
+  return [...out];
+}
+
 module.exports = {
+  foldForSearch,
+  searchKeywords,
+  SEARCH_PREFIX_MAX,
   SUMMARY_MAX_LENGTH,
   stripHtml,
   truncate,

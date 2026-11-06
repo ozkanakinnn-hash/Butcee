@@ -81,17 +81,38 @@ test('placeholder görsel bildirime eklenmez, uzun başlık kısaltılır', () =
 
 test('gönderim: durum kaydedilir, FCM hatası çekimi bozmaz', async () => {
   const saved = [];
+  const logged = [];
   const db = {
     doc: () => ({ get: async () => ({ data: () => ({}) }), set: async (v) => saved.push(v) }),
+    collection: () => ({ doc: (id) => ({ id }) }),
+    batch: () => ({ set: (ref, data) => logged.push({ id: ref.id, data }), commit: async () => {} }),
   };
   const results = [{ addedArticles: [art('a', 'saglik', '2026-11-06T11:00:00Z')] }];
   const okMessaging = { sendEach: async (msgs) => ({ successCount: msgs.length, failureCount: 0, responses: msgs.map(() => ({ success: true })) }) };
   const r = await sendNewsNotifications(db, results, categories, { messaging: okMessaging, now: NOW });
   assert.equal(r.sent, 1);
   assert.equal(saved.length, 1);
+  assert.equal(logged.length, 1, 'gönderilen bildirim Bildirimler sekmesi için kaydedilir');
+  assert.deepEqual(logged[0].data.topics, ['news_saglik']);
+  assert.equal(logged[0].data.url, 'https://ornek.com/a');
 
   const badMessaging = { sendEach: async () => { throw new Error('ağ hatası'); } };
   const r2 = await sendNewsNotifications(db, results, categories, { messaging: badMessaging, now: NOW });
   assert.equal(r2.sent, 0);
   assert.match(r2.error, /ağ hatası/);
+});
+
+test('bildirim kaydı: yeniler önce sıralanır, koşullu (iki takım) mesajın konuları çıkarılır', () => {
+  const { logEntryFromMessage, logId } = require('../src/notification-log');
+  assert.ok(logId(2000, 'a') < logId(1000, 'a'), 'yeni kayıt kimliği alfabetik olarak önce gelmeli');
+  const e = logEntryFromMessage({
+    condition: "'team_galatasaray' in topics || 'team_fenerbahce' in topics",
+    notification: { title: '⚽ GOL!', body: "67' Icardi" },
+    data: { type: 'match', fixture_id: '77' },
+    android: { notification: { channelId: 'goals' } },
+  }, { now: NOW });
+  assert.deepEqual(e.data.topics, ['team_galatasaray', 'team_fenerbahce']);
+  assert.equal(e.data.type, 'match');
+  assert.equal(e.data.fixture_id, '77');
+  assert.equal(e.data.channel, 'goals');
 });

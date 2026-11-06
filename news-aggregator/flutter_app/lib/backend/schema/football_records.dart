@@ -1,39 +1,75 @@
+import 'dart:ui' show Color;
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-/// `football_teams/{teamId}` — bot haftada bir API-Football'dan yeniler.
+/// "#A90432" → Color.
+Color? parseHexColor(Object? v) {
+  if (v is! String) return null;
+  final h = v.replaceFirst('#', '');
+  final n = int.tryParse(h.length == 6 ? 'FF$h' : h, radix: 16);
+  return n == null ? null : Color(n);
+}
+
+List<Color> _colors(Object? v) => (v is List ? v : const []).map(parseHexColor).whereType<Color>().toList();
+
+/// `football_teams/{kimlik}` — kimlik kendi kısa adımızdır (`galatasaray`), API sayısı değil.
 class TeamRecord {
   TeamRecord.fromSnapshot(DocumentSnapshot<Map<String, dynamic>> snap)
-    : id = int.tryParse(snap.id) ?? 0,
-      name = snap.data()?['name'] as String? ?? '',
-      logo = snap.data()?['logo'] as String? ?? '';
+    : id = snap.id,
+      name = snap.data()?['name'] as String? ?? snap.id,
+      short = snap.data()?['short'] as String? ?? '',
+      colors = _colors(snap.data()?['colors']),
+      logo = snap.data()?['logo'] as String? ?? '',
+      active = snap.data()?['active'] as bool? ?? true;
 
-  final int id;
+  final String id;
   final String name;
+  final String short;
+  final List<Color> colors;
   final String logo;
+
+  /// Bu sezon ligde mi (küme düşen takımlar false).
+  final bool active;
+
+  /// Gösterilen kısaltma (GS, FB, BJK…); yoksa adın ilk 3 harfi.
+  String get code => teamCode(short, name);
+}
+
+/// Kısaltma; tanımlı değilse adın ilk 3 harfi (Türkçe büyük harf).
+String teamCode(String short, String name) {
+  if (short.isNotEmpty) return short;
+  final n = name.replaceAll('i', 'İ').replaceAll('ı', 'I').toUpperCase().replaceAll(RegExp(r'[^A-ZÇĞİÖŞÜ0-9]'), '');
+  return n.length <= 3 ? n : n.substring(0, 3);
 }
 
 class MatchTeam {
   MatchTeam.fromMap(Map<String, dynamic>? m)
-    : id = (m?['id'] as num?)?.toInt() ?? 0,
+    : id = '${m?['id'] ?? ''}',
       name = m?['name'] as String? ?? '',
+      short = m?['short'] as String? ?? '',
+      colors = _colors(m?['colors']),
       logo = m?['logo'] as String? ?? '';
 
-  final int id;
+  final String id;
   final String name;
+  final String short;
+  final List<Color> colors;
   final String logo;
+
+  String get code => teamCode(short, name);
 }
 
 class GoalEvent {
   GoalEvent.fromMap(Map<String, dynamic> m)
     : minute = (m['minute'] as num?)?.toInt() ?? 0,
       extra = (m['extra'] as num?)?.toInt() ?? 0,
-      teamId = (m['team_id'] as num?)?.toInt() ?? 0,
+      teamId = '${m['team_id'] ?? ''}',
       player = m['player'] as String? ?? '',
       detail = m['detail'] as String? ?? '';
 
   final int minute;
   final int extra;
-  final int teamId;
+  final String teamId;
   final String player;
   final String detail;
 

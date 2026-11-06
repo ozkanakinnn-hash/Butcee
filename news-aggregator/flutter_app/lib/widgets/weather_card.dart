@@ -5,9 +5,10 @@ import '../services/weather_service.dart';
 
 /// Ana akışın üstündeki hava durumu kartı (konum izni ve ayar açıksa gösterilir).
 class WeatherCard extends StatefulWidget {
-  const WeatherCard({super.key, required this.service});
+  const WeatherCard({super.key, required this.service, this.padding = const EdgeInsets.fromLTRB(16, 8, 16, 4)});
 
   final WeatherService service;
+  final EdgeInsetsGeometry padding;
 
   @override
   State<WeatherCard> createState() => _WeatherCardState();
@@ -34,7 +35,7 @@ class _WeatherCardState extends State<WeatherCard> {
         final hour = DateTime.now().hour;
         final d = describeWeather(w.baseSymbol, night: hour < 6 || hour >= 19);
         return Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+          padding: widget.padding,
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(

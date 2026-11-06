@@ -110,6 +110,7 @@ async function sendNewsNotifications(db, results, categories, { messaging = getM
     if (messages.length === 0) return { sent: 0 };
     const res = await messaging.sendEach(messages);
     await ref.set(nextState, { merge: true });
+    await require('./notification-log').logSentMessages(db, messages, res.responses, { now });
     const failed = res.responses.filter((r) => !r.success).map((r) => r.error && r.error.message);
     logger.info('Haber bildirimleri gönderildi', {
       sent: res.successCount,

@@ -10,15 +10,14 @@ import '../backend/schema/categories_record.dart';
 import '../backend/schema/football_records.dart';
 import '../services/weather_service.dart';
 import '../widgets/live_matches.dart';
+import '../widgets/market_panel.dart';
 import '../widgets/weather_card.dart';
 import '../l10n/app_strings.dart';
 import '../widgets/article_card.dart';
 import '../widgets/category_icons.dart';
 import 'article_webview_page.dart';
-import 'interests_page.dart';
 import 'match_detail_page.dart';
 import 'team_picker_page.dart';
-import 'settings_page.dart';
 
 /// Ana ekran: üstte "Tümü" + kullanıcının ilgi alanları (seçtiği sırayla), altında haber akışı.
 class HomePage extends StatelessWidget {
@@ -47,25 +46,18 @@ class HomePage extends StatelessWidget {
               key: ValueKey(tabs.map((c) => c.id).join(',')),
               length: tabs.length + 1,
               child: Scaffold(
+                endDrawer: MarketPanel(settings: settings, repository: repository, weather: WeatherService.shared),
                 appBar: AppBar(
                   title: Text(s.appName),
                   actions: [
-                    IconButton(
-                      icon: const Icon(Icons.tune_rounded),
-                      tooltip: s.manageInterests,
-                      onPressed: () => Navigator.of(context).push(
-                        MaterialPageRoute<void>(
-                          builder: (_) => InterestsPage(settings: settings, repository: repository),
-                        ),
+                    Builder(
+                      builder: (context) => IconButton(
+                        icon: const Icon(Icons.menu_rounded),
+                        tooltip: s.menu,
+                        onPressed: () => Scaffold.of(context).openEndDrawer(),
                       ),
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.settings_outlined),
-                      tooltip: s.settings,
-                      onPressed: () =>
-                          Navigator.of(context)
-                              .push(MaterialPageRoute<void>(builder: (_) => SettingsPage(settings: settings))),
-                    ),
+                    const SizedBox(width: 4),
                   ],
                   bottom: PreferredSize(
                     preferredSize: const Size.fromHeight(48),
@@ -103,12 +95,14 @@ class HomePage extends StatelessWidget {
                     ArticleFeed(
                       key: const PageStorageKey('feed-all'),
                       repository: repository,
+                      layout: settings.feedLayout,
                       header: _AllHeader(settings: settings, repository: repository),
                     ),
                     for (final c in tabs)
                       ArticleFeed(
                         key: PageStorageKey('feed-${c.id}'),
                         repository: repository,
+                        layout: settings.feedLayout,
                         category: c,
                         header: c.id == AppSettings.footballCategoryId
                             ? _FootballHeader(settings: settings, repository: repository)
@@ -132,14 +126,12 @@ class _AllHeader extends StatelessWidget {
   final AppSettings settings;
   final NewsRepository repository;
 
-  static final _weather = WeatherService();
-
   @override
   Widget build(BuildContext context) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        if (settings.weatherEnabled) WeatherCard(service: _weather),
+        if (settings.weatherEnabled) WeatherCard(service: WeatherService.shared),
         if (settings.followsFootball && settings.followedTeams.isNotEmpty)
           _MatchesStream(
             settings: settings,
@@ -198,7 +190,7 @@ class _MatchesStream extends StatefulWidget {
 }
 
 class _MatchesStreamState extends State<_MatchesStream> {
-  late List<int> _teams = widget.settings.followedTeams;
+  late List<String> _teams = widget.settings.followedTeams;
   late Stream<List<MatchRecord>> _stream = widget.repository.watchMatches(_teams);
 
   @override
@@ -230,7 +222,16 @@ class _MatchesStreamState extends State<_MatchesStream> {
 
 /// Tek bir sekmenin haber listesi: sonsuz kaydırma (20'şer) + aşağı çekip yenileme.
 class ArticleFeed extends StatefulWidget {
-  const ArticleFeed({super.key, required this.repository, this.category, this.header});
+  const ArticleFeed({
+    super.key,
+    required this.repository,
+    this.category,
+    this.header,
+    this.layout = FeedLayout.standard,
+  });
+
+  /// Haber dizilimi (Ayarlar → Haber dizilimi).
+  final FeedLayout layout;
 
   final NewsRepository repository;
   final CategoriesRecord? category;
@@ -355,10 +356,13 @@ class _ArticleFeedState extends State<ArticleFeed> with AutomaticKeepAliveClient
           final i = index - 1;
           if (i == _items.length) return _footer(s);
           final a = _items[i];
+          final layout = widget.layout;
           return ArticleCard(
             article: a,
             fallbackIcon: icon,
-            featured: i == 0 && a.imageUrl.isNotEmpty,
+            compact: layout == FeedLayout.compact,
+            featured:
+                a.imageUrl.isNotEmpty && (layout == FeedLayout.large || (layout == FeedLayout.standard && i == 0)),
             onTap: () => _open(a),
           );
         },

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../app_settings.dart';
@@ -22,7 +21,7 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> with WidgetsBindingObserver {
-  PermissionStatus? _notif;
+  NotificationPermission? _notif;
   LocationPermission? _loc;
 
   AppSettings get settings => widget.settings;
@@ -97,7 +96,7 @@ class _SettingsPageState extends State<SettingsPage> with WidgetsBindingObserver
           : ok
           ? Icon(Icons.check_circle_rounded, color: Colors.green.shade500)
           : FilledButton.tonal(
-              onPressed: blocked ? openAppSettings : onRequest,
+              onPressed: blocked ? NotificationService.openSystemSettings : onRequest,
               child: Text(
                 blocked
                     ? s.settings
@@ -106,7 +105,7 @@ class _SettingsPageState extends State<SettingsPage> with WidgetsBindingObserver
                     : 'İzin ver',
               ),
             ),
-      onTap: ok ? null : (blocked ? openAppSettings : onRequest),
+      onTap: ok ? null : (blocked ? NotificationService.openSystemSettings : onRequest),
       iconColor: ok ? null : theme.colorScheme.primary,
     );
   }
@@ -115,7 +114,7 @@ class _SettingsPageState extends State<SettingsPage> with WidgetsBindingObserver
   Widget build(BuildContext context) {
     final s = S.of(context);
     final theme = Theme.of(context);
-    final notifGranted = _notif?.isGranted;
+    final notifGranted = _notif == null ? null : _notif == NotificationPermission.granted;
     final locGranted = _loc == null ? null : WeatherService.isGranted(_loc!);
 
     return Scaffold(
@@ -138,7 +137,7 @@ class _SettingsPageState extends State<SettingsPage> with WidgetsBindingObserver
               icon: Icons.notifications_active_outlined,
               title: s.notificationPermission,
               granted: notifGranted,
-              blocked: _notif?.isPermanentlyDenied ?? false,
+              blocked: _notif == NotificationPermission.blocked,
               onRequest: _requestNotifications,
             ),
             SwitchListTile(
@@ -218,6 +217,22 @@ class _SettingsPageState extends State<SettingsPage> with WidgetsBindingObserver
                 ],
                 selected: {settings.themeMode},
                 onSelectionChanged: (v) => settings.setThemeMode(v.first),
+              ),
+            ),
+            const Divider(),
+            _Header(s.feedLayout),
+            RadioGroup<FeedLayout>(
+              groupValue: settings.feedLayout,
+              onChanged: (v) => settings.setFeedLayout(v ?? FeedLayout.standard),
+              child: Column(
+                children: [
+                  for (final (l, label, icon) in [
+                    (FeedLayout.standard, s.layoutStandard, Icons.view_agenda_outlined),
+                    (FeedLayout.large, s.layoutLarge, Icons.crop_landscape_outlined),
+                    (FeedLayout.compact, s.layoutCompact, Icons.view_headline_rounded),
+                  ])
+                    RadioListTile<FeedLayout>(value: l, title: Text(label), secondary: Icon(icon)),
+                ],
               ),
             ),
             const Divider(),

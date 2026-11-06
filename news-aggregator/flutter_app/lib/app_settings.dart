@@ -1,6 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+/// Ana akıştaki haber dizilimi.
+enum FeedLayout {
+  /// İlk haber büyük kart, diğerleri sağda küçük görselli liste (varsayılan)
+  standard,
+
+  /// Her haber büyük görselli kart
+  large,
+
+  /// Görselsiz, yalnızca başlık ve kaynak (en çok haber sığar)
+  compact,
+}
+
 /// Kullanıcı tercihleri: dil, tema ve ilgi alanları (sıralı kategori kimlikleri).
 /// SharedPreferences'ta, yalnızca cihazda saklanır.
 class AppSettings extends ChangeNotifier {
@@ -14,6 +26,8 @@ class AppSettings extends ChangeNotifier {
   static const _weatherKey = 'weather_card';
   static const _teamsKey = 'followed_teams';
   static const _topicsKey = 'subscribed_topics';
+  static const _layoutKey = 'feed_layout';
+  static const _recentSearchKey = 'recent_searches';
 
   /// Futbol takım seçimi bu ilgi alanına bağlıdır.
   static const footballCategoryId = 'futbol';
@@ -98,12 +112,11 @@ class AppSettings extends ChangeNotifier {
   // ── Futbol ───────────────────────────────────────────────────────────────
   bool get followsFootball => interests.contains(footballCategoryId);
 
-  /// Takip edilen takımların API-Football kimlikleri.
-  List<int> get followedTeams =>
-      (_prefs.getStringList(_teamsKey) ?? const []).map(int.tryParse).whereType<int>().toList();
+  /// Takip edilen takım kimlikleri (`galatasaray`, `besiktas` …).
+  List<String> get followedTeams => _prefs.getStringList(_teamsKey) ?? const [];
 
-  Future<void> setFollowedTeams(List<int> ids) async {
-    await _prefs.setStringList(_teamsKey, ids.take(maxTeams).map((e) => '$e').toList());
+  Future<void> setFollowedTeams(List<String> ids) async {
+    await _prefs.setStringList(_teamsKey, ids.take(maxTeams).toList());
     notifyListeners();
   }
 
@@ -118,4 +131,25 @@ class AppSettings extends ChangeNotifier {
   /// En son abone olunan konular (fark hesaplamak için; NotificationService kullanır).
   Set<String> get subscribedTopics => (_prefs.getStringList(_topicsKey) ?? const []).toSet();
   Future<void> setSubscribedTopics(Set<String> topics) => _prefs.setStringList(_topicsKey, topics.toList());
+
+  // ── Haber dizilimi ───────────────────────────────────────────────────────
+  FeedLayout get feedLayout =>
+      FeedLayout.values.firstWhere((l) => l.name == _prefs.getString(_layoutKey), orElse: () => FeedLayout.standard);
+
+  Future<void> setFeedLayout(FeedLayout layout) async {
+    await _prefs.setString(_layoutKey, layout.name);
+    notifyListeners();
+  }
+
+  // ── Son aramalar ─────────────────────────────────────────────────────────
+  List<String> get recentSearches => _prefs.getStringList(_recentSearchKey) ?? const [];
+
+  Future<void> addRecentSearch(String q) async {
+    final t = q.trim();
+    if (t.isEmpty) return;
+    final list = [t, ...recentSearches.where((e) => e.toLowerCase() != t.toLowerCase())].take(8).toList();
+    await _prefs.setStringList(_recentSearchKey, list);
+  }
+
+  Future<void> clearRecentSearches() => _prefs.remove(_recentSearchKey);
 }

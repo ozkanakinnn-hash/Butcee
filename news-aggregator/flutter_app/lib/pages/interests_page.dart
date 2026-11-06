@@ -16,13 +16,21 @@ class InterestsPage extends StatefulWidget {
     super.key,
     required this.settings,
     this.onboarding = false,
+    this.embedded = false,
     this.onDone,
+    this.requestNotifications,
     this.repository = const NewsRepository(),
   });
 
   final AppSettings settings;
   final bool onboarding;
+
+  /// Alt menü sekmesi olarak gösteriliyorsa geri düğmesi yok.
+  final bool embedded;
   final VoidCallback? onDone;
+
+  /// İlk kurulumda "Devam et"ten sonra bildirim izni istemek için (testlerde boş bırakılır).
+  final Future<void> Function()? requestNotifications;
   final NewsRepository repository;
 
   @override
@@ -61,6 +69,12 @@ class _InterestsPageState extends State<InterestsPage> {
   }
 
   Future<void> _finish() async {
+    // Önce izin penceresi (seçim kaydedilince ana ekrana geçilir), sonra kaydet.
+    if (widget.onboarding && widget.requestNotifications != null) {
+      try {
+        await widget.requestNotifications!();
+      } catch (_) {}
+    }
     await widget.settings.setInterests(_selected.where(_known.contains).toList());
     widget.onDone?.call();
   }
@@ -82,7 +96,7 @@ class _InterestsPageState extends State<InterestsPage> {
 
         return Scaffold(
           appBar: AppBar(
-            automaticallyImplyLeading: !widget.onboarding,
+            automaticallyImplyLeading: !widget.onboarding && !widget.embedded,
             title: widget.onboarding ? null : Text(s.interests),
           ),
           body: !snap.hasData

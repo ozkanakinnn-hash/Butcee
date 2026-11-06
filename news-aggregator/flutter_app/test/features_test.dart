@@ -31,15 +31,27 @@ Map<String, dynamic> _match({String status = '2H', int? elapsed = 67, bool live 
   'fixture_id': 77,
   'kickoff': Timestamp.fromDate(DateTime(2026, 11, 8, 20)),
   'status': {'short': status, 'elapsed': elapsed},
-  'home': {'id': 645, 'name': 'Galatasaray', 'logo': ''},
-  'away': {'id': 611, 'name': 'Fenerbahçe', 'logo': ''},
+  'home': {
+    'id': 'galatasaray',
+    'name': 'Galatasaray',
+    'short': 'GS',
+    'colors': ['#A90432', '#FDB912'],
+    'logo': '',
+  },
+  'away': {
+    'id': 'fenerbahce',
+    'name': 'Fenerbahçe',
+    'short': 'FB',
+    'colors': ['#0A1E5E', '#FFED00'],
+    'logo': '',
+  },
   'goals': {'home': 2, 'away': 1},
   'league': {'round': 'Regular Season - 12'},
   'is_live': live,
   'is_finished': finished,
-  'team_ids': [645, 611],
+  'team_ids': ['galatasaray', 'fenerbahce'],
   'goal_events': [
-    {'minute': 67, 'extra': 2, 'team_id': 645, 'player': 'M. Icardi', 'detail': 'Penalty'},
+    {'minute': 67, 'extra': 2, 'team_id': 'galatasaray', 'player': 'M. Icardi', 'detail': 'Penalty'},
   ],
 };
 
@@ -47,23 +59,29 @@ void main() {
   test('bildirim konuları: ilgi alanları + (futbol takipteyse) takımlar, ayarlara göre', () async {
     SharedPreferences.setMockInitialValues({
       'interests': ['gundem', 'futbol'],
-      'followed_teams': ['645', '611'],
+      'followed_teams': ['galatasaray', 'fenerbahce'],
     });
     final s = await AppSettings.load();
-    expect(s.desiredTopics, {'news_gundem', 'news_futbol', 'team_645', 'team_611'});
+    expect(s.desiredTopics, {'news_gundem', 'news_futbol', 'team_galatasaray', 'team_fenerbahce'});
     await s.setMatchNotifications(false);
     expect(s.desiredTopics, {'news_gundem', 'news_futbol'});
     await s.setMatchNotifications(true);
     await s.setNewsNotifications(false);
-    expect(s.desiredTopics, {'team_645', 'team_611'});
+    expect(s.desiredTopics, {'team_galatasaray', 'team_fenerbahce'});
     await s.setInterests(['gundem']); // futbol bırakılınca takım bildirimleri de durur
     expect(s.desiredTopics, isEmpty);
+  });
+
+  test('takım kısaltması: tanımlıysa o, yoksa adın ilk 3 harfi', () {
+    expect(teamCode('BJK', 'Beşiktaş'), 'BJK');
+    expect(teamCode('', 'Sivasspor'), 'SİV');
+    expect(teamCode('', 'İstanbulspor'), 'İST');
   });
 
   test('takım sayısı en fazla 10', () async {
     SharedPreferences.setMockInitialValues({});
     final s = await AppSettings.load();
-    await s.setFollowedTeams(List.generate(15, (i) => i + 1));
+    await s.setFollowedTeams(List.generate(15, (i) => 'takim$i'));
     expect(s.followedTeams.length, AppSettings.maxTeams);
   });
 
@@ -127,8 +145,17 @@ void main() {
     final settings = await AppSettings.load();
     final db = FakeFirebaseFirestore();
     await db.doc('categories/futbol').set({'name': 'Futbol', 'icon_name': 'sports_soccer', 'order_index': 5});
-    await db.doc('football_teams/645').set({'name': 'Galatasaray', 'logo': ''});
-    await db.doc('football_teams/611').set({'name': 'Fenerbahçe', 'logo': ''});
+    await db.doc('football_teams/galatasaray').set({
+      'name': 'Galatasaray',
+      'short': 'GS',
+      'colors': ['#A90432', '#FDB912'],
+    });
+    await db.doc('football_teams/fenerbahce').set({
+      'name': 'Fenerbahçe',
+      'short': 'FB',
+      'colors': ['#0A1E5E', '#FFED00'],
+    });
+    await db.doc('football_teams/hatayspor').set({'name': 'Hatayspor', 'short': 'HTY', 'active': false});
     final repo = NewsRepository(firestore: db);
 
     await tester.pumpWidget(_app(InterestsPage(settings: settings, repository: repo)));
@@ -140,14 +167,16 @@ void main() {
     expect(find.byType(TeamPickerPage), findsOneWidget);
     await tester.tap(find.text('Galatasaray'));
     await tester.pumpAndSettle();
-    expect(settings.followedTeams, [645]);
+    expect(settings.followedTeams, ['galatasaray']);
+    expect(find.text('GS'), findsOneWidget, reason: 'rozet değil, kısaltma gösterilir');
+    expect(find.text('Hatayspor'), findsNothing, reason: 'ligde olmayan takım listelenmez');
 
     await tester.enterText(find.byType(TextField), 'fener');
     await tester.pumpAndSettle();
     expect(find.text('Galatasaray'), findsNothing);
     await tester.tap(find.text('Fenerbahçe'));
     await tester.pumpAndSettle();
-    expect(settings.followedTeams, [645, 611]);
+    expect(settings.followedTeams, ['galatasaray', 'fenerbahce']);
 
     await tester.tap(find.text('Tamam'));
     await tester.pumpAndSettle();

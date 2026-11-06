@@ -9,16 +9,30 @@
 const { initAdmin } = require('./init-admin');
 const { getFirestore } = require('firebase-admin/firestore');
 const { ingestAllSources } = require('../src/ingest');
+const { runMaintenance } = require('../src/maintenance');
+const { updateMarket } = require('../src/market');
 
 initAdmin();
 
-ingestAllSources(getFirestore())
-  .then(({ summary, results }) => {
+const db = getFirestore();
+ingestAllSources(db)
+  .then(async ({ summary, results }) => {
     for (const r of results) {
       const status = r.error ? `HATA: ${r.error}` : r.notModified ? 'değişiklik yok' : `${r.added}/${r.fetched} yeni`;
       console.log(`- ${r.source}: ${status}`);
     }
     console.log('Özet:', summary);
+    // Ek işler: hata verirlerse haber çekimini başarısız saymayalım.
+    try {
+      console.log('Bakım:', JSON.stringify(await runMaintenance(db)));
+    } catch (err) {
+      console.log('Bakım hatası:', err.message);
+    }
+    try {
+      console.log('Piyasa:', JSON.stringify(await updateMarket(db)));
+    } catch (err) {
+      console.log('Piyasa hatası:', err.message);
+    }
   })
   .catch((err) => {
     console.error(err);

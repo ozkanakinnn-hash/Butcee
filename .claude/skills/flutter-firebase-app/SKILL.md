@@ -159,3 +159,39 @@ description: Flutter/FlutterFlow + Firebase (Firestore, Cloud Functions) uygulam
   süresi (60 sn–10 dk). Sezon erişimini anahtar gelince `check` moduyla doğrula (ücretsiz plan sezon sınırlı olabilir;
   konteyner api-football.com'a erişemez). Testte `sleep` enjekte et — `global.setTimeout` ezmek gRPC zaman aşımlarını bozar.
 - Kullanıcıya sor: veri kaynağı (resmi/anahtarlı vs resmi olmayan), konum amacı, bildirim sıklığı, kategori yapısı.
+
+## 11. Arama, bildirim geçmişi, piyasa paneli (news-aggregator 4. tur)
+- **Firestore'da tam metin arama yok:** yazarken kelimelerin 3–10 harflik ön eklerini `search_keywords` dizisine yaz;
+  sorguda en uzun kelimenin ön ekiyle `array-contains` + `orderBy(published_at)` (birleşik dizin), diğer kelimeleri
+  istemcide süz. Sadeleştirme (İ/I→i, ç ğ ı ö ş ü katlama) JS ve Dart'ta BİREBİR aynı olmalı → test beklentilerini
+  JS çıktısından üret. Eski belgelere tek seferlik doldurma (`app_meta` imleci, sayfa sayfa).
+- **Birleşik dizinsiz "en yeni önce" liste:** belge kimliği ters zaman damgası (`9999999999999-ms`); sıralama
+  belirtilmeyen sorgu kimliğe göre sıralanır → `arrayContainsAny` + limit yeterli. AMA istemcide de `sentAt`'e göre
+  sırala (fake_cloud_firestore ve olası değişikliklere karşı).
+- **Piyasa verisi:** Yahoo GitHub Actions IP'lerini HTTP 429 ile reddediyor; çerez/crumb ile aşmaya ÇALIŞMA
+  (bot korumasını atlatmak; izin reddedildi). Herkese açık kaynakları dürüst User-Agent ile dene (probe betiği + iş akışı).
+  Çalışan: **Truncgil** `finans.truncgil.com/v4/today.json` (USD, EUR, GRA gram altın, XU100 + Change; ONS ve BRENT
+  fiyatı 0 gelir, yalnızca değişim) — yanıt bazen bozuk JSON → kalemleri regex ile tek tek ayıkla. TCMB `kurlar/today.xml`
+  resmi ama günlük. Stooq CSV 404. Ons = gram × 31,1035 ÷ USD/TL. Fiyatı olmayan kalemi gösterme, kullanıcıya söyle.
+  Kullanıcının seçtiği kaynak çalışmazsa açıkça bildir, alternatifi doğrulayıp öner. Türkçe sayı: binlik nokta, ondalık virgül.
+- **Kart ızgarası taşması:** `GridView` + `childAspectRatio` büyük yazıda taşar → satırları `IntrinsicHeight` + `Row` +
+  `Expanded` ile kur, sütunu `mainAxisSize.min`. Widget testleri (Ahem yazı tipi) bunu yakalar.
+- **Alt menü:** `NavigationBar` + `IndexedStack` (sekme durumu korunur); sağ üst ☰ → `endDrawer`
+  (`Builder` içinden `Scaffold.of(context).openEndDrawer()`).
+- **compileSdk tuzağı:** `permission_handler` 13 (permission_handler_android) compileSdk 37 istiyor; AGP 9.1 en fazla 36 →
+  `checkDebugAarMetadata` hatası. Yerel analiz/test bunu YAKALAMAZ, yalnızca APK derlemesi yakalar → her yeni eklentiden
+  sonra CI'da `flutter build apk` sonucuna bak. Çözüm: eklentiyi kaldır; bildirim izni `FirebaseMessaging.requestPermission`
+  + `getNotificationSettings`, ayarları açmak `Geolocator.openAppSettings()`. Android'de iki retten sonra sistem penceresi
+  çıkmaz → sayacı prefs'te tut, "engellendi" say ve ayarları aç.
+- **Dış API kimliğine bağlanma:** takım listesi API anahtarına bağlıydı → anahtar yokken seçim ekranı boş kaldı.
+  Varlıkları KENDİ kimliğinle (`galatasaray`) sabit listeyle tohumla; API adlarını takma ad tablosu + Türkçe katlama ile
+  bu kimliğe eşle (bilinmeyen ad → addan kimlik). Bildirim konusu ve kullanıcı seçimi API değişse de bozulmaz.
+  Kullanıcı rozet istemedi: logo/rozet yerine düz kısaltma metni (GS, FB, BJK; yoksa adın ilk 3 harfi). Ligden düşenler `active:false`.
+- **API-Football ücretsiz plan (2026-11 doğrulandı):** güncel sezona ERİŞİM YOK — "Free plans do not have access to this
+  season, try from 2022 to 2024". /status ve /leagues çalışır, /fixtures ve /teams güncel sezonda reddedilir. Canlı skor
+  için ücretli plan şart. Kullanıcıya üyelikten ÖNCE bunu söyle. Bot: plan hatasında `plan_blocked_until` (24 sa) yaz, cron her
+  çalıştığında istek harcamadan çık (yoksa 15 dk'da bir hata e-postası ve boşa istek).
+- **Aynı haber iki sekmede:** Son Dakika kaynaklarını Gündem kategorisine yazmak + `breaking_at` işareti → haber hem
+  Gündem hem Son Dakika'da. Çözüm: Son Dakika kaynaklarının haberi `son-dakika` kategorisine; eski kayıtları bir kerelik
+  taşı; kategori sekmelerinde işaretli olanları istemcide ele (kısa kalan sayfayı birkaç turla doldur).
+  fake_cloud_firestore `orderBy(alan)` alanı olmayan belgeleri de döndürür (gerçek Firestore dışlar) → istemcide de süz.

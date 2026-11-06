@@ -24,12 +24,14 @@ const {
   articleIdForUrl,
   contentHash,
   parsePublishedAt,
+  searchKeywords,
 } = require('./text');
 
 const MAX_ITEMS_PER_FEED = 40;
 const MAX_ARTICLE_AGE_DAYS = 7;
 const FIRESTORE_IN_LIMIT = 30;
 const SOURCE_CONCURRENCY = 5;
+const BREAKING_CATEGORY_ID = 'son-dakika';
 /**
  * Okuma kotası koruması: kaynağın bir önceki çalışmada gördüğü en yeni haberden bu kadar eski
  * haberler zaten işlenmiştir; veritabanına sorulmadan atlanır (geç yayınlananlar için pay bırakılır).
@@ -69,6 +71,7 @@ function buildArticle(item, { source, categoryRef, placeholderImageUrl, feedLink
       category_id: categoryRef || null,
       published_at: Timestamp.fromDate(publishedAt),
       content_hash: contentHash(title, publishedAt),
+      search_keywords: searchKeywords(title, source.source_name || ''),
       // "Son Dakika" kaynaklarından gelen haberler işaretlenir; uygulamadaki Son Dakika sekmesi
       // orderBy('breaking_at') ile yalnızca bu alana sahip haberleri listeler (ek dizin gerekmez).
       ...(source.is_breaking ? { breaking_at: Timestamp.fromDate(publishedAt) } : {}),
@@ -203,7 +206,10 @@ async function ingestSource(db, sourceDoc, categories, { fetchImpl, now = new Da
       return result;
     }
 
-    const categoryRef = resolveCategoryRef(db, source.category_id);
+    // Son Dakika kaynaklarının haberleri Son Dakika kategorisine yazılır (Gündem'de tekrar görünmesin).
+    const categoryRef = source.is_breaking
+      ? db.collection('categories').doc(BREAKING_CATEGORY_ID)
+      : resolveCategoryRef(db, source.category_id);
     const category = categoryRef ? categories.get(categoryRef.id) : null;
     const ctx = {
       source,
@@ -322,4 +328,5 @@ module.exports = {
   deleteOldArticles,
   mapWithConcurrency,
   MAX_ARTICLE_AGE_DAYS,
+  BREAKING_CATEGORY_ID,
 };

@@ -15,6 +15,8 @@ const { getFirestore, Timestamp } = require('firebase-admin/firestore');
 const { getMessaging } = require('firebase-admin/messaging');
 const { initAdmin } = require('./init-admin');
 const fb = require('../src/football');
+const { logSentMessages } = require('../src/notification-log');
+const { isPlanSeasonError } = fb;
 
 const MAX_RUN_MS = 5.5 * 60 * 60 * 1000; // GitHub işi 6 saatte kesilir
 const START_EARLY_MS = 35 * 60 * 1000; // maçtan bu kadar önce başlayan çalışma bekler
@@ -55,24 +57,39 @@ async function currentSeason(api) {
   return s.year;
 }
 
+/**
+ * Güncel sezonun takımlarını yazar: listedeki takımlara API kimliği ve logo eklenir, listede olmayan
+ * (yeni çıkan) takımlar oluşturulur, bu sezon ligde olmayanlar `active: false` yapılır.
+ */
 async function syncTeams(db, api, meta) {
   const season = await currentSeason(api);
   const teams = await api.get('/teams', { league: fb.SUPER_LIG_ID, season });
+  const resolve = fb.defaultResolver;
+  const seen = new Set();
   const batch = db.batch();
   for (const t of teams) {
-    batch.set(db.doc(`football_teams/${t.team.id}`), {
-      name: t.team.name,
-      code: t.team.code || '',
+    const id = resolve(t.team.name);
+    seen.add(id);
+    const known = resolve.team(id);
+    batch.set(db.doc(`football_teams/${id}`), {
+      ...(known ? {} : { name: t.team.name, short: t.team.code || '', colors: [] }),
+      api_id: t.team.id,
+      api_name: t.team.name,
       logo: t.team.logo || '',
       league_id: fb.SUPER_LIG_ID,
       season,
+      active: true,
       updated_at: Timestamp.now(),
     }, { merge: true });
+  }
+  const existing = await db.collection('football_teams').get();
+  for (const d of existing.docs) {
+    if (!seen.has(d.id)) batch.set(d.ref, { active: false }, { merge: true });
   }
   batch.set(db.doc('football_meta/state'), { season, teams_synced_at: Timestamp.now() }, { merge: true });
   await batch.commit();
   meta.season = season;
-  log(`Takımlar güncellendi: ${teams.length} takım (sezon ${season})`);
+  log(`Takımlar güncellendi: ${teams.length} takım (sezon ${season}); ligde olmayan: ${existing.docs.filter((d) => !seen.has(d.id)).map((d) => d.id).join(', ') || '-'}`);
 }
 
 async function syncTodayFixtures(db, api, meta) {
@@ -113,12 +130,27 @@ async function watch(db, api, messaging, { sleep: wait_ = sleep } = {}) {
   const metaRef = db.doc('football_meta/state');
   const meta = (await metaRef.get()).data() || {};
 
-  const teamsAge = meta.teams_synced_at ? Date.now() - meta.teams_synced_at.toMillis() : Infinity;
-  if (!meta.season || teamsAge > TEAMS_TTL_MS) await syncTeams(db, api, meta);
-  if (meta.fixtures_date !== fb.istanbulDate()) {
-    await syncTodayFixtures(db, api, meta);
-    await cleanupOldMatches(db);
+  // Plan güncel sezonu kapsamıyorsa her 15 dakikada istek harcayıp hata vermek yerine 24 saat bekle.
+  if (meta.plan_blocked_until && meta.plan_blocked_until.toMillis() > Date.now()) {
+    log(`Plan bu sezonu kapsamıyor (${meta.plan_blocked_reason || ''}); ${meta.plan_blocked_until.toDate().toISOString()} tarihine kadar beklemede.`);
+    return;
   }
+  try {
+    const teamsAge = meta.teams_synced_at ? Date.now() - meta.teams_synced_at.toMillis() : Infinity;
+    if (!meta.season || teamsAge > TEAMS_TTL_MS) await syncTeams(db, api, meta);
+    if (meta.fixtures_date !== fb.istanbulDate()) await syncTodayFixtures(db, api, meta);
+  } catch (err) {
+    if (isPlanSeasonError(err)) {
+      await metaRef.set(
+        { plan_blocked_until: Timestamp.fromMillis(Date.now() + 24 * 3_600_000), plan_blocked_reason: err.message.slice(0, 200) },
+        { merge: true }
+      );
+      log(`Plan güncel sezonu kapsamıyor; 24 saat beklenecek. (${err.message})`);
+      return;
+    }
+    throw err;
+  }
+  if (meta.fixtures_date !== fb.istanbulDate()) await cleanupOldMatches(db);
 
   let active = await activeMatches(db);
   if (active.length === 0) {
@@ -167,6 +199,7 @@ async function watch(db, api, messaging, { sleep: wait_ = sleep } = {}) {
     if (messages.length) {
       const res = await messaging.sendEach(messages);
       log(`Bildirim: ${res.successCount} gönderildi, ${res.failureCount} hata`);
+      await logSentMessages(db, messages, res.responses);
     }
 
     active = await activeMatches(db);

@@ -35,7 +35,19 @@ service cloud.firestore {
       allow write: if false;
     }
 
-    // notify_state ve football_meta: yalnızca bot (Admin SDK) kullanır; uygulamaya kapalı.
+    // Gönderilen bildirimlerin kaydı (Bildirimler sekmesi) ve piyasa verileri
+    match /notifications/{id} {
+      allow get: if true;
+      allow list: if request.query.limit <= 100;
+      allow write: if false;
+    }
+
+    match /market/{id} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // notify_state, football_meta, app_meta: yalnızca bot (Admin SDK) kullanır; uygulamaya kapalı.
 
     match /users/{uid} {
       allow read, write: if request.auth != null && request.auth.uid == uid;

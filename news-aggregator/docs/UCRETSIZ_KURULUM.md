@@ -32,6 +32,12 @@ service cloud.firestore {
       allow list: if request.query.limit <= 50;
       allow write: if false;
     }
+    match /notifications/{id} {
+      allow get: if true;
+      allow list: if request.query.limit <= 100;
+      allow write: if false;
+    }
+    match /market/{id}         { allow read: if true;  allow write: if false; }
     match /football_teams/{id} { allow read: if true;  allow write: if false; }
     match /matches/{id}        { allow read: if true;  allow write: if false; }
     match /users/{uid}            { allow read, write: if request.auth != null && request.auth.uid == uid; }
@@ -52,6 +58,15 @@ Firestore → **Dizinler (Indexes)** → **Birleşik (Composite) → Dizin oluş
 | Sorgu kapsamı | **Koleksiyon (Collection)** |
 
 **Oluştur** → durumu birkaç dakika içinde "Etkin (Enabled)" olur.
+
+**Arama için ikinci dizin** (aynı ekranda bir dizin daha):
+
+| Alan | Değer |
+|---|---|
+| Koleksiyon kimliği | `articles` |
+| Alan 1 | `search_keywords` → **Diziler (Arrays)** / *Array contains* |
+| Alan 2 | `published_at` → **Azalan (Descending)** |
+| Sorgu kapsamı | **Koleksiyon (Collection)** |
 
 ## Adım 5 — Yönetici anahtarı (hizmet hesabı)
 1. Sol üstte ⚙️ **Proje ayarları → Hizmet hesapları (Service accounts)**.
