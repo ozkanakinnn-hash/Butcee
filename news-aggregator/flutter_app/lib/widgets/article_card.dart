@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../backend/schema/articles_record.dart';
 import '../l10n/app_strings.dart';
+import '../utils/storage.dart';
 import '../utils/time_ago.dart';
 
 /// Haber kartı.
@@ -41,6 +42,7 @@ class ArticleCard extends StatelessWidget {
     Widget image({double? memWidth}) => article.imageUrl.isEmpty
         ? placeholder
         : CachedNetworkImage(
+            cacheManager: AppStorage.images,
             imageUrl: article.imageUrl,
             fit: BoxFit.cover,
             memCacheWidth: memWidth?.toInt(),
@@ -162,6 +164,7 @@ class _Meta extends StatelessWidget {
         if (article.sourceLogoUrl.isNotEmpty) ...[
           ClipOval(
             child: CachedNetworkImage(
+              cacheManager: AppStorage.images,
               imageUrl: article.sourceLogoUrl,
               width: 16,
               height: 16,

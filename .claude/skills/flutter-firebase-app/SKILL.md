@@ -208,3 +208,12 @@ description: Flutter/FlutterFlow + Firebase (Firestore, Cloud Functions) uygulam
 - Geçiş reklamı yalnızca doğal geçişte (WebView kapanınca), N okumada bir + minimum aralık; açılış/çıkışta asla.
 - Testlerde reklam servisi başlatılmaz (`ready=false`) → reklam widget'ları boş; eklenti çağrısı yapılmaz.
 - Test sürümünde çıkan 'AdMob native ad validator' penceresi: manifest'e `com.google.android.gms.ads.flag.NATIVE_AD_DEBUGGER_ENABLED=false`. Kullanıcıya bunun SDK'nın geliştirici aracı olduğunu açıkla.
+
+## 13. Uygulama boyutu / bellek (kullanıcı "hafıza çok yüksek" dedi)
+- Debug APK ~99 MB (tüm ABI'ler + JIT); kullanıcıya test için `flutter build apk --release --split-per-abi
+  --target-platform android-arm64` ver (debug anahtarıyla imzalı, test reklam kimlikleri `--dart-define`).
+- Firestore çevrimdışı önbelleği varsayılan 100 MB → `Settings(cacheSizeBytes: 20 MB)` (Firebase init'ten hemen sonra,
+  ilk sorgudan önce). cached_network_image varsayılan 200 dosya/30 gün → özel `CacheManager(Config(..., 3 gün, 150))`,
+  tüm `CachedNetworkImage`'lara `cacheManager:`; `imageCache.maximumSizeBytes` 50 MB; `memCacheWidth` ile küçük çöz.
+- Kullanılmayan paketleri sil (cupertino_icons); Ayarlar'da önbellek boyutu + "Önbelleği temizle"
+  (görsel önbelleği, eski DefaultCacheManager, imageCache, WebView clearCache/clearLocalStorage).

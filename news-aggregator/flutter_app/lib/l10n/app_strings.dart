@@ -180,6 +180,13 @@ class S {
   String get ad => _t('Reklam', 'Ad');
   String get adPrivacy => _t('Reklam gizlilik seçenekleri', 'Ad privacy options');
 
+  // Depolama
+  String get storage => _t('Depolama', 'Storage');
+  String get clearCache => _t('Önbelleği temizle', 'Clear cache');
+  String cacheSize(String size) =>
+      _t('Önbellekte $size (haber görselleri ve sayfalar)', '$size cached (images and pages)');
+  String get cacheCleared => _t('Önbellek temizlendi', 'Cache cleared');
+
   // Firebase kurulmamış
   String get setupRequired => _t('Firebase yapılandırması bulunamadı', 'Firebase is not configured');
   String get setupRequiredDesc => _t(

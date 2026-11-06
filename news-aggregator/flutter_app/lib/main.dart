@@ -4,6 +4,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'ads/ads_service.dart';
 import 'app_settings.dart';
+import 'utils/storage.dart';
 import 'l10n/app_strings.dart';
 import 'pages/root_shell.dart';
 import 'pages/article_webview_page.dart';
@@ -20,6 +21,7 @@ Future<void> main() async {
   try {
     // android/app/google-services.json varsa seçenekler oradan okunur.
     await Firebase.initializeApp();
+    AppStorage.configure(); // Firestore ve görsel önbellek sınırları
   } catch (e) {
     debugPrint('Firebase başlatılamadı: $e');
     firebaseReady = false;
