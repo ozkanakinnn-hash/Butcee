@@ -8,7 +8,8 @@
 const crypto = require('node:crypto');
 const { decode } = require('html-entities');
 
-const SUMMARY_MAX_LENGTH = 300;
+// Telif: yalnızca kısa bir alıntı (1-2 cümle) saklanır; haberin tamamı kaynağın kendi sitesinde okunur.
+const SUMMARY_MAX_LENGTH = 200;
 
 /** Takip parametreleri: aynı haberin farklı URL'lerle iki kez kaydedilmesini önlemek için silinir. */
 const TRACKING_PARAMS = [

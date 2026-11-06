@@ -33,7 +33,11 @@ function buildNewsMessage({ categoryId, categoryName, articles, breaking = false
   const top = sorted[0];
   const more = sorted.length - 1;
   const title = breaking ? `⚡ Son Dakika` : categoryName;
-  const body = trimText(top.data.title, 160) + (!breaking && more > 0 ? `\nve ${more} haber daha` : '');
+  // Telif ve şeffaflık: her bildirimde haberin kaynağı belirtilir (ör. "Kaynak: AA").
+  const source = top.data.source_name ? `Kaynak: ${top.data.source_name}` : '';
+  const extra = !breaking && more > 0 ? `ve ${more} haber daha` : '';
+  const footer = [source, extra].filter(Boolean).join(' · ');
+  const body = trimText(top.data.title, 160 - (footer ? footer.length + 1 : 0)) + (footer ? `\n${footer}` : '');
   const image = top.data.image_url && top.data.has_original_image !== false ? top.data.image_url : undefined;
 
   return {

@@ -42,11 +42,34 @@ android {
             System.getenv("ADMOB_APP_ID") ?: "ca-app-pub-3940256099942544~3347511713"
     }
 
+    signingConfigs {
+        // Test dağıtımı (CI APK'ları) için SABİT anahtar. Önceden her CI makinesi rastgele bir debug anahtarı
+        // üretiyordu → her APK farklı imzalıydı ve telefondaki sürümün üzerine "Uygulama yüklenmedi" hatasıyla
+        // kurulamıyordu. Bu anahtar gizli değildir; Play Store'a yüklemede KULLANILMAZ (aşağıdaki "upload").
+        create("test") {
+            storeFile = file("test-signing.keystore")
+            storePassword = "haberakisi-test"
+            keyAlias = "test"
+            keyPassword = "haberakisi-test"
+        }
+        // Play Store yükleme anahtarı: GitHub Secrets'tan ortam değişkenleriyle (varsa).
+        val uploadStore = System.getenv("UPLOAD_KEYSTORE_PATH")
+        if (uploadStore != null && file(uploadStore).exists()) {
+            create("upload") {
+                storeFile = file(uploadStore)
+                storePassword = System.getenv("UPLOAD_KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("UPLOAD_KEY_ALIAS")
+                keyPassword = System.getenv("UPLOAD_KEY_PASSWORD")
+            }
+        }
+    }
+
     buildTypes {
+        debug {
+            signingConfig = signingConfigs.getByName("test")
+        }
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.findByName("upload") ?: signingConfigs.getByName("test")
             // R8 koruma kuralları (WorkManager/Room, bildirimler) — yoksa release açılışta çöker
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }

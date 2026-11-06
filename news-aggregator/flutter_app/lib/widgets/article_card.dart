@@ -46,6 +46,10 @@ class ArticleCard extends StatelessWidget {
             imageUrl: article.imageUrl,
             fit: BoxFit.cover,
             memCacheWidth: memWidth?.toInt(),
+            // Varsayılan 0,5 sn belirme + 1 sn yer tutucu sönmesi görselleri "geç geliyor" gösteriyordu.
+            fadeInDuration: const Duration(milliseconds: 120),
+            fadeOutDuration: Duration.zero,
+            placeholderFadeInDuration: Duration.zero,
             placeholder: (_, _) => placeholder,
             errorWidget: (_, _, _) => placeholder,
           );
@@ -168,6 +172,8 @@ class _Meta extends StatelessWidget {
               imageUrl: article.sourceLogoUrl,
               width: 16,
               height: 16,
+              memCacheWidth: 48,
+              fadeInDuration: Duration.zero,
               fit: BoxFit.cover,
               errorWidget: (_, _, _) => const SizedBox(width: 16, height: 16),
             ),
@@ -184,5 +190,19 @@ class _Meta extends StatelessWidget {
         ),
       ],
     );
+  }
+}
+
+/// Yeni gelen haberlerin görsellerini (ilk [count] tanesi) ekrana gelmeden önce diske indirir;
+/// kaydırınca görsel beklemeden hazır olur. Hatalar sessizce yok sayılır.
+void prefetchArticleImages(BuildContext context, Iterable<ArticlesRecord> articles, {int count = 10}) {
+  final urls = <String>{
+    for (final a in articles.take(count)) ...[
+      if (a.imageUrl.isNotEmpty) a.imageUrl,
+      if (a.sourceLogoUrl.isNotEmpty) a.sourceLogoUrl,
+    ],
+  };
+  for (final url in urls) {
+    AppStorage.images.getSingleFile(url).ignore(); // önbellekte varsa indirmez
   }
 }

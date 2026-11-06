@@ -54,8 +54,8 @@ class S {
   String get terms => _t('Kullanım Koşulları', 'Terms of Use');
   String get copyrightNotice => _t('Telif Hakkı Bildirimi (Uyar-Kaldır)', 'Copyright Notice (Takedown)');
   String get copyrightNoticeDesc => _t(
-    'İçeriğinizin kaldırılmasını istiyorsanız bize e-posta gönderin.',
-    'Email us to request removal of your content.',
+    'İçeriğinizin kaldırılmasını istiyorsanız bize e-posta gönderin; talepler en geç 48 saat içinde işleme alınır.',
+    'Email us to request removal of your content; requests are handled within 48 hours.',
   );
   String get copyrightMailSubject => _t('Telif hakkı - içerik kaldırma talebi', 'Copyright - takedown request');
   String get copyrightMailBody => _t(
