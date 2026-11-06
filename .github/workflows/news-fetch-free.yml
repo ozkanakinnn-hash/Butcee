@@ -26,8 +26,6 @@ jobs:
     defaults:
       run:
         working-directory: news-aggregator/firebase/functions
-    env:
-      GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/sa.json
     steps:
       - name: Anahtar kontrolü
         id: key
@@ -39,7 +37,10 @@ jobs:
             echo "::notice::FIREBASE_SERVICE_ACCOUNT eklenmemiş; çekim atlandı. docs/UCRETSIZ_KURULUM.md'ye bakın."
             echo "ready=false" >> "$GITHUB_OUTPUT"
           else
-            printf '%s' "$SA" > "$GOOGLE_APPLICATION_CREDENTIALS"
+            # Anahtar çalışma klasörünün dışına (RUNNER_TEMP) yazılır; sonraki adımlar yolu GITHUB_ENV'den alır.
+            KEY="$RUNNER_TEMP/sa.json"
+            printf '%s' "$SA" > "$KEY"
+            echo "GOOGLE_APPLICATION_CREDENTIALS=$KEY" >> "$GITHUB_ENV"
             echo "ready=true" >> "$GITHUB_OUTPUT"
           fi
 
@@ -68,4 +69,4 @@ jobs:
       - name: Anahtarı sil
         if: always()
         working-directory: .
-        run: rm -f "$GOOGLE_APPLICATION_CREDENTIALS"
+        run: rm -f "$RUNNER_TEMP/sa.json"
