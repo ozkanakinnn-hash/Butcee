@@ -6,6 +6,10 @@ description: Flutter/FlutterFlow + Firebase (Firestore, Cloud Functions) uygulam
 # Flutter + Firebase Uygulaması — Öğrenilenler (news-aggregator projesinden)
 
 ## 0. Kullanıcı kuralları (her uygulamada)
+- **PR'ları Claude birleştirir (kullanıcı izni, 2026-11-06):** CI (testler + APK derlemesi; release değiştiyse emülatör
+  açılış kontrolü) geçtikten sonra PR'ı aç ve `merge_pull_request` ile birleştir; kullanıcıya hangi PR'ı neyle
+  birleştirdiğini yaz. Varsayılan dal `main` değil olabilir (`git remote show origin`). Birleştirmeden sonra yeni iş için
+  dalı varsayılan daldan yeniden başlat (merge edilmiş geçmişe ekleme yapma).
 - **Türkçe + İngilizce** arayüz, Ayarlar'da dil seçici (Sistem/Türkçe/English). Flutter'da küçük `S` sınıfı
   (`S.of(context)`, `S.forLanguage('tr')`) + `flutter_localizations` + SharedPreferences ile kalıcı dil yeterli.
   FlutterFlow'da Settings → Languages (tr birincil, en ek) ve "Set App Language" aksiyonu.
