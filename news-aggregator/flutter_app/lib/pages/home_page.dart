@@ -190,7 +190,7 @@ class _MatchesStream extends StatefulWidget {
 }
 
 class _MatchesStreamState extends State<_MatchesStream> {
-  late List<int> _teams = widget.settings.followedTeams;
+  late List<String> _teams = widget.settings.followedTeams;
   late Stream<List<MatchRecord>> _stream = widget.repository.watchMatches(_teams);
 
   @override

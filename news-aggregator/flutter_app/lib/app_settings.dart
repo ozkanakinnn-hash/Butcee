@@ -112,12 +112,11 @@ class AppSettings extends ChangeNotifier {
   // ── Futbol ───────────────────────────────────────────────────────────────
   bool get followsFootball => interests.contains(footballCategoryId);
 
-  /// Takip edilen takımların API-Football kimlikleri.
-  List<int> get followedTeams =>
-      (_prefs.getStringList(_teamsKey) ?? const []).map(int.tryParse).whereType<int>().toList();
+  /// Takip edilen takım kimlikleri (`galatasaray`, `besiktas` …).
+  List<String> get followedTeams => _prefs.getStringList(_teamsKey) ?? const [];
 
-  Future<void> setFollowedTeams(List<int> ids) async {
-    await _prefs.setStringList(_teamsKey, ids.take(maxTeams).map((e) => '$e').toList());
+  Future<void> setFollowedTeams(List<String> ids) async {
+    await _prefs.setStringList(_teamsKey, ids.take(maxTeams).toList());
     notifyListeners();
   }
 

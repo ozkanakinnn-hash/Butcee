@@ -15,6 +15,9 @@
  */
 
 const { Timestamp } = require('firebase-admin/firestore');
+const { createTeamResolver } = require('./teams');
+
+const defaultResolver = createTeamResolver();
 
 const API_BASE = 'https://v3.football.api-sports.io';
 const SUPER_LIG_ID = 203;
@@ -58,14 +61,32 @@ function istanbulDate(date = new Date()) {
   return new Intl.DateTimeFormat('en-CA', { timeZone: TIMEZONE, year: 'numeric', month: '2-digit', day: '2-digit' }).format(date);
 }
 
-/** API fikstürünü Firestore `matches` belgesine çevirir (saf fonksiyon). */
-function matchDocFromFixture(f) {
+/**
+ * API fikstürünü Firestore `matches` belgesine çevirir (saf fonksiyon).
+ * Takım kimlikleri API sayısı değil, kendi kimliğimizdir (`galatasaray`); `resolve` adı kimliğe çevirir.
+ */
+function matchDocFromFixture(f, resolve = defaultResolver) {
+  const team = (t) => {
+    const id = resolve(t.name);
+    const known = resolve.team ? resolve.team(id) : null;
+    return {
+      id,
+      api_id: t.id,
+      name: known ? known.name : t.name,
+      short: known ? known.short : '',
+      colors: known ? known.colors : [],
+      logo: t.logo || '',
+    };
+  };
+  const home = team(f.teams.home);
+  const away = team(f.teams.away);
+  const keyForApiTeam = (apiId) => (apiId === home.api_id ? home.id : apiId === away.api_id ? away.id : null);
   const goalsEvents = (f.events || [])
     .filter((e) => e.type === 'Goal' && e.detail !== 'Missed Penalty')
     .map((e) => ({
       minute: (e.time && e.time.elapsed) || 0,
       extra: (e.time && e.time.extra) || 0,
-      team_id: e.team && e.team.id,
+      team_id: keyForApiTeam(e.team && e.team.id),
       player: (e.player && e.player.name) || '',
       detail: e.detail || '',
     }));
@@ -78,11 +99,11 @@ function matchDocFromFixture(f) {
       elapsed: f.fixture.status.elapsed ?? null,
     },
     league: { id: f.league.id, name: f.league.name, round: f.league.round || '' },
-    home: { id: f.teams.home.id, name: f.teams.home.name, logo: f.teams.home.logo || '' },
-    away: { id: f.teams.away.id, name: f.teams.away.name, logo: f.teams.away.logo || '' },
+    home,
+    away,
     goals: { home: f.goals.home ?? 0, away: f.goals.away ?? 0 },
     goal_events: goalsEvents,
-    team_ids: [f.teams.home.id, f.teams.away.id],
+    team_ids: [home.id, away.id],
     is_live: LIVE.has(f.fixture.status.short),
     is_finished: FINISHED.has(f.fixture.status.short),
   };
@@ -198,6 +219,7 @@ module.exports = {
   LIVE,
   istanbulDate,
   matchDocFromFixture,
+  defaultResolver,
   diffMatch,
   buildMatchMessage,
   pollIntervalMs,

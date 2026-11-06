@@ -106,12 +106,12 @@ test('bildirim kaydı: yeniler önce sıralanır, koşullu (iki takım) mesajın
   const { logEntryFromMessage, logId } = require('../src/notification-log');
   assert.ok(logId(2000, 'a') < logId(1000, 'a'), 'yeni kayıt kimliği alfabetik olarak önce gelmeli');
   const e = logEntryFromMessage({
-    condition: "'team_645' in topics || 'team_611' in topics",
+    condition: "'team_galatasaray' in topics || 'team_fenerbahce' in topics",
     notification: { title: '⚽ GOL!', body: "67' Icardi" },
     data: { type: 'match', fixture_id: '77' },
     android: { notification: { channelId: 'goals' } },
   }, { now: NOW });
-  assert.deepEqual(e.data.topics, ['team_645', 'team_611']);
+  assert.deepEqual(e.data.topics, ['team_galatasaray', 'team_fenerbahce']);
   assert.equal(e.data.type, 'match');
   assert.equal(e.data.fixture_id, '77');
   assert.equal(e.data.channel, 'goals');

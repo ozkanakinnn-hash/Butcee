@@ -22,7 +22,10 @@ test('fikstür → maç belgesi', () => {
   const m = fb.matchDocFromFixture(fixture({ status: '1H', elapsed: 23, home: 1, events: [goal(12, 645, 'M. Icardi'), goal(20, 611, 'X', 'Missed Penalty')] }));
   assert.equal(m.fixture_id, 1001);
   assert.deepEqual(m.goals, { home: 1, away: 0 });
-  assert.deepEqual(m.team_ids, [645, 611]);
+  assert.deepEqual(m.team_ids, ['galatasaray', 'fenerbahce']);
+  assert.equal(m.home.api_id, 645);
+  assert.equal(m.home.short, 'GS');
+  assert.equal(m.goal_events[0].team_id, 'galatasaray', 'gol olayı da kendi kimliğimize çevrilir');
   assert.equal(m.is_live, true);
   assert.equal(m.goal_events.length, 1, 'kaçan penaltı gol sayılmaz');
   assert.equal(m.kickoff.toDate().toISOString(), '2026-11-08T14:00:00.000Z');
@@ -62,7 +65,7 @@ test('olaylar: başlama, gol (atanla), devre, ikinci yarı, iptal, bitiş', () =
 test('gol bildirimi: iki takımın konusuna tek mesaj, gol kanalı ve sesi', () => {
   const m = fb.matchDocFromFixture(fixture({ status: '2H', elapsed: 67, home: 2, away: 1, events: [goal(12, 645, 'A'), goal(30, 611, 'B'), goal(67, 645, 'M. Icardi', 'Penalty', 2)] }));
   const msg = fb.buildMatchMessage({ type: 'goal', side: 'home', scorer: m.goal_events[2] }, m);
-  assert.equal(msg.condition, "'team_645' in topics || 'team_611' in topics");
+  assert.equal(msg.condition, "'team_galatasaray' in topics || 'team_fenerbahce' in topics");
   assert.equal(msg.notification.title, '⚽ GOL! Galatasaray 2-1 Fenerbahçe');
   assert.equal(msg.notification.body, "67+2' M. Icardi (pen.) — Galatasaray");
   assert.equal(msg.android.notification.channelId, 'goals');
@@ -100,4 +103,18 @@ test('API istemcisi: anahtar, kalan istek ve API hata mesajı', async () => {
 
   const planErr = async () => new Response(JSON.stringify({ errors: { plan: 'Free plans do not have access to this season, try from 2021 to 2023.' }, response: [] }));
   await assert.rejects(new fb.ApiFootball({ key: 'k', fetchImpl: planErr }).get('/fixtures'), /Free plans do not have access/);
+});
+
+test('takım çözücü: API adları kendi kimliğimize eşlenir, bilinmeyen takım kimlik alır', () => {
+  const { createTeamResolver, teamKeyText } = require('../src/teams');
+  const r = createTeamResolver();
+  assert.equal(r('Besiktas'), 'besiktas');
+  assert.equal(r('Beşiktaş JK'), 'besiktas');
+  assert.equal(r('Istanbul Basaksehir'), 'basaksehir');
+  assert.equal(r('Caykur Rizespor'), 'rizespor');
+  assert.equal(r('Fatih Karagümrük'), 'karagumruk');
+  assert.equal(r('Sivasspor'), 'sivasspor');
+  assert.equal(r('Adana Demirspor AS'), 'adana-demirspor');
+  assert.equal(teamKeyText('Gaziantep FK'), 'gaziantep');
+  assert.equal(r.team('galatasaray').short, 'GS');
 });

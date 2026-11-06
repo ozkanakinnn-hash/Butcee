@@ -5,6 +5,7 @@ import '../app_settings.dart';
 import '../backend/news_repository.dart';
 import '../backend/schema/football_records.dart';
 import '../l10n/app_strings.dart';
+import '../utils/search_text.dart';
 
 /// Futbol ilgi alanı için takım seçimi (en fazla [AppSettings.maxTeams]). Seçim anında kaydedilir.
 class TeamPickerPage extends StatefulWidget {
@@ -19,10 +20,10 @@ class TeamPickerPage extends StatefulWidget {
 
 class _TeamPickerPageState extends State<TeamPickerPage> {
   late final _teams = widget.repository.watchTeams();
-  late final List<int> _selected = List.of(widget.settings.followedTeams);
+  late final List<String> _selected = List.of(widget.settings.followedTeams);
   String _query = '';
 
-  void _toggle(int id) {
+  void _toggle(String id) {
     final s = S.of(context);
     setState(() {
       if (_selected.contains(id)) {
@@ -51,11 +52,11 @@ class _TeamPickerPageState extends State<TeamPickerPage> {
         stream: _teams,
         builder: (context, snap) {
           if (!snap.hasData) return const Center(child: CircularProgressIndicator());
-          final q = _query.toLowerCase();
-          final teams = snap.data!.where((t) => q.isEmpty || t.name.toLowerCase().contains(q)).toList()
+          final q = foldForSearch(_query);
+          final teams = snap.data!.where((t) => q.isEmpty || foldForSearch('${t.name} ${t.short}').contains(q)).toList()
             ..sort((a, b) {
               final sa = _selected.contains(a.id), sb = _selected.contains(b.id);
-              return sa == sb ? a.name.compareTo(b.name) : (sa ? -1 : 1);
+              return sa == sb ? foldForSearch(a.name).compareTo(foldForSearch(b.name)) : (sa ? -1 : 1);
             });
           return CustomScrollView(
             slivers: [
@@ -98,7 +99,7 @@ class _TeamPickerPageState extends State<TeamPickerPage> {
                       padding: const EdgeInsets.fromLTRB(20, 10, 16, 10),
                       child: Row(
                         children: [
-                          TeamLogo(url: t.logo, size: 30),
+                          TeamLogo(url: t.logo, short: t.short, colors: t.colors, size: 34),
                           const SizedBox(width: 18),
                           Expanded(
                             child: Text(
@@ -130,24 +131,73 @@ class _TeamPickerPageState extends State<TeamPickerPage> {
   }
 }
 
-/// Takım logosu (yoksa kalkan ikonu).
+/// Takım rozeti: logo varsa logo, yoksa kulüp renklerinde kısa ad (GS, FB, BJK…).
 class TeamLogo extends StatelessWidget {
-  const TeamLogo({super.key, required this.url, this.size = 28});
+  const TeamLogo({super.key, required this.url, this.short = '', this.colors = const [], this.size = 28});
 
   final String url;
+  final String short;
+  final List<Color> colors;
   final double size;
 
   @override
   Widget build(BuildContext context) {
-    final fallback = Icon(Icons.shield_outlined, size: size, color: Theme.of(context).colorScheme.onSurfaceVariant);
-    if (url.isEmpty) return fallback;
+    final theme = Theme.of(context);
+    final badge = colors.isEmpty && short.isEmpty
+        ? Icon(Icons.shield_outlined, size: size, color: theme.colorScheme.onSurfaceVariant)
+        : _Badge(short: short, colors: colors, size: size);
+    if (url.isEmpty) return badge;
     return CachedNetworkImage(
       imageUrl: url,
       width: size,
       height: size,
       fit: BoxFit.contain,
-      placeholder: (_, _) => SizedBox(width: size, height: size),
-      errorWidget: (_, _, _) => fallback,
+      placeholder: (_, _) => badge,
+      errorWidget: (_, _, _) => badge,
+    );
+  }
+}
+
+class _Badge extends StatelessWidget {
+  const _Badge({required this.short, required this.colors, required this.size});
+
+  final String short;
+  final List<Color> colors;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    final c1 = colors.isNotEmpty ? colors[0] : Theme.of(context).colorScheme.surfaceContainerHighest;
+    final c2 = colors.length > 1 ? colors[1] : c1;
+    final text = c1.computeLuminance() > 0.5 ? Colors.black : Colors.white;
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        // Çapraz iki renk (kulüp renkleri)
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [c1, c1, c2, c2],
+          stops: const [0, 0.5, 0.5, 1],
+        ),
+        border: Border.all(color: Colors.white24, width: 1),
+      ),
+      alignment: Alignment.center,
+      child: Padding(
+        padding: EdgeInsets.all(size * 0.12),
+        child: FittedBox(
+          child: Text(
+            short,
+            style: TextStyle(
+              color: text,
+              fontWeight: FontWeight.w900,
+              shadows: [Shadow(color: c1.computeLuminance() > 0.5 ? Colors.white : Colors.black54, blurRadius: 2)],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

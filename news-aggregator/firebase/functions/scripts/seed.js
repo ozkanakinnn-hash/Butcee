@@ -42,8 +42,18 @@ async function main() {
     );
   }
 
+  // Süper Lig takımları (API anahtarı olmadan da seçilebilsin)
+  const { SUPER_LIG_TEAMS } = require('../src/teams');
+  for (const t of SUPER_LIG_TEAMS) {
+    batch.set(
+      db.collection('football_teams').doc(t.id),
+      { name: t.name, short: t.short, colors: t.colors, league_id: 203, active: true },
+      { merge: true }
+    );
+  }
+
   await batch.commit();
-  console.log(`✔ ${data.categories.length} kategori ve ${data.sources.length} kaynak yazıldı.`);
+  console.log(`✔ ${data.categories.length} kategori, ${data.sources.length} kaynak ve Süper Lig takımları yazıldı.`);
 }
 
 main().catch((err) => {

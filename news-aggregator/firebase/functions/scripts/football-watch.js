@@ -56,24 +56,39 @@ async function currentSeason(api) {
   return s.year;
 }
 
+/**
+ * Güncel sezonun takımlarını yazar: listedeki takımlara API kimliği ve logo eklenir, listede olmayan
+ * (yeni çıkan) takımlar oluşturulur, bu sezon ligde olmayanlar `active: false` yapılır.
+ */
 async function syncTeams(db, api, meta) {
   const season = await currentSeason(api);
   const teams = await api.get('/teams', { league: fb.SUPER_LIG_ID, season });
+  const resolve = fb.defaultResolver;
+  const seen = new Set();
   const batch = db.batch();
   for (const t of teams) {
-    batch.set(db.doc(`football_teams/${t.team.id}`), {
-      name: t.team.name,
-      code: t.team.code || '',
+    const id = resolve(t.team.name);
+    seen.add(id);
+    const known = resolve.team(id);
+    batch.set(db.doc(`football_teams/${id}`), {
+      ...(known ? {} : { name: t.team.name, short: t.team.code || '', colors: [] }),
+      api_id: t.team.id,
+      api_name: t.team.name,
       logo: t.team.logo || '',
       league_id: fb.SUPER_LIG_ID,
       season,
+      active: true,
       updated_at: Timestamp.now(),
     }, { merge: true });
+  }
+  const existing = await db.collection('football_teams').get();
+  for (const d of existing.docs) {
+    if (!seen.has(d.id)) batch.set(d.ref, { active: false }, { merge: true });
   }
   batch.set(db.doc('football_meta/state'), { season, teams_synced_at: Timestamp.now() }, { merge: true });
   await batch.commit();
   meta.season = season;
-  log(`Takımlar güncellendi: ${teams.length} takım (sezon ${season})`);
+  log(`Takımlar güncellendi: ${teams.length} takım (sezon ${season}); ligde olmayan: ${existing.docs.filter((d) => !seen.has(d.id)).map((d) => d.id).join(', ') || '-'}`);
 }
 
 async function syncTodayFixtures(db, api, meta) {

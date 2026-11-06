@@ -61,16 +61,16 @@ class NewsRepository {
     );
   }
 
-  /// Süper Lig takımları (ada göre).
-  Stream<List<TeamRecord>> watchTeams() => _db
-      .collection('football_teams')
-      .orderBy('name')
-      .snapshots()
-      .map((qs) => qs.docs.map(TeamRecord.fromSnapshot).toList());
+  /// Süper Lig takımları (bu sezon ligde olanlar, Türkçe alfabeye göre).
+  Stream<List<TeamRecord>> watchTeams() => _db.collection('football_teams').snapshots().map((qs) {
+    final list = qs.docs.map(TeamRecord.fromSnapshot).where((t) => t.active).toList();
+    list.sort((a, b) => foldForSearch(a.name).compareTo(foldForSearch(b.name)));
+    return list;
+  });
 
   /// Takip edilen takımların son/sıradaki maçları (bot 3 günden eskileri siler).
   /// arrayContainsAny en fazla 10 değer alır; sıralama istemcide yapılır (ek dizin gerekmez).
-  Stream<List<MatchRecord>> watchMatches(List<int> teamIds) {
+  Stream<List<MatchRecord>> watchMatches(List<String> teamIds) {
     if (teamIds.isEmpty) return Stream.value(const []);
     return _db
         .collection('matches')

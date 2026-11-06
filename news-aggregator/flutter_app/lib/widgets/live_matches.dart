@@ -60,7 +60,7 @@ class MatchCard extends StatelessWidget {
 
     Widget row(MatchTeam t, int goals) => Row(
       children: [
-        TeamLogo(url: t.logo, size: 20),
+        TeamLogo(url: t.logo, short: t.short, colors: t.colors, size: 20),
         const SizedBox(width: 8),
         Expanded(
           child: Text(

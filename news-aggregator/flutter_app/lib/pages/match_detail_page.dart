@@ -27,7 +27,7 @@ class MatchDetailPage extends StatelessWidget {
           Widget team(MatchTeam t) => Expanded(
             child: Column(
               children: [
-                TeamLogo(url: t.logo, size: 64),
+                TeamLogo(url: t.logo, short: t.short, colors: t.colors, size: 64),
                 const SizedBox(height: 10),
                 Text(
                   t.name,

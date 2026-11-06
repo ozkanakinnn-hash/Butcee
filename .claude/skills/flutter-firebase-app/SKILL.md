@@ -183,3 +183,7 @@ description: Flutter/FlutterFlow + Firebase (Firestore, Cloud Functions) uygulam
   sonra CI'da `flutter build apk` sonucuna bak. Çözüm: eklentiyi kaldır; bildirim izni `FirebaseMessaging.requestPermission`
   + `getNotificationSettings`, ayarları açmak `Geolocator.openAppSettings()`. Android'de iki retten sonra sistem penceresi
   çıkmaz → sayacı prefs'te tut, "engellendi" say ve ayarları aç.
+- **Dış API kimliğine bağlanma:** takım listesi API anahtarına bağlıydı → anahtar yokken seçim ekranı boş kaldı.
+  Varlıkları KENDİ kimliğinle (`galatasaray`) sabit listeyle tohumla; API adlarını takma ad tablosu + Türkçe katlama ile
+  bu kimliğe eşle (bilinmeyen ad → addan kimlik). Bildirim konusu ve kullanıcı seçimi API değişse de bozulmaz.
+  Logo yerine kulüp renklerinde kısa ad rozeti (marka/logo riski yok). Ligden düşenler `active:false`.
