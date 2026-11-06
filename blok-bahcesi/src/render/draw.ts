@@ -273,10 +273,10 @@ function drawIce(ctx: C2D, s: number, hp: number) {
 }
 
 function drawSoil(ctx: C2D, s: number, seed: number) {
-  bevelTile(ctx, s, '#8a5a35', 0.03);
+  bevelTile(ctx, s, '#b98a66', 0.03);
   const r = rng(seed * 7 + 3);
   for (let i = 0; i < 7; i++) {
-    ctx.fillStyle = r() > 0.5 ? 'rgba(60,35,18,0.45)' : 'rgba(200,150,100,0.35)';
+    ctx.fillStyle = r() > 0.5 ? 'rgba(110,70,45,0.4)' : 'rgba(255,225,190,0.45)';
     ctx.beginPath();
     ctx.arc(s * (0.18 + r() * 0.64), s * (0.25 + r() * 0.55), s * (0.03 + r() * 0.04), 0, Math.PI * 2);
     ctx.fill();
@@ -336,7 +336,7 @@ function render(cell: Cell, s: number, symbols: boolean, variant: number, ctx: C
     case 'soil': drawSoil(ctx, s, variant % 4 + 1); break;
     case 'rock': drawRock(ctx, s); break;
     case 'animal':
-      bevelTile(ctx, s, '#cfe6a8', 0.04);
+      bevelTile(ctx, s, '#d9f5c8', 0.04);
       drawAnimal(ctx, cell.a, s / 2, s / 2, s * 0.8);
       break;
     case 'seed':

@@ -46,8 +46,8 @@ export const REWARDS = {
 
 /** Kritik eşikler: toplam yıldız ve tamamlanan bölüm sayısı. */
 export const MILESTONES: { key: string; kind: 'stars' | 'levels'; at: number; reward: number }[] = [
-  ...[10, 25, 45, 70, 100, 130, 160].map((at, i) => ({ key: `s${at}`, kind: 'stars' as const, at, reward: [10, 15, 20, 25, 35, 45, 60][i] })),
-  ...[10, 20, 30, 40, 50, 60].map((at) => ({ key: `l${at}`, kind: 'levels' as const, at, reward: 20 + at / 2 })),
+  ...[10, 25, 45, 70, 100, 130, 160, 200, 240, 280].map((at, i) => ({ key: `s${at}`, kind: 'stars' as const, at, reward: [10, 15, 20, 25, 35, 45, 60, 70, 85, 100][i] })),
+  ...[10, 20, 30, 40, 50, 60, 70, 80, 90, 100].map((at) => ({ key: `l${at}`, kind: 'levels' as const, at, reward: 20 + at / 2 })),
 ];
 
 export function dueMilestones(claimed: string[], stars: number, levelsDone: number) {

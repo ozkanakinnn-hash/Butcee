@@ -188,7 +188,7 @@ export function playScreen(router: Router, opts: PlayOpts): Screen {
 
   // ---------- yerleşim ----------
   function resize() {
-    dpr = Math.min(2.5, window.devicePixelRatio || 1);
+    dpr = Math.min(3, window.devicePixelRatio || 1);
     w = el.clientWidth || window.innerWidth;
     hgt = el.clientHeight || window.innerHeight;
     canvas.width = Math.round(w * dpr);
@@ -481,20 +481,50 @@ export function playScreen(router: Router, opts: PlayOpts): Screen {
   // ---------- giriş ----------
   let drag: { id: number; x0: number; y0: number; col0: number; t0: number; moved: boolean } | null = null;
 
+  /** Seçili parça yoksa: son kullanılan yuva ya da ilk dolu yuva. */
+  function autoSelect() {
+    const hand = game.state.hand;
+    const i = hand[lastSlot] ? lastSlot : hand.findIndex((p) => p);
+    if (i >= 0) selectSlot(i);
+  }
+
+  // Eldeki parçaya: tek dokunuş seçer (seçiliyse döndürür), ÇİFT dokunuş seçip bırakır.
+  let slotTap: { i: number; t: number; timer: number | null } | null = null;
+  function tapSlot(i: number) {
+    const now = performance.now();
+    if (slotTap && slotTap.i === i && now - slotTap.t < DOUBLE_TAP_MS) {
+      if (slotTap.timer !== null) clearTimeout(slotTap.timer);
+      slotTap = null;
+      if (sel !== i) selectSlot(i);
+      sfx.drop2();
+      doDrop();
+      return;
+    }
+    if (slotTap?.timer) clearTimeout(slotTap.timer);
+    if (sel === i) {
+      // zaten seçili: döndürmeyi çift dokunuş penceresi kadar beklet
+      slotTap = { i, t: now, timer: window.setTimeout(() => { slotTap = null; rotate(); }, DOUBLE_TAP_MS) };
+    } else {
+      selectSlot(i);
+      slotTap = { i, t: now, timer: null };
+    }
+  }
+
   canvas.addEventListener('pointerdown', (e) => {
     const rect = canvas.getBoundingClientRect();
     const x = e.clientX - rect.left, y = e.clientY - rect.top;
     const slot = view.hitHand(x, y);
-    if (slot !== null) { selectSlot(slot); return; }
-    if (blocked() || sel === null || !view.inPlayArea(x, y)) return;
+    if (slot !== null) { if (!blocked()) tapSlot(slot); return; }
+    if (blocked() || !view.inPlayArea(x, y)) return;
     canvas.setPointerCapture(e.pointerId);
     drag = { id: e.pointerId, x0: x, y0: y, col0: col, t0: performance.now(), moved: false };
   });
   canvas.addEventListener('pointermove', (e) => {
-    if (!drag || e.pointerId !== drag.id || blocked()) return;
+    if (!drag || e.pointerId !== drag.id || blocked() || sel === null) return;
     const rect = canvas.getBoundingClientRect();
     const dx = e.clientX - rect.left - drag.x0, dy = e.clientY - rect.top - drag.y0;
-    if (Math.abs(dx) > 8 || Math.abs(dy) > 8) drag.moved = true;
+    const slop = Math.max(14, view.cell * 0.35); // parmak titremesi dokunuşu sürüklemeye çevirmesin
+    if (Math.abs(dx) > slop || Math.abs(dy) > slop) drag.moved = true;
     if (Math.abs(dy) > view.cell * 0.9 && Math.abs(dy) > Math.abs(dx) * 1.3) return; // aşağı kaydırma niyeti
     moveTo(drag.col0 + Math.round(dx / view.cell));
   });
@@ -511,7 +541,7 @@ export function playScreen(router: Router, opts: PlayOpts): Screen {
   };
 
   // Tek dokunuş: parçaya → döndür, tahtaya → o sütuna taşı. Çift dokunuş: (o sütuna taşı ve) BIRAK.
-  const DOUBLE_TAP_MS = 260;
+  const DOUBLE_TAP_MS = 420;
   let pendingTap: { t: number; x: number; y: number; timer: number } | null = null;
   const onPiece = (x: number, y: number) => {
     const pr = pieceRect();
@@ -528,16 +558,25 @@ export function playScreen(router: Router, opts: PlayOpts): Screen {
   function handleTap(x: number, y: number) {
     const now = performance.now();
     if (pendingTap && now - pendingTap.t < DOUBLE_TAP_MS && Math.hypot(x - pendingTap.x, y - pendingTap.y) < view.cell * 1.5) {
-      clearTimeout(pendingTap.timer);
+      if (pendingTap.timer) clearTimeout(pendingTap.timer);
       pendingTap = null;
+      if (sel === null) autoSelect();
       if (!onPiece(x, y) && inBoardX(x)) moveTo(colAt(x));
       sfx.drop2();
       doDrop();
       return;
     }
     if (pendingTap) clearTimeout(pendingTap.timer);
-    pendingTap = { t: now, x, y, timer: window.setTimeout(() => { pendingTap = null; singleTap(x, y); }, DOUBLE_TAP_MS) };
+    // Tahtaya tek dokunuş sütunu HEMEN taşır (gecikme yok); yalnızca parçanın üstüne dokunuş (döndürme)
+    // çift dokunuş penceresi kadar bekletilir ki çift dokunuş yanlışlıkla döndürmesin.
+    if (sel !== null && !onPiece(x, y) && inBoardX(x)) {
+      moveTo(colAt(x));
+      pendingTap = { t: now, x, y, timer: 0 };
+    } else {
+      pendingTap = { t: now, x, y, timer: window.setTimeout(() => { pendingTap = null; singleTap(x, y); }, DOUBLE_TAP_MS) };
+    }
   }
+
   canvas.addEventListener('pointerup', endDrag);
   canvas.addEventListener('pointercancel', endDrag);
 

@@ -4,7 +4,7 @@ import { Capacitor } from '@capacitor/core';
 import { setLang } from './i18n';
 import { drawBackground } from './render/background';
 import { save } from './storage';
-import { unlockAudio } from './audio';
+import { music, sfx, unlockAudio } from './audio';
 import { Router } from './ui/router';
 import { menuScreen } from './ui/menu';
 import { pgStatus, signIn, submitGardenScore } from './playgames';
@@ -18,7 +18,7 @@ bg.id = 'bg';
 app.append(bg);
 
 function paintBg() {
-  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  const dpr = Math.min(3, window.devicePixelRatio || 1);
   const w = window.innerWidth, h = window.innerHeight;
   bg.width = w * dpr;
   bg.height = h * dpr;
@@ -39,7 +39,12 @@ if (Capacitor.isNativePlatform()) {
 window.addEventListener('keydown', (e) => {
   if (e.key === 'Escape' || e.key === 'Backspace') router.back();
 });
-window.addEventListener('pointerdown', unlockAudio, { once: true });
+window.addEventListener('pointerdown', unlockAudio, { capture: true });
+// Tüm düğmelere tık sesi
+document.addEventListener('click', (e) => {
+  const b = (e.target as HTMLElement).closest?.('button');
+  if (b && !b.disabled && !b.classList.contains('node')) sfx.click();
+}, true);
 document.addEventListener('contextmenu', (e) => e.preventDefault());
 
 // Play Games: platform kimliğiyle sessiz giriş (yapılandırılmışsa)
@@ -47,3 +52,6 @@ void (async () => {
   const st = await pgStatus();
   if (st === 'signed_out' || st === 'ready') { if (await signIn()) await submitGardenScore(); }
 })();
+
+// Açılışta müzik (Android WebView'de kullanıcı hareketi gerekmez; tarayıcıda ilk dokunuşta başlar)
+music.play('calm');

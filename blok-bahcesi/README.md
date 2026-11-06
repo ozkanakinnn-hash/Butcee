@@ -23,7 +23,8 @@ npm run build      # dist/
 - **Elmas ekonomisi**: kritik eşikler, boss/kurtarma ödülleri, ödüllü reklam (AdMob, test kimlikleri). Harcama: geri alma, +5 hamle, suyu çekme, bahçe objeleri, ev geliştirme.
 - **Bahçem**: 5 seviyeli ev, 12 obje, 8 yuva, mağaza.
 - **Bahçe Ligi**: Google Play Games kimliği + sıralama; ilk üçe madalya, bahçelerini ziyaret (bahçe, skor etiketine 64 karakterle kodlanır).
-- **60 bölüm** (21–60 üretilip bot ile kalibre edildi), prosedürel müzik, çift dokunuşla bırakma.
+- **100 bölüm + 10 Bahçıvanı Kurtar** (21–100 üretilip bot ile kalibre edildi), prosedürel müzik, çift dokunuşla bırakma.
+- **v0.3**: pastel tema, telefon hoparlörüne uygun daha yüksek ses (kompresörlü), açılışta müzik, düğme sesleri, güvenilir çift dokunuş (elde ya da tahtada).
 
 ### Bölüm kalibrasyonu
 ```bash

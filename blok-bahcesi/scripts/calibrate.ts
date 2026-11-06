@@ -9,9 +9,9 @@ import { LEVELS_BASE, RESCUE_MAPS } from '../src/levels-base';
 import type { LevelDef } from '../src/game/types';
 
 const N = 40;
-const LAST = 60;
-/** Hedef bot kazanma oranı: 1. bölüm ~%98 → 60. bölüm ~%55, boss biraz daha zor. */
-export const target = (id: number, boss: boolean) => 0.98 - ((id - 1) / (LAST - 1)) * 0.43 - (boss ? 0.05 : 0);
+const LAST = 100;
+/** Hedef bot kazanma oranı: 1. bölüm ~%98 → 100. bölüm ~%50, boss biraz daha zor. */
+export const target = (id: number, boss: boolean) => 0.98 - ((id - 1) / (LAST - 1)) * 0.48 - (boss ? 0.05 : 0);
 
 function needed(l: LevelDef, n = N): number[] {
   const out: number[] = [];
@@ -73,7 +73,7 @@ for (let id = LEVELS_BASE.length + 1; id <= LAST; id++) {
 // Kurtarma bölümleri: su hızını hedef orana göre seç.
 const rescue: LevelDef[] = [];
 RESCUE_MAPS.forEach((r, i) => {
-  const t = [0.95, 0.85, 0.85, 0.6, 0.6, 0.6][i] ?? 0.6;
+  const t = [0.95, 0.85, 0.85, 0.6, 0.6, 0.6, 0.55, 0.55, 0.5, 0.5][i] ?? 0.5;
   let pick: LevelDef | null = null;
   let best: { l: LevelDef; rate: number } | null = null;
   for (let every = 1; every <= 10 && !pick; every++) {

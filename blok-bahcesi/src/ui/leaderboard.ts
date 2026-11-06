@@ -126,7 +126,7 @@ export function visitGardenScreen(router: Router, name: string, g: GardenSnapsho
       h('span', { class: 'chip' }, animalIcon('ladybug'), String(g.animals.ladybug)),
       h('span', { class: 'chip' }, iconCanvas('seeds', 22), String(g.sprouts)),
     )));
-  const resize = () => { dpr = Math.min(2, devicePixelRatio || 1); w = el.clientWidth; hh = el.clientHeight; canvas.width = w * dpr; canvas.height = hh * dpr; };
+  const resize = () => { dpr = Math.min(3, devicePixelRatio || 1); w = el.clientWidth; hh = el.clientHeight; canvas.width = w * dpr; canvas.height = hh * dpr; };
   const loop = (now: number) => {
     const ctx = canvas.getContext('2d')!;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);

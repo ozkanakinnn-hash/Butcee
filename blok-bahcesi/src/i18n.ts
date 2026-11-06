@@ -190,6 +190,14 @@ const TR = {
   'map.chapter.4': 'Hasat Tarlası',
   'map.chapter.5': 'Sonbahar Korusu',
   'map.chapter.6': 'Kış Serası',
+  'map.chapter.7': 'Lavanta Tarlası',
+  'map.chapter.8': 'Kiraz Bahçesi',
+  'map.chapter.9': 'Ay Işığı Bahçesi',
+  'map.chapter.10': 'Gökkuşağı Vadisi',
+  'rescue.t7': 'Buzlu Çatı',
+  'rescue.t8': 'Kaya Zindanı',
+  'rescue.t9': 'Ot Labirenti',
+  'rescue.t10': 'Son Büyük Kurtarma',
   'hint.doubletap': 'İpucu: Tahtaya iki kez hızlıca dokunursan parça oraya bırakılır.',
 };
 
@@ -336,6 +344,14 @@ const EN: Record<Key, string> = {
   'map.chapter.4': 'Harvest Field',
   'map.chapter.5': 'Autumn Grove',
   'map.chapter.6': 'Winter Greenhouse',
+  'map.chapter.7': 'Lavender Field',
+  'map.chapter.8': 'Cherry Orchard',
+  'map.chapter.9': 'Moonlight Garden',
+  'map.chapter.10': 'Rainbow Valley',
+  'rescue.t7': 'Icy Roof',
+  'rescue.t8': 'Rock Dungeon',
+  'rescue.t9': 'Weed Maze',
+  'rescue.t10': 'The Final Rescue',
   'hint.doubletap': 'Tip: double-tap the board to drop the piece there.',
 };
 

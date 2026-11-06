@@ -35,7 +35,7 @@ export function mapScreen(router: Router): Screen {
       const a = pos[i - 1], b = pos[i];
       d += ` C ${a.x} ${a.y - SPACING / 2}, ${b.x} ${b.y + SPACING / 2}, ${b.x} ${b.y}`;
     }
-    for (const [stroke, width, dash] of [['#4a2c19', 16, ''], ['#e6c48f', 10, ''], ['#c99a62', 3, '2 5']] as const) {
+    for (const [stroke, width, dash] of [['#cdb6e8', 18, ''], ['#ffffff', 11, ''], ['#e2cff5', 3, '2 6']] as const) {
       const p = document.createElementNS(ns, 'path');
       p.setAttribute('d', d);
       p.setAttribute('fill', 'none');

@@ -80,7 +80,7 @@ export function openEarnDialog(parent: HTMLElement) {
   const left = adsLeftToday(dateKey());
   const ov = h('div', { class: 'overlay', onclick: (e: MouseEvent) => { if (e.target === ov) ov.remove(); } });
   const adBtn = h('button', { class: 'btn orange', disabled: left <= 0, onclick: async () => { ov.remove(); await watchAdForDiamonds(parent); } },
-    '▶ ', t('ad.watch'), h('span', { class: 'chip', style: { color: '#fff', fontSize: '14px' } }, diamondIcon(18), `+${REWARDS.ad}`));
+    '▶ ', t('ad.watch'), h('span', { class: 'chip', style: { fontSize: '14px' } }, diamondIcon(18), `+${REWARDS.ad}`));
   ov.append(h('div', { class: 'panel' },
     h('h2', {}, t('earn.title')),
     h('div', { class: 'gem-total' }, diamondIcon(40), String(save.diamonds)),

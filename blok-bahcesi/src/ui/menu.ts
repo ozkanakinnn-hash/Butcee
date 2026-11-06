@@ -74,7 +74,7 @@ export function menuScreen(router: Router): Screen {
       h('div', { class: 'logo' }, h('div', { class: 'hero' }, hero.el, bubble), h('h1', {}, t('app.title'))),
       h('div', { class: 'menu-list' },
         h('button', { class: 'btn green', style: { minHeight: '62px', fontSize: '24px' }, onclick: go(() => router.push(mapScreen(router))) },
-          t('menu.adventure'), h('span', { class: 'chip', style: { fontSize: '15px', color: '#fff' } }, star, String(totalStars()))),
+          t('menu.adventure'), h('span', { class: 'chip', style: { fontSize: '15px' } }, star, String(totalStars()))),
         h('div', { class: 'menu-row' },
           h('button', { class: 'btn orange', onclick: go(() => router.push(dailyScreen(router))) }, iconCanvas('seeds', 24), t('menu.daily')),
           h('button', { class: 'btn', onclick: go(() => router.push(gardenScreen(router))) }, iconCanvas('animals', 24), t('menu.garden')),

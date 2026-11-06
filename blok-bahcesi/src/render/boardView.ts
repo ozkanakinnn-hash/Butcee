@@ -86,30 +86,32 @@ export class BoardView {
 
   draw(ctx: CanvasRenderingContext2D, v: ViewInput) {
     const { board: b, cell: c } = this;
-    // tahta zemini
+    // tahta zemini: beyaz yumuşak çerçeve + koyu erik oyun alanı (pastel bloklar net seçilsin)
     ctx.save();
-    ctx.shadowColor = 'rgba(0,0,0,0.45)';
-    ctx.shadowBlur = 18;
-    ctx.shadowOffsetY = 6;
-    roundRect(ctx, b.x - 6, b.y - 6, b.w + 12, b.h + 12, 14);
-    ctx.fillStyle = '#c99a62';
+    ctx.shadowColor = 'rgba(90,60,120,0.28)';
+    ctx.shadowBlur = 22;
+    ctx.shadowOffsetY = 8;
+    roundRect(ctx, b.x - 7, b.y - 7, b.w + 14, b.h + 14, 18);
+    ctx.fillStyle = '#fffaf6';
     ctx.fill();
     ctx.restore();
-    roundRect(ctx, b.x - 6, b.y - 6, b.w + 12, b.h + 12, 14);
-    ctx.strokeStyle = '#f0d3a2';
+    roundRect(ctx, b.x - 7, b.y - 7, b.w + 14, b.h + 14, 18);
+    ctx.strokeStyle = 'rgba(200,170,230,0.9)';
     ctx.lineWidth = 2;
     ctx.stroke();
-    roundRect(ctx, b.x - 1, b.y - 1, b.w + 2, b.h + 2, 9);
+    roundRect(ctx, b.x - 1, b.y - 1, b.w + 2, b.h + 2, 12);
     const bg = ctx.createLinearGradient(0, b.y, 0, b.y + b.h);
-    bg.addColorStop(0, '#3a2414');
-    bg.addColorStop(1, '#2a180c');
+    bg.addColorStop(0, '#463b5c');
+    bg.addColorStop(1, '#382f4b');
     ctx.fillStyle = bg;
     ctx.fill();
-    // hücre yuvaları
-    ctx.fillStyle = 'rgba(255,230,190,0.05)';
+    // hücre yuvaları: yumuşak noktalı ızgara
+    ctx.fillStyle = 'rgba(255,255,255,0.045)';
     for (let r = 0; r < ROWS; r++)
-      for (let col = 0; col < COLS; col++)
-        if ((r + col) % 2 === 0) ctx.fillRect(b.x + col * c, b.y + r * c, c, c);
+      for (let col = 0; col < COLS; col++) {
+        roundRect(ctx, b.x + col * c + c * 0.08, b.y + r * c + c * 0.08, c * 0.84, c * 0.84, c * 0.2);
+        ctx.fill();
+      }
 
     // saldırı uyarısı
     if (v.attackWarn) {
@@ -185,8 +187,8 @@ export class BoardView {
         if (gy <= startY) continue;
         const g = ctx.createLinearGradient(0, startY, 0, gy);
         const pulse = 0.12 + 0.06 * Math.sin(v.t * 4);
-        g.addColorStop(0, `rgba(255,245,200,${pulse})`);
-        g.addColorStop(1, `rgba(255,245,200,${pulse * 2.2})`);
+        g.addColorStop(0, `rgba(255,250,235,${pulse})`);
+        g.addColorStop(1, `rgba(255,250,235,${pulse * 2.4})`);
         ctx.fillStyle = g;
         ctx.fillRect(b.x + (v.col + cc) * c + c * 0.12, startY, c * 0.76, gy - startY);
       }
@@ -232,11 +234,17 @@ export class BoardView {
     v.hand.forEach((p, i) => {
       const s = this.slots[i];
       const isSel = v.selected === i;
-      roundRect(ctx, s.x, s.y, s.w, s.h, 12);
-      ctx.fillStyle = isSel ? 'rgba(255,236,190,0.30)' : 'rgba(255,236,190,0.13)';
+      ctx.save();
+      ctx.shadowColor = 'rgba(90,60,120,0.18)';
+      ctx.shadowBlur = 10;
+      ctx.shadowOffsetY = 4;
+      roundRect(ctx, s.x, s.y, s.w, s.h, 16);
+      ctx.fillStyle = isSel ? '#f1fff6' : 'rgba(255,255,255,0.88)';
       ctx.fill();
-      ctx.lineWidth = isSel ? 3 : 1.5;
-      ctx.strokeStyle = isSel ? '#ffd56b' : 'rgba(255,230,190,0.35)';
+      ctx.restore();
+      roundRect(ctx, s.x, s.y, s.w, s.h, 16);
+      ctx.lineWidth = isSel ? 3.5 : 1.5;
+      ctx.strokeStyle = isSel ? '#4fcf8f' : 'rgba(190,160,220,0.6)';
       ctx.stroke();
       if (!p) return;
       const cells = shapeCells(p.kind, isSel ? v.rot : 0);
@@ -250,14 +258,14 @@ export class BoardView {
 
     // sıradaki parçalar
     ctx.save();
-    ctx.fillStyle = 'rgba(255,236,200,0.75)';
-    ctx.font = `700 ${Math.max(10, c * 0.26)}px system-ui, sans-serif`;
+    ctx.fillStyle = '#7a6890';
+    ctx.font = `800 ${Math.max(11, c * 0.27)}px system-ui, sans-serif`;
     ctx.textAlign = 'center';
     if (this.previews.length) ctx.fillText(nextLabel, this.previews[0].x + this.previews[0].w / 2, this.previews[0].y - 3);
     v.queue.slice(0, 2).forEach((p, i) => {
       const s = this.previews[i];
-      roundRect(ctx, s.x, s.y, s.w, s.h, 8);
-      ctx.fillStyle = 'rgba(0,0,0,0.18)';
+      roundRect(ctx, s.x, s.y, s.w, s.h, 10);
+      ctx.fillStyle = 'rgba(255,255,255,0.6)';
       ctx.fill();
       const cells = shapeCells(p.kind, 0);
       const { w, h } = shapeSize(cells);

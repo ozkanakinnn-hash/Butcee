@@ -53,7 +53,7 @@ export function gardenScreen(router: Router): Screen {
   const firstEmpty = () => { const i = save.garden.findIndex((x) => !x); return i < 0 ? 0 : i; };
 
   function resize() {
-    dpr = Math.min(2, window.devicePixelRatio || 1);
+    dpr = Math.min(3, window.devicePixelRatio || 1);
     w = el.clientWidth || window.innerWidth;
     hgt = el.clientHeight || window.innerHeight;
     canvas.width = w * dpr;

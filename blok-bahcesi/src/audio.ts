@@ -12,9 +12,16 @@ function ac(): AudioContext | null {
     if (!ctx) {
       const C = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
       ctx = new C();
+      // Telefon hoparlöründe duyulsun diye: yüksek kazanç + kompresör (patlamayı önler)
+      const comp = ctx.createDynamicsCompressor();
+      comp.threshold.value = -18;
+      comp.knee.value = 12;
+      comp.ratio.value = 6;
+      comp.attack.value = 0.003;
+      comp.release.value = 0.2;
       master = ctx.createGain();
-      master.gain.value = 0.35;
-      master.connect(ctx.destination);
+      master.gain.value = 1.4;
+      master.connect(comp).connect(ctx.destination);
     }
     if (ctx.state === 'suspended') void ctx.resume();
     return ctx;
@@ -23,8 +30,11 @@ function ac(): AudioContext | null {
   }
 }
 
-/** İlk dokunuşta ses bağlamını aç (mobil tarayıcı kısıtı). */
-export function unlockAudio() { ac(); }
+/** Her dokunuşta: ses bağlamı askıdaysa sürdür (mobil tarayıcı / WebView kısıtı). */
+export function unlockAudio() {
+  const a = ac();
+  if (a && a.state !== 'running') void a.resume().then(() => music.resume());
+}
 
 function tone(freq: number, dur: number, opts: { type?: OscillatorType; delay?: number; vol?: number; slide?: number } = {}) {
   const a = ac();
@@ -36,7 +46,7 @@ function tone(freq: number, dur: number, opts: { type?: OscillatorType; delay?: 
   o.frequency.setValueAtTime(freq, t0);
   if (opts.slide) o.frequency.exponentialRampToValueAtTime(Math.max(30, freq * opts.slide), t0 + dur);
   g.gain.setValueAtTime(0.0001, t0);
-  g.gain.exponentialRampToValueAtTime(opts.vol ?? 0.5, t0 + 0.01);
+  g.gain.exponentialRampToValueAtTime(Math.min(1, (opts.vol ?? 0.5) * 1.8), t0 + 0.01);
   g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
   o.connect(g).connect(master);
   o.start(t0);
@@ -61,14 +71,21 @@ function noise(dur: number, vol = 0.3, delay = 0, lowpass = 1200) {
   src.start(a.currentTime + delay);
 }
 
+let lastClick = 0;
 const PENTA = [523.25, 587.33, 659.25, 783.99, 880, 1046.5, 1174.66, 1318.5];
 
 export const sfx = {
-  click: () => tone(660, 0.06, { type: 'triangle', vol: 0.25 }),
+  click: () => {
+    const now = performance.now();
+    if (now - lastClick < 80) return; // aynı dokunuşta iki kez çalmasın
+    lastClick = now;
+    tone(880, 0.05, { type: 'triangle', vol: 0.25 });
+    tone(1320, 0.04, { type: 'sine', vol: 0.12, delay: 0.02 });
+  },
   select: () => tone(520, 0.07, { type: 'triangle', vol: 0.3, slide: 1.3 }),
   rotate: () => tone(740, 0.05, { type: 'square', vol: 0.12 }),
-  move: () => tone(400, 0.025, { type: 'triangle', vol: 0.08 }),
-  land: () => { tone(140, 0.12, { type: 'sine', vol: 0.6, slide: 0.6 }); noise(0.06, 0.15, 0, 600); },
+  move: () => tone(620, 0.03, { type: 'triangle', vol: 0.14 }),
+  land: () => { tone(330, 0.1, { type: 'triangle', vol: 0.45, slide: 0.55 }); noise(0.07, 0.3, 0, 1400); },
   clear: (n: number, combo: number) => {
     for (let i = 0; i < Math.min(5, n + 1); i++) tone(PENTA[Math.min(7, i + combo)], 0.18, { type: 'triangle', delay: i * 0.06, vol: 0.35 });
   },
@@ -78,7 +95,7 @@ export const sfx = {
   sunBreak: () => noise(0.12, 0.25, 0, 3000),
   season: () => [0, 4, 7, 12].forEach((s, i) => tone(392 * Math.pow(2, s / 12), 0.4, { delay: i * 0.09, vol: 0.2 })),
   warn: () => { tone(220, 0.25, { type: 'sawtooth', vol: 0.12 }); tone(208, 0.25, { type: 'sawtooth', vol: 0.12, delay: 0.25 }); },
-  attack: () => { noise(0.6, 0.45, 0, 500); tone(90, 0.5, { type: 'sawtooth', vol: 0.25, slide: 0.5 }); },
+  attack: () => { noise(0.6, 0.55, 0, 900); tone(220, 0.5, { type: 'sawtooth', vol: 0.22, slide: 0.5 }); },
   undo: () => tone(500, 0.12, { type: 'triangle', vol: 0.25, slide: 0.6 }),
   win: () => [0, 4, 7, 12, 16].forEach((s, i) => tone(523 * Math.pow(2, s / 12), 0.35, { type: 'triangle', delay: i * 0.11, vol: 0.3 })),
   lose: () => [0, -3, -7].forEach((s, i) => tone(330 * Math.pow(2, s / 12), 0.4, { type: 'triangle', delay: i * 0.18, vol: 0.25 })),
@@ -90,6 +107,7 @@ export const sfx = {
   cheer: () => [0, 4, 7, 12, 7, 12, 16].forEach((st, i) => tone(392 * Math.pow(2, st / 12), 0.2, { type: 'triangle', vol: 0.25, delay: i * 0.08 })),
   drop2: () => tone(320, 0.09, { type: 'triangle', vol: 0.25, slide: 0.5 }),
   whoosh: () => noise(0.25, 0.2, 0, 2500),
+  start: () => [0, 4, 7, 12].forEach((st, i) => tone(523.25 * Math.pow(2, st / 12), 0.22, { type: 'triangle', vol: 0.3, delay: i * 0.07 })),
 };
 
 // ---------------- prosedürel müzik ----------------
@@ -123,7 +141,7 @@ class Music {
       this.gain.connect(master);
     }
     this.gain.gain.cancelScheduledValues(a.currentTime);
-    this.gain.gain.setTargetAtTime(mode === 'calm' ? 0.42 : 0.34, a.currentTime, 0.6);
+    this.gain.gain.setTargetAtTime(mode === 'calm' ? 0.55 : 0.48, a.currentTime, 0.4);
     if (this.timer !== null) return;
     this.nextTime = a.currentTime + 0.1;
     this.timer = window.setInterval(() => this.schedule(), 120);
@@ -161,20 +179,27 @@ class Music {
     if (!ctx) return;
     const bpm = this.mode === 'tense' ? 118 : this.mode === 'game' ? 100 : 84;
     const eighth = 60 / bpm / 2;
-    const root = this.mode === 'tense' ? 220 : 261.63;
+    // Kök nota orta bölgede: telefon hoparlörleri 200 Hz altını neredeyse hiç çalamaz
+    const root = this.mode === 'tense' ? 293.66 : 349.23;
     const scale = SCALES[this.mode];
     while (this.nextTime < ctx.currentTime + 0.35) {
       const t = this.nextTime;
       const bar = Math.floor(this.step / 8) % 4;
       const chord = CHORDS[this.mode][bar];
       const pos = this.step % 8;
-      if (pos === 0 || (this.mode !== 'calm' && pos === 4)) this.note(root * Math.pow(2, (chord - 12) / 12), t, eighth * 3.5, 'sine', 0.35);
+      if (pos === 0 || (this.mode !== 'calm' && pos === 4)) {
+        // "bas": bir oktav aşağıdaki kök + beşli (yumuşak pad)
+        this.note(root * Math.pow(2, (chord - 12) / 12), t, eighth * 3.8, 'triangle', 0.32);
+        this.note(root * Math.pow(2, (chord - 5) / 12), t, eighth * 3.8, 'sine', 0.18);
+      }
       const arp = [0, 2, 4, 5, 4, 2, 1, 3][pos];
       if (this.mode !== 'calm' || pos % 2 === 0) {
         const deg = scale[(arp + bar) % scale.length];
-        this.note(root * Math.pow(2, (deg + chord) / 12), t, eighth * 1.6, 'triangle', 0.13);
+        const f = root * Math.pow(2, (deg + chord) / 12);
+        this.note(f, t, eighth * 1.7, 'triangle', 0.3); // marimba benzeri tını: temel + oktav
+        this.note(f * 2, t, eighth * 0.8, 'sine', 0.09);
       }
-      if (pos === 6 && this.rnd() < 0.5) this.note(root * 4 * Math.pow(2, scale[Math.floor(this.rnd() * 5)] / 12), t, 0.9, 'sine', 0.05);
+      if (pos === 6 && this.rnd() < 0.5) this.note(root * 2 * Math.pow(2, scale[Math.floor(this.rnd() * 5)] / 12), t, 0.9, 'sine', 0.14);
       this.nextTime += eighth;
       this.step++;
     }

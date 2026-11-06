@@ -1,20 +1,21 @@
 import type { Element } from '../game/types';
 
 export const EL_COLOR: Record<Element, string> = {
-  water: '#2f8cf0',
-  leaf: '#43b649',
-  sun: '#ff9322',
-  stone: '#8f9398',
-  purple: '#9b5bd8',
-  red: '#e5444d',
+  // Pastel ama ayrışan tonlar (renk körlüğü doğrulayıcısıyla seçildi; simgeler ikincil kodlama)
+  water: '#4aa8ff',
+  leaf: '#2bb5a0',
+  sun: '#ffc23d',
+  stone: '#b3b6c2',
+  purple: '#d9a3fb',
+  red: '#ff7a6b',
 };
 
 /** Mevsim arka plan tonları: ilkbahar, yaz, sonbahar, kış (üst, alt). */
 export const SEASON_TINT: [string, string][] = [
-  ['#7a9a4a', '#f2c6d6'],
-  ['#e8b93c', '#f7e08a'],
-  ['#d0672a', '#8a3b1d'],
-  ['#9cc1e0', '#e8f2fb'],
+  ['#c8f0d2', '#ffd6e6'],
+  ['#fff1b8', '#ffd9a8'],
+  ['#ffd2b0', '#f2b99e'],
+  ['#d8ecff', '#f4f8ff'],
 ];
 
 export function shade(hex: string, amt: number): string {

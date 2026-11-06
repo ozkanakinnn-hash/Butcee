@@ -23,7 +23,7 @@ const RES = path.join(__dirname, '../android/app/src/main/res');
     }
     function bg(ctx, w, h, round) {
       const g = ctx.createLinearGradient(0, 0, 0, h);
-      g.addColorStop(0, '#f7e3bd'); g.addColorStop(1, '#e2b97a');
+      g.addColorStop(0, '#fff0f6'); g.addColorStop(1, '#e3d2fb');
       ctx.fillStyle = g;
       if (round) { ctx.beginPath(); ctx.arc(w / 2, h / 2, w / 2, 0, Math.PI * 2); ctx.fill(); }
       else { d.roundRect(ctx, 0, 0, w, h, w * 0.2); ctx.fill(); }
@@ -47,14 +47,14 @@ const RES = path.join(__dirname, '../android/app/src/main/res');
       d.clearSpriteCache(1);
       // düz gradyan (ahşap dokusu PNG'de çok yer kaplıyor)
       const g = ctx.createLinearGradient(0, 0, 0, h);
-      g.addColorStop(0, '#7a4d2e'); g.addColorStop(1, '#3b2416');
+      g.addColorStop(0, '#ffe6d6'); g.addColorStop(0.55, '#efe2fb'); g.addColorStop(1, '#d9f3ea');
       ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
       const s = Math.min(w, h) * 0.11;
       art(ctx, w / 2, h / 2 - s * 0.6, s);
       ctx.font = `800 ${s * 0.75}px system-ui, sans-serif`;
       ctx.textAlign = 'center';
-      ctx.fillStyle = '#fff3c4';
-      ctx.shadowColor = 'rgba(0,0,0,0.5)'; ctx.shadowOffsetY = s * 0.08;
+      ctx.fillStyle = '#7a4fb0';
+      ctx.shadowColor = 'rgba(255,255,255,0.9)'; ctx.shadowOffsetY = s * 0.06;
       ctx.fillText('Blok Bahçesi', w / 2, h / 2 + s * 2);
       return c.toDataURL('image/png');
     };

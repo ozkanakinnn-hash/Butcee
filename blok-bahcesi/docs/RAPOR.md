@@ -1,4 +1,6 @@
-# Blok Bahçesi v0.2 — Güncelleme Raporu
+# Blok Bahçesi — Güncelleme Raporu (v0.2 + v0.3)
+
+> **v0.3**: 100 bölüm + 10 kurtarma bölümü, pastel tema, yeniden yazılmış ses (açılışta müzik, kompresörlü yüksek seviye), çift dokunuşla bırakma düzeltmesi. Görseller v0.2 temasındandır.
 
 ## 1. Royal Match tarzı oyunların analizi
 
@@ -37,7 +39,7 @@ Bu bölüm türün genel kalıplarını özetler. Blok Bahçesi'nde hiçbir isim
 
 ## 3. Kademeli zorluk (veriyle)
 
-Bölümler bir **açgözlü bot** (`src/game/bot.ts`) ile kalibre edildi (`scripts/calibrate.ts`). Bot her bölümü 40 kez oynar ve hamle ihtiyacının dağılımını çıkarır. Hamle sınırı, botun hedef orana göre kazanacağı şekilde seçilir. Hedef oran 1. bölümde %98, 60. bölümde %55; boss bölümlerinde 5 puan daha düşük.
+Bölümler bir **açgözlü bot** (`src/game/bot.ts`) ile kalibre edildi (`scripts/calibrate.ts`). Bot her bölümü 40 kez oynar ve hamle ihtiyacının dağılımını çıkarır. Hamle sınırı, botun hedef orana göre kazanacağı şekilde seçilir. Hedef oran 1. bölümde %98, 100. bölümde %50; boss bölümlerinde 5 puan daha düşük.
 
 ![](rapor/zorluk-egrisi.png)
 

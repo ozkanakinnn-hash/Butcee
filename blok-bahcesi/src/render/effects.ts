@@ -181,7 +181,7 @@ export class Effects {
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.lineWidth = Math.max(3, t.size * 0.18);
-      ctx.strokeStyle = 'rgba(50,25,10,0.85)';
+      ctx.strokeStyle = 'rgba(70,45,95,0.9)';
       ctx.lineJoin = 'round';
       ctx.strokeText(t.text, 0, 0);
       ctx.fillStyle = t.color;

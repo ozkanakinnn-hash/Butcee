@@ -237,3 +237,78 @@ button { font-family: inherit; border: 0; cursor: pointer; touch-action: manipul
 .gem-line { display: flex; justify-content: center; }
 .gem-line .gem-chip { color: #1576c4; background: rgba(21,118,196,.12); border-color: rgba(21,118,196,.3); }
 .garden .tip { transition: opacity .8s; } .garden .tip.fade { opacity: 0; }
+
+/* ================= PASTEL TEMA (v0.3) ================= */
+:root { --ink: #4a3a5c; --ink2: #7a6890; --lavline: #e3d4f5; }
+html, body { background: #f3e9f7; color: var(--ink); }
+.btn { color: var(--ink); background: linear-gradient(#ffffff, #f6efff); border: 1px solid rgba(205,184,230,.7);
+  box-shadow: 0 5px 0 #cdb8e6, 0 10px 18px rgba(110,80,150,.18); letter-spacing: .2px; }
+.btn:active { box-shadow: 0 1px 0 #cdb8e6, 0 3px 8px rgba(110,80,150,.2); }
+.btn.green { background: linear-gradient(#a8f2c6, #5fd08f); color: #fff; border: none; box-shadow: 0 5px 0 #3fa56b, 0 10px 18px rgba(60,140,90,.28); text-shadow: 0 2px 0 rgba(40,110,70,.35); }
+.btn.green:active { box-shadow: 0 1px 0 #3fa56b; }
+.btn.orange { background: linear-gradient(#ffd6b8, #ff9f7c); color: #fff; border: none; box-shadow: 0 5px 0 #d9744f, 0 10px 18px rgba(200,110,70,.28); text-shadow: 0 2px 0 rgba(170,80,40,.35); }
+.btn.orange:active { box-shadow: 0 1px 0 #d9744f; }
+.btn:disabled { filter: grayscale(.4); opacity: .55; }
+.chip { background: rgba(255,255,255,.9); color: var(--ink); border: 1.5px solid rgba(205,184,230,.75); box-shadow: 0 2px 8px rgba(110,80,150,.12); }
+.chip small { color: var(--ink2); opacity: 1; }
+.gem-chip { color: var(--ink); }
+.topbar h2 { color: var(--ink); text-shadow: none; }
+.logo h1 { color: #fff; text-shadow: 0 3px 0 #c9a4ef, 0 6px 0 #9b7cc4, 0 12px 22px rgba(110,80,150,.35); }
+.overlay { background: rgba(70,50,95,.42); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); }
+.panel { background: #fff; color: var(--ink); border: 1px solid #eadff7; box-shadow: 0 8px 0 var(--lavline), 0 18px 40px rgba(80,50,120,.32); }
+.panel h2 { color: #7a4fb0; }
+.panel .btn { box-shadow: 0 4px 0 #cdb8e6; }
+.panel .btn.green { box-shadow: 0 4px 0 #3fa56b; }
+.panel .btn.orange { box-shadow: 0 4px 0 #d9744f; }
+.panel .score { color: #3fa56b; }
+.panel .big-stars span { color: rgba(122,79,176,.18); }
+.card { background: rgba(255,255,255,.96); color: var(--ink); box-shadow: 0 6px 0 var(--lavline), 0 12px 26px rgba(80,50,120,.16); }
+.info-card h3 { color: #7a4fb0; }
+.node { background: radial-gradient(circle at 35% 30%, #c4f7d8, #5fd08f); border: 4px solid #fff; box-shadow: 0 5px 0 #3fa56b, 0 10px 16px rgba(80,50,120,.25); }
+.node.boss { background: radial-gradient(circle at 35% 30%, #e3dcfb, #9a8fd6); box-shadow: 0 5px 0 #6f65ad, 0 10px 16px rgba(80,50,120,.25); }
+.node.locked { background: radial-gradient(circle at 35% 30%, #f6f1fa, #cfc4dc); color: #a596b8; box-shadow: 0 5px 0 #b3a5c4; }
+.node.locked svg rect, .node.locked svg path { fill: #a596b8; stroke: #a596b8; }
+.node .stars span { color: rgba(122,79,176,.25); }
+.node .stars span.on { text-shadow: 0 1px 0 #c98a00; }
+.node.rescue { background: radial-gradient(circle at 35% 30%, #d4f0ff, #6cc0f5); box-shadow: 0 5px 0 #3f8fc4, 0 10px 16px rgba(80,50,120,.25); }
+.node.rescue.locked { background: radial-gradient(circle at 35% 30%, #f6f1fa, #cfc4dc); box-shadow: 0 5px 0 #b3a5c4; }
+.node.rescue.done { background: radial-gradient(circle at 35% 30%, #fff1b8, #ffcf5a); box-shadow: 0 5px 0 #d9a52a; }
+.rescue-label { background: #ff6b81; }
+.node.rescue.locked .rescue-label { background: #b3a5c4; }
+.chapter { background: linear-gradient(#f7eeff, #dcc6f7); color: #5b3f86; border: 2px solid #fff; box-shadow: 0 4px 0 #b79ad9, 0 8px 14px rgba(80,50,120,.2); }
+.banner { background: #ff6b81; }
+.hint { background: rgba(70,50,95,.25); }
+.hint .bubble { background: #fff; color: var(--ink); box-shadow: 0 6px 0 var(--lavline), 0 14px 30px rgba(80,50,120,.3); }
+.hint .bubble:after { border-top-color: #fff; }
+.speech { background: #fff; color: var(--ink); box-shadow: 0 3px 0 var(--lavline), 0 6px 14px rgba(80,50,120,.2); }
+.speech:after { border-right-color: #fff; }
+.note { color: var(--ink); text-shadow: none; }
+.pod b, .pod small { color: var(--ink); text-shadow: none; }
+.pod .visit { background: rgba(122,79,176,.14); color: #5b3f86; }
+.pod .step { color: rgba(255,255,255,.95); }
+.lb-row { background: #fff; color: var(--ink); box-shadow: 0 3px 0 var(--lavline); }
+.lb-row.top { background: linear-gradient(90deg, #fff6d9, #fff); }
+.lb-row .rank, .lb-row .go { color: #7a4fb0; }
+.lb-row.me { outline-color: #5fd08f; }
+.sheet { background: #fff; color: var(--ink); }
+.sheet h2 { color: #7a4fb0; }
+.shop-item { background: #f8f3ff; }
+.tag { color: #7a4fb0; background: rgba(122,79,176,.1); }
+.toast { background: rgba(74,58,92,.94); color: #fff; }
+.howto { background: #f8f3ff; }
+.setting { border-bottom-color: rgba(160,130,190,.25); }
+.toggle { background: #d8cde6; }
+.toggle.on { background: #5fd08f; }
+.seg { border-color: #cdb8e6; }
+.seg button { color: var(--ink); }
+.seg button.on { background: #b48ee0; color: #fff; }
+.danger { color: #e0456a; }
+.gem-total, .gem-gain { color: #3f8fe0; }
+.continue { background: #f8f3ff; }
+.quote { color: #6b4f86; }
+.panel td { border-bottom-color: rgba(160,130,190,.25); }
+.panel tr.me td { background: rgba(255,214,120,.35); }
+.ad-count { color: #ff8a6b; }
+.chip.chip-alarm { background: #ff6b81; color: #fff; border-color: #fff; }
+.hud .btn.icon-btn { font-size: 18px; }
+.logo h1 { color: #fff; -webkit-text-stroke: 2.5px #9a72d0; paint-order: stroke fill; text-shadow: 0 4px 0 #c9a4ef, 0 10px 20px rgba(110,80,150,.35); }
