@@ -1,57 +1,65 @@
 {
   "_not": "Aday RSS adresleri. scripts/check-feeds.js bunları dener; çalışanlar seed-data.json'a eklenir.",
   "candidates": [
-    { "category": "saglik", "source_name": "NTV", "rss_url": "https://www.ntv.com.tr/saglik.rss" },
-    { "category": "saglik", "source_name": "Hürriyet", "rss_url": "https://www.hurriyet.com.tr/rss/saglik" },
-    { "category": "saglik", "source_name": "TRT Haber", "rss_url": "https://www.trthaber.com/saglik_articles.rss" },
-    { "category": "saglik", "source_name": "Habertürk", "rss_url": "https://www.haberturk.com/rss/kategori/saglik.xml" },
-    { "category": "saglik", "source_name": "CNN Türk", "rss_url": "https://www.cnnturk.com/feed/rss/saglik/news" },
-
-    { "category": "bilim", "source_name": "TRT Haber", "rss_url": "https://www.trthaber.com/bilim_teknoloji_articles.rss" },
-    { "category": "bilim", "source_name": "Anadolu Ajansı", "rss_url": "https://www.aa.com.tr/tr/rss/default?cat=bilim-teknoloji" },
-    { "category": "bilim", "source_name": "CNN Türk", "rss_url": "https://www.cnnturk.com/feed/rss/bilim-teknoloji/news" },
-    { "category": "bilim", "source_name": "Hürriyet", "rss_url": "https://www.hurriyet.com.tr/rss/bilim" },
-
-    { "category": "kultur-sanat", "source_name": "NTV", "rss_url": "https://www.ntv.com.tr/sanat.rss" },
-    { "category": "kultur-sanat", "source_name": "TRT Haber", "rss_url": "https://www.trthaber.com/kultur_sanat_articles.rss" },
-    { "category": "kultur-sanat", "source_name": "Anadolu Ajansı", "rss_url": "https://www.aa.com.tr/tr/rss/default?cat=kultur" },
-    { "category": "kultur-sanat", "source_name": "Habertürk", "rss_url": "https://www.haberturk.com/rss/kategori/kultur-sanat.xml" },
-    { "category": "kultur-sanat", "source_name": "CNN Türk", "rss_url": "https://www.cnnturk.com/feed/rss/kultur-sanat/news" },
-
-    { "category": "magazin", "source_name": "Hürriyet", "rss_url": "https://www.hurriyet.com.tr/rss/magazin" },
-    { "category": "magazin", "source_name": "Habertürk", "rss_url": "https://www.haberturk.com/rss/kategori/magazin.xml" },
-    { "category": "magazin", "source_name": "CNN Türk", "rss_url": "https://www.cnnturk.com/feed/rss/magazin/news" },
-    { "category": "magazin", "source_name": "NTV", "rss_url": "https://www.ntv.com.tr/magazin.rss" },
-
-    { "category": "otomobil", "source_name": "NTV", "rss_url": "https://www.ntv.com.tr/otomobil.rss" },
-    { "category": "otomobil", "source_name": "Hürriyet", "rss_url": "https://www.hurriyet.com.tr/rss/otomobil" },
-    { "category": "otomobil", "source_name": "Habertürk", "rss_url": "https://www.haberturk.com/rss/kategori/otomobil.xml" },
-    { "category": "otomobil", "source_name": "CNN Türk", "rss_url": "https://www.cnnturk.com/feed/rss/otomobil/news" },
-
-    { "category": "egitim", "source_name": "NTV", "rss_url": "https://www.ntv.com.tr/egitim.rss" },
-    { "category": "egitim", "source_name": "Hürriyet", "rss_url": "https://www.hurriyet.com.tr/rss/egitim" },
-    { "category": "egitim", "source_name": "TRT Haber", "rss_url": "https://www.trthaber.com/egitim_articles.rss" },
-    { "category": "egitim", "source_name": "Habertürk", "rss_url": "https://www.haberturk.com/rss/kategori/egitim.xml" },
-    { "category": "egitim", "source_name": "CNN Türk", "rss_url": "https://www.cnnturk.com/feed/rss/egitim/news" },
-
-    { "category": "yasam", "source_name": "NTV", "rss_url": "https://www.ntv.com.tr/yasam.rss" },
-    { "category": "yasam", "source_name": "TRT Haber", "rss_url": "https://www.trthaber.com/yasam_articles.rss" },
-    { "category": "yasam", "source_name": "Habertürk", "rss_url": "https://www.haberturk.com/rss/kategori/yasam.xml" },
-    { "category": "yasam", "source_name": "CNN Türk", "rss_url": "https://www.cnnturk.com/feed/rss/yasam/news" },
-    { "category": "yasam", "source_name": "NTV", "rss_url": "https://www.ntv.com.tr/seyahat.rss" },
-
-    { "category": "son-dakika", "source_name": "NTV", "rss_url": "https://www.ntv.com.tr/son-dakika.rss" },
-    { "category": "son-dakika", "source_name": "TRT Haber", "rss_url": "https://www.trthaber.com/sondakika_articles.rss" },
-    { "category": "son-dakika", "source_name": "TRT Haber", "rss_url": "https://www.trthaber.com/sondakika.rss" },
-    { "category": "son-dakika", "source_name": "Habertürk", "rss_url": "https://www.haberturk.com/rss/manset.xml" },
-    { "category": "son-dakika", "source_name": "Anadolu Ajansı", "rss_url": "https://www.aa.com.tr/tr/rss/default?cat=guncel" },
-    { "category": "son-dakika", "source_name": "CNN Türk", "rss_url": "https://www.cnnturk.com/feed/rss/all/news" },
-    { "category": "son-dakika", "source_name": "Hürriyet", "rss_url": "https://www.hurriyet.com.tr/rss/anasayfa" },
-
-    { "category": "spor", "source_name": "NTV Spor", "rss_url": "https://www.ntvspor.net/rss" },
-    { "category": "spor", "source_name": "NTV", "rss_url": "https://www.ntv.com.tr/sporskor.rss" },
-    { "category": "spor", "source_name": "TRT Spor", "rss_url": "https://www.trtspor.com.tr/sondakika.rss" },
-    { "category": "spor", "source_name": "Hürriyet", "rss_url": "https://www.hurriyet.com.tr/rss/spor" },
-    { "category": "spor", "source_name": "NTV (eski)", "rss_url": "https://www.ntv.com.tr/spor.rss" }
+    {
+      "category": "futbol",
+      "source_name": "Habertürk",
+      "rss_url": "https://www.haberturk.com/rss/kategori/spor/futbol.xml"
+    },
+    {
+      "category": "futbol",
+      "source_name": "Habertürk",
+      "rss_url": "https://www.haberturk.com/rss/kategori/spor.xml"
+    },
+    {
+      "category": "futbol",
+      "source_name": "CNN Türk",
+      "rss_url": "https://www.cnnturk.com/feed/rss/spor/futbol/news"
+    },
+    {
+      "category": "futbol",
+      "source_name": "CNN Türk",
+      "rss_url": "https://www.cnnturk.com/feed/rss/spor/news"
+    },
+    {
+      "category": "futbol",
+      "source_name": "Anadolu Ajansı",
+      "rss_url": "https://www.aa.com.tr/tr/rss/default?cat=spor"
+    },
+    {
+      "category": "futbol",
+      "source_name": "TRT Haber",
+      "rss_url": "https://www.trthaber.com/spor_articles.rss"
+    },
+    {
+      "category": "futbol",
+      "source_name": "TRT Haber",
+      "rss_url": "https://www.trthaber.com/futbol_articles.rss"
+    },
+    {
+      "category": "futbol",
+      "source_name": "NTV",
+      "rss_url": "https://www.ntv.com.tr/futbol.rss"
+    },
+    {
+      "category": "futbol",
+      "source_name": "Hürriyet",
+      "rss_url": "https://www.hurriyet.com.tr/rss/sporarena"
+    },
+    {
+      "category": "futbol",
+      "source_name": "Fanatik",
+      "rss_url": "https://www.fanatik.com.tr/rss/futbol"
+    },
+    {
+      "category": "futbol",
+      "source_name": "Fotomaç",
+      "rss_url": "https://www.fotomac.com.tr/rss/futbol.xml"
+    },
+    {
+      "category": "futbol",
+      "source_name": "A Spor",
+      "rss_url": "https://www.aspor.com.tr/rss/futbol.xml"
+    }
   ]
 }
