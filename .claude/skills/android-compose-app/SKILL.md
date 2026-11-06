@@ -133,3 +133,15 @@ gradle/actions/setup-gradle@v5 → `./gradlew assembleDebug` → upload-artifact
 - Tuzaklar: StoreKit'in `AppStore` tipiyle çakışmaması için kendi sınıfına başka ad ver; iOS 16'da `Text + Text` için
   `.foregroundColor` kullan (`foregroundStyle` Text döndürmez); `.topBarTrailing` iOS 17 → `.navigationBarTrailing`;
   Swift sözlük sabitinde tekrarlanan anahtar çalışma anında çöker; AdMob SPM'de UMP ürün adı `GoogleUserMessagingPlatform`.
+
+## Güvenlik ve test kontrol listesi (yayın öncesi)
+- Android: `network_security_config` ile HTTP kapalı (minSdk<28'de varsayılan açık!), `allowBackup=false`, exported bileşenleri
+  gözden geçir, PendingIntent'ler `FLAG_IMMUTABLE`, FileProvider yalnız gereken klasör, loglarda kimlik/jeton yok.
+- iOS: `PrivacyInfo.xcprivacy` (UserDefaults: CA92.1, App Group: 1C8F.1), ATS açık, test başlatma argümanları `#if DEBUG`,
+  UMP "Reklam gizlilik seçenekleri" ayarlarda.
+- CI: iş akışlarında `permissions: contents: read`; yalnız ekran görüntüsü kaydeden işe `write`. Otomatik commit'lerde
+  `git pull --rebase -X theirs` ile çakışmayı çöz, başarısızlıkta `exit 1`.
+- Testler: Android JUnit + Robolectric (`@Config(sdk=[34])`, Robolectric yerel repo yolu koşullu olmalı), iOS XcodeGen
+  `bundle.unit-test` hedefi + `xcodebuild test`. Tarih/takvim mantığını sabit tarihlerle test et: sabit kodlanmış yıl
+  tarihleri ve platformlar arası hicri takvim farkları (ICU vs Apple Ümmü'l-Kura) testlerle yakalandı → dini günleri
+  resmi (Diyanet) Ramazan tablosuna sabitle. Çeviri içeriğinde boş alan testi ekle.
