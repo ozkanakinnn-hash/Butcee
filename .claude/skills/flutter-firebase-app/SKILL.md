@@ -102,3 +102,7 @@ description: Flutter/FlutterFlow + Firebase (Firestore, Cloud Functions) uygulam
   akıllı tırnak var mı, hata konumu (JSON.parse mesajı metinden parça içerebilir — yalnızca position'ı al).
   BOM ve baştaki/sondaki boşlukları tolere et; `cert(json)` ile başlat. Kullanıcıya en güvenilir kopyalama yolu:
   dosyayı Chrome'da `file://` ile değil, bir metin düzenleyicide açıp "Tümünü seç".
+- Kopyalamada en sık bozulma: `private_key` içindeki `\n` kaçışlarının gerçek satır sonuna (CRLF) dönmesi →
+  "Bad control character in string". Yalnızca dizge İÇİNDEKİ ham satır sonlarını `\n`'e çeviren küçük bir tarayıcı ile
+  onar (`escapeNewlinesInStrings`), sonra `crypto.createPrivateKey` ile PEM'in geçerli olduğunu test et.
+  Hata türünü (kontrol karakteri / kesik / beklenmeyen karakter) metinden parça göstermeden raporla.
