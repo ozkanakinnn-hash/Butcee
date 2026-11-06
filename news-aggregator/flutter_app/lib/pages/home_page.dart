@@ -11,9 +11,10 @@ import '../l10n/app_strings.dart';
 import '../widgets/article_card.dart';
 import '../widgets/category_icons.dart';
 import 'article_webview_page.dart';
+import 'interests_page.dart';
 import 'settings_page.dart';
 
-/// Ana ekran: üstte kaydırılabilir kategori sekmeleri, altında haber akışı.
+/// Ana ekran: üstte "Tümü" + kullanıcının ilgi alanları (seçtiği sırayla), altında haber akışı.
 class HomePage extends StatelessWidget {
   const HomePage({super.key, required this.settings, this.repository = const NewsRepository()});
 
@@ -26,44 +27,81 @@ class HomePage extends StatelessWidget {
     return StreamBuilder<List<CategoriesRecord>>(
       stream: repository.watchCategories(),
       builder: (context, snapshot) {
-        final categories = snapshot.data ?? const <CategoriesRecord>[];
-        // Kategori sayısı değişirse TabController yeniden kurulsun.
-        return DefaultTabController(
-          key: ValueKey(categories.map((c) => c.reference.id).join(',')),
-          length: categories.length + 1,
-          child: Scaffold(
-            appBar: AppBar(
-              title: Text(s.appName, style: const TextStyle(fontWeight: FontWeight.w800)),
-              actions: [
-                IconButton(
-                  icon: const Icon(Icons.settings_outlined),
-                  tooltip: s.settings,
-                  onPressed: () => Navigator.of(context).push(
-                    MaterialPageRoute<void>(builder: (_) => SettingsPage(settings: settings)),
+        final all = snapshot.data ?? const <CategoriesRecord>[];
+        return ListenableBuilder(
+          listenable: settings,
+          builder: (context, _) {
+            final byId = {for (final c in all) c.id: c};
+            final tabs = [
+              for (final id in settings.interests)
+                if (byId[id] != null) byId[id]!,
+            ];
+            // Sekme listesi değişirse TabController yeniden kurulsun.
+            return DefaultTabController(
+              key: ValueKey(tabs.map((c) => c.id).join(',')),
+              length: tabs.length + 1,
+              child: Scaffold(
+                appBar: AppBar(
+                  title: Text(s.appName),
+                  actions: [
+                    IconButton(
+                      icon: const Icon(Icons.tune_rounded),
+                      tooltip: s.manageInterests,
+                      onPressed: () => Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (_) => InterestsPage(settings: settings, repository: repository),
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.settings_outlined),
+                      tooltip: s.settings,
+                      onPressed: () =>
+                          Navigator.of(context)
+                              .push(MaterialPageRoute<void>(builder: (_) => SettingsPage(settings: settings))),
+                    ),
+                  ],
+                  bottom: PreferredSize(
+                    preferredSize: const Size.fromHeight(48),
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: SizedBox(
+                        height: 36,
+                        child: TabBar(
+                          isScrollable: true,
+                          tabAlignment: TabAlignment.start,
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          tabs: [
+                            Tab(text: s.all),
+                            for (final c in tabs)
+                              Tab(
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    if (c.isBreaking) ...[
+                                      const Icon(Icons.bolt_rounded, size: 16),
+                                      const SizedBox(width: 2),
+                                    ],
+                                    Text(c.localizedName(s.isEnglish)),
+                                  ],
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
                   ),
                 ),
-              ],
-              bottom: TabBar(
-                isScrollable: true,
-                tabAlignment: TabAlignment.start,
-                tabs: [
-                  Tab(text: s.all),
-                  for (final c in categories) Tab(text: c.localizedName(s.isEnglish)),
-                ],
+                body: TabBarView(
+                  children: [
+                    ArticleFeed(key: const PageStorageKey('feed-all'), repository: repository),
+                    for (final c in tabs)
+                      ArticleFeed(key: PageStorageKey('feed-${c.id}'), repository: repository, category: c),
+                  ],
+                ),
               ),
-            ),
-            body: TabBarView(
-              children: [
-                ArticleFeed(key: const PageStorageKey('feed-all'), repository: repository),
-                for (final c in categories)
-                  ArticleFeed(
-                    key: PageStorageKey('feed-${c.reference.id}'),
-                    repository: repository,
-                    category: c,
-                  ),
-              ],
-            ),
-          ),
+            );
+          },
         );
       },
     );
@@ -116,10 +154,7 @@ class _ArticleFeedState extends State<ArticleFeed> with AutomaticKeepAliveClient
       _error = null;
     });
     try {
-      final page = await widget.repository.fetchArticles(
-        category: widget.category?.reference,
-        startAfter: _cursor,
-      );
+      final page = await widget.repository.fetchArticles(category: widget.category, startAfter: _cursor);
       if (!mounted) return;
       setState(() {
         _items.addAll(page.items);
@@ -136,7 +171,7 @@ class _ArticleFeedState extends State<ArticleFeed> with AutomaticKeepAliveClient
   /// Aşağı çekip yenileme: listeyi sıfırlayıp ilk sayfayı yeniden çeker.
   Future<void> _refresh() async {
     try {
-      final page = await widget.repository.fetchArticles(category: widget.category?.reference);
+      final page = await widget.repository.fetchArticles(category: widget.category);
       if (!mounted) return;
       setState(() {
         _items
@@ -152,9 +187,10 @@ class _ArticleFeedState extends State<ArticleFeed> with AutomaticKeepAliveClient
   }
 
   void _open(ArticlesRecord a) {
-    unawaited(Navigator.of(context).push(
-      ArticleWebViewPage.route(url: a.originalUrl, sourceName: a.sourceName, articleTitle: a.title),
-    ));
+    unawaited(
+      Navigator.of(context)
+          .push(ArticleWebViewPage.route(url: a.originalUrl, sourceName: a.sourceName, articleTitle: a.title)),
+    );
   }
 
   @override
@@ -175,7 +211,9 @@ class _ArticleFeedState extends State<ArticleFeed> with AutomaticKeepAliveClient
             const SizedBox(height: 12),
             Text(_error != null ? s.loadError : s.noArticles, textAlign: TextAlign.center),
             if (_error != null)
-              Center(child: TextButton(onPressed: _loadMore, child: Text(s.retry))),
+              Center(
+                child: TextButton(onPressed: _loadMore, child: Text(s.retry)),
+              ),
           ],
         ),
       );
@@ -187,11 +225,16 @@ class _ArticleFeedState extends State<ArticleFeed> with AutomaticKeepAliveClient
         controller: _scroll,
         physics: const AlwaysScrollableScrollPhysics(),
         itemCount: _items.length + 1,
-        separatorBuilder: (_, _) => const Divider(height: 1, indent: 16, endIndent: 16),
+        separatorBuilder: (_, i) => i == 0 ? const SizedBox(height: 4) : const Divider(indent: 20, endIndent: 20),
         itemBuilder: (context, i) {
           if (i == _items.length) return _footer(s);
           final a = _items[i];
-          return ArticleCard(article: a, fallbackIcon: icon, onTap: () => _open(a));
+          return ArticleCard(
+            article: a,
+            fallbackIcon: icon,
+            featured: i == 0 && a.imageUrl.isNotEmpty,
+            onTap: () => _open(a),
+          );
         },
       ),
     );
@@ -199,7 +242,9 @@ class _ArticleFeedState extends State<ArticleFeed> with AutomaticKeepAliveClient
 
   Widget _footer(S s) {
     if (_error != null) {
-      return Center(child: TextButton(onPressed: _loadMore, child: Text(s.retry)));
+      return Center(
+        child: TextButton(onPressed: _loadMore, child: Text(s.retry)),
+      );
     }
     if (_hasMore) {
       return const Padding(

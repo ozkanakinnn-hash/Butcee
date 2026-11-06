@@ -26,6 +26,28 @@ news-aggregator/
 └── docs/FLUTTERFLOW_KURULUM.md                      # FlutterFlow veri bağlama adımları
 ```
 
+## Uygulama özellikleri
+- **İlgi alanları:** İlk açılışta kullanıcı takip edeceği kategorileri seçer (önerilenler hazır gelir).
+  Sağ üstteki ⚙︎ düğmesinin yanındaki **ayar (tune) simgesi** veya Ayarlar → *İlgi alanlarını düzenle*:
+  takip edilenler sürüklenerek sıralanır, **−** ile çıkarılır; *Keşfet* bölümündeki **+** ile eklenir.
+  Sekmeler bu sırayla görünür. Seçim yalnızca cihazda saklanır.
+- **Tema:** Ayarlar → Görünüm → Sistem / Açık / Koyu. Koyu tema tam siyah (#000000, OLED dostu);
+  vurgu rengi #0A84FF. Tema kodu: `flutter_app/lib/theme.dart`.
+- **Son Dakika:** `is_breaking: true` kaynakların haberleri `breaking_at` alanıyla işaretlenir; aynı haber
+  başka bir akıştan önce kaydedilmişse o da işaretlenir. Sekme `orderBy('breaking_at')` ile listelenir
+  (ek dizin gerekmez).
+- **Uygulama ikonu:** `design/make_icon.py` üretir (mavi degrade + beyaz akış simgesi; uyarlanabilir ikon,
+  yuvarlak ikon, Android 13 tema ikonu ve `design/play_store_icon_512.png`). Önizleme: `design/icon_preview.png`.
+- **Kategoriler (13):** Son Dakika, Gündem, Ekonomi, Teknoloji, Spor, Dünya, Sağlık, Bilim, Kültür-Sanat,
+  Magazin, Otomobil, Eğitim, Yaşam.
+
+## Yeni RSS kaynağı eklemek
+1. Adayı `firebase/functions/scripts/feed-candidates.json` dosyasına ekleyin ve gönderin (push).
+2. GitHub Actions → **Haber Akışı - RSS Kaynak Kontrolü** her adres için durum, haber sayısı ve görselli
+   haber oranını yazar (bu bulut ortamından haber sitelerine erişilemediği için kontrol orada yapılır).
+3. Çalışanları `scripts/seed-data.json` içine ekleyin → **Ücretsiz RSS Çekimi** iş akışını
+   "örnek kategori ve kaynakları yükle" işaretli çalıştırın.
+
 ## Nasıl çalışır?
 
 1. **Cloud Function `fetchRssFeeds`** her 15 dakikada `sources` koleksiyonundaki `is_active == true` kaynakları
@@ -40,7 +62,9 @@ news-aggregator/
    - `content_hash` = başlık + yayın günü → aynı haber farklı adresle (ör. mobil site) gelirse de eklenmez.
 4. Sitenin döndürdüğü `ETag`/`Last-Modified` saklanır; akış değişmemişse (HTTP 304) hiç işlem yapılmaz.
 5. **`cleanupOldArticles`** her gece 30 günden eski haberleri siler (veritabanı boyutu ve maliyet sabit kalır).
-6. Hatalı kaynaklarda `sources/{id}.last_error` alanı doldurulur; Firebase Console'dan takip edebilirsiniz.
+6. **Okuma kotası koruması:** her kaynak, önceki çalışmada gördüğü en yeni haberin tarihini saklar
+   (`last_seen_published_at`); bundan 45 dakikadan eski haberler veritabanına sorulmadan atlanır.
+7. Hatalı kaynaklarda `sources/{id}.last_error` alanı doldurulur; Firebase Console'dan takip edebilirsiniz.
 
 ## Kurulum
 

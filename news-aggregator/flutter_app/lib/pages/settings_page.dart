@@ -4,6 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../app_settings.dart';
 import '../config.dart';
 import '../l10n/app_strings.dart';
+import 'interests_page.dart';
 
 /// Ayarlar & yasal uyumluluk: dil seçimi, gizlilik/kullanım koşulları ve "Uyar-Kaldır" bildirimi.
 class SettingsPage extends StatelessWidget {
@@ -24,6 +25,42 @@ class SettingsPage extends StatelessWidget {
         listenable: settings,
         builder: (context, _) => ListView(
           children: [
+            ListTile(
+              leading: const Icon(Icons.tune_rounded),
+              title: Text(s.manageInterests),
+              trailing: const Icon(Icons.chevron_right_rounded),
+              onTap: () =>
+                  Navigator.of(context)
+                      .push(MaterialPageRoute<void>(builder: (_) => InterestsPage(settings: settings))),
+            ),
+            const Divider(),
+            _Header(s.appearance),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: SegmentedButton<ThemeMode>(
+                showSelectedIcon: false,
+                segments: [
+                  ButtonSegment(
+                    value: ThemeMode.system,
+                    label: Text(s.themeSystem),
+                    icon: const Icon(Icons.brightness_auto_outlined),
+                  ),
+                  ButtonSegment(
+                    value: ThemeMode.light,
+                    label: Text(s.themeLight),
+                    icon: const Icon(Icons.light_mode_outlined),
+                  ),
+                  ButtonSegment(
+                    value: ThemeMode.dark,
+                    label: Text(s.themeDark),
+                    icon: const Icon(Icons.dark_mode_outlined),
+                  ),
+                ],
+                selected: {settings.themeMode},
+                onSelectionChanged: (v) => settings.setThemeMode(v.first),
+              ),
+            ),
+            const Divider(),
             _Header(s.language),
             RadioGroup<String>(
               groupValue: settings.locale?.languageCode ?? 'system',
@@ -53,11 +90,13 @@ class SettingsPage extends StatelessWidget {
               title: Text(s.copyrightNotice),
               subtitle: Text('${s.copyrightNoticeDesc}\n${AppConfig.copyrightEmail}'),
               isThreeLine: true,
-              onTap: () => _open(Uri(
-                scheme: 'mailto',
-                path: AppConfig.copyrightEmail,
-                query: _encodeQuery({'subject': s.copyrightMailSubject, 'body': s.copyrightMailBody}),
-              )),
+              onTap: () => _open(
+                Uri(
+                  scheme: 'mailto',
+                  path: AppConfig.copyrightEmail,
+                  query: _encodeQuery({'subject': s.copyrightMailSubject, 'body': s.copyrightMailBody}),
+                ),
+              ),
             ),
             const Divider(),
             _Header(s.about),
@@ -72,9 +111,8 @@ class SettingsPage extends StatelessWidget {
   }
 
   /// mailto: için boşlukları "+" yerine %20 ile kodlar (e-posta uygulamaları "+" gösterir).
-  static String _encodeQuery(Map<String, String> params) => params.entries
-      .map((e) => '${Uri.encodeComponent(e.key)}=${Uri.encodeComponent(e.value)}')
-      .join('&');
+  static String _encodeQuery(Map<String, String> params) =>
+      params.entries.map((e) => '${Uri.encodeComponent(e.key)}=${Uri.encodeComponent(e.value)}').join('&');
 }
 
 class _Header extends StatelessWidget {
@@ -84,10 +122,10 @@ class _Header extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
-        child: Text(
-          text,
-          style: Theme.of(context).textTheme.labelLarge?.copyWith(color: Theme.of(context).colorScheme.primary),
-        ),
-      );
+    padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
+    child: Text(
+      text,
+      style: Theme.of(context).textTheme.labelLarge?.copyWith(color: Theme.of(context).colorScheme.primary),
+    ),
+  );
 }

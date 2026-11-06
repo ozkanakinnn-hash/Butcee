@@ -15,10 +15,16 @@ class ArticlePage {
 
 /// Firestore sorguları tek yerde. (FlutterFlow'daki "Backend Query" ayarlarının kod karşılığı.)
 class NewsRepository {
-  const NewsRepository();
+  const NewsRepository({this.firestore});
+
+  /// Testlerde sahte Firestore verilebilir; boşsa uygulamanın Firestore'u kullanılır.
+  final FirebaseFirestore? firestore;
+
+  FirebaseFirestore get _db => firestore ?? FirebaseFirestore.instance;
 
   /// Kategori sekmeleri: order_index'e göre sıralı, canlı dinlenir.
-  Stream<List<CategoriesRecord>> watchCategories() => CategoriesRecord.collection
+  Stream<List<CategoriesRecord>> watchCategories() => _db
+      .collection('categories')
       .orderBy('order_index')
       .snapshots()
       .map((qs) => qs.docs.map(CategoriesRecord.fromSnapshot).toList());
@@ -26,14 +32,22 @@ class NewsRepository {
   /// Haber akışı: en yeni önce, sayfa sayfa (sonsuz kaydırma).
   /// [category] null ise "Tümü" sekmesi. Kategori filtresi için
   /// (category_id ASC, published_at DESC) birleşik dizini gerekir — firestore.indexes.json.
+  ///
+  /// Son Dakika ([CategoriesRecord.isBreaking]): orderBy('breaking_at') yalnızca bu alana sahip
+  /// haberleri döndürür; tek alanlı otomatik dizin yeterlidir.
   Future<ArticlePage> fetchArticles({
-    DocumentReference<Map<String, dynamic>>? category,
+    CategoriesRecord? category,
     DocumentSnapshot<Map<String, dynamic>>? startAfter,
     int pageSize = AppConfig.pageSize,
   }) async {
-    Query<Map<String, dynamic>> q = ArticlesRecord.collection;
-    if (category != null) q = q.where('category_id', isEqualTo: category);
-    q = q.orderBy('published_at', descending: true).limit(pageSize);
+    Query<Map<String, dynamic>> q = _db.collection('articles');
+    if (category != null && category.isBreaking) {
+      q = q.orderBy('breaking_at', descending: true);
+    } else {
+      if (category != null) q = q.where('category_id', isEqualTo: category.reference);
+      q = q.orderBy('published_at', descending: true);
+    }
+    q = q.limit(pageSize);
     if (startAfter != null) q = q.startAfterDocument(startAfter);
 
     final snap = await q.get();
