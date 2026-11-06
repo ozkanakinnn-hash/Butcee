@@ -100,7 +100,7 @@ final class PrayerService: ObservableObject {
           gunes: PrayerTimeUtils.clean(tm["Sunrise"], fallback: "07:10"),
           ogle: PrayerTimeUtils.clean(tm["Dhuhr"], fallback: "13:05"),
           ikindi: PrayerTimeUtils.clean(tm["Asr"], fallback: "16:20"),
-          aksam: PrayerTimeUtils.clean(tm["Maghrib"], fallback: "18:45"),
+          aksam: diyanetAksam(PrayerTimeUtils.clean(tm["Maghrib"], fallback: "18:45"), day: d, key: key),
           yatsi: PrayerTimeUtils.clean(tm["Isha"], fallback: "20:05"),
           dateStr: key, city: city, district: district))
       }
@@ -108,6 +108,19 @@ final class PrayerService: ObservableObject {
     } catch {
       // Çevrimdışı: yerel hesap kullanılır
     }
+  }
+
+  /// Diyanet gibi yuvarla: güneş batışı yukarı yuvarlanır (+7 dk temkin); servis 1 dk erken kaldıysa düzeltilir.
+  private func diyanetAksam(_ maghrib: String, day: [String: Any], key: String) -> String {
+    guard let meta = day["meta"] as? [String: Any],
+          let lat = (meta["latitude"] as? Double) ?? (meta["latitude"] as? NSNumber)?.doubleValue,
+          let lon = (meta["longitude"] as? Double) ?? (meta["longitude"] as? NSNumber)?.doubleValue else { return maghrib }
+    let p = key.split(separator: "-").compactMap { Int($0) }
+    guard p.count == 3 else { return maghrib }
+    let tz = TimeZone(identifier: (meta["timezone"] as? String) ?? "Europe/Istanbul") ?? .current
+    let date = DateUtil.date(fromKey: key) ?? Date()
+    let tzH = Double(tz.secondsFromGMT(for: date)) / 3600
+    return LocalPrayerCalc.diyanetMaghrib(maghrib, lat: lat, lon: lon, y: p[0], m: p[1], d: p[2], tzHours: tzH)
   }
 
   /// Yurt dışı şehirler için çevrimdışı hesapta kullanılacak koordinatı bir kez kaydeder.

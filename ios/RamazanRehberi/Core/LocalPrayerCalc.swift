@@ -58,9 +58,50 @@ enum LocalPrayerCalc {
     }
     return PrayerTimes(
       imsak: fmt(fajr, 0), gunes: fmt(sunrise, -7), ogle: fmt(noon, 5), ikindi: fmt(asr, 4),
-      aksam: fmt(maghrib, 6), yatsi: fmt(isha, -1),
+      aksam: {
+        // Akşam: Diyanet gibi güneş batışı yukarı yuvarlanır + 7 dk
+        let c = DateUtil.cal.dateComponents([.year, .month, .day], from: date)
+        let ss = sunsetMinutes(lat: lat, lon: lon, y: c.year!, m: c.month!, d: c.day!, tzHours: tz)
+        return fmt((ceil(ss - 1e-6) + 7) / 60, 0)
+      }(), yatsi: fmt(isha, -1),
       dateStr: DateUtil.dateKey(date), city: city, district: district
     )
+  }
+
+  /// NOAA yöntemiyle astronomik güneş batışı (yerel saat, dakika; saniye hassasiyetinde).
+  static func sunsetMinutes(lat: Double, lon: Double, y: Int, m: Int, d: Int, tzHours: Double) -> Double {
+    var yy = Double(y), mm = Double(m)
+    if mm <= 2 { yy -= 1; mm += 12 }
+    let a = floor(yy / 100), b = 2 - a + floor(a / 4)
+    let jd = floor(365.25 * (yy + 4716)) + floor(30.6001 * (mm + 1)) + Double(d) + b - 1524.5
+    var t = 1080.0
+    for _ in 0..<3 {
+      let tc = (jd + (t - tzHours * 60) / 1440 - 2451545) / 36525
+      let l0 = (280.46646 + tc * (36000.76983 + tc * 0.0003032)).truncatingRemainder(dividingBy: 360)
+      let ma = 357.52911 + tc * (35999.05029 - 0.0001537 * tc)
+      let e = 0.016708634 - tc * (0.000042037 + 0.0000001267 * tc)
+      let c = sin(rad(ma)) * (1.914602 - tc * (0.004817 + 0.000014 * tc)) + sin(rad(2 * ma)) * (0.019993 - 0.000101 * tc) + sin(rad(3 * ma)) * 0.000289
+      let lam = l0 + c - 0.00569 - 0.00478 * sin(rad(125.04 - 1934.136 * tc))
+      let eps0 = 23 + (26 + (21.448 - tc * (46.815 + tc * (0.00059 - tc * 0.001813))) / 60) / 60
+      let eps = eps0 + 0.00256 * cos(rad(125.04 - 1934.136 * tc))
+      let dec = deg(asin(sin(rad(eps)) * sin(rad(lam))))
+      let yv = pow(tan(rad(eps / 2)), 2)
+      let p1 = yv * sin(2 * rad(l0)) - 2 * e * sin(rad(ma))
+      let p2 = 4 * e * yv * sin(rad(ma)) * cos(2 * rad(l0)) - 0.5 * yv * yv * sin(4 * rad(l0)) - 1.25 * e * e * sin(2 * rad(ma))
+      let eqt = 4 * deg(p1 + p2)
+      let x = max(-1, min(1, cos(rad(90.833)) / (cos(rad(lat)) * cos(rad(dec))) - tan(rad(lat)) * tan(rad(dec))))
+      t = 720 - 4 * lon - eqt + tzHours * 60 + 4 * deg(acos(x))
+    }
+    return t
+  }
+
+  /// Diyanet akşam vakti: güneş batışı dakikaya YUKARI yuvarlanır + 7 dk temkin. Servis en yakın dakikaya
+  /// yuvarladığından bazı günler 1 dk erken kalır; o günlerde 1 dk ileri alınır (fark yalnızca 0 veya +1 dk).
+  static func diyanetMaghrib(_ service: String, lat: Double, lon: Double, y: Int, m: Int, d: Int, tzHours: Double) -> String {
+    let sm = PrayerTimeUtils.minutes(service)
+    let diyanet = Int(ceil(sunsetMinutes(lat: lat, lon: lon, y: y, m: m, d: d, tzHours: tzHours) - 1e-6)) + 7
+    let fixed = diyanet == sm + 1 ? diyanet : sm
+    return String(format: "%02d:%02d", fixed / 60, fixed % 60)
   }
 
   private static func rad(_ d: Double) -> Double { d * .pi / 180 }

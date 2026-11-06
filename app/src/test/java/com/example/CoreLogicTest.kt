@@ -98,6 +98,14 @@ class CoreLogicTest {
     TurkeyProvinces.list.forEach { assertNotNull("koordinat yok: ${it.name}", PrayerCalc.provinceCoords[it.name]) }
   }
 
+  @Test fun maghrib_roundedUpLikeDiyanet() {
+    // Saruhanlı 6 Kasım 2026: batış 18:04:19 → Diyanet 18:05 + 7 = 18:12 (servis 18:11 veriyordu)
+    assertEquals("18:12", PrayerCalc.diyanetMaghrib("18:11", 38.733, 27.566, 2026, 11, 6, 3.0))
+    assertEquals("18:12", PrayerCalc.diyanetMaghrib("18:12", 38.733, 27.566, 2026, 11, 6, 3.0))
+    // En fazla 1 dk ileri alınır; büyük farklar değiştirilmez
+    assertEquals("18:09", PrayerCalc.diyanetMaghrib("18:09", 38.733, 27.566, 2026, 11, 6, 3.0))
+  }
+
   @Test fun autoLocation_nameMatching() {
     assertEquals("sanliurfa", AutoLocation.norm("Şanlıurfa"))
     assertEquals(AutoLocation.norm("İstanbul"), AutoLocation.norm("Istanbul"))

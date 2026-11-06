@@ -61,7 +61,17 @@ class PrayerRepository(private val context: Context) {
           val sunrise = PrayerTimeUtils.cleanTimeString(timings.optString("Sunrise"), "07:10")
           val dhuhr = PrayerTimeUtils.cleanTimeString(timings.optString("Dhuhr"), "13:05")
           val asr = PrayerTimeUtils.cleanTimeString(timings.optString("Asr"), "16:20")
-          val maghrib = PrayerTimeUtils.cleanTimeString(timings.optString("Maghrib"), "18:45")
+          var maghrib = PrayerTimeUtils.cleanTimeString(timings.optString("Maghrib"), "18:45")
+          // Diyanet gibi yuvarla: güneş batışı yukarı yuvarlanır (+7 dk temkin)
+          runCatching {
+            val meta = root.getJSONObject("data").getJSONObject("meta")
+            val la = meta.getDouble("latitude"); val lo = meta.getDouble("longitude")
+            val tz = java.util.TimeZone.getTimeZone(meta.optString("timezone", "Europe/Istanbul"))
+            val now = Calendar.getInstance(tz)
+            val tzH = tz.getOffset(now.timeInMillis) / 3_600_000.0
+            maghrib = com.example.util.PrayerCalc.diyanetMaghrib(maghrib, la, lo,
+              now.get(Calendar.YEAR), now.get(Calendar.MONTH) + 1, now.get(Calendar.DAY_OF_MONTH), tzH)
+          }
           val isha = PrayerTimeUtils.cleanTimeString(timings.optString("Isha"), "20:05")
 
           val times = PrayerTimes(

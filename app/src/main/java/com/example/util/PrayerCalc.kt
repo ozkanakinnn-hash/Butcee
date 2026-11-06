@@ -8,6 +8,7 @@ import kotlin.math.acos
 import kotlin.math.asin
 import kotlin.math.atan
 import kotlin.math.atan2
+import kotlin.math.ceil
 import kotlin.math.cos
 import kotlin.math.floor
 import kotlin.math.roundToInt
@@ -132,7 +133,50 @@ object PrayerCalc {
       return String.format(Locale.ROOT, "%02d:%02d", mins / 60, mins % 60)
     }
     return listOf(fmt(noon - ha(18.0), 0), fmt(noon - ha(0.833), -7), fmt(noon, 5),
-      fmt(noon + ha(asrAlt), 4), fmt(noon + ha(0.833), 6), fmt(noon + ha(17.0), -1))
+      fmt(noon + ha(asrAlt), 4),
+      // Akşam: Diyanet gibi güneş batışı yukarı yuvarlanır + 7 dk
+      fmt((kotlin.math.ceil(sunsetMinutes(lat, lon, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH) + 1, cal.get(Calendar.DAY_OF_MONTH), tz) - 1e-6) + 7) / 60.0, 0),
+      fmt(noon + ha(17.0), -1))
+  }
+
+  /** NOAA yöntemiyle astronomik güneş batışı (yerel saat, dakika; saniye hassasiyetinde). */
+  fun sunsetMinutes(lat: Double, lon: Double, y: Int, m: Int, d: Int, tzHours: Double): Double {
+    var yy = y.toDouble(); var mm = m.toDouble()
+    if (mm <= 2) { yy -= 1; mm += 12 }
+    val a = floor(yy / 100); val b = 2 - a + floor(a / 4)
+    val jd = floor(365.25 * (yy + 4716)) + floor(30.6001 * (mm + 1)) + d + b - 1524.5
+    var t = 1080.0
+    repeat(3) {
+      val tc = (jd + (t - tzHours * 60) / 1440 - 2451545) / 36525
+      val l0 = (280.46646 + tc * (36000.76983 + tc * 0.0003032)) % 360
+      val ma = 357.52911 + tc * (35999.05029 - 0.0001537 * tc)
+      val e = 0.016708634 - tc * (0.000042037 + 0.0000001267 * tc)
+      val c = sin(rad(ma)) * (1.914602 - tc * (0.004817 + 0.000014 * tc)) + sin(rad(2 * ma)) * (0.019993 - 0.000101 * tc) + sin(rad(3 * ma)) * 0.000289
+      val lam = l0 + c - 0.00569 - 0.00478 * sin(rad(125.04 - 1934.136 * tc))
+      val eps0 = 23 + (26 + (21.448 - tc * (46.815 + tc * (0.00059 - tc * 0.001813))) / 60) / 60
+      val eps = eps0 + 0.00256 * cos(rad(125.04 - 1934.136 * tc))
+      val dec = deg(asin(sin(rad(eps)) * sin(rad(lam))))
+      val yv = tan(rad(eps / 2)).let { it * it }
+      val eqt = 4 * deg(yv * sin(2 * rad(l0)) - 2 * e * sin(rad(ma)) + 4 * e * yv * sin(rad(ma)) * cos(2 * rad(l0)) -
+        0.5 * yv * yv * sin(4 * rad(l0)) - 1.25 * e * e * sin(2 * rad(ma)))
+      val x = (cos(rad(90.833)) / (cos(rad(lat)) * cos(rad(dec))) - tan(rad(lat)) * tan(rad(dec))).coerceIn(-1.0, 1.0)
+      t = 720 - 4 * lon - eqt + tzHours * 60 + 4 * deg(acos(x))
+    }
+    return t
+  }
+
+  /**
+   * Diyanet akşam vaktini, astronomik güneş batışını dakikaya YUKARI yuvarlayıp 7 dk temkin ekleyerek verir.
+   * Servis (Aladhan) en yakın dakikaya yuvarladığından bazı günler 1 dk erken kalır; o günlerde 1 dk ileri alınır.
+   * Fark yalnızca 0 veya +1 dakika olabilir.
+   */
+  fun diyanetMaghrib(serviceMaghrib: String, lat: Double, lon: Double, y: Int, m: Int, d: Int, tzHours: Double): String {
+    val p = serviceMaghrib.split(":").mapNotNull { it.trim().take(2).toIntOrNull() }
+    if (p.size != 2) return serviceMaghrib
+    val service = p[0] * 60 + p[1]
+    val diyanet = kotlin.math.ceil(sunsetMinutes(lat, lon, y, m, d, tzHours) - 1e-6).toInt() + 7
+    val fixed = if (diyanet == service + 1) diyanet else service
+    return String.format(Locale.ROOT, "%02d:%02d", fixed / 60, fixed % 60)
   }
 
   private fun rad(d: Double) = d * Math.PI / 180

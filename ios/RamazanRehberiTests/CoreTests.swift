@@ -65,6 +65,12 @@ final class CoreTests: XCTestCase {
     for p in AppContent.shared.provinces { XCTAssertNotNil(LocalPrayerCalc.provinceCoords[p.name], "koordinat yok: \(p.name)") }
   }
 
+  func testMaghribRoundedUpLikeDiyanet() {
+    XCTAssertEqual(LocalPrayerCalc.diyanetMaghrib("18:11", lat: 38.733, lon: 27.566, y: 2026, m: 11, d: 6, tzHours: 3), "18:12")
+    XCTAssertEqual(LocalPrayerCalc.diyanetMaghrib("18:12", lat: 38.733, lon: 27.566, y: 2026, m: 11, d: 6, tzHours: 3), "18:12")
+    XCTAssertEqual(LocalPrayerCalc.diyanetMaghrib("18:09", lat: 38.733, lon: 27.566, y: 2026, m: 11, d: 6, tzHours: 3), "18:09")
+  }
+
   func testQiblaBearing() {
     // İstanbul'dan kıble yaklaşık 151°
     let q = QiblaMath.bearing(from: .init(latitude: 41.01, longitude: 28.98))
