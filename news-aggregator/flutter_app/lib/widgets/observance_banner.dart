@@ -16,7 +16,7 @@ class ObservanceBanner extends StatelessWidget {
     if (o == null) return const SizedBox.shrink();
     final s = S.of(context);
     final somber = o.observance.isCommemoration;
-    final bg = somber ? const Color(0xFF111111) : const Color(0xFFE30A17);
+    final bg = o.observance.color;
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
       child: Container(

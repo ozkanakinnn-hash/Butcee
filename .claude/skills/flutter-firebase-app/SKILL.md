@@ -234,4 +234,5 @@ description: Flutter/FlutterFlow + Firebase (Firestore, Cloud Functions) uygulam
 - `flutter_local_notifications.zonedSchedule` + `timezone` (Europe/Istanbul), `AndroidScheduleMode.inexactAllowWhileIdle` → SCHEDULE_EXACT_ALARM izni gerekmez (Play yalnızca alarm/takvim uygulamalarına verir). Birkaç dk sapar: 10 Kasım 09.00'da gönderilir, metin 09.05 saygı duruşunu hatırlatır.
 - Manifest: RECEIVE_BOOT_COMPLETED + `ScheduledNotificationReceiver` ve `ScheduledNotificationBootReceiver` (yeniden başlatmada kurulur). Kanal (`observances`) `channels` listesine eklenmeyi unutma.
 - Sabit id aralığı (5000–5999) → yeniden zamanlamadan önce yalnızca o aralığı iptal et. Dini bayramlar yıl tablosuyla (Diyanet); tablo biterse güncelle.
-- Anma = siyah sade şerit, bayram = kırmızı şerit; ana sayfa üstünde o gün gösterilir. `{n}` = yıl − başlangıç yılı (10 Kasım 2026 → 88. yıl).
+- Kandiller de (Regaip, Miraç, Berat, Kadir, Mevlid) tabloyla; bir yılda iki kez olabilir (2027 Miraç) → `dates` listesi (yıl, ay, gün), id = yıl*100 + sıra*3 + n.
+- Anma = siyah sade şerit, bayram = kırmızı, kandil = koyu yeşil; ana sayfa üstünde o gün gösterilir. `{n}` = yıl − başlangıç yılı (10 Kasım 2026 → 88. yıl).

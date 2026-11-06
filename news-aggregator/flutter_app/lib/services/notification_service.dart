@@ -98,8 +98,8 @@ class NotificationService {
     ),
     AndroidNotificationChannel(
       'observances',
-      'Bayram ve anma günleri',
-      description: 'Resmi bayramlarda kutlama, anma günlerinde anma bildirimi',
+      'Bayram, kandil ve anma günleri',
+      description: 'Bayramlarda kutlama, kandillerde tebrik, anma günlerinde anma bildirimi',
       importance: Importance.high,
     ),
   ];
@@ -227,7 +227,7 @@ class NotificationService {
               importance: Importance.high,
               priority: Priority.high,
               icon: 'ic_stat_news',
-              color: o.observance.isCommemoration ? const Color(0xFF111111) : const Color(0xFFE30A17),
+              color: o.observance.color,
               styleInformation: BigTextStyleInformation(o.body(english: english)),
             ),
           ),
