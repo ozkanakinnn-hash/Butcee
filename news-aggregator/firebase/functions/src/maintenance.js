@@ -48,10 +48,41 @@ async function backfillSearchKeywords(db, { maxDocs = 3000 } = {}) {
   }
 }
 
-async function runMaintenance(db) {
-  const search = await backfillSearchKeywords(db);
-  const deletedNotifications = await cleanupNotificationLog(db);
-  return { search, deletedNotifications };
+/**
+ * Bir kerelik: Son Dakika kaynaklarının daha önce Gündem'e yazılmış haberlerini Son Dakika kategorisine taşır.
+ */
+async function moveBreakingSourceArticles(db) {
+  const metaRef = db.doc('app_meta/breaking_category');
+  if (((await metaRef.get()).data() || {}).version >= 1) return { done: true, moved: 0 };
+  const sources = await db.collection('sources').where('is_breaking', '==', true).get();
+  const ids = sources.docs.map((d) => d.id);
+  const target = db.collection('categories').doc('son-dakika');
+  let moved = 0;
+  if (ids.length) {
+    for (;;) {
+      const snap = await db.collection('articles').where('source_id', 'in', ids.slice(0, 30)).limit(400).get();
+      const batch = db.batch();
+      let n = 0;
+      for (const d of snap.docs) {
+        const cat = d.get('category_id');
+        if (cat && cat.id === 'son-dakika') continue;
+        batch.update(d.ref, { category_id: target });
+        n += 1;
+      }
+      if (n) await batch.commit();
+      moved += n;
+      if (n === 0 || snap.size < 400) break;
+    }
+  }
+  await metaRef.set({ version: 1 }, { merge: true });
+  return { done: true, moved };
 }
 
-module.exports = { backfillSearchKeywords, runMaintenance, SEARCH_INDEX_VERSION };
+async function runMaintenance(db) {
+  const breaking = await moveBreakingSourceArticles(db);
+  const search = await backfillSearchKeywords(db);
+  const deletedNotifications = await cleanupNotificationLog(db);
+  return { breaking, search, deletedNotifications };
+}
+
+module.exports = { backfillSearchKeywords, moveBreakingSourceArticles, runMaintenance, SEARCH_INDEX_VERSION };

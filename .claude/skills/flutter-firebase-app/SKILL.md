@@ -191,3 +191,7 @@ description: Flutter/FlutterFlow + Firebase (Firestore, Cloud Functions) uygulam
   season, try from 2022 to 2024". /status ve /leagues çalışır, /fixtures ve /teams güncel sezonda reddedilir. Canlı skor
   için ücretli plan şart. Kullanıcıya üyelikten ÖNCE bunu söyle. Bot: plan hatasında `plan_blocked_until` (24 sa) yaz, cron her
   çalıştığında istek harcamadan çık (yoksa 15 dk'da bir hata e-postası ve boşa istek).
+- **Aynı haber iki sekmede:** Son Dakika kaynaklarını Gündem kategorisine yazmak + `breaking_at` işareti → haber hem
+  Gündem hem Son Dakika'da. Çözüm: Son Dakika kaynaklarının haberi `son-dakika` kategorisine; eski kayıtları bir kerelik
+  taşı; kategori sekmelerinde işaretli olanları istemcide ele (kısa kalan sayfayı birkaç turla doldur).
+  fake_cloud_firestore `orderBy(alan)` alanı olmayan belgeleri de döndürür (gerçek Firestore dışlar) → istemcide de süz.

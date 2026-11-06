@@ -43,22 +43,37 @@ class NewsRepository {
     DocumentSnapshot<Map<String, dynamic>>? startAfter,
     int pageSize = AppConfig.pageSize,
   }) async {
-    Query<Map<String, dynamic>> q = _db.collection('articles');
-    if (category != null && category.isBreaking) {
-      q = q.orderBy('breaking_at', descending: true);
+    Query<Map<String, dynamic>> base = _db.collection('articles');
+    final breakingTab = category != null && category.isBreaking;
+    if (breakingTab) {
+      base = base.orderBy('breaking_at', descending: true);
     } else {
-      if (category != null) q = q.where('category_id', isEqualTo: category.reference);
-      q = q.orderBy('published_at', descending: true);
+      if (category != null) base = base.where('category_id', isEqualTo: category.reference);
+      base = base.orderBy('published_at', descending: true);
     }
-    q = q.limit(pageSize);
-    if (startAfter != null) q = q.startAfterDocument(startAfter);
-
-    final snap = await q.get();
-    return ArticlePage(
-      snap.docs.map(ArticlesRecord.fromSnapshot).toList(),
-      snap.docs.isEmpty ? startAfter : snap.docs.last,
-      snap.docs.length == pageSize,
-    );
+    // Kategori sekmelerinde (Gündem vb.) Son Dakika olarak işaretlenmiş haberler gösterilmez —
+    // onlar Son Dakika sekmesinde. Elenenler yüzünden sayfa kısa kalmasın diye en fazla 3 tur doldurulur.
+    final hideBreaking = category != null && !breakingTab;
+    final items = <ArticlesRecord>[];
+    var cursor = startAfter;
+    var hasMore = true;
+    for (var round = 0; round < 3 && hasMore && items.length < pageSize; round++) {
+      var q = base.limit(pageSize);
+      if (cursor != null) q = q.startAfterDocument(cursor);
+      final snap = await q.get();
+      final page = snap.docs.map(ArticlesRecord.fromSnapshot);
+      items.addAll(
+        hideBreaking
+            ? page.where((a) => !a.isBreaking)
+            : breakingTab
+            ? page.where((a) => a.isBreaking) // sunucu zaten süzer; cihazda da garantiye al
+            : page,
+      );
+      if (snap.docs.isNotEmpty) cursor = snap.docs.last;
+      hasMore = snap.docs.length == pageSize;
+      if (!hideBreaking) break;
+    }
+    return ArticlePage(items, cursor, hasMore);
   }
 
   /// Süper Lig takımları (bu sezon ligde olanlar, Türkçe alfabeye göre).
