@@ -1,0 +1,18 @@
+2026-11-06 00:44:46.845683+0000 RamazanRehberi[12801:42963] [Client] Synchronous remote object proxy returned error: Error Domain=NSCocoaErrorDomain Code=4099 "The connection to service named com.apple.commcenter.coretelephony.xpc was invalidated: failed at lookup with error 3 - No such process." UserInfo={NSDebugDescription=The connection to service named com.apple.commcenter.coretelephony.xpc was invalidated: failed at lookup with error 3 - No such process.}
+2026-11-06 00:44:46.847285+0000 RamazanRehberi[12801:42963] [Client] Synchronous remote object proxy returned error: Error Domain=NSCocoaErrorDomain Code=4099 "The connection to service named com.apple.commcenter.coretelephony.xpc was invalidated: failed at lookup with error 3 - No such process." UserInfo={NSDebugDescription=The connection to service named com.apple.commcenter.coretelephony.xpc was invalidated: failed at lookup with error 3 - No such process.}
+Test Case '-[RamazanRehberiTests.CoreTests testAutoLocationMatching]' passed (0.011 seconds).
+Test Case '-[RamazanRehberiTests.CoreTests testCleanTime]' passed (0.010 seconds).
+Test Case '-[RamazanRehberiTests.CoreTests testContentAndTranslations]' passed (0.003 seconds).
+Test Case '-[RamazanRehberiTests.CoreTests testCountdownModes]' passed (0.007 seconds).
+2026-11-06 00:44:57.104736+0000 RamazanRehberi[12801:42969] [Default] Task <6CB04B56-38CB-4060-B2F3-1DD460780010>.<3> HTTTest Case '-[RamazanRehberiTests.CoreTests testGreetingCardsRender]' passed (1.422 seconds).
+Test Case '-[RamazanRehberiTests.CoreTests testHolidayCountdown]' passed (0.021 seconds).
+), NSLocalizedDescription=The request timed out., NSErrorFailingURLStringKey=https://api.aladhan.com/v1/calendarByAddress/2026/12?address=Fatih,%20%C4%B0stanbul,%20Turkey&method=13, NSErrorFailingURLKey=https://api.aladhan.com/v1/calendarByAddress/2026/12?address=Fati/Users/runner/work/Butcee/Butcee/ios/RamazanRehberiTests/CoreTests.swift:47: error: -[RamazanRehberiTests.CoreTests testIslamicDays2026] : XCTAssertTrue failed - Ramazan Bayramı tarihi
+/Users/runner/work/Butcee/Butcee/ios/RamazanRehberiTests/CoreTests.swift:48: error: -[RamazanRehberiTests.CoreTests testIslamicDays2026] : XCTAssertTrue failed - Kurban Bayramı tarihi
+Test Case '-[RamazanRehberiTests.CoreTests testIslamicDays2026]' failed (6.481 seconds).
+Test Case '-[RamazanRehberiTests.CoreTests testNotificationScheduling]' passed (2.092 seconds).
+Test Case '-[RamazanRehberiTests.CoreTests testOfflineCalcCloseToDiyanet]' passed (0.013 seconds).
+Test Case '-[RamazanRehberiTests.CoreTests testQiblaBearing]' passed (0.005 seconds).
+Test Case '-[RamazanRehberiTests.CoreTests testQuranText]' passed (0.003 seconds).
+Test Case '-[RamazanRehberiTests.CoreTests testRamadanCalendar]' passed (0.002 seconds).
+Test Case '-[RamazanRehberiTests.CoreTests testStores]' passed (0.044 seconds).
+** TEST FAILED **
