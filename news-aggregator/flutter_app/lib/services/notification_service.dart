@@ -4,7 +4,8 @@ import 'dart:convert';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'package:geolocator/geolocator.dart' show Geolocator;
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../app_settings.dart';
 
@@ -12,6 +13,9 @@ import '../app_settings.dart';
 /// (Top-level ve vm:entry-point olmalı.)
 @pragma('vm:entry-point')
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {}
+
+/// Bildirim izni durumu.
+enum NotificationPermission { granted, denied, blocked }
 
 /// Bildirime dokunulunca açılacak hedef.
 sealed class NotificationTarget {
@@ -165,19 +169,40 @@ class NotificationService {
   }
 
   // ── İzin ─────────────────────────────────────────────────────────────────
-  Future<PermissionStatus> permissionStatus() => Permission.notification.status;
+  // permission_handler yerine Firebase Messaging kullanılır (permission_handler'ın son sürümü
+  // projenin desteklemediği compileSdk 37'yi istiyor). Android sistem penceresi iki kez
+  // reddedilince bir daha gösterilmez; bunu "blocked" sayar ve uygulama ayarlarını açarız.
+  static const _askedKey = 'notif_permission_asked';
 
-  /// İzin ister. Kalıcı reddedildiyse sistem ayarlarını açar.
-  Future<PermissionStatus> requestPermission() async {
-    var status = await Permission.notification.status;
-    if (status.isPermanentlyDenied) {
-      await openAppSettings();
-      return status;
+  Future<NotificationPermission> permissionStatus() async {
+    final st = (await FirebaseMessaging.instance.getNotificationSettings()).authorizationStatus;
+    if (st == AuthorizationStatus.authorized || st == AuthorizationStatus.provisional) {
+      return NotificationPermission.granted;
     }
-    status = await Permission.notification.request();
-    if (status.isGranted) await syncTopics();
-    return status;
+    final prefs = await SharedPreferences.getInstance();
+    return (prefs.getInt(_askedKey) ?? 0) >= 2 ? NotificationPermission.blocked : NotificationPermission.denied;
   }
+
+  /// İzin ister; sistem penceresi artık açılmıyorsa uygulama ayarlarını açar.
+  Future<NotificationPermission> requestPermission() async {
+    final prefs = await SharedPreferences.getInstance();
+    final asked = prefs.getInt(_askedKey) ?? 0;
+    if (asked >= 2) {
+      await Geolocator.openAppSettings(); // uygulama bilgi sayfası (bildirim anahtarı orada)
+      return permissionStatus();
+    }
+    final st = (await FirebaseMessaging.instance.requestPermission()).authorizationStatus;
+    if (st == AuthorizationStatus.authorized || st == AuthorizationStatus.provisional) {
+      await prefs.remove(_askedKey);
+      await syncTopics();
+      return NotificationPermission.granted;
+    }
+    await prefs.setInt(_askedKey, asked + 1);
+    return permissionStatus();
+  }
+
+  /// Uygulamanın sistem ayarları sayfası.
+  static Future<void> openSystemSettings() => Geolocator.openAppSettings();
 
   // ── Konu abonelikleri ────────────────────────────────────────────────────
   bool _syncing = false;

@@ -178,3 +178,8 @@ description: Flutter/FlutterFlow + Firebase (Firestore, Cloud Functions) uygulam
   `Expanded` ile kur, sütunu `mainAxisSize.min`. Widget testleri (Ahem yazı tipi) bunu yakalar.
 - **Alt menü:** `NavigationBar` + `IndexedStack` (sekme durumu korunur); sağ üst ☰ → `endDrawer`
   (`Builder` içinden `Scaffold.of(context).openEndDrawer()`).
+- **compileSdk tuzağı:** `permission_handler` 13 (permission_handler_android) compileSdk 37 istiyor; AGP 9.1 en fazla 36 →
+  `checkDebugAarMetadata` hatası. Yerel analiz/test bunu YAKALAMAZ, yalnızca APK derlemesi yakalar → her yeni eklentiden
+  sonra CI'da `flutter build apk` sonucuna bak. Çözüm: eklentiyi kaldır; bildirim izni `FirebaseMessaging.requestPermission`
+  + `getNotificationSettings`, ayarları açmak `Geolocator.openAppSettings()`. Android'de iki retten sonra sistem penceresi
+  çıkmaz → sayacı prefs'te tut, "engellendi" say ve ayarları aç.
