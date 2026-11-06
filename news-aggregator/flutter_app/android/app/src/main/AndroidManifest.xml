@@ -40,6 +40,11 @@
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
             android:value="${admobAppId}" />
+        <!-- Test reklamlarında çıkan "AdMob native ad validator" geliştirici penceresini kapat
+             (yalnızca test sürümünde görünür; mağaza sürümünü etkilemez). -->
+        <meta-data
+            android:name="com.google.android.gms.ads.flag.NATIVE_AD_DEBUGGER_ENABLED"
+            android:value="false" />
         <!-- FCM: kanal belirtilmeyen bildirimler için varsayılanlar -->
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_channel_id"
