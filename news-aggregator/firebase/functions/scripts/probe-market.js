@@ -33,10 +33,18 @@ async function get(url) {
   const tr = await get('https://finans.truncgil.com/v4/today.json');
   console.log('truncgil', tr.status, tr.text.slice(0, 160));
   try {
-    const j = JSON.parse(tr.text);
+    const j = JSON.parse(tr.text.replace(/^\uFEFF/, ''));
+    console.log('  toplam anahtar:', Object.keys(j).length);
+    for (const [k, v] of Object.entries(j)) {
+      if (k === 'Update_Date') continue;
+      const t = v && v.Type;
+      if (t !== 'Currency' || ['USD', 'EUR'].includes(k)) console.log('  ', k, JSON.stringify(v).slice(0, 140));
+    }
     for (const k of ['USD', 'EUR', 'GRA', 'gram-altin', 'ONS', 'ons', 'BIST100', 'XU100', 'BRENT']) {
       if (j[k]) console.log('  ', k, JSON.stringify(j[k]).slice(0, 160));
     }
     console.log('  anahtarlar:', Object.keys(j).slice(0, 80).join(','));
-  } catch {}
+  } catch (e) {
+    console.log('  JSON okunamadı:', e.message);
+  }
 })();
