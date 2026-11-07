@@ -1,0 +1,31 @@
+// Maven Central proxy üzerinden 429 veriyor → önce Google'ın Maven Central aynası, sonra Google deposu,
+// en son eklenti portalı (portal eksik dosyalar için Maven Central'a yönlendirir ve 429 alır).
+def MIRROR = 'https://maven-central.storage-download.googleapis.com/maven2/'
+def GOOGLE = 'https://dl.google.com/dl/android/maven2/'
+def rewrite = { RepositoryHandler repos ->
+    repos.all { r ->
+        if (r instanceof MavenArtifactRepository && r.url.toString().contains('repo.maven.apache.org')) r.url = MIRROR
+    }
+}
+def front = { RepositoryHandler repos ->
+    if (!repos.findByName('centralMirror')) {
+        def g = repos.maven { url = GOOGLE; name = 'googleFirst' }
+        repos.remove(g); repos.addFirst(g)
+        def m = repos.maven { url = MIRROR; name = 'centralMirror' }
+        repos.remove(m); repos.addFirst(m)
+    }
+}
+beforeSettings { s ->
+    if (s.pluginManagement.repositories.isEmpty()) s.pluginManagement.repositories.gradlePluginPortal()
+    front(s.pluginManagement.repositories)
+    rewrite(s.pluginManagement.repositories)
+}
+settingsEvaluated { s ->
+    rewrite(s.pluginManagement.repositories)
+    rewrite(s.dependencyResolutionManagement.repositories)
+    if (!s.dependencyResolutionManagement.repositories.isEmpty()) front(s.dependencyResolutionManagement.repositories)
+}
+allprojects {
+    buildscript { rewrite(repositories) }
+    rewrite(repositories)
+}
