@@ -51,6 +51,14 @@
             </intent-filter>
         </activity>
 
+        <!-- Firebase konsolundan gönderilen bildirimler (uygulama kapalıyken de) uygulamanın kanalı ve simgesiyle görünsün -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="ramazan_rehberi_ney_v1" />
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@drawable/ic_stat_mosque" />
+
         <service
             android:name=".service.MyFirebaseMessagingService"
             android:exported="false">
