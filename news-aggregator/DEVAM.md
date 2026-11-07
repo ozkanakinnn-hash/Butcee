@@ -9,7 +9,7 @@ Bu klasörü Claude Desktop'ta açtıktan sonra yeni sohbete şunu yaz:
   footballTick (1 dk). Kod: news-aggregator/firebase/functions. Dağıtım: `npx -y firebase-tools@15 deploy --only functions,firestore`
   (news-aggregator/firebase klasöründe; önce `firebase login` ve `firebase use haber-68a3c`).
 - GitHub hesabı askıya alındı → GitHub Actions'ta ZAMANLANMIŞ GÖREV ÇALIŞTIRMA (Actions yalnızca derleme/test).
-- Kod yedeği: Google Drive'da tarihli zip'ler.
+- Kod deposu: Bitbucket `ozkan45/haber-akisi1` (main dalı; git kullanıcı adı `x-bitbucket-api-token-auth` + Atlassian API anahtarı, yetkiler read/write:repository:bitbucket). Ek yedek: Google Drive'da tarihli zip'ler.
 - Beceri notları: .claude/skills/flutter-firebase-app/SKILL.md (kullanıcı tercihleri ve öğrenilen dersler).
 
 ## Bilgisayarda ilk yapılacaklar
