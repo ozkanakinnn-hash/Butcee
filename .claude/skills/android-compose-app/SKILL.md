@@ -165,3 +165,13 @@ gradle/actions/setup-gradle@v5 → `./gradlew assembleDebug` → upload-artifact
 - Android: TYPE_ROTATION_VECTOR manyetik kuzey verir → `GeomagneticField.declination` ekle. getOrientation + remapCoordinateSystem eşik değiştirmesi (yatay↔dik) sıçrama/ters yön üretebilir; yerine R'den eğimden bağımsız yön: `east = |R8|·U.e − max(0,U.up)·R2`, `north = |R8|·U.n − max(0,U.up)·R5` (U = ekran üst kenarı ekseni, ekran dönüşüne göre ±X/±Y), `atan2(east, north)`.
 - iOS: `trueHeading` (konum gerekir, yoksa magneticHeading → sapma kadar hata, kullanıcıyı uyar); `headingOrientation = .portrait`; kadranı animasyonla döndürürken 359→0 geçişinde ters tam tur atmaması için kesintisiz (unwrap) açı kullan.
 - Pusuladan bağımsız doğrulama: Kıble Saati (güneşin azimutu = kıble açısı) ve ekranda güneş işareti.
+
+## Namaz vakitleri: Diyanet ile dakikası dakikasına eşleşme
+- Astronomik hesap (Aladhan method=13 veya yerel NOAA) Diyanet'le her gün tutmaz: Diyanet'in modeli saniye düzeyinde farklı (Saruhanlı'da −40…+66 sn); 32 günde 192 vakitten 44'ü ±1 dk sapıyor. Hiçbir koordinat + yuvarlama (ceil/round/floor) kombinasyonu tümünü tutturmuyor.
+- Çözüm: Türkiye ve Diyanet'in listelediği yurt dışı şehirlerde vakitleri doğrudan Diyanet tablosundan al: `ezanvakti.emushaf.net` (`/ulkeler` → `/sehirler/{UlkeID}` → `/ilceler/{SehirID}` → `/vakitler/{IlceID}`; ~30 gün, `KibleSaati` dahil). İsimleri Türkçe karakterden arındırarak eşle; merkez ilçeler (Yunusemre, Şehzadeler, Eyyübiye…) Diyanet'te il adıyla geçer. Servis anlık reddedebilir → 1 tekrar.
+- Aylık tabloyu sakla: çevrimdışı ~30 gün doğru; alarm kurarken vakit geçmişse YARININ vaktini tablodan al (bugünün saatini yarına kopyalama).
+- Öncelik: Diyanet tablosu → Aladhan (Akşam ceil düzeltmesi) → yerel hesap. Önbellek anahtarını sürümle (v3) ki eski hatalı vakitler silinsin. Gizlilik politikasına yeni sunucuyu ekle.
+- Diyanet temkinleri (resmi): İmsak 0, Güneş −7, Öğle +5, İkindi +4, Akşam +7, Yatsı 0; açılar 18°/17°.
+- Diyanet "Kıble Açısı" = manyetik, ~2010 sapmasıyla (Saruhanlı 141, İstanbul 147, Ankara 155 birebir). iOS'ta WMM yok: bugünkü sapma − 0,1°×(yıl−2010,5).
+- Kıble ekranı testleri: Robolectric'te `captureToImage` zaman aşımına uğrar → `createAndroidComposeRule<ComponentActivity>()` + `decorView.draw(Canvas)`; sonsuz `LaunchedEffect` döngüsü varsa `mainClock.autoAdvance = false`.
+- Pusula kararlılığı: uyarlamalı süzgeç (birim vektör, sakin τ=0,45 sn / dönüşte τ=0,08 sn, histerezis 15°→2°, 0,6° ölü bölge) → 4° ham gürültü ekranda 0,5°, 90° dönüş 0,32 sn'de; manyetik parazit = ölçülen alan WMM beklenen alandan %30+ farklı.

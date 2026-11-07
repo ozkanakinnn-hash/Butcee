@@ -42,21 +42,34 @@ object ReminderScheduler {
 
   fun rescheduleAll(context: Context) {
     val prefs = AppPreferences(context)
-    schedule(context, Type.SAHUR, prefs.remindBeforeImsak, prefs.lastImsak, prefs.remindBeforeImsakMinutes)
-    schedule(context, Type.IFTAR, prefs.remindBeforeIftar, prefs.lastAksam, prefs.remindBeforeIftarMinutes)
+    // Vakit bugün geçmişse alarm yarına kurulur: yarının vakti Diyanet aylık tablosundan alınır
+    // (bugünün saatini yarına kopyalamak 1–2 dk kaydırırdı).
+    fun diyanetDay(offset: Int) = if (prefs.useCoordinates) null else runCatching {
+      val c = Calendar.getInstance().apply { add(Calendar.DAY_OF_MONTH, offset) }
+      val ds = java.text.SimpleDateFormat("dd.MM.yyyy", java.util.Locale.ROOT).format(c.time)
+      com.example.data.DiyanetSource.cachedDay(context, prefs.country, prefs.province, prefs.district, ds)
+    }.getOrNull()
+    // Uygulama günlerce açılmasa da: bugünün vakitleri tablodan tazelenir
+    diyanetDay(0)?.let { d ->
+      prefs.lastImsak = d.imsak; prefs.lastGunes = d.gunes; prefs.lastOgle = d.ogle
+      prefs.lastIkindi = d.ikindi; prefs.lastAksam = d.aksam; prefs.lastYatsi = d.yatsi
+    }
+    val tomorrow = diyanetDay(1)
+    schedule(context, Type.SAHUR, prefs.remindBeforeImsak, prefs.lastImsak, prefs.remindBeforeImsakMinutes, tomorrow?.imsak)
+    schedule(context, Type.IFTAR, prefs.remindBeforeIftar, prefs.lastAksam, prefs.remindBeforeIftarMinutes, tomorrow?.aksam)
     val on = prefs.notificationsEnabled
-    schedule(context, Type.PRAYER_IMSAK, on && prefs.notifyImsak, prefs.lastImsak, 0)
-    schedule(context, Type.PRAYER_OGLE, on && prefs.notifyOgle, prefs.lastOgle, 0)
-    schedule(context, Type.PRAYER_IKINDI, on && prefs.notifyIkindi, prefs.lastIkindi, 0)
-    schedule(context, Type.PRAYER_AKSAM, on && prefs.notifyIftar, prefs.lastAksam, 0)
-    schedule(context, Type.PRAYER_YATSI, on && prefs.notifyYatsi, prefs.lastYatsi, 0)
+    schedule(context, Type.PRAYER_IMSAK, on && prefs.notifyImsak, prefs.lastImsak, 0, tomorrow?.imsak)
+    schedule(context, Type.PRAYER_OGLE, on && prefs.notifyOgle, prefs.lastOgle, 0, tomorrow?.ogle)
+    schedule(context, Type.PRAYER_IKINDI, on && prefs.notifyIkindi, prefs.lastIkindi, 0, tomorrow?.ikindi)
+    schedule(context, Type.PRAYER_AKSAM, on && prefs.notifyIftar, prefs.lastAksam, 0, tomorrow?.aksam)
+    schedule(context, Type.PRAYER_YATSI, on && prefs.notifyYatsi, prefs.lastYatsi, 0, tomorrow?.yatsi)
     // Her gün 13:00'te kurulur; yalnızca Ramazan günlerinde bildirim gösterilir
     schedule(context, Type.FASTING_TIP, on, FASTING_TIP_TIME, 0)
     // Ana ekran widget'larını da güncel tut
     com.example.widget.WidgetUpdater.updateAll(context)
   }
 
-  private fun schedule(context: Context, type: Type, enabled: Boolean, targetTime: String, minutesBefore: Int) {
+  private fun schedule(context: Context, type: Type, enabled: Boolean, targetTime: String, minutesBefore: Int, tomorrowTime: String? = null) {
     val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
     if (!enabled) {
       alarmManager.cancel(pendingIntent(context, type, 0L))
@@ -75,6 +88,9 @@ object ReminderScheduler {
     var triggerAt = target.timeInMillis - minutesBefore * 60_000L
     if (triggerAt <= now + 30_000L) {
       target.add(Calendar.DAY_OF_MONTH, 1)
+      tomorrowTime?.let { PrayerTimeUtils.parseTimeToMinutes(it) }?.let { m ->
+        target.set(Calendar.HOUR_OF_DAY, m / 60); target.set(Calendar.MINUTE, m % 60)
+      }
       triggerAt = target.timeInMillis - minutesBefore * 60_000L
     }
 

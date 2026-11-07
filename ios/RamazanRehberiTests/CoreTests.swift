@@ -1,4 +1,5 @@
 import XCTest
+import CoreLocation
 import UserNotifications
 @testable import RamazanRehberi
 
@@ -71,10 +72,58 @@ final class CoreTests: XCTestCase {
     XCTAssertEqual(LocalPrayerCalc.diyanetMaghrib("18:09", lat: 38.733, lon: 27.566, y: 2026, m: 11, d: 6, tzHours: 3), "18:09")
   }
 
-  func testQiblaBearing() {
-    // İstanbul'dan kıble yaklaşık 151°
-    let q = QiblaMath.bearing(from: .init(latitude: 41.01, longitude: 28.98))
-    XCTAssertEqual(q, 151, accuracy: 3)
+  func testQiblaDiyanetMethod() {
+    // Diyanet Kâbe koordinatı ve büyük çember açıları (gerçek kuzey)
+    XCTAssertEqual(QiblaCalc.kaabaLat, 21.4225, accuracy: 1e-4)
+    XCTAssertEqual(QiblaCalc.kaabaLon, 39.8261, accuracy: 1e-4)
+    XCTAssertEqual(QiblaCalc.trueBearing(.init(latitude: 41.0082, longitude: 28.9784)), 151.6, accuracy: 0.15)
+    XCTAssertEqual(QiblaCalc.trueBearing(.init(latitude: 39.9334, longitude: 32.8597)), 160.2, accuracy: 0.15)
+    XCTAssertEqual(QiblaCalc.trueBearing(.init(latitude: 38.7333, longitude: 27.5667)), 145.2, accuracy: 0.15)
+    XCTAssertEqual(QiblaCalc.distanceKm(.init(latitude: 41.0082, longitude: 28.9784)), 2405, accuracy: 25)
+    // Diyanet biçimi: manyetik, tam derece (Saruhanlı, sapma +5,9°)
+    XCTAssertEqual(QiblaCalc.diyanetAngle(trueBearing: 145.2, declination: 5.9), 139)
+    // Diyanet'in yayımladığı açılar (2026 sapmaları WMM: Saruhanlı +5,88, İstanbul +6,36, Ankara +6,45)
+    let y2026 = DateComponents(calendar: Calendar(identifier: .gregorian), year: 2026, month: 11, day: 7).date!
+    XCTAssertEqual(QiblaCalc.diyanetPublishedAngle(trueBearing: 145.19, currentDeclination: 5.88, now: y2026), 141)
+    XCTAssertEqual(QiblaCalc.diyanetPublishedAngle(trueBearing: 151.62, currentDeclination: 6.36, now: y2026), 147)
+    XCTAssertEqual(QiblaCalc.diyanetPublishedAngle(trueBearing: 160.17, currentDeclination: 6.45, now: y2026), 155)
+    // Diyanet tablosu ayrıştırma
+    let days = DiyanetSource.parse([["MiladiTarihKisa": "07.11.2026", "Imsak": "06:12", "Gunes": "07:36", "Ogle": "12:58", "Ikindi": "15:46", "Aksam": "18:11", "Yatsi": "19:30", "KibleSaati": "10:46"]])
+    XCTAssertEqual(days.first?.times, ["06:12", "07:36", "12:58", "15:46", "18:11", "19:30"])
+    XCTAssertEqual(days.first?.dateKey, "2026-11-07")
+    XCTAssertEqual(days.first?.kibleSaati, "10:46")
+    XCTAssertEqual(DiyanetSource.norm("MANİSA"), "manisa")
+    XCTAssertEqual(DiyanetSource.norm("Saruhanlı"), "saruhanli")
+    XCTAssertEqual(QiblaCalc.turn(10, 350), 20, accuracy: 1e-9)
+    XCTAssertEqual(QiblaCalc.turn(140, 150), -10, accuracy: 1e-9)
+  }
+
+  func testQiblaTimeSunPointsToKaaba() {
+    let c = CLLocationCoordinate2D(latitude: 38.7333, longitude: 27.5667)
+    var cal = Calendar(identifier: .gregorian); cal.timeZone = TimeZone(identifier: "Europe/Istanbul")!
+    let day = cal.date(from: DateComponents(year: 2026, month: 11, day: 7, hour: 12))!
+    let t = QiblaCalc.qiblaTime(c, day: day, calendar: cal)
+    XCTAssertNotNil(t)
+    let s = QiblaCalc.sun(c, t!)
+    XCTAssertEqual(QiblaCalc.turn(QiblaCalc.trueBearing(c), s.azimuth), 0, accuracy: 0.1)
+    XCTAssertEqual(cal.component(.hour, from: t!), 10)   // Android ile aynı: 10:46
+  }
+
+  func testHeadingFilterStability() {
+    var f = HeadingFilter()
+    var g = SystemRandomNumberGenerator()
+    var outs: [Double] = []
+    for i in 0..<500 {
+      let noise = (Double.random(in: -1...1, using: &g) + Double.random(in: -1...1, using: &g)) * 3
+      let v = f.update(145 + noise, at: Double(i) * 0.02)
+      if i > 150 { outs.append(v) }
+    }
+    let m = outs.reduce(0, +) / Double(outs.count)
+    let sd = sqrt(outs.map { ($0 - m) * ($0 - m) }.reduce(0, +) / Double(outs.count))
+    XCTAssertLessThan(sd, 0.8)
+    // Kuzeyden geçişte sıçrama yok
+    var f2 = HeadingFilter(); var prev = f2.update(0, at: 0)
+    for i in 1..<300 { let v = f2.update(QiblaCalc.norm(Double.random(in: -3...3, using: &g)), at: Double(i) * 0.02); XCTAssertLessThan(abs(v - prev), 3); prev = v }
   }
 
   func testContentAndTranslations() {

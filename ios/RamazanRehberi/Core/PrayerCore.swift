@@ -104,7 +104,7 @@ enum PrayerTimeUtils {
 
 /// Önbellek: "il/ilçe" için günlük vakitler (widget da okur).
 enum PrayerCache {
-  private static let key = "prayer_cache_v2"
+  private static let key = "prayer_cache_v3"
 
   static func all() -> [String: PrayerTimes] {
     guard let data = Shared.defaults.data(forKey: key),
@@ -112,11 +112,15 @@ enum PrayerCache {
     return m
   }
 
-  static func save(_ list: [PrayerTimes]) {
+  /// [overwrite] false: yalnızca boş günleri doldurur (Aladhan, Diyanet tablosunun üzerine yazmasın).
+  static func save(_ list: [PrayerTimes], overwrite: Bool = true) {
     var m = all()
     let today = DateUtil.dateKey(DateUtil.addDays(-2, to: Date()))
     m = m.filter { $0.value.dateStr >= today }
-    for p in list { m[cacheKey(p.city, p.district, p.dateStr)] = p }
+    for p in list {
+      let k = cacheKey(p.city, p.district, p.dateStr)
+      if overwrite || m[k] == nil { m[k] = p }
+    }
     if let data = try? JSONEncoder().encode(m) { Shared.defaults.set(data, forKey: key) }
   }
 

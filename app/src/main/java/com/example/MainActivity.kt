@@ -77,7 +77,7 @@ import com.example.data.SurahInfo
 import com.example.ui.screens.FastingTrackerScreen
 import com.example.ui.screens.MoreHubScreen
 import com.example.ui.screens.NearbyMosquesScreen
-import com.example.ui.screens.QiblaFinderScreen
+import com.example.qibla.QiblaFinderScreen
 import com.example.ui.screens.QuranScreen
 import com.example.ui.screens.SpiritualNotesScreen
 import com.example.ui.screens.SurahDetailScreen

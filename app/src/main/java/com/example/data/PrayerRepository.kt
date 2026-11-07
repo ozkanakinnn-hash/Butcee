@@ -32,7 +32,17 @@ class PrayerRepository(private val context: Context) {
       return@withContext cached
     }
 
-    // 2. Aladhan (Diyanet yöntemi, method=13): koordinat veya ilçe adresi
+    // 2. Diyanet'in resmi ilçe tablosu (dakikası dakikasına Diyanet). GPS koordinat modunda
+    //    (Diyanet listesinde olmayan yer) atlanır.
+    if (lat == null || lon == null) {
+      runCatching { DiyanetSource.today(context, country, city, district, todayStr) }.getOrNull()?.let { d ->
+        val times = PrayerTimes(d.imsak, d.gunes, d.ogle, d.ikindi, d.aksam, d.yatsi, todayStr, city, district)
+        saveCache(times)
+        return@withContext times
+      }
+    }
+
+    // 3. Aladhan (Diyanet yöntemi, method=13): koordinat veya ilçe adresi
     try {
       val day = apiDateFormat.format(Date())
       fun enc(v: String) = java.net.URLEncoder.encode(v, "UTF-8")
@@ -93,7 +103,7 @@ class PrayerRepository(private val context: Context) {
       Log.w("PrayerRepository", "Aladhan API error, falling back to local Diyanet calculation: ${e.message}")
     }
 
-    // 3. Fallback: Accurate local Diyanet calculation for Turkey
+    // 4. Fallback: Accurate local Diyanet calculation for Turkey
     val fallbackTimes = calculateLocalTimes(city, district, todayStr, lat, lon)
     saveCache(fallbackTimes)
     fallbackTimes
@@ -156,7 +166,7 @@ class PrayerRepository(private val context: Context) {
   }
 
   private fun saveCache(times: PrayerTimes) {
-    val prefs = context.getSharedPreferences("prayer_cache_v2", Context.MODE_PRIVATE)
+    val prefs = context.getSharedPreferences("prayer_cache_v3", Context.MODE_PRIVATE)
     val key = "${times.city}_${times.district}_${times.dateStr}"
     val json = JSONObject().apply {
       put("imsak", times.imsak)
@@ -173,7 +183,7 @@ class PrayerRepository(private val context: Context) {
   }
 
   private fun getCachedPrayerTimes(city: String, district: String, dateStr: String): PrayerTimes? {
-    val prefs = context.getSharedPreferences("prayer_cache_v2", Context.MODE_PRIVATE)
+    val prefs = context.getSharedPreferences("prayer_cache_v3", Context.MODE_PRIVATE)
     val key = "${city}_${district}_${dateStr}"
     val jsonStr = prefs.getString(key, null) ?: return null
     return try {

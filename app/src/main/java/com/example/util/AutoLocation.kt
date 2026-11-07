@@ -48,7 +48,7 @@ object AutoLocation {
   }
 
   @SuppressLint("MissingPermission")
-  private suspend fun currentLocation(context: Context): Location? {
+  suspend fun currentLocation(context: Context): Location? {
     val lm = context.getSystemService(Context.LOCATION_SERVICE) as? LocationManager ?: return null
     val providers = listOf(LocationManager.NETWORK_PROVIDER, LocationManager.GPS_PROVIDER, "fused")
       .filter { runCatching { lm.isProviderEnabled(it) }.getOrDefault(false) }

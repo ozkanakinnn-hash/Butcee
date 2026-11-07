@@ -2,7 +2,7 @@ import Foundation
 import CoreLocation
 import WidgetKit
 
-/// Namaz vakitleri: Aladhan (Diyanet yöntemi, method=13) aylık takvim + önbellek + çevrimdışı hesap.
+/// Namaz vakitleri: önce Diyanet'in resmi ilçe tablosu, eksik günler için Aladhan (method=13), en son çevrimdışı hesap.
 final class PrayerService: ObservableObject {
   static let shared = PrayerService()
 
@@ -41,8 +41,18 @@ final class PrayerService: ObservableObject {
     if missing.isEmpty { afterUpdate(); return }
     isLoading = true
     Task {
+      // 1) Diyanet'in resmi ilçe tablosu (dakikası dakikasına). GPS koordinat modunda atlanır.
+      if !AppData.shared.useCoordinates {
+        _ = await DiyanetSource.fetchAndStore(country: countryName, province: city, district: district)
+      }
       await geocodeIfNeeded(city: city, district: district, country: country, code: code)
-      for m in missing {
+      // 2) Diyanet tablosunun kapsamadığı günler için Aladhan (Diyanet yöntemi)
+      let stillMissing = months.filter { m in
+        let last = cal.date(byAdding: .day, value: -1, to: cal.date(byAdding: .month, value: 1, to: cal.date(from: cal.dateComponents([.year, .month], from: m))!)!)!
+        return PrayerCache.get(city: city, district: district, dateKey: DateUtil.dateKey(last)) == nil
+          || PrayerCache.get(city: city, district: district, dateKey: DateUtil.dateKey(m)) == nil
+      }
+      for m in stillMissing {
         let c = cal.dateComponents([.year, .month], from: m)
         await fetchMonth(year: c.year!, month: c.month!, city: city, district: district, country: country)
       }
@@ -104,7 +114,7 @@ final class PrayerService: ObservableObject {
           yatsi: PrayerTimeUtils.clean(tm["Isha"], fallback: "20:05"),
           dateStr: key, city: city, district: district))
       }
-      if !list.isEmpty { PrayerCache.save(list) }
+      if !list.isEmpty { PrayerCache.save(list, overwrite: false) }
     } catch {
       // Çevrimdışı: yerel hesap kullanılır
     }
