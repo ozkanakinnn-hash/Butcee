@@ -8,7 +8,8 @@
  *  footballTick      : dakikada bir canlı skor turu (maç yoksa API isteği yapmadan saniyeler içinde biter)
  *
  * Dağıtım (Cloud Shell): docs/FIREBASE_TASIMA.md
- * Gizli değer: FOOTBALL_API_KEY (Secret Manager; `firebase functions:secrets:set FOOTBALL_API_KEY`)
+ * Gizli değerler (Secret Manager): HIGHLIGHTLY_API_KEY (ücretsiz canlı skor, öncelikli) ve FOOTBALL_API_KEY
+ * (API-Football, ücretli plan). Kullanılmayana `-` girilir: `firebase functions:secrets:set <AD>`
  */
 
 const { initializeApp } = require('firebase-admin/app');
@@ -22,6 +23,7 @@ const { ingestAllSources, deleteOldArticles } = require('./src/ingest');
 const { runMaintenance } = require('./src/maintenance');
 const { updateMarket } = require('./src/market');
 const { ApiFootball } = require('./src/football');
+const { Highlightly } = require('./src/football-highlightly');
 const { tick } = require('./src/football-job');
 
 initializeApp();
@@ -30,6 +32,9 @@ initializeApp();
 setGlobalOptions({ region: 'europe-west1', maxInstances: 1 });
 
 const FOOTBALL_API_KEY = defineSecret('FOOTBALL_API_KEY');
+// Ücretsiz canlı skor: Highlightly (Basic plan, günde 100 istek). Tanımlıysa API-Football yerine kullanılır.
+const HIGHLIGHTLY_API_KEY = defineSecret('HIGHLIGHTLY_API_KEY');
+const usable = (k) => Boolean(k && k.trim() && k.trim() !== '-');
 
 exports.fetchRssFeeds = onSchedule(
   {
@@ -70,12 +75,14 @@ exports.footballTick = onSchedule(
     timeoutSeconds: 120,
     memory: '256MiB',
     retryCount: 0,
-    secrets: [FOOTBALL_API_KEY],
+    secrets: [FOOTBALL_API_KEY, HIGHLIGHTLY_API_KEY],
   },
   async () => {
-    const key = FOOTBALL_API_KEY.value();
-    const makeApi = () => (key && key !== '-' ? new ApiFootball({ key }) : null);
+    const hl = HIGHLIGHTLY_API_KEY.value();
+    const af = FOOTBALL_API_KEY.value();
+    const makeApi = () =>
+      usable(hl) ? new Highlightly({ key: hl.trim() }) : usable(af) ? new ApiFootball({ key: af.trim() }) : null;
     const result = await tick(getFirestore(), makeApi, getMessaging());
-    if (result !== 'idle' && result !== 'waiting-kickoff' && result !== 'throttled') logger.info('Futbol', { result });
+    if (!['idle', 'waiting-kickoff', 'throttled'].includes(result)) logger.info('Futbol', { result });
   }
 );

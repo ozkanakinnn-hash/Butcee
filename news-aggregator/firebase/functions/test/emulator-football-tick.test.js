@@ -59,3 +59,62 @@ test('tick: maç yokken API çağrılmaz; canlı maçta tur atar, aralığı kor
   assert.equal(sent[sent.length - 1].notification.title, '🏁 Maç sonucu');
   assert.equal(await tick(db, makeApi, messaging, Date.now() + 200_000), 'idle', 'biten maç izlenmez');
 });
+
+test('tick + Highlightly: günlük bütçe sayılır, lig kimliği saklanır, gol bildirilir, bütçe bitince durur', { skip }, async () => {
+  const { getFirestore, Timestamp } = require('firebase-admin/firestore');
+  const fb = require('../src/football');
+  const { tick } = require('../src/football-job');
+  const { Highlightly } = require('../src/football-highlightly');
+  const db = getFirestore();
+  for (const d of (await db.collection('matches').get()).docs) await d.ref.delete();
+  const today = fb.istanbulDate();
+  await db.doc('football_meta/state').set({ season: 2026, teams_synced_at: Timestamp.now(), fixtures_date: today });
+
+  const kickoff = new Date(Date.now() - 20 * 60_000).toISOString();
+  let score = '0 - 0';
+  let events = [];
+  const calls = [];
+  const fetchImpl = async (url) => {
+    calls.push(url.pathname);
+    if (url.pathname === '/leagues') return Response.json({ data: [{ id: 71, name: 'Super Lig' }] });
+    return Response.json({ data: [{
+      id: 555, date: kickoff, league: { id: 71, name: 'Super Lig' },
+      homeTeam: { id: 1, name: 'Besiktas' }, awayTeam: { id: 2, name: 'Trabzonspor' },
+      state: { description: 'First half', clock: 20, score: { current: score } }, events,
+    }] });
+  };
+  const makeApi = () => new Highlightly({ key: 'k', fetchImpl, dailyLimit: 100 });
+  const sent = [];
+  const messaging = { sendEach: async (m) => { sent.push(...m); return { successCount: m.length, failureCount: 0, responses: m.map(() => ({ success: true })) }; } };
+
+  // Maç kaydı (günlük fikstür senkronunun yazdığı hali)
+  const { toFixture } = require('../src/football-highlightly');
+  const first = (await (await fetchImpl(new URL('https://x/matches'))).json()).data[0];
+  await db.doc('matches/555').set(fb.matchDocFromFixture(toFixture(first)));
+  calls.length = 0;
+
+  score = '1 - 0';
+  events = [{ team: { id: 1 }, time: "21'", type: 'Goal', player: 'C. Immobile' }];
+  assert.equal(await tick(db, makeApi, messaging), 'polled');
+  assert.deepEqual(calls, ['/leagues', '/matches']);
+  assert.equal(sent[0].notification.title, '⚽ GOL! Beşiktaş 1-0 Trabzonspor');
+  let meta = (await db.doc('football_meta/state').get()).data();
+  assert.equal(meta.req_used, 2);
+  assert.equal(meta.provider_league_id, 71);
+  assert.ok(meta.last_remaining <= 98);
+  const firstWait = meta.next_poll_at.toMillis() - Date.now();
+  assert.ok(firstWait > 30_000, 'bütçe korunur: dakikada bir değil');
+
+  // Sonraki tur: lig yeniden aranmaz (1 istek)
+  calls.length = 0;
+  assert.equal(await tick(db, makeApi, messaging, Date.now() + firstWait + 60_000), 'polled');
+  assert.deepEqual(calls, ['/matches']);
+  meta = (await db.doc('football_meta/state').get()).data();
+  assert.equal(meta.req_used, 3);
+
+  // Günlük bütçe biterse istek atılmaz
+  await db.doc('football_meta/state').update({ req_used: 100, next_poll_at: null });
+  calls.length = 0;
+  assert.equal(await tick(db, makeApi, messaging), 'out-of-requests');
+  assert.equal(calls.length, 0);
+});

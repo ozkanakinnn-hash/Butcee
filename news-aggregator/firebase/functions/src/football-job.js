@@ -112,6 +112,14 @@ async function cleanupOldMatches(db) {
   log(`Eski maç kayıtları silindi: ${old.size}`);
 }
 
+/** Bugün henüz başlamamış maçlar (istek bütçesini güne yaymak için). */
+async function laterMatchesToday(db, now = Date.now()) {
+  const snap = await db.collection('matches')
+    .where('kickoff', '>', Timestamp.fromMillis(now))
+    .where('kickoff', '<=', Timestamp.fromMillis(now + 14 * 3_600_000)).get();
+  return snap.docs.map((d) => d.data()).filter((m) => !m.is_finished);
+}
+
 /** Bugünkü maçlardan izlenmesi gerekenler (başlamak üzere veya canlı). */
 async function activeMatches(db, now = Date.now()) {
   const from = Timestamp.fromMillis(now - 4 * 3_600_000);
@@ -183,9 +191,14 @@ async function pollOnce(db, api, messaging, active) {
   return activeMatches(db);
 }
 
-/** Kalan maç süresine ve günlük kalan isteğe göre bir sonraki kontrole kadar bekleme. */
-function nextWaitMs(api, active) {
-  const liveMinutesLeft = active.reduce(
+/**
+ * Kalan maç süresine ve günlük kalan isteğe göre bir sonraki kontrole kadar bekleme.
+ * `later`: bugün daha sonra başlayacak maçlar — günlük istek sınırı olan sağlayıcıda (Highlightly, 100/gün)
+ * istekler günün SON maçının bitişine kadar yayılır; yoksa ilk maçta bütçe biter.
+ */
+function nextWaitMs(api, active, later = []) {
+  const ends = [...active, ...(api.dailyLimit ? later : [])];
+  const liveMinutesLeft = ends.reduce(
     (max, m) => Math.max(max, (m.kickoff.toMillis() + MATCH_LENGTH_MIN * 60_000 - Date.now()) / 60_000),
     0
   );
@@ -199,15 +212,39 @@ function nextWaitMs(api, active) {
 async function tick(db, makeApi, messaging, now = Date.now()) {
   const metaRef = db.doc('football_meta/state');
   const meta = (await metaRef.get()).data() || {};
-  const needsPrepare = meta.fixtures_date !== fb.istanbulDate(new Date(now)) ||
+  const today = fb.istanbulDate(new Date(now));
+  const needsPrepare = meta.fixtures_date !== today ||
     !meta.season || !meta.teams_synced_at || now - meta.teams_synced_at.toMillis() > TEAMS_TTL_MS;
   if (meta.plan_blocked_until && meta.plan_blocked_until.toMillis() > now) return 'plan-blocked';
 
+  // Günlük istek sayacı: sağlayıcı kalan isteği bildirmiyorsa (Highlightly) bütçe buradan hesaplanır.
+  const usedBefore = meta.req_day === today ? meta.req_used || 0 : 0;
   let api = null;
+  const open = () => {
+    api = api || makeApi();
+    if (api && 'leagueId' in api && !api.leagueId && meta.provider_league_id) api.leagueId = meta.provider_league_id;
+    return api;
+  };
+  const budget = () => {
+    if (api && (api.remaining === null || api.remaining === undefined) && api.dailyLimit) {
+      api.remaining = Math.max(0, api.dailyLimit - usedBefore - api.used);
+    }
+  };
+  const save = async (extra = {}) => {
+    if (!api) return;
+    await metaRef.set({
+      req_day: today,
+      req_used: usedBefore + api.used,
+      ...(api.leagueId ? { provider_league_id: api.leagueId } : {}),
+      ...extra,
+    }, { merge: true });
+  };
+
   if (needsPrepare) {
-    api = makeApi();
-    if (!api) return 'no-key';
-    if (!(await prepare(db, api, meta))) return 'plan-blocked';
+    if (!open()) return 'no-key';
+    const ok = await prepare(db, api, meta);
+    await save();
+    if (!ok) return 'plan-blocked';
   }
 
   const active = await activeMatches(db, now);
@@ -217,20 +254,19 @@ async function tick(db, makeApi, messaging, now = Date.now()) {
   if (!anyLive && nextKickoff - now > 90_000) return 'waiting-kickoff';
   if (meta.next_poll_at && meta.next_poll_at.toMillis() > now) return 'throttled';
 
-  api = api || makeApi();
-  if (!api) return 'no-key';
+  if (!open()) return 'no-key';
+  if (api.dailyLimit && usedBefore + api.used >= api.dailyLimit) return 'out-of-requests';
   const after = await pollOnce(db, api, messaging, active);
-  const wait = after.length ? nextWaitMs(api, after) : 0;
+  budget();
+  const later = api.dailyLimit ? await laterMatchesToday(db, now) : [];
+  const wait = after.length ? nextWaitMs(api, after, later) : 0;
   // Görev dakikada bir çalıştığı için bekleme dakikaya yuvarlanır (en az 1 tur atlanmaz).
-  await metaRef.set(
-    { next_poll_at: Timestamp.fromMillis(now + Math.max(0, wait - 30_000)), last_remaining: api.remaining ?? null },
-    { merge: true }
-  );
+  await save({ next_poll_at: Timestamp.fromMillis(now + Math.max(0, wait - 30_000)), last_remaining: api.remaining ?? null });
   log(`Skor turu: ${active.length} maç | kalan istek ${api.remaining ?? '?'} | sonraki ~${Math.round(wait / 1000)} sn`);
   return 'polled';
 }
 
 module.exports = {
   check, currentSeason, syncTeams, syncTodayFixtures, cleanupOldMatches, activeMatches,
-  prepare, pollOnce, nextWaitMs, tick, START_EARLY_MS,
+  prepare, pollOnce, nextWaitMs, laterMatchesToday, tick, START_EARLY_MS,
 };

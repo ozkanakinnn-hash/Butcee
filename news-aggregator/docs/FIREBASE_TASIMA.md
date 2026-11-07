@@ -74,3 +74,19 @@ Kod değişince yeni zip'i yükleyip yalnızca şunlar:
 cd ~ && rm -rf haber && unzip -o Haber-Akisi-kod.zip -d haber && cd haber/news-aggregator/firebase
 (cd functions && npm ci --omit=dev) && npx -y firebase-tools@15 deploy --only functions,firestore
 ```
+
+## Ücretsiz canlı skor: Highlightly (günde 100 istek)
+1. https://highlightly.net → ücretsiz (Basic) plana kaydol → API anahtarını kopyala.
+2. Cloud Shell'de (güncel zip yüklenip açıldıktan sonra, `~/haber/news-aggregator/firebase` klasöründe):
+   ```bash
+   npx -y firebase-tools@15 functions:secrets:set HIGHLIGHTLY_API_KEY
+   ```
+   Anahtarı yapıştır (görünmez) → Enter.
+3. Biçim kontrolü (Firestore'a yazmaz, ~4 istek kullanır):
+   ```bash
+   cd functions && HIGHLIGHTLY_API_KEY=$(gcloud secrets versions access latest --secret=HIGHLIGHTLY_API_KEY) node scripts/football-watch.js hl-raw; cd ..
+   ```
+   Çıktının fotoğrafını Claude'a gönder (anahtar çıktıda görünmez).
+4. Yükle: `npx -y firebase-tools@15 deploy --only functions`
+- Highlightly anahtarı tanımlıysa öncelikli kullanılır; API-Football (FOOTBALL_API_KEY) yalnızca Highlightly `-` ise devreye girer.
+- 100 istek güne yayılır: hafta sonu ~3–5 dk'da bir skor kontrolü; gol bildirimi birkaç dakika gecikebilir.
