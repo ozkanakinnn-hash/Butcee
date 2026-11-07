@@ -89,7 +89,7 @@ struct PrivacyFooter: View {
         .font(.system(size: 13, weight: .semibold)).foregroundStyle(p.primary)
       Text(t("🔒 Notlarınız ve kayıtlarınız cihazınızda kalır; hesap gerekmez. Reklam ve bildirim hizmetleri için Gizlilik Politikası'na bakın."))
         .font(.system(size: 11)).foregroundStyle(p.onSurfaceVariant).multilineTextAlignment(.center)
-      Link(t("Gizlilik Politikası") + " ›", destination: URL(string: "https://ozkanakinnn-hash.github.io/Butcee/privacy-policy.html")!)
+      Link(t("Gizlilik Politikası") + " ›", destination: URL(string: "https://ozkan45.bitbucket.io/privacy-policy.html")!)
         .font(.system(size: 12, weight: .semibold)).foregroundStyle(p.primary)
     }
     .padding(.horizontal, 24).padding(.vertical, 20)

@@ -8,7 +8,7 @@ import android.widget.Toast
 /** Uygulamanın dış bağlantıları (gizlilik politikası, abonelik yönetimi). */
 object AppLinks {
   /** GitHub Pages: depo Ayarlar → Pages → "main / docs" seçilince bu adreste yayınlanır. */
-  const val PRIVACY_URL = "https://ozkanakinnn-hash.github.io/Butcee/privacy-policy.html"
+  const val PRIVACY_URL = "https://ozkan45.bitbucket.io/privacy-policy.html"
 
   fun subscriptionsUrl(packageName: String, productId: String? = null): String =
     if (productId == null) "https://play.google.com/store/account/subscriptions"

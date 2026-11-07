@@ -1,0 +1,18 @@
+# Bitbucket Pipelines (ücretsiz plan: ayda 50 dk). Android yedek derlemesi; iOS için Codemagic kullanılır.
+image: cimg/android:2025.10
+
+pipelines:
+  default:
+    - step:
+        name: Android derleme + testler
+        size: 2x
+        caches:
+          - gradle
+        script:
+          - yes | sdkmanager --licenses > /dev/null || true
+          - sdkmanager "platforms;android-36.1" || true
+          - ./gradlew --no-daemon assembleDebug
+          - ./gradlew --no-daemon :app:testDebugUnitTest
+        artifacts:
+          - app/build/outputs/apk/debug/*.apk
+          - wear/build/outputs/apk/debug/*.apk

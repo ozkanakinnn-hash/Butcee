@@ -1,0 +1,55 @@
+# Codemagic: Bitbucket deposundan Android (telefon + saat) ve iOS derlemeleri.
+# codemagic.io → Bitbucket ile giriş → ramazan-app deposunu ekle → bu dosyayı otomatik okur.
+workflows:
+  android:
+    name: Android (telefon + saat) + testler
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    environment:
+      java: 21
+    triggering:
+      events: [push]
+    scripts:
+      - name: Android SDK platformu
+        script: |
+          yes | sdkmanager --licenses > /dev/null || true
+          sdkmanager "platforms;android-36.1" "platform-tools" || true
+      - name: Debug APK (telefon + saat)
+        script: ./gradlew --no-daemon assembleDebug
+      - name: Birim testleri
+        script: ./gradlew --no-daemon :app:testDebugUnitTest
+    artifacts:
+      - app/build/outputs/apk/debug/*.apk
+      - wear/build/outputs/apk/debug/*.apk
+      - app/build/reports/tests/**
+
+  ios:
+    name: iOS (imzasız .ipa) + testler
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    environment:
+      xcode: latest
+    triggering:
+      events: [push]
+    scripts:
+      - name: XcodeGen ile proje
+        script: |
+          brew install xcodegen
+          cd ios && xcodegen generate
+      - name: Birim testleri (simülatör)
+        script: |
+          cd ios
+          xcodebuild test -project RamazanRehberi.xcodeproj -scheme RamazanRehberi -configuration Debug \
+            -destination 'platform=iOS Simulator,name=iPhone 16' -skipPackagePluginValidation -skipMacroValidation \
+            CODE_SIGNING_ALLOWED=NO | tail -40
+      - name: İmzasız IPA
+        script: |
+          cd ios
+          xcodebuild -project RamazanRehberi.xcodeproj -scheme RamazanRehberi -configuration Release \
+            -sdk iphoneos -destination 'generic/platform=iOS' -derivedDataPath build \
+            -skipPackagePluginValidation -skipMacroValidation \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" build | tail -5
+          APP=$(find build/Build/Products/Release-iphoneos -maxdepth 1 -name "*.app" | head -1)
+          mkdir -p Payload && cp -R "$APP" Payload/ && zip -qry RamazanRehberi-unsigned.ipa Payload
+    artifacts:
+      - ios/RamazanRehberi-unsigned.ipa

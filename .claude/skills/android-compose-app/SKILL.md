@@ -145,3 +145,11 @@ gradle/actions/setup-gradle@v5 → `./gradlew assembleDebug` → upload-artifact
   `bundle.unit-test` hedefi + `xcodebuild test`. Tarih/takvim mantığını sabit tarihlerle test et: sabit kodlanmış yıl
   tarihleri ve platformlar arası hicri takvim farkları (ICU vs Apple Ümmü'l-Kura) testlerle yakalandı → dini günleri
   resmi (Diyanet) Ramazan tablosuna sabitle. Çeviri içeriğinde boş alan testi ekle.
+
+## Depo/CI GitHub dışına taşınırsa (Bitbucket)
+- Claude Code bulut oturumları yalnız GitHub depolarını otomatik bağlar; Bitbucket'a gönderim kullanıcının bilgisayarından
+  (veya oturumda verilen erişim anahtarıyla) yapılır. Kodun yedeğini (zip) kullanıcıya her zaman ver.
+- Derleme: Bitbucket Pipelines ücretsiz planda ayda 50 dk ve macOS yok → iOS için Codemagic (`codemagic.yaml`,
+  ücretsiz 500 dk macOS, Bitbucket'a bağlanır). Android yedeği `bitbucket-pipelines.yml` (`cimg/android` imajı).
+- Gizlilik politikası: GitHub Pages yerine `<workspace>.bitbucket.io` adlı depo → `https://<workspace>.bitbucket.io/...`.
+- Yayın imza anahtarını ve gizli değişkenleri yalnız CI'da tutma; kullanıcının bilgisayarında da yedeği olmalı.
