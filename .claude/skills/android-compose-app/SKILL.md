@@ -161,6 +161,7 @@ gradle/actions/setup-gradle@v5 → `./gradlew assembleDebug` → upload-artifact
 ## Kıble pusulası (doğruluk notları)
 - Açı: büyük çember formülü, Kâbe 21.422487, 39.826206 → gerçek kuzeye göre (Manisa ≈145°, İstanbul ≈151.6°, Ankara ≈160.2°).
 - Diyanet sitesindeki "Kıble açısı" manyetik kuzeye göredir ve eski bir manyetik sapma ile hesaplanmıştır (İstanbul 147°, Ankara 155°, Manisa 141°) → bugünkü manyetik açıdan 1–2° farklıdır; önemsiz. Uygulamada "gerçek kuzey" ve "manyetik pusula" değerlerini ayrı göster.
+- Hesaplar `util/QiblaMath.kt` içinde, `QiblaMathTest` ile test edilir (WMM sapması 2026: Saruhanlı +5.9°, İstanbul +6.4°, Ankara +6.5°). Sensör dinleyicisi DisposableEffect(Unit) içinde kurulduğundan sapmayı `rememberUpdatedState` ile oku (konum sonradan gelince güncellensin).
 - Android: TYPE_ROTATION_VECTOR manyetik kuzey verir → `GeomagneticField.declination` ekle. getOrientation + remapCoordinateSystem eşik değiştirmesi (yatay↔dik) sıçrama/ters yön üretebilir; yerine R'den eğimden bağımsız yön: `east = |R8|·U.e − max(0,U.up)·R2`, `north = |R8|·U.n − max(0,U.up)·R5` (U = ekran üst kenarı ekseni, ekran dönüşüne göre ±X/±Y), `atan2(east, north)`.
 - iOS: `trueHeading` (konum gerekir, yoksa magneticHeading → sapma kadar hata, kullanıcıyı uyar); `headingOrientation = .portrait`; kadranı animasyonla döndürürken 359→0 geçişinde ters tam tur atmaması için kesintisiz (unwrap) açı kullan.
 - Pusuladan bağımsız doğrulama: Kıble Saati (güneşin azimutu = kıble açısı) ve ekranda güneş işareti.

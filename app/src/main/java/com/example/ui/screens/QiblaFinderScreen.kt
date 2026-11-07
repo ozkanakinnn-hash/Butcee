@@ -10,7 +10,6 @@ import androidx.core.content.ContextCompat
 import android.view.WindowManager
 import android.view.Surface
 import android.location.LocationManager
-import android.hardware.GeomagneticField
 import android.content.pm.PackageManager
 import android.Manifest
 import android.hardware.Sensor
@@ -66,6 +65,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -116,13 +116,15 @@ fun QiblaFinderScreen(
     }
   }
   val location = freshLocation ?: resolvedLocation
-  val qiblaBearing = remember(location) { qiblaBearingFrom(location.lat, location.lon) }
+  val qiblaBearing = remember(location) { com.example.util.QiblaMath.bearing(location.lat, location.lon).toFloat() }
 
   // Manyetik sapma: pusula manyetik kuzeyi gösterir, Kıble açısı coğrafi (gerçek) kuzeye göredir.
   // Türkiye'de bu fark ~5-7° doğudur; düzeltilmezse ibre bu kadar kayar.
   val declination = remember(location) {
-    GeomagneticField(location.lat.toFloat(), location.lon.toFloat(), 0f, System.currentTimeMillis()).declination
+    com.example.util.QiblaMath.declination(location.lat, location.lon)
   }
+  // Sensör dinleyicisi bir kez kurulur; konum sonradan (GPS) gelirse güncel sapmayı okusun
+  val currentDeclination by rememberUpdatedState(declination)
 
   val qiblaTime = remember(location) {
     SolarCalc.qiblaTime(location.lat, location.lon, qiblaBearing.toDouble())
@@ -151,7 +153,6 @@ fun QiblaFinderScreen(
 
     val listener = object : SensorEventListener {
       val rotationMatrix = FloatArray(9)
-      val orientationValues = FloatArray(3)
       val gravity = FloatArray(3)
       val geomagnetic = FloatArray(3)
       var hasAccel = false
@@ -189,23 +190,10 @@ fun QiblaFinderScreen(
         isUpright = abs(rotationMatrix[8]) < 0.5f
         @Suppress("DEPRECATION")
         val displayRotation = (context.getSystemService(Context.WINDOW_SERVICE) as WindowManager).defaultDisplay.rotation
-        // Ekranın üst kenarına karşılık gelen cihaz ekseni (dünyada: Doğu, Kuzey, Yukarı bileşenleri)
-        val r = rotationMatrix
-        val (upE, upN, upU) = when (displayRotation) {
-          Surface.ROTATION_90 -> Triple(-r[0], -r[3], -r[6])   // −X
-          Surface.ROTATION_180 -> Triple(-r[1], -r[4], -r[7])  // −Y
-          Surface.ROTATION_270 -> Triple(r[0], r[3], r[6])     // +X
-          else -> Triple(r[1], r[4], r[7])                      // +Y
-        }
-        val flatW = abs(r[8])
-        val uprightW = upU.coerceAtLeast(0f)
-        val east = flatW * upE - uprightW * r[2]
-        val north = flatW * upN - uprightW * r[5]
-        if (east * east + north * north < 1e-4f) return // yön belirsiz (ör. ekran tam aşağı bakıyor)
-        orientationValues[0] = atan2(east, north)
+        val magneticHeading = com.example.util.QiblaMath.headingFromRotationMatrix(rotationMatrix, displayRotation) ?: return
 
-        // Manyetik → gerçek kuzey
-        val trueHeading = Math.toDegrees(orientationValues[0].toDouble()) + declination
+        // Sensör manyetik kuzeye göre ölçer; kıble açısı gerçek kuzeye göre → sapmayı ekle
+        val trueHeading = com.example.util.QiblaMath.magneticToTrue(magneticHeading, currentDeclination.toDouble())
         val rad = Math.toRadians(trueHeading)
         if (!initialized) {
           smoothSin = sin(rad); smoothCos = cos(rad); initialized = true
@@ -815,18 +803,6 @@ private fun requestFreshLocation(context: Context, onResult: (Double, Double) ->
   } catch (_: SecurityException) {
   } catch (_: Exception) {
   }
-}
-
-/** Büyük çember (ortodromi) formülüyle gerçek kuzeye göre Kâbe açısı. */
-private fun qiblaBearingFrom(lat: Double, lon: Double): Float {
-  val kaabaLat = 21.422487
-  val kaabaLon = 39.826206
-  val phi1 = Math.toRadians(lat)
-  val phi2 = Math.toRadians(kaabaLat)
-  val deltaLambda = Math.toRadians(kaabaLon - lon)
-  val y = sin(deltaLambda) * cos(phi2)
-  val x = cos(phi1) * sin(phi2) - sin(phi1) * cos(phi2) * cos(deltaLambda)
-  return ((Math.toDegrees(atan2(y, x)) + 360.0) % 360.0).toFloat()
 }
 
 private fun getCoordinatesForLocation(country: String, province: String, district: String): Pair<Double, Double> {
