@@ -1,0 +1,80 @@
+name: Android Build
+
+on:
+  push:
+    branches: [ "**" ]
+  pull_request:
+  workflow_dispatch:
+
+# Güvenlik: iş akışı belirteci varsayılan olarak salt okunur
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      # GitHub runner'larında Android SDK hazır kurulu ($ANDROID_HOME).
+      - name: Android SDK lisansları ve platform
+        run: |
+          SDKM="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          yes | "$SDKM" --licenses > /dev/null || true
+          "$SDKM" "platforms;android-36.1" "platform-tools" || true
+
+      # Firebase: google-services.json depoda tutulmaz; GitHub "GOOGLE_SERVICES_JSON" gizli değişkeninden yazılır.
+      - name: Firebase yapılandırması
+        env:
+          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+        run: |
+          if [ -n "$GOOGLE_SERVICES_JSON" ]; then
+            echo "$GOOGLE_SERVICES_JSON" > app/google-services.json
+            echo "google-services.json eklendi (Firebase etkin)."
+          else
+            echo "::warning::GOOGLE_SERVICES_JSON tanımlı değil; uzaktan bildirimler bu sürümde çalışmaz."
+          fi
+
+      - uses: gradle/actions/setup-gradle@v5
+
+      - name: Debug APK derle
+        run: ./gradlew --no-daemon --stacktrace assembleDebug
+
+      # Fonksiyon testleri: vakit/sayaç hesapları, takvim, içerik, depolar (JUnit + Robolectric)
+      - name: Birim testleri
+        run: ./gradlew --no-daemon :app:testDebugUnitTest
+
+      - name: Test raporu
+        if: always()
+        run: |
+          python3 - <<'PY'
+          import glob, xml.etree.ElementTree as ET
+          tot=fail=0
+          for f in glob.glob('app/build/test-results/testDebugUnitTest/*.xml'):
+              r=ET.parse(f).getroot()
+              tot+=int(r.get('tests',0)); fail+=int(r.get('failures',0))+int(r.get('errors',0))
+              for tc in r.iter('testcase'):
+                  bad=[c for c in tc if c.tag in ('failure','error')]
+                  print(('FAIL ' if bad else 'ok   ')+tc.get('classname').split('.')[-1]+'.'+tc.get('name'))
+                  for b in bad: print('      '+(b.get('message') or '')[:300])
+          print(f'TOPLAM {tot} test, {fail} hata')
+          PY
+
+      # Yayın (release) sürümünün R8 küçültme/karartma adımı hatasız mı? (imza gerektirmez)
+      - name: Yayın sürümü R8 kontrolü
+        run: ./gradlew --no-daemon --stacktrace :app:minifyReleaseWithR8
+
+      - uses: actions/upload-artifact@v5
+        with:
+          name: ramazan-rehberi-debug
+          path: app/build/outputs/apk/debug/*.apk
+
+      - uses: actions/upload-artifact@v5
+        with:
+          name: ramazan-rehberi-wear-debug
+          path: wear/build/outputs/apk/debug/*.apk

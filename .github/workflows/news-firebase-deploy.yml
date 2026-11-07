@@ -1,0 +1,79 @@
+name: Haber Akışı - Firebase'e Kur
+
+# Elle çalıştırılır: GitHub → Actions → "Haber Akışı - Firebase'e Kur" → Run workflow
+# Gerekli gizli değişken (Settings → Secrets and variables → Actions):
+#   FIREBASE_SERVICE_ACCOUNT : Google Cloud hizmet hesabı JSON anahtarının tamamı
+on:
+  workflow_dispatch:
+    inputs:
+      project_id:
+        description: "Firebase proje kimliği (ör. haber-akisi-12345)"
+        required: true
+      seed:
+        description: "Örnek kategori ve kaynakları yükle"
+        type: boolean
+        default: true
+
+concurrency:
+  group: news-firebase-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: news-aggregator/firebase
+    env:
+      PROJECT_ID: ${{ inputs.project_id }}
+      GCLOUD_PROJECT: ${{ inputs.project_id }}
+      GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/sa.json
+      FIREBASE_CLI_DISABLE_UPDATE_CHECK: "true"
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+
+      - name: Hizmet hesabı anahtarı
+        env:
+          SA: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          if [ -z "$SA" ]; then
+            echo "::error::FIREBASE_SERVICE_ACCOUNT gizli değişkeni eklenmemiş. README'deki 'Otomatik kurulum' adımlarına bakın."
+            exit 1
+          fi
+          printf '%s' "$SA" > "$GOOGLE_APPLICATION_CREDENTIALS"
+
+      - name: Bağımlılıklar
+        working-directory: news-aggregator/firebase/functions
+        run: npm ci
+
+      - name: Testler
+        working-directory: news-aggregator/firebase/functions
+        run: npm test
+
+      - name: Firestore veritabanı (yoksa oluştur)
+        run: |
+          if npx -y firebase-tools@15 firestore:databases:get "(default)" --project "$PROJECT_ID" --non-interactive >/dev/null 2>&1; then
+            echo "Firestore veritabanı zaten var."
+          else
+            npx -y firebase-tools@15 firestore:databases:create "(default)" --location europe-west1 --project "$PROJECT_ID" --non-interactive
+          fi
+
+      - name: Kurallar, dizinler ve Cloud Functions'ı yayınla
+        run: npx -y firebase-tools@15 deploy --only firestore,functions --project "$PROJECT_ID" --non-interactive --force
+
+      - name: Örnek kategori ve kaynakları yükle
+        if: ${{ inputs.seed }}
+        working-directory: news-aggregator/firebase/functions
+        run: npm run seed
+
+      - name: İlk haber çekimi
+        working-directory: news-aggregator/firebase/functions
+        run: npm run fetch:once
+
+      - name: Anahtarı sil
+        if: always()
+        run: rm -f "$GOOGLE_APPLICATION_CREDENTIALS"

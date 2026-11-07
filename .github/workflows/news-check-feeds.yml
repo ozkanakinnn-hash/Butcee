@@ -1,0 +1,26 @@
+name: Haber Akışı - RSS Kaynak Kontrolü
+
+# Aday RSS adreslerini dener ve sonucu kayda yazar. Firestore'a dokunmaz, gizli değişken kullanmaz.
+on:
+  push:
+    paths:
+      - "news-aggregator/firebase/functions/scripts/feed-candidates.json"
+      - "news-aggregator/firebase/functions/scripts/check-feeds.js"
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: news-aggregator/firebase/functions
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: news-aggregator/firebase/functions/package-lock.json
+      - run: npm ci --omit=dev
+      - run: node scripts/check-feeds.js

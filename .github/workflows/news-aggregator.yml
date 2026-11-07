@@ -1,0 +1,82 @@
+name: News Aggregator
+
+on:
+  push:
+    paths:
+      - "news-aggregator/**"
+      - ".github/workflows/news-aggregator.yml"
+  pull_request:
+    paths:
+      - "news-aggregator/**"
+  workflow_dispatch:
+
+concurrency:
+  group: news-aggregator-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  functions:
+    name: Cloud Functions testleri
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: news-aggregator/firebase/functions
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: news-aggregator/firebase/functions/package-lock.json
+      - uses: actions/setup-java@v5   # Firestore emülatörü Java ister
+        with:
+          distribution: temurin
+          java-version: "21"
+      - run: npm ci
+      - name: Birim + emülatör testleri
+        run: npx -y firebase-tools@15 emulators:exec --only firestore --project demo-haber "npm test"
+
+  flutter:
+    name: Flutter analiz, test ve APK
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: news-aggregator/flutter_app
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Firebase yapılandırması (varsa)
+        env:
+          NEWS_GOOGLE_SERVICES_JSON: ${{ secrets.NEWS_GOOGLE_SERVICES_JSON }}
+        # Dosyayı doğrular, tablette kopyalarken bozulan satır sonlarını onarır, paket adını kontrol eder.
+        run: node tool/write_google_services.js android/app/google-services.json com.haberakisi.haber_akisi
+      - run: flutter pub get
+      - run: flutter analyze
+      - run: flutter test
+      # Sürüm numarası = CI çalıştırma numarası → her yeni APK eskisinin üzerine güncelleme olarak kurulur.
+      - run: flutter build apk --debug --build-number=${{ github.run_number }}
+      - uses: actions/upload-artifact@v5
+        with:
+          name: haber-akisi-debug-apk
+          path: news-aggregator/flutter_app/build/app/outputs/flutter-apk/app-debug.apk
+      # Küçük boyutlu, mağaza modunda (release) test APK'sı: yalnızca telefonun işlemci türü (arm64),
+      # R8 ile küçültülmüş, Dart AOT derlenmiş. Reklamlar Google TEST kimlikleriyle (gerçek kimlik yok).
+      - name: Release APK (arm64, test reklamları)
+        run: >
+          flutter build apk --release --split-per-abi --target-platform android-arm64
+          --build-number=${{ github.run_number }}
+          --dart-define=ADMOB_BANNER_ID=ca-app-pub-3940256099942544/6300978111
+          --dart-define=ADMOB_NATIVE_ID=ca-app-pub-3940256099942544/2247696110
+          --dart-define=ADMOB_INTERSTITIAL_ID=ca-app-pub-3940256099942544/1033173712
+      - run: ls -la build/app/outputs/flutter-apk/
+      - uses: actions/upload-artifact@v5
+        with:
+          name: haber-akisi-release-arm64-apk
+          path: news-aggregator/flutter_app/build/app/outputs/flutter-apk/app-arm64-v8a-release.apk

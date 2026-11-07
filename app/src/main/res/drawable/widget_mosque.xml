@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Widget köşesindeki cami silueti (kubbe + iki minare) ve hilal -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="96dp"
+    android:height="72dp"
+    android:viewportWidth="96"
+    android:viewportHeight="72">
+    <!-- Sol minare -->
+    <path android:fillColor="#40E5B869" android:pathData="M14,72 L14,26 L16,18 L18,26 L18,72 Z" />
+    <!-- Sağ minare -->
+    <path android:fillColor="#40E5B869" android:pathData="M78,72 L78,26 L80,18 L82,26 L82,72 Z" />
+    <!-- Ana kubbe ve gövde -->
+    <path android:fillColor="#40E5B869" android:pathData="M28,72 L28,50 C28,36 38,28 48,26 C58,28 68,36 68,50 L68,72 Z" />
+    <path android:fillColor="#40E5B869" android:pathData="M47,26 L47,18 L49,18 L49,26 Z" />
+    <!-- Kapı kemeri -->
+    <path android:fillColor="#FF060A14" android:pathData="M43,72 L43,62 C43,58 45,56 48,56 C51,56 53,58 53,62 L53,72 Z" />
+    <!-- Hilal ve yıldızlar -->
+    <path android:fillColor="#FFE5B869" android:pathData="M84,4 C78,4 74,9 74,14 C74,19 78,24 84,24 C80,22 78,18 78,14 C78,10 80,6 84,4 Z" />
+    <path android:fillColor="#CCF6DDA0" android:pathData="M66,6 L67,9 L70,9 L67.5,11 L68.5,14 L66,12 L63.5,14 L64.5,11 L62,9 L65,9 Z" />
+    <path android:fillColor="#99F6DDA0" android:pathData="M92,28 L92.6,30 L94.5,30 L93,31.2 L93.6,33 L92,31.8 L90.4,33 L91,31.2 L89.5,30 L91.4,30 Z" />
+</vector>

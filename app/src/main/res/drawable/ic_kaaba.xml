@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Kâbe-i Muazzama: siyah örtü (kisve), altın kuşak (hizam) ve altın kapı -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <!-- Üst yüz -->
+    <path android:fillColor="#FF3A3532" android:pathData="M3,7.5 L10,4.5 L21,6 L14,9 Z" />
+    <!-- Ön yüz -->
+    <path android:fillColor="#FF151312" android:pathData="M3,7.5 L14,9 L14,21 L3,19.2 Z" />
+    <!-- Yan yüz -->
+    <path android:fillColor="#FF2A2624" android:pathData="M14,9 L21,6 L21,18 L14,21 Z" />
+    <!-- Altın kuşak (hizam) -->
+    <path android:fillColor="#FFD4AF37" android:pathData="M3,9.6 L14,11.1 L14,12.6 L3,11.1 Z" />
+    <path android:fillColor="#FFB8932B" android:pathData="M14,11.1 L21,8.1 L21,9.6 L14,12.6 Z" />
+    <!-- Altın kapı -->
+    <path android:fillColor="#FFD4AF37" android:pathData="M9.4,14.2 L12,14.55 L12,19.9 L9.4,19.5 Z" />
+</vector>

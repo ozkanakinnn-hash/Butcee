@@ -1,0 +1,103 @@
+name: iOS Build
+
+on:
+  push:
+    branches: [ "**" ]
+    paths: [ "ios/**", ".github/workflows/ios-build.yml" ]
+  workflow_dispatch:
+
+concurrency:
+  group: ios-${{ github.ref }}
+  cancel-in-progress: true
+
+# Güvenlik: iş akışı belirteci varsayılan olarak salt okunur
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: macos-15-intel
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Xcode sürümü
+        run: |
+          sudo xcode-select -s /Applications/Xcode_16.4.app || sudo xcode-select -s "$(ls -d /Applications/Xcode_16*.app | sort -V | tail -1)"
+          xcodebuild -version
+
+      - name: XcodeGen kur ve projeyi üret
+        run: |
+          brew install xcodegen
+          cd ios && xcodegen generate
+
+      - name: İmzasız derle (iphoneos)
+        run: |
+          cd ios
+          set -o pipefail
+          xcodebuild -project RamazanRehberi.xcodeproj -scheme RamazanRehberi -configuration Release \
+            -sdk iphoneos -destination 'generic/platform=iOS' -derivedDataPath build \
+            -skipPackagePluginValidation -skipMacroValidation \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
+            build 2>&1 | tee build.log | grep -E "error:|warning: .*deprecated|\*\* BUILD" || true
+          grep -q "BUILD SUCCEEDED" build.log
+
+      - name: Derleme hataları
+        if: failure()
+        run: grep -E "error:" ios/build.log | sort -u | head -80 || true
+
+      - name: IPA paketle
+        run: |
+          cd ios
+          APP=$(find build/Build/Products/Release-iphoneos -maxdepth 1 -name "*.app" | head -1)
+          mkdir -p Payload && cp -R "$APP" Payload/
+          zip -qry RamazanRehberi-unsigned.ipa Payload
+          ls -la RamazanRehberi-unsigned.ipa
+
+      - uses: actions/upload-artifact@v5
+        with:
+          name: ramazan-rehberi-ios-unsigned-ipa
+          path: ios/RamazanRehberi-unsigned.ipa
+
+  screenshots:
+    runs-on: macos-15-intel
+    timeout-minutes: 60
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v5
+      - name: Xcode
+        run: sudo xcode-select -s /Applications/Xcode_16.4.app || sudo xcode-select -s "$(ls -d /Applications/Xcode_16*.app | sort -V | tail -1)"
+      - name: Simülatör için derle
+        run: |
+          brew install xcodegen
+          cd ios && xcodegen generate
+          set -o pipefail
+          xcodebuild -project RamazanRehberi.xcodeproj -scheme RamazanRehberi -configuration Debug \
+            -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' -derivedDataPath simbuild \
+            -skipPackagePluginValidation -skipMacroValidation CODE_SIGNING_ALLOWED=NO build 2>&1 | tail -5
+      - name: Birim testleri (simülatör)
+        run: |
+          cd ios
+          DEV=$(xcrun simctl list devices available | grep -E "iPhone 16 \(|iPhone 16 Pro \(|iPhone 15 \(" | head -1 | grep -oE "[0-9A-F-]{36}")
+          set -o pipefail
+          xcodebuild test -project RamazanRehberi.xcodeproj -scheme RamazanRehberi -configuration Debug \
+            -destination "id=$DEV" -derivedDataPath simbuild -skipPackagePluginValidation -skipMacroValidation \
+            CODE_SIGNING_ALLOWED=NO 2>&1 | tee test.log | grep -E "Test Case .*(passed|failed)|error:|\*\* TEST" || true
+          mkdir -p ../docs/screenshots-ios
+          grep -E "Test Case .*(passed|failed)|error:|XCTAssert|\*\* TEST" test.log > ../docs/screenshots-ios/test_results.txt || true
+          grep -q "TEST SUCCEEDED" test.log
+
+      - name: Ekran görüntüleri
+        if: always()
+        run: |
+          APP=$(find ios/simbuild/Build/Products/Debug-iphonesimulator -maxdepth 1 -name "*.app" | head -1)
+          bash ios/scripts/sim_screenshots.sh "$APP" docs/screenshots-ios
+      - name: Görüntüleri kaydet
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/screenshots-ios
+          git commit -m "iOS ekran görüntüleri [skip ci]" || exit 0
+          for i in 1 2 3; do git pull --rebase -X theirs origin "${GITHUB_REF_NAME}" && git push origin "HEAD:${GITHUB_REF_NAME}" && exit 0; git rebase --abort 2>/dev/null; sleep 5; done; exit 1
