@@ -88,6 +88,7 @@ import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.sin
+import kotlin.math.roundToInt
 
 @Composable
 fun QiblaFinderScreen(
@@ -150,7 +151,6 @@ fun QiblaFinderScreen(
 
     val listener = object : SensorEventListener {
       val rotationMatrix = FloatArray(9)
-      val remapped = FloatArray(9)
       val orientationValues = FloatArray(3)
       val gravity = FloatArray(3)
       val geomagnetic = FloatArray(3)
@@ -181,22 +181,28 @@ fun QiblaFinderScreen(
         }
         if (!gotMatrix) return
 
-        // Telefon dik tutuluyorsa (60°'den fazla eğik) eksenleri yeniden eşle; aksi halde
-        // azimut kararsızlaşır ve yanlış yön gösterir. Ekran yatay dönmüşse de düzelt.
-        val upright = abs(rotationMatrix[8]) < 0.5f
-        isUpright = upright
+        // Eğimden bağımsız yön: R cihaz→dünya (Doğu, Kuzey, Yukarı) matrisidir.
+        // Telefon yataysa yön = ekranın üst kenarının (U) yatay izdüşümü; dik tutuluyorsa
+        // kullanıcının baktığı yön = ekranın arkası (−Z). Arada iki vektör, telefonun ne kadar
+        // yatay (|Z.yukarı|) ve ne kadar dik (U.yukarı) olduğuna göre ağırlıklandırılır.
+        // Böylece eksen değiştirme eşiği / sıçrama ve yana eğmede kayma olmaz.
+        isUpright = abs(rotationMatrix[8]) < 0.5f
         @Suppress("DEPRECATION")
         val displayRotation = (context.getSystemService(Context.WINDOW_SERVICE) as WindowManager).defaultDisplay.rotation
-        val (axisX, axisY) = if (upright) {
-          SensorManager.AXIS_X to SensorManager.AXIS_Z
-        } else when (displayRotation) {
-          Surface.ROTATION_90 -> SensorManager.AXIS_Y to SensorManager.AXIS_MINUS_X
-          Surface.ROTATION_180 -> SensorManager.AXIS_MINUS_X to SensorManager.AXIS_MINUS_Y
-          Surface.ROTATION_270 -> SensorManager.AXIS_MINUS_Y to SensorManager.AXIS_X
-          else -> SensorManager.AXIS_X to SensorManager.AXIS_Y
+        // Ekranın üst kenarına karşılık gelen cihaz ekseni (dünyada: Doğu, Kuzey, Yukarı bileşenleri)
+        val r = rotationMatrix
+        val (upE, upN, upU) = when (displayRotation) {
+          Surface.ROTATION_90 -> Triple(-r[0], -r[3], -r[6])   // −X
+          Surface.ROTATION_180 -> Triple(-r[1], -r[4], -r[7])  // −Y
+          Surface.ROTATION_270 -> Triple(r[0], r[3], r[6])     // +X
+          else -> Triple(r[1], r[4], r[7])                      // +Y
         }
-        SensorManager.remapCoordinateSystem(rotationMatrix, axisX, axisY, remapped)
-        SensorManager.getOrientation(remapped, orientationValues)
+        val flatW = abs(r[8])
+        val uprightW = upU.coerceAtLeast(0f)
+        val east = flatW * upE - uprightW * r[2]
+        val north = flatW * upN - uprightW * r[5]
+        if (east * east + north * north < 1e-4f) return // yön belirsiz (ör. ekran tam aşağı bakıyor)
+        orientationValues[0] = atan2(east, north)
 
         // Manyetik → gerçek kuzey
         val trueHeading = Math.toDegrees(orientationValues[0].toDouble()) + declination
@@ -302,10 +308,16 @@ fun QiblaFinderScreen(
           color = MaterialTheme.colorScheme.onBackground
         )
         Text(
-          text = (if (location.fromDevice) "📍 Cihaz konumu" else "${prefs.province} / ${prefs.district}") +
-            " • Kıble: ${qiblaBearing.toInt()}° (gerçek kuzey) • " +
-            // Diyanet sitesindeki "Kıble Açısı" manyetik kuzeye göredir (pusulanın gösterdiği kuzey)
-            "${(((qiblaBearing - declination) % 360f + 360f) % 360f).toInt()}° (manyetik / Diyanet)",
+          text = run {
+            val en = com.example.i18n.AppLanguage.isEnglish
+            val mag = (((qiblaBearing - declination) % 360f + 360f) % 360f).roundToInt()
+            // Diyanet'in "Kıble Açısı" manyetik kuzeye göredir ve eski yıllara ait manyetik sapmayla
+            // hesaplandığı için bugünkü manyetik açıdan 1–2° farklı olabilir (ör. Manisa 141°). Bu fark
+            // namaz için önemsizdir; ibre gerçek kuzeye göre hesaplandığından doğrudur.
+            (if (location.fromDevice) (if (en) "📍 Device location" else "📍 Cihaz konumu") else "${prefs.province} / ${prefs.district}") +
+              (if (en) " • Qibla: ${qiblaBearing.roundToInt()}° (true north) • ${mag}° (magnetic compass)"
+              else " • Kıble: ${qiblaBearing.roundToInt()}° (gerçek kuzey) • ${mag}° (manyetik pusula)")
+          },
           style = MaterialTheme.typography.bodySmall,
           color = MaterialTheme.colorScheme.primary,
           fontWeight = FontWeight.SemiBold

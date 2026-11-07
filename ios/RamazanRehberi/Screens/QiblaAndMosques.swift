@@ -5,7 +5,12 @@ import Combine
 
 final class LocationHeading: NSObject, ObservableObject, CLLocationManagerDelegate {
   private let manager = CLLocationManager()
-  @Published var heading: Double = 0           // gerçek kuzeye göre
+  @Published var heading: Double = 0           // gerçek kuzeye göre (0–360)
+  /// Pusula kadranını döndürmek için kesintisiz açı: 359° → 1° geçişinde kadran ters yönde
+  /// tam tur atmasın diye 360'a sarılmaz.
+  @Published var continuousHeading: Double = 0
+  /// Gerçek kuzey alınamazsa (konum yok) manyetik kuzey kullanılır; ibre o durumda sapma kadar kayar.
+  @Published var usingMagnetic = false
   @Published var accuracy: Double = -1
   /// Manyetik sapma (gerçek − manyetik kuzey), pusula verisinden
   @Published var declination: Double?
@@ -17,6 +22,7 @@ final class LocationHeading: NSObject, ObservableObject, CLLocationManagerDelega
     manager.delegate = self
     manager.desiredAccuracy = kCLLocationAccuracyHundredMeters
     manager.headingFilter = 1
+    manager.headingOrientation = .portrait
   }
 
   func start(heading: Bool = true) {
@@ -32,7 +38,11 @@ final class LocationHeading: NSObject, ObservableObject, CLLocationManagerDelega
     if authorized { m.startUpdatingLocation() }
   }
   func locationManager(_ m: CLLocationManager, didUpdateHeading h: CLHeading) {
-    heading = h.trueHeading >= 0 ? h.trueHeading : h.magneticHeading
+    let raw = h.trueHeading >= 0 ? h.trueHeading : h.magneticHeading
+    usingMagnetic = h.trueHeading < 0
+    let delta = ((raw - heading) + 540).truncatingRemainder(dividingBy: 360) - 180
+    continuousHeading += delta
+    heading = raw
     if h.trueHeading >= 0 { declination = ((h.trueHeading - h.magneticHeading + 540).truncatingRemainder(dividingBy: 360)) - 180 }
     accuracy = h.headingAccuracy
   }
@@ -101,7 +111,7 @@ struct QiblaView: View {
     ScrollView {
       VStack(spacing: 14) {
         Text("\(store.locationLabel) • \(t("Kıble")): \(Int(q))° (\(L10n.isEnglish ? "true north" : "gerçek kuzey"))"
-             + (loc.declination.map { " • \(Int(((q - $0).truncatingRemainder(dividingBy: 360) + 360).truncatingRemainder(dividingBy: 360)))° (" + (L10n.isEnglish ? "magnetic / Diyanet" : "manyetik / Diyanet") + ")" } ?? ""))
+             + (loc.declination.map { " • \(Int(((q - $0).truncatingRemainder(dividingBy: 360) + 360).truncatingRemainder(dividingBy: 360)))° (" + (L10n.isEnglish ? "magnetic compass" : "manyetik pusula") + ")" } ?? ""))
           .font(.system(size: 13, weight: .semibold)).foregroundStyle(p.primary)
         HStack(spacing: 14) {
           Image("ic_kaaba").resizable().scaledToFit().frame(width: 40, height: 40)
@@ -116,6 +126,10 @@ struct QiblaView: View {
         Text(L10n.isEnglish ? "⚠️ Hold the phone flat (parallel to the ground) and away from metal objects." : "⚠️ Telefonu yere paralel (yatay) tutun; metal eşyalardan uzak durun.")
           .font(.system(size: 13)).padding(12).frame(maxWidth: .infinity, alignment: .leading)
           .background(RoundedRectangle(cornerRadius: 14).fill(p.tertiary.opacity(0.12)))
+        if loc.usingMagnetic {
+          Text(L10n.isEnglish ? "📍 Allow location access for true-north accuracy; the compass is using magnetic north (≈5–6° off in Türkiye)." : "📍 Gerçek kuzey için konum iznini açın; pusula şu an manyetik kuzeyi kullanıyor (Türkiye'de ≈5–6° sapma).")
+            .font(.system(size: 12)).foregroundStyle(p.onSurfaceVariant)
+        }
         compass(q: q, aligned: aligned)
           .frame(width: 300, height: 300).padding(.vertical, 10)
         if let h = QiblaMath.qiblaHour(coord, bearing: q) {
@@ -159,7 +173,7 @@ struct QiblaView: View {
       ForEach(Array(zip(["K", "D", "G", "B"], [0.0, 90, 180, 270])), id: \.0) { l, a in
         Text(L10n.isEnglish ? ["K": "N", "D": "E", "G": "S", "B": "W"][l]! : l)
           .font(.system(size: 16, weight: .bold)).foregroundStyle(l == "K" ? .red : p.onBackground)
-          .rotationEffect(.degrees(-a + loc.heading))
+          .rotationEffect(.degrees(-a + loc.continuousHeading))
           .offset(y: -112).rotationEffect(.degrees(a))
       }
       // Kıble ibresi
@@ -171,8 +185,8 @@ struct QiblaView: View {
       .rotationEffect(.degrees(q))
       Circle().fill(p.background).frame(width: 18, height: 18).overlay(Circle().stroke(p.primary, lineWidth: 3))
     }
-    .rotationEffect(.degrees(-loc.heading))
-    .animation(.easeOut(duration: 0.25), value: loc.heading)
+    .rotationEffect(.degrees(-loc.continuousHeading))
+    .animation(.easeOut(duration: 0.25), value: loc.continuousHeading)
   }
 }
 
