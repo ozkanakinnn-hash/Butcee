@@ -14,7 +14,9 @@
  * Doğrulama: `node scripts/football-watch.js hl-raw` ham yanıt örneğini yazdırır.
  */
 
-const BASE = 'https://soccer.highlightly.net';
+// Sport API (ücretsiz BASIC planı tüm sporları kapsar) futbolu /football altında verir; ayrı Football API
+// aboneliği olanlar için soccer.highlightly.net. Çalışan ilk adres seçilir ve saklanır.
+const BASES = ['https://sports.highlightly.net/football', 'https://soccer.highlightly.net'];
 const TIMEZONE = 'Europe/Istanbul';
 
 class HighlightlyError extends Error {}
@@ -121,11 +123,11 @@ const isSuperLig = (l) => /s[uü]per\s*lig/i.test(l.name || '') && !/1\.?\s*lig|
 const seasonFor = (date = new Date()) => (date.getUTCMonth() >= 6 ? date.getUTCFullYear() : date.getUTCFullYear() - 1);
 
 class Highlightly {
-  constructor({ key, fetchImpl = fetch, base = BASE, dailyLimit = 100 } = {}) {
+  constructor({ key, fetchImpl = fetch, base = null, dailyLimit = 100 } = {}) {
     if (!key) throw new HighlightlyError('HIGHLIGHTLY_API_KEY tanımlı değil');
     this.key = key;
     this.fetchImpl = fetchImpl;
-    this.base = base;
+    this.base = base; // null → findLeague sırayla dener
     this.used = 0;
     this.remaining = null; // başlıktan gelirse; yoksa football-job günlük sayaçtan hesaplar
     this.dailyLimit = dailyLimit;
@@ -134,7 +136,7 @@ class Highlightly {
   }
 
   async raw(path, params = {}) {
-    const url = new URL(this.base + path);
+    const url = new URL((this.base || BASES[0]) + path);
     for (const [k, v] of Object.entries(params)) if (v !== undefined && v !== null) url.searchParams.set(k, String(v));
     const res = await this.fetchImpl(url, {
       headers: { 'x-rapidapi-key': this.key },
@@ -153,18 +155,29 @@ class Highlightly {
   }
 
   async findLeague() {
-    if (this.leagueId) return this.leagueId;
+    if (this.leagueId && this.base) return this.leagueId;
     const tries = [{ countryCode: 'TR', limit: 100 }, { leagueName: 'Super Lig', limit: 50 }, { leagueName: 'Süper Lig', limit: 50 }];
-    for (const p of tries) {
-      const leagues = listOf(await this.raw('/leagues', p));
-      const l = leagues.find(isSuperLig);
-      if (l) {
-        this.leagueId = l.id;
-        this.league = l;
-        return l.id;
+    const bases = this.base ? [this.base] : BASES;
+    let lastErr = null;
+    for (const base of bases) {
+      this.base = base;
+      try {
+        if (this.leagueId) return this.leagueId; // kimlik biliniyor, adres de artık seçildi
+        for (const p of tries) {
+          const l = listOf(await this.raw('/leagues', p)).find(isSuperLig);
+          if (l) {
+            this.leagueId = l.id;
+            this.league = l;
+            return l.id;
+          }
+        }
+      } catch (err) {
+        lastErr = err; // ör. bu API'ye abonelik yok (401/403/404) → sıradaki adres
+        if (!/HTTP (401|403|404)/.test(err.message) || bases.length === 1) throw err;
       }
     }
-    throw new HighlightlyError('Highlightly\'de Süper Lig bulunamadı');
+    this.base = null;
+    throw lastErr || new HighlightlyError('Highlightly\'de Süper Lig bulunamadı');
   }
 
   async matches(params) {
@@ -211,4 +224,4 @@ class Highlightly {
   }
 }
 
-module.exports = { Highlightly, HighlightlyError, toFixture, statusShort, parseScore, parseMinute, mapEvents, isSuperLig, seasonFor };
+module.exports = { BASES, Highlightly, HighlightlyError, toFixture, statusShort, parseScore, parseMinute, mapEvents, isSuperLig, seasonFor };

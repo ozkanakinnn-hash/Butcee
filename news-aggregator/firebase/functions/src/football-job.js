@@ -222,7 +222,10 @@ async function tick(db, makeApi, messaging, now = Date.now()) {
   let api = null;
   const open = () => {
     api = api || makeApi();
-    if (api && 'leagueId' in api && !api.leagueId && meta.provider_league_id) api.leagueId = meta.provider_league_id;
+    if (api && 'leagueId' in api && !api.leagueId && meta.provider_league_id) {
+      api.leagueId = meta.provider_league_id;
+      if (meta.provider_base) api.base = meta.provider_base;
+    }
     return api;
   };
   const budget = () => {
@@ -236,6 +239,7 @@ async function tick(db, makeApi, messaging, now = Date.now()) {
       req_day: today,
       req_used: usedBefore + api.used,
       ...(api.leagueId ? { provider_league_id: api.leagueId } : {}),
+      ...(api.base ? { provider_base: api.base } : {}),
       ...extra,
     }, { merge: true });
   };

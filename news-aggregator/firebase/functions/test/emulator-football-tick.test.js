@@ -75,8 +75,8 @@ test('tick + Highlightly: günlük bütçe sayılır, lig kimliği saklanır, go
   let events = [];
   const calls = [];
   const fetchImpl = async (url) => {
-    calls.push(url.pathname);
-    if (url.pathname === '/leagues') return Response.json({ data: [{ id: 71, name: 'Super Lig' }] });
+    calls.push(url.pathname.replace('/football', ''));
+    if (url.pathname.endsWith('/leagues')) return Response.json({ data: [{ id: 71, name: 'Super Lig' }] });
     return Response.json({ data: [{
       id: 555, date: kickoff, league: { id: 71, name: 'Super Lig' },
       homeTeam: { id: 1, name: 'Besiktas' }, awayTeam: { id: 2, name: 'Trabzonspor' },

@@ -73,9 +73,9 @@ test('Süper Lig adı eşleşir; 1. Lig ve kadınlar ligi eşleşmez', () => {
 test('istemci: anahtar başlıkta, lig bir kez aranır, ids ile tek istekte bugünkü maçlar süzülür', async () => {
   const calls = [];
   const fetchImpl = async (url, opts) => {
-    calls.push({ path: url.pathname, q: Object.fromEntries(url.searchParams), key: opts.headers['x-rapidapi-key'] });
-    if (url.pathname === '/leagues') return Response.json({ data: [{ id: 99, name: '1. Lig' }, { id: 71, name: 'Super Lig', seasons: [{ season: 2025 }, { season: 2026 }] }] });
-    if (url.pathname === '/matches') return Response.json({ data: [sample(), sample({ id: 9002 })], pagination: {} });
+    calls.push({ path: url.pathname.replace('/football', ''), host: url.host, q: Object.fromEntries(url.searchParams), key: opts.headers['x-rapidapi-key'] });
+    if (url.pathname.endsWith('/leagues')) return Response.json({ data: [{ id: 99, name: '1. Lig' }, { id: 71, name: 'Super Lig', seasons: [{ season: 2025 }, { season: 2026 }] }] });
+    if (url.pathname.endsWith('/matches')) return Response.json({ data: [sample(), sample({ id: 9002 })], pagination: {} });
     return new Response('yok', { status: 404 });
   };
   const api = new Highlightly({ key: 'k', fetchImpl });
@@ -94,4 +94,21 @@ test('istemci: anahtar başlıkta, lig bir kez aranır, ids ile tek istekte bug�
 test('HTTP hatası anlaşılır mesajla fırlatılır', async () => {
   const api = new Highlightly({ key: 'k', fetchImpl: async () => new Response('limit', { status: 429 }) });
   await assert.rejects(api.get('/leagues'), /HTTP 429/);
+});
+
+test('Sport API adresi önce denenir; abonelik yoksa (403) Football API adresine geçilir', async () => {
+  const hosts = [];
+  const fetchImpl = async (url) => {
+    hosts.push(url.host);
+    if (url.host === 'sports.highlightly.net') return new Response('no subscription', { status: 403 });
+    return Response.json({ data: [{ id: 71, name: 'Super Lig' }] });
+  };
+  const api = new Highlightly({ key: 'k', fetchImpl });
+  assert.equal(await api.findLeague(), 71);
+  assert.deepEqual(hosts, ['sports.highlightly.net', 'soccer.highlightly.net']);
+  assert.equal(api.base, 'https://soccer.highlightly.net');
+
+  const ok = new Highlightly({ key: 'k', fetchImpl: async (url) => { hosts.push(url.href); return Response.json([{ id: 5, name: 'Süper Lig' }]); } });
+  assert.equal(await ok.findLeague(), 5);
+  assert.match(hosts[hosts.length - 1], /^https:\/\/sports\.highlightly\.net\/football\/leagues/);
 });
