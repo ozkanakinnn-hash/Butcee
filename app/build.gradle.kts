@@ -78,9 +78,9 @@ android {
       isIncludeAndroidResources = true
       all {
         // Yerel Maven deposu varsa Robolectric oradan, yoksa Maven Central'dan indirir (CI)
-        if (file("/home/appuser/.m2/repository").exists()) {
-          it.systemProperty("robolectric.dependency.repo.url", "file:///home/appuser/.m2/repository")
-        }
+        val localRepo = listOf("/home/appuser/.m2/repository", System.getProperty("user.home") + "/.m2/repository")
+          .firstOrNull { file("$it/org/robolectric/android-all-instrumented").exists() }
+        if (localRepo != null) it.systemProperty("robolectric.dependency.repo.url", "file://$localRepo")
       }
     }
   }

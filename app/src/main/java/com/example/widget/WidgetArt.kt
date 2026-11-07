@@ -208,22 +208,39 @@ object WidgetArt {
       c.drawPath(body, Paint(Paint.ANTI_ALIAS_FLAG).apply { shader = LinearGradient(0f, ly + dp(14), 0f, ly + dp(56), 0xFFFFE9A8.toInt(), 0xFFF0B04A.toInt(), Shader.TileMode.CLAMP) })
       c.drawPath(body, Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.STROKE; strokeWidth = dp(1.1f); color = p.accent })
       c.drawRoundRect(RectF(lx - dp(6), ly + dp(56), lx + dp(6), ly + dp(60)), dp(1.5f), dp(1.5f), paint(p.accent))
-      // Başlık + etiket
+      // Başlık + etiket (fenere çarpmasın diye genişliğe sığacak kadar küçültülür)
       val left = dp(16)
+      val textRight = w - dp(58)
+      fun fit(tp: TextPaint, s: String, maxW: Float, minSp: Float) {
+        while (tp.measureText(s) > maxW && tp.textSize > dp(minSp)) tp.textSize *= .94f
+      }
+      val titleText = title.uppercase(java.util.Locale.forLanguageTag("tr"))
       val titlePaint = text(9f, INTER_X, p.accent, spacing = .06f)
-      c.drawText(title.uppercase(java.util.Locale.forLanguageTag("tr")), left, dp(24), titlePaint)
-      c.drawText(countdownLabel, left, dp(46), text(11f, INTER, p.muted))
+      fit(titlePaint, titleText, textRight - left, 6.5f)
+      c.drawText(titleText, left, dp(24), titlePaint)
+      val labelPaint = text(11f, INTER, p.muted)
+      fit(labelPaint, countdownLabel, textRight - left, 8f)
+      c.drawText(countdownLabel, left, dp(46), labelPaint)
       if (bigText != null) {
-        val tp = text(20f, INTER_X, p.ink)
-        val sl = StaticLayout.Builder.obtain(bigText, 0, bigText.length, tp, (w - left - dp(60)).toInt())
-          .setAlignment(Layout.Alignment.ALIGN_NORMAL).setLineSpacing(0f, 1.05f).setIncludePad(false).build()
+        // Çubuğun üstüne taşmadan sığacak kadar küçült (en çok 3 satır)
+        // Mübarek gün modunda çubuk yok; metin fenerin soluna sığdırılır ve alt satıra kadar inebilir
+        val maxH = (h - dp(32)) - dp(54)
+        val tp = text(17f, INTER_X, p.ink)
+        var sl: StaticLayout
+        while (true) {
+          sl = StaticLayout.Builder.obtain(bigText, 0, bigText.length, tp, (textRight - left).toInt())
+            .setAlignment(Layout.Alignment.ALIGN_NORMAL).setLineSpacing(0f, 1.0f).setIncludePad(false).build()
+          val lines = bigText.count { it == '\n' } + 1
+          if ((sl.height <= maxH && sl.lineCount <= lines) || tp.textSize < dp(10f)) break
+          tp.textSize *= .92f
+        }
         c.save(); c.translate(left, dp(54)); sl.draw(c); c.restore()
       }
       // İlerleme çubuğu
       val barY = h - dp(44)
       val bar = RectF(left, barY, w - left, barY + dp(6))
-      c.drawRoundRect(bar, dp(3), dp(3), paint(p.line))
       if (progress != null) {
+        c.drawRoundRect(bar, dp(3), dp(3), paint(p.line))
         val px = bar.left + bar.width() * progress.coerceIn(0f, 1f)
         c.drawRoundRect(RectF(bar.left, bar.top, px, bar.bottom), dp(3), dp(3),
           Paint(Paint.ANTI_ALIAS_FLAG).apply { shader = LinearGradient(bar.left, 0f, px.coerceAtLeast(bar.left + 1), 0f, p.accentLight, p.accent, Shader.TileMode.CLAMP) })

@@ -78,6 +78,10 @@ gradle/actions/setup-gradle@v5 → `./gradlew assembleDebug` → upload-artifact
 - Önizleme: `android:previewLayout` aynı layout'u gösterir → layout'taki TextView'lara örnek `android:text` değerleri koy, yoksa önizleme boş görünür.
 - Uygulama içinden ekleme: `AppWidgetManager.requestPinAppWidget` (API 26+), desteklenmezse "Ana ekranda basılı tut → Widget'lar" yönlendirmesi.
 - Widget/Receiver kodu tüm `try/catch` içinde; dil için `AppLanguage.current = prefs.language` ayarla (Activity açılmadan çalışır).
+- **Estetik widget (tam bitmap tasarım):** Tüm görseli Canvas ile bitmap'e çiz (gradyan, ışıltı, desen, halka, ikonlar, özel fontlar `ResourcesCompat.getFont`) → `setImageViewBitmap`. Canlı geri sayım için üstüne `Chronometer` (`setChronometer` + `setChronometerCountDown`). Boyut `getAppWidgetOptions` (MIN_WIDTH×MAX_HEIGHT dp), ölçek = min(density, 2.5) (Binder 1 MB sınırı); `onAppWidgetOptionsChanged`'de yeniden çiz.
+- Metin sığdırma: başlıkları `measureText` döngüsüyle küçült; çok satırlı metinde StaticLayout'u her satır tek satıra sığana ve yükseklik alana girene kadar küçült (setMaxLines yüksekliği sınırlamaz). Dekoratif öğelerle (fener vb.) çakışmasın diye metin genişliğini öğenin soluyla sınırla.
+- Widget görsel testi: Robolectric `@GraphicsMode(NATIVE)` ile bitmap'i PNG'ye yaz (`build/widget-renders`), her tema/durum için gözle kontrol et. Robolectric `android-all-instrumented` jar'ı Maven 429 verirse `maven-central.storage-download.googleapis.com` aynasından ~/.m2'ye indir.
+- Önizleme: `previewImage` için `drawable-nodpi/widget_preview_*.png`; `initialLayout` basit bir yükleniyor düzeni.
 - Emülatörde test: uygulamadaki "widget ekle" düğmesi → sistem diyaloğunda "Add to home screen"'e dokun → ana ekran ekran görüntüsü.
 
 ## Paylaşılabilir görsel kart (Canvas → PNG → FileProvider)
