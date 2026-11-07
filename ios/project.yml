@@ -65,6 +65,8 @@ targets:
       - path: RamazanRehberi/Core/L10n.swift
       - path: RamazanRehberi/Resources/Data/content.json
         buildPhase: resources
+      - path: RamazanRehberi/Resources/Fonts
+        buildPhase: resources
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.ozkanakin.ramazanrehberi.widget

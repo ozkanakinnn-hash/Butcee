@@ -7,6 +7,8 @@
     <string name="widget_label_prayer_times">Namaz Vakitleri</string>
     <string name="widget_label_spiritual">Günün Manevi İklimi</string>
     <string name="widget_desc_next_prayer">Sonraki namaz vakti ve geri sayım</string>
-    <string name="widget_desc_prayer_times">Günün 5 vakti, sıradaki vakit vurgulu</string>
+    <string name="widget_desc_prayer_times">Günün 6 vakti, hicri tarih ve günün akışı</string>
     <string name="widget_desc_spiritual">Günün ayeti, hadisi ve duası</string>
+    <string name="widget_label_fasting">Oruç &amp; İftar</string>
+    <string name="widget_desc_fasting">Oruç ilerlemesi ve iftara kalan süre; diğer günlerde sıradaki kandil/bayram</string>
 </resources>

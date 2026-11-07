@@ -310,7 +310,16 @@ private val dictionary: Map<String, String> = mapOf(
     "📍 Konumu otomatik takip et (GPS)" to "📍 Follow my location automatically (GPS)",
     "Başka şehre gidince namaz vakitleri kendiliğinden güncellenir" to "Prayer times update by themselves when you travel to another city",
     "(GPS koordinatına göre)" to "(by GPS coordinates)",
-    "(Diyanet Uyumlu Vakitler)" to "(Diyanet-compatible times)"
+    "(Diyanet Uyumlu Vakitler)" to "(Diyanet-compatible times)",
+    "🏮 Oruç & İftar" to "🏮 Fasting & Iftar",
+    "🗓️ Günün Vakitleri" to "🗓️ Today's Prayer Times",
+    "Regaip Kandili" to "Night of Raghaib",
+    "Miraç Kandili" to "Night of Mi'raj",
+    "Berat Kandili" to "Night of Bara'ah",
+    "Kadir Gecesi" to "Night of Power",
+    "Mevlid Kandili" to "Mawlid",
+    "Ramazan Bayramı" to "Eid al-Fitr",
+    "Kurban Bayramı" to "Eid al-Adha"
 )
 
 private val prayerWords = listOf("İmsak", "Güneş", "Öğle", "İkindi", "Akşam", "Yatsı")

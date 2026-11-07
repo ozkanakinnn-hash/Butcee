@@ -595,8 +595,9 @@ fun RamazanRehberiApp(
           androidx.compose.foundation.layout.Column {
             listOf(
               com.example.widget.WidgetUpdater.Kind.NEXT_PRAYER to t("🕌 Sonraki Namaz & Geri Sayım"),
-              com.example.widget.WidgetUpdater.Kind.PRAYER_TIMES to t("🗓️ Günün 5 Vakti"),
-              com.example.widget.WidgetUpdater.Kind.SPIRITUAL to t("📖 Günün Manevi İklimi")
+              com.example.widget.WidgetUpdater.Kind.PRAYER_TIMES to t("🗓️ Günün Vakitleri"),
+              com.example.widget.WidgetUpdater.Kind.SPIRITUAL to t("📖 Günün Manevi İklimi"),
+              com.example.widget.WidgetUpdater.Kind.FASTING to t("🏮 Oruç & İftar")
             ).forEach { (kind, label) ->
               androidx.compose.material3.TextButton(
                 onClick = {

@@ -11,6 +11,12 @@
   <key>CFBundlePackageType</key><string>XPC!</string>
   <key>CFBundleShortVersionString</key><string>$(MARKETING_VERSION)</string>
   <key>CFBundleVersion</key><string>$(CURRENT_PROJECT_VERSION)</string>
+  <key>UIAppFonts</key>
+  <array>
+    <string>amiri_bold.ttf</string>
+    <string>playfair_display_bold.ttf</string>
+    <string>playfair_display_italic.ttf</string>
+  </array>
   <key>NSExtension</key>
   <dict><key>NSExtensionPointIdentifier</key><string>com.apple.widgetkit-extension</string></dict>
 </dict>

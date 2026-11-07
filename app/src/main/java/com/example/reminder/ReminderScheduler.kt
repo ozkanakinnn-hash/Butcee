@@ -34,6 +34,7 @@ object ReminderScheduler {
     prefs.lastImsak = PrayerTimeUtils.cleanTimeString(prayerTimes.imsak, prefs.lastImsak)
     prefs.lastAksam = PrayerTimeUtils.cleanTimeString(prayerTimes.aksam, prefs.lastAksam)
     prefs.lastOgle = PrayerTimeUtils.cleanTimeString(prayerTimes.ogle, prefs.lastOgle)
+    prefs.lastGunes = PrayerTimeUtils.cleanTimeString(prayerTimes.gunes, prefs.lastGunes)
     prefs.lastIkindi = PrayerTimeUtils.cleanTimeString(prayerTimes.ikindi, prefs.lastIkindi)
     prefs.lastYatsi = PrayerTimeUtils.cleanTimeString(prayerTimes.yatsi, prefs.lastYatsi)
     rescheduleAll(context)
