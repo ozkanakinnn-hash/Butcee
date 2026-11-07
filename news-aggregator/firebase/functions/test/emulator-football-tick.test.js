@@ -84,6 +84,8 @@ test('tick + Highlightly: günlük bütçe sayılır, lig kimliği saklanır, go
     }] });
   };
   const makeApi = () => new Highlightly({ key: 'k', fetchImpl, dailyLimit: 100 });
+  makeApi.provider = 'highlightly';
+  await db.doc('football_meta/state').set({ teams_source: 'local' }, { merge: true });
   const sent = [];
   const messaging = { sendEach: async (m) => { sent.push(...m); return { successCount: m.length, failureCount: 0, responses: m.map(() => ({ success: true })) }; } };
 
@@ -117,4 +119,21 @@ test('tick + Highlightly: günlük bütçe sayılır, lig kimliği saklanır, go
   calls.length = 0;
   assert.equal(await tick(db, makeApi, messaging), 'out-of-requests');
   assert.equal(calls.length, 0);
+});
+
+test('Highlightly: takım senkronu yerel 18 takımı etkin tutar, API takım listesine dokunmaz', { skip }, async () => {
+  const { getFirestore } = require('firebase-admin/firestore');
+  const { syncTeams } = require('../src/football-job');
+  const { Highlightly } = require('../src/football-highlightly');
+  const { SUPER_LIG_TEAMS } = require('../src/teams');
+  const db = getFirestore();
+  await db.doc('football_teams/galatasaray').set({ active: false }, { merge: true });
+  const paths = [];
+  const api = new Highlightly({ key: 'k', fetchImpl: async (url) => { paths.push(url.pathname); return Response.json({ data: [{ id: 71, name: 'Super Lig', seasons: [{ season: 2026 }] }] }); } });
+  const meta = {};
+  await syncTeams(db, api, meta);
+  assert.equal(meta.season, 2026);
+  assert.ok(!paths.some((p) => p.endsWith('/teams')), 'takım isteği yapılmaz');
+  const snap = await db.collection('football_teams').where('active', '==', true).get();
+  assert.ok(SUPER_LIG_TEAMS.every((t) => snap.docs.some((d) => d.id === t.id)));
 });

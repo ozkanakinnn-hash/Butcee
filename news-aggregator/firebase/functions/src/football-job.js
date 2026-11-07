@@ -58,7 +58,23 @@ async function currentSeason(api) {
  */
 async function syncTeams(db, api, meta) {
   const season = await currentSeason(api);
+  if (api.provider === 'highlightly') {
+    // Highlightly'nin takım listesi farklı sezon/kupa takımlarını da içerebilir; uygulamanın takım listesi
+    // src/teams.js'teki Süper Lig listesinden gelir (adlar maçlarda bu listeye eşlenir). Yalnızca etkin tutulur.
+    const { SUPER_LIG_TEAMS } = require('./teams');
+    const batch = db.batch();
+    for (const t of SUPER_LIG_TEAMS) {
+      batch.set(db.doc(`football_teams/${t.id}`), { name: t.name, short: t.short, colors: t.colors, league_id: fb.SUPER_LIG_ID, active: true }, { merge: true });
+    }
+    batch.set(db.doc('football_meta/state'), { season, teams_synced_at: Timestamp.now(), teams_source: 'local' }, { merge: true });
+    await batch.commit();
+    meta.season = season;
+    meta.teams_source = 'local';
+    log(`Takımlar (yerel liste): ${SUPER_LIG_TEAMS.length} takım etkin (sezon ${season})`);
+    return;
+  }
   const teams = await api.get('/teams', { league: fb.SUPER_LIG_ID, season });
+  if (teams.length < 10) throw new fb.FootballApiError(`Takım listesi eksik (${teams.length}); takımlara dokunulmadı`);
   const resolve = fb.defaultResolver;
   const seen = new Set();
   const batch = db.batch();
@@ -215,6 +231,8 @@ async function tick(db, makeApi, messaging, now = Date.now()) {
   const today = fb.istanbulDate(new Date(now));
   const needsPrepare = meta.fixtures_date !== today ||
     !meta.season || !meta.teams_synced_at || now - meta.teams_synced_at.toMillis() > TEAMS_TTL_MS;
+  // Highlightly'ye geçişte takım listesi bir kez yerel listeyle yenilenir (önceki sürüm API listesini yazmış olabilir).
+  const forceTeams = makeApi.provider === 'highlightly' && meta.teams_source !== 'local';
   if (meta.plan_blocked_until && meta.plan_blocked_until.toMillis() > now) return 'plan-blocked';
 
   // Günlük istek sayacı: sağlayıcı kalan isteği bildirmiyorsa (Highlightly) bütçe buradan hesaplanır.
@@ -244,8 +262,9 @@ async function tick(db, makeApi, messaging, now = Date.now()) {
     }, { merge: true });
   };
 
-  if (needsPrepare) {
+  if (needsPrepare || forceTeams) {
     if (!open()) return 'no-key';
+    if (forceTeams) meta.teams_synced_at = null;
     const ok = await prepare(db, api, meta);
     await save();
     if (!ok) return 'plan-blocked';

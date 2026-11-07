@@ -82,6 +82,7 @@ exports.footballTick = onSchedule(
     const af = FOOTBALL_API_KEY.value();
     const makeApi = () =>
       usable(hl) ? new Highlightly({ key: hl.trim() }) : usable(af) ? new ApiFootball({ key: af.trim() }) : null;
+    makeApi.provider = usable(hl) ? 'highlightly' : usable(af) ? 'api-football' : null;
     const result = await tick(getFirestore(), makeApi, getMessaging());
     if (!['idle', 'waiting-kickoff', 'throttled'].includes(result)) logger.info('Futbol', { result });
   }
