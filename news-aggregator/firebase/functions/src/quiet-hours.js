@@ -5,7 +5,7 @@
  *
  * 00:00–08:00 (İstanbul) arasında bildirimler `quiet` kanalından SESSİZ gider (bildirim yine düşer,
  * sabah görülür). İstisna: deprem, afet, savaş, olağanüstü hal gibi can güvenliğini ilgilendiren son dakika
- * haberleri gece de sesli gider (`breaking_alert` kanalı).
+ * haberleri gece de sesli gider (`breaking_news` kanalı).
  */
 
 const QUIET_START_HOUR = 0; // gece yarısı

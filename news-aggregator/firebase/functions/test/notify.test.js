@@ -58,8 +58,8 @@ test('Son Dakika hemen gider, aynı haber tekrar gönderilmez, eski haber gönde
   assert.equal(msg.topic, 'news_son-dakika');
   assert.equal(msg.notification.title, '🔴 SON DAKİKA');
   assert.equal(msg.android.priority, 'high');
-  assert.equal(msg.android.notification.channelId, 'breaking_alert');
-  assert.equal(msg.android.notification.sound, 'breaking_alert');
+  assert.equal(msg.android.notification.channelId, 'breaking_news');
+  assert.equal(msg.android.notification.sound, 'breaking_news');
   assert.equal(first.nextState.last_breaking_id, 'x');
 
   const again = planNotifications({ results, categories, state: first.nextState, now: NOW + 20 * 60_000 });
@@ -148,14 +148,14 @@ test('gece 00:00–08:00 bildirimler sessiz kanaldan; deprem/afet/savaş son dak
     'Türkiye\'ye yönelik füze saldırısı', 'Olağanüstü hal ilan edildi', 'Savaş ilan edildi',
   ]) {
     const m = msg(t, { breaking: true });
-    assert.equal(m.android.notification.channelId, 'breaking_alert', t);
+    assert.equal(m.android.notification.channelId, 'breaking_news', t);
     assert.equal(m.android.priority, 'high', t);
   }
   // Küçük deprem geceyi bölmez; olağanüstü olsa bile kategori özeti (son dakika değil) sessiz
   assert.equal(msg('Ege Denizi\'nde 3.2 büyüklüğünde deprem', { breaking: true }).android.notification.channelId, 'quiet');
   assert.equal(msg('Savaş ilan edildi').android.notification.channelId, 'quiet');
   // Sabah 08:00'den sonra normal
-  assert.equal(msg('Meclis yeni yasayı görüştü', { breaking: true, now: morning }).android.notification.channelId, 'breaking_alert');
+  assert.equal(msg('Meclis yeni yasayı görüştü', { breaking: true, now: morning }).android.notification.channelId, 'breaking_news');
 });
 
 test('sessiz saat sınırları İstanbul saatine göre', () => {

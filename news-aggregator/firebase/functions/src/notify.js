@@ -30,7 +30,7 @@ function trimText(text, max) {
 
 /**
  * Bildirim kanalları (uygulamadaki NotificationService.channels ile aynı):
- *  breaking_alert : Son Dakika — özel haber uyarı sesi (res/raw/breaking_alert.wav), yüksek öncelik
+ *  breaking_news  : Son Dakika — özel haber uyarı sesi (res/raw/breaking_news.wav, "tok" sinematik vuruş)
  *  news           : kategori özetleri — varsayılan ses
  *  quiet          : gece 00:00–08:00 — sessiz (olağanüstü durum haberleri hariç)
  */
@@ -45,7 +45,7 @@ function buildNewsMessage({ categoryId, categoryName, articles, breaking = false
   // Gece sessiz: deprem/afet/savaş/olağanüstü hal gibi son dakika haberleri hariç.
   const critical = breaking && isCritical(top.data.title, top.data.summary);
   const quiet = isQuietHour(now) && !critical;
-  const channelId = quiet ? 'quiet' : breaking ? 'breaking_alert' : 'news';
+  const channelId = quiet ? 'quiet' : breaking ? 'breaking_news' : 'news';
   // Telif ve şeffaflık: her bildirimde haberin kaynağı belirtilir (ör. "Kaynak: AA").
   const source = top.data.source_name ? `Kaynak: ${top.data.source_name}` : '';
   const extra = !breaking && more > 0 ? `ve ${more} haber daha` : '';
@@ -70,7 +70,7 @@ function buildNewsMessage({ categoryId, categoryName, articles, breaking = false
       notification: {
         channelId,
         tag: topicFor(categoryId),
-        ...(channelId === 'breaking_alert' ? { sound: 'breaking_alert' } : {}),
+        ...(channelId === 'breaking_news' ? { sound: 'breaking_news' } : {}),
         icon: 'ic_stat_news',
         color: '#0A84FF',
       },
