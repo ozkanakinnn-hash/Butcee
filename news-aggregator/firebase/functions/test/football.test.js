@@ -68,8 +68,8 @@ test('gol bildirimi: iki takımın konusuna tek mesaj, gol kanalı ve sesi', () 
   assert.equal(msg.condition, "'team_galatasaray' in topics || 'team_fenerbahce' in topics");
   assert.equal(msg.notification.title, '⚽ GOL! Galatasaray 2-1 Fenerbahçe');
   assert.equal(msg.notification.body, "67+2' M. Icardi (pen.) — Galatasaray");
-  assert.equal(msg.android.notification.channelId, 'goals');
-  assert.equal(msg.android.notification.sound, 'goal_whistle');
+  assert.equal(msg.android.notification.channelId, 'goal_alert');
+  assert.equal(msg.android.notification.sound, undefined, 'telefonda seçili ses');
   assert.equal(msg.android.priority, 'high');
   assert.equal(msg.data.fixture_id, '1001');
 

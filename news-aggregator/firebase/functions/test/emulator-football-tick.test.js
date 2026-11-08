@@ -231,3 +231,53 @@ test('yalnızca takip edilen takımlar: takipsiz maç için istek yok; devre ara
   assert.equal(await tick(db, () => api, messaging, Date.now() + 120_000), 'polled');
   assert.equal(calls, 1);
 });
+
+test('test maçı: başlangıçta panel + "başladı", 15. dk gol, 20. dk sonuç ve belge silinir; gece de sesli', { skip }, async () => {
+  const { getFirestore } = require('firebase-admin/firestore');
+  const { runTestMatch, nextIstanbulTime } = require('../src/test-match');
+  const db = getFirestore();
+  const start = Date.parse('2026-11-08T21:45:00Z'); // İstanbul 00:45 (sessiz saat)
+  await db.doc('football_meta/test').set({ home: 'besiktas', away: 'genclerbirligi', start_ms: start, goal_minute: 15, end_minute: 20 });
+  const sent = [];
+  const messaging = { sendEach: async (m) => { sent.push(m); return { successCount: m.length, failureCount: 0 }; } };
+  const titles = (batch) => batch.filter((x) => x.notification).map((x) => x.notification.title);
+
+  assert.equal(await runTestMatch(db, messaging, start - 60_000), 'test-waiting');
+  assert.equal(sent.length, 0);
+
+  assert.equal(await runTestMatch(db, messaging, start + 5_000), 'test-running');
+  assert.deepEqual(titles(sent[0]), ['[TEST] 🟢 Maç başladı']);
+  const kick = sent[0].find((x) => x.notification);
+  assert.notEqual(kick.android.notification.channelId, 'quiet', 'gece sessiz saatine takılmaz');
+  const panel = sent[0].find((x) => !x.notification);
+  assert.equal(panel.data.type, 'match_live');
+  assert.equal(panel.data.home_short, 'BJK');
+  assert.match(panel.condition, /team_besiktas/);
+
+  await runTestMatch(db, messaging, start + 7 * 60_000); // ara dakika: yalnız panel
+  assert.deepEqual(titles(sent[1]), []);
+
+  await runTestMatch(db, messaging, start + 15 * 60_000 + 3_000);
+  assert.deepEqual(titles(sent[2]), ['[TEST] ⚽ GOL! Beşiktaş 1-0 Gençlerbirliği']);
+  assert.equal(sent[2].find((x) => x.notification).android.notification.channelId, 'goal_alert');
+  assert.equal(sent[2].find((x) => !x.notification).data.gh, '1');
+
+  await runTestMatch(db, messaging, start + 16 * 60_000); // gol tekrar gitmez
+  assert.deepEqual(titles(sent[3]), []);
+
+  assert.equal(await runTestMatch(db, messaging, start + 20 * 60_000), 'test-finished');
+  assert.deepEqual(titles(sent[4]), ['[TEST] 🏁 Maç sonucu']);
+  assert.equal(sent[4].find((x) => !x.notification).data.finished, '1');
+  assert.equal((await db.doc('football_meta/test').get()).exists, false);
+  assert.equal(await runTestMatch(db, messaging, start + 21 * 60_000), null);
+
+  // Konsoldan elle: yalnız start_at metni (takımlar varsayılan)
+  await db.doc('football_meta/test').set({ start_at: '2026-11-09T00:45' });
+  assert.equal(await runTestMatch(db, messaging, start - 1000), 'test-waiting');
+  assert.equal(await runTestMatch(db, messaging, start + 1000), 'test-running');
+  await db.doc('football_meta/test').delete();
+
+  // 00:45 her zaman sıradaki gece yarısından sonrası
+  const t = nextIstanbulTime('00:45', Date.parse('2026-11-08T19:00:00Z')); // İstanbul 22:00
+  assert.equal(new Date(t).toISOString(), '2026-11-08T21:45:00.000Z');
+});

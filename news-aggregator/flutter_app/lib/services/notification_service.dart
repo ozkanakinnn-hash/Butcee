@@ -56,7 +56,7 @@ class MatchTarget extends NotificationTarget {
 ///  - news     : ilgi alanı haber özetleri
 ///  - breaking_news : Son Dakika (yüksek öncelik, telefonun varsayılan bildirim sesi)
 ///  - quiet    : gece 00:00–08:00 sessiz bildirimler (olağanüstü durumlar hariç)
-///  - goals    : gol / gol iptali — özel ses `res/raw/goal_whistle.wav`
+///  - goal_alert : gol / gol iptali — telefonun bildirim sesi (kullanıcı kanal ayarından değiştirebilir)
 ///  - match    : maç başladı / devre / sonuç
 class NotificationService {
   NotificationService._();
@@ -94,11 +94,10 @@ class NotificationService {
       enableVibration: false,
     ),
     AndroidNotificationChannel(
-      'goals',
+      'goal_alert',
       'Goller',
-      description: 'Takip ettiğin takımların golleri',
+      description: 'Takip ettiğin takımların golleri (ses: telefonun bildirim sesi; buradan değiştirilebilir)',
       importance: Importance.max,
-      sound: RawResourceAndroidNotificationSound('goal_whistle'),
     ),
     AndroidNotificationChannel(
       'match',
@@ -130,8 +129,8 @@ class NotificationService {
     for (final c in channels) {
       await android?.createNotificationChannel(c);
     }
-    // Kanal sesi sonradan değiştirilemez (Android kuralı) → eski son dakika kanalları silinir.
-    for (final old in const ['breaking', 'breaking_alert']) {
+    // Kanal sesi sonradan değiştirilemez (Android kuralı) → özel sesli eski kanallar silinir; yerine telefonun sesi.
+    for (final old in const ['breaking', 'breaking_alert', 'goals']) {
       await android?.deleteNotificationChannel(channelId: old);
     }
 

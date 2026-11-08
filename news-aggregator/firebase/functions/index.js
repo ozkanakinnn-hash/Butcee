@@ -25,6 +25,7 @@ const { updateMarket } = require('./src/market');
 const { ApiFootball } = require('./src/football');
 const { Highlightly } = require('./src/football-highlightly');
 const { tick } = require('./src/football-job');
+const { runTestMatch } = require('./src/test-match');
 
 initializeApp();
 
@@ -83,6 +84,13 @@ exports.footballTick = onSchedule(
     const makeApi = () =>
       usable(hl) ? new Highlightly({ key: hl.trim() }) : usable(af) ? new ApiFootball({ key: af.trim() }) : null;
     makeApi.provider = usable(hl) ? 'highlightly' : usable(af) ? 'api-football' : null;
+    // Test maçı (football_meta/test varsa): panel + gol bildirimi denemesi, API isteği harcamaz
+    try {
+      const t = await runTestMatch(getFirestore(), getMessaging());
+      if (t && t !== 'test-waiting') logger.info('Test maçı', { result: t });
+    } catch (err) {
+      logger.warn('Test maçı hatası', { error: err.message });
+    }
     // fast: istek hakkı yeterliyse görev içinde 15 sn'de bir kontrol (ücretli planda gol anında)
     const result = await tick(getFirestore(), makeApi, getMessaging(), Date.now(), { fast: true });
     if (!['idle', 'waiting-kickoff', 'throttled'].includes(result)) logger.info('Futbol', { result });
