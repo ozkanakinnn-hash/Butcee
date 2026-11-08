@@ -6,6 +6,10 @@ description: Flutter/FlutterFlow + Firebase (Firestore, Cloud Functions) uygulam
 # Flutter + Firebase Uygulaması — Öğrenilenler (news-aggregator projesinden)
 
 ## 0. Kullanıcı kuralları (her uygulamada)
+- **APK'yı kullanıcı "gönder" demeden GÖNDERME (2026-11-08).** Değişiklikten sonra derleyip hazır tut, "APK hazır,
+  istersen gönderirim" de; dosyayı yalnızca açıkça istendiğinde paylaş.
+- **Ses/görsel gibi zevke bağlı öğelerde** tek seçenek yerine 2–3 aday üretip dinlet/göster, seçimi kullanıcıya bırak.
+  Tescilli sesleri/markaları (ör. Netflix "ta-dum") kopyalama; yalnızca tarzını üret ve bunu söyle.
 - **PR'ları Claude birleştirir (kullanıcı izni, 2026-11-06):** CI (testler + APK derlemesi; release değiştiyse emülatör
   açılış kontrolü) geçtikten sonra PR'ı aç ve `merge_pull_request` ile birleştir; kullanıcıya hangi PR'ı neyle
   birleştirdiğini yaz. Varsayılan dal `main` değil olabilir (`git remote show origin`). Birleştirmeden sonra yeni iş için
