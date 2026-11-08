@@ -30,7 +30,7 @@ function trimText(text, max) {
 
 /**
  * Bildirim kanalları (uygulamadaki NotificationService.channels ile aynı):
- *  breaking_news  : Son Dakika — özel haber uyarı sesi (res/raw/breaking_news.wav, "tok" sinematik vuruş)
+ *  breaking_news  : Son Dakika — telefonun varsayılan bildirim sesi (kullanıcı kanal ayarından değiştirebilir), yüksek öncelik
  *  news           : kategori özetleri — varsayılan ses
  *  quiet          : gece 00:00–08:00 — sessiz (olağanüstü durum haberleri hariç)
  */
@@ -70,7 +70,6 @@ function buildNewsMessage({ categoryId, categoryName, articles, breaking = false
       notification: {
         channelId,
         tag: topicFor(categoryId),
-        ...(channelId === 'breaking_news' ? { sound: 'breaking_news' } : {}),
         icon: 'ic_stat_news',
         color: '#0A84FF',
       },

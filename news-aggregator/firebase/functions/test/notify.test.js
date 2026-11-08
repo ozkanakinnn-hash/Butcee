@@ -59,7 +59,7 @@ test('Son Dakika hemen gider, aynı haber tekrar gönderilmez, eski haber gönde
   assert.equal(msg.notification.title, '🔴 SON DAKİKA');
   assert.equal(msg.android.priority, 'high');
   assert.equal(msg.android.notification.channelId, 'breaking_news');
-  assert.equal(msg.android.notification.sound, 'breaking_news');
+  assert.equal(msg.android.notification.sound, undefined, 'sistem varsayılan sesi');
   assert.equal(first.nextState.last_breaking_id, 'x');
 
   const again = planNotifications({ results, categories, state: first.nextState, now: NOW + 20 * 60_000 });

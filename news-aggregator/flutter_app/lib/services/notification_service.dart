@@ -54,7 +54,7 @@ class MatchTarget extends NotificationTarget {
 ///
 /// Kanallar (sunucudaki `android.notification.channelId` ile aynı):
 ///  - news     : ilgi alanı haber özetleri
-///  - breaking_news : Son Dakika (yüksek öncelik, özel ses `res/raw/breaking_news.wav`)
+///  - breaking_news : Son Dakika (yüksek öncelik, telefonun varsayılan bildirim sesi)
 ///  - quiet    : gece 00:00–08:00 sessiz bildirimler (olağanüstü durumlar hariç)
 ///  - goals    : gol / gol iptali — özel ses `res/raw/goal_whistle.wav`
 ///  - match    : maç başladı / devre / sonuç
@@ -81,9 +81,8 @@ class NotificationService {
     AndroidNotificationChannel(
       'breaking_news',
       'Son Dakika',
-      description: 'Son dakika haberleri — özel uyarı sesi',
+      description: 'Son dakika haberleri (ses: telefonun bildirim sesi; buradan değiştirilebilir)',
       importance: Importance.high,
-      sound: RawResourceAndroidNotificationSound('breaking_news'),
     ),
     // Gece 00:00–08:00: deprem, afet, savaş, olağanüstü hal dışındaki bildirimler sessiz gelir (sunucu seçer).
     AndroidNotificationChannel(
