@@ -146,3 +146,37 @@ test('Highlightly: takım senkronu yerel 18 takımı etkin tutar, API takım lis
   const snap = await db.collection('football_teams').where('active', '==', true).get();
   assert.ok(SUPER_LIG_TEAMS.every((t) => snap.docs.some((d) => d.id === t.id)));
 });
+
+test('hızlı mod: istek hakkı bolsa görev içinde 15 sn arayla birden çok kontrol; az ise tek kontrol', { skip }, async () => {
+  const { getFirestore, Timestamp } = require('firebase-admin/firestore');
+  const fb = require('../src/football');
+  const { tick } = require('../src/football-job');
+  const db = getFirestore();
+  for (const d of (await db.collection('matches').get()).docs) await d.ref.delete();
+  const today = fb.istanbulDate();
+  const kickoff = new Date(Date.now() - 30 * 60_000);
+  const mk = (home) => ({
+    fixture: { id: 4242, date: kickoff.toISOString(), status: { short: '1H', elapsed: 30 } },
+    league: { id: 203, name: 'Süper Lig' },
+    teams: { home: { id: 1, name: 'Galatasaray' }, away: { id: 2, name: 'Fenerbahçe' } },
+    goals: { home, away: 0 }, events: [],
+  });
+  const run = async (remaining) => {
+    await db.doc('football_meta/state').set({ season: 2026, teams_synced_at: Timestamp.now(), fixtures_date: today, teams_source: 'local' });
+    await db.doc('matches/4242').set(fb.matchDocFromFixture(mk(0)));
+    let calls = 0;
+    const api = { remaining, used: 0, get: async () => { calls++; api.used++; api.remaining--; return [mk(calls >= 3 ? 1 : 0)]; } };
+    const sleeps = [];
+    const sent = [];
+    const messaging = { sendEach: async (m) => { sent.push(...m.filter((x) => x.notification)); return { successCount: m.length, failureCount: 0, responses: m.map(() => ({ success: true })) }; } };
+    const r = await tick(db, () => api, messaging, Date.now(), { fast: true, sleep: async (ms) => { sleeps.push(ms); } });
+    return { r, calls, sleeps, sent };
+  };
+  const pro = await run(7000);
+  assert.equal(pro.r, 'polled');
+  assert.equal(pro.calls, 4, '50 sn pencerede 15 sn arayla 4 kontrol');
+  assert.deepEqual(pro.sleeps, [15000, 15000, 15000]);
+  assert.equal(pro.sent.filter((m) => m.notification.title.startsWith('⚽ GOL')).length, 1, '3. kontrolde gelen gol aynı görevde bildirildi');
+  const free = await run(60);
+  assert.equal(free.calls, 1, 'ücretsiz bütçede görev içinde tekrar yok');
+});

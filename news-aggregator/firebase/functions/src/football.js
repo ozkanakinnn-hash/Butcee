@@ -51,7 +51,10 @@ class ApiFootball {
     });
     this.used += 1;
     const rem = res.headers.get('x-ratelimit-requests-remaining');
-    if (rem !== null && rem !== '') this.remaining = Number(rem);
+    if (rem !== null && rem !== '') {
+      this.remaining = Number(rem);
+      this.remainingFromHeader = true;
+    }
     if (!res.ok) throw new FootballApiError(`HTTP ${res.status} (${path})`);
     const json = await res.json();
     const errors = json.errors && (Array.isArray(json.errors) ? json.errors : Object.values(json.errors));
@@ -250,11 +253,11 @@ function buildLiveMessage(match, now = Date.now()) {
  * Bir sonraki tur için bekleme süresi: kalan istekleri, maçların kalan süresine yay.
  * En az 60 sn (ücretsiz planda dakikada 10 istek sınırı), en fazla 10 dk.
  */
-function pollIntervalMs({ remaining, liveMinutesLeft, reserve = 6 }) {
+function pollIntervalMs({ remaining, liveMinutesLeft, reserve = 6, minMs = 60_000 }) {
   if (remaining === null || remaining === undefined) return 90_000;
   const usable = Math.max(1, remaining - reserve);
   const ms = (Math.max(1, liveMinutesLeft) * 60_000) / usable;
-  return Math.min(600_000, Math.max(60_000, Math.round(ms)));
+  return Math.min(600_000, Math.max(minMs, Math.round(ms)));
 }
 
 module.exports = {

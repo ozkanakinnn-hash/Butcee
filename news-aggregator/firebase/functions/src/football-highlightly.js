@@ -145,7 +145,15 @@ class Highlightly {
     this.used += 1;
     for (const h of ['x-ratelimit-requests-remaining', 'x-ratelimit-remaining']) {
       const v = res.headers.get(h);
-      if (v !== null && v !== '' && !Number.isNaN(Number(v))) this.remaining = Number(v);
+      if (v !== null && v !== '' && !Number.isNaN(Number(v))) {
+        this.remaining = Number(v);
+        this.remainingFromHeader = true; // sağlayıcının bildirdiği gerçek kalan hak
+      }
+    }
+    // Plan yükseltilince (Pro: 7.500/gün) günlük sınır başlıktan öğrenilir; sabit 100'e takılmaz.
+    for (const h of ['x-ratelimit-requests-limit', 'x-ratelimit-limit']) {
+      const v = res.headers.get(h);
+      if (v !== null && v !== '' && Number(v) > 0) this.dailyLimit = Number(v);
     }
     if (!res.ok) {
       const body = await res.text().catch(() => '');

@@ -17,6 +17,10 @@ const { logSentMessages } = require('./notification-log');
 const { isPlanSeasonError } = fb;
 const START_EARLY_MS = 35 * 60 * 1000;
 const MATCH_LENGTH_MIN = 125;
+// Hızlı mod: istek hakkı yeterliyse (ör. Highlightly Pro) dakikalık görev içinde ~50 sn boyunca 15 sn'de bir
+// skor kontrolü → gol ~15–30 sn içinde panelde ve bildirimde. Ücretsiz planda bütçe aralığı zaten büyük tutar.
+const FAST_MIN_MS = 15_000;
+const FAST_WINDOW_MS = 50_000;
 const TEAMS_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 const log = (...a) => console.log(new Date().toISOString().slice(11, 19), ...a);
 
@@ -223,20 +227,20 @@ async function pollOnce(db, api, messaging, active) {
  * `later`: bugün daha sonra başlayacak maçlar — günlük istek sınırı olan sağlayıcıda (Highlightly, 100/gün)
  * istekler günün SON maçının bitişine kadar yayılır; yoksa ilk maçta bütçe biter.
  */
-function nextWaitMs(api, active, later = []) {
+function nextWaitMs(api, active, later = [], minMs = 60_000) {
   const ends = [...active, ...(api.dailyLimit ? later : [])];
   const liveMinutesLeft = ends.reduce(
     (max, m) => Math.max(max, (m.kickoff.toMillis() + MATCH_LENGTH_MIN * 60_000 - Date.now()) / 60_000),
     0
   );
-  return fb.pollIntervalMs({ remaining: api.remaining, liveMinutesLeft });
+  return fb.pollIntervalMs({ remaining: api.remaining, liveMinutesLeft, minMs });
 }
 
 /**
  * Dakikalık Firebase görevi için tek tur. API istemcisi yalnızca gerektiğinde oluşturulur (`makeApi`).
  * @returns {Promise<string>} ne yapıldığı (log/test için)
  */
-async function tick(db, makeApi, messaging, now = Date.now()) {
+async function tick(db, makeApi, messaging, now = Date.now(), { fast = false, sleep = (ms) => new Promise((r) => setTimeout(r, ms)) } = {}) {
   const metaRef = db.doc('football_meta/state');
   const meta = (await metaRef.get()).data() || {};
   const today = fb.istanbulDate(new Date(now));
@@ -269,6 +273,8 @@ async function tick(db, makeApi, messaging, now = Date.now()) {
       req_used: usedBefore + api.used,
       ...(api.leagueId ? { provider_league_id: api.leagueId } : {}),
       ...(api.base ? { provider_base: api.base } : {}),
+      // Sağlayıcının bildirdiği kalan hak (ücretli planda gerçek sınır); yoksa null → kendi sayacımız geçerli
+      last_remaining_header: api.remainingFromHeader ? api.remaining : null,
       ...extra,
     }, { merge: true });
   };
@@ -289,14 +295,30 @@ async function tick(db, makeApi, messaging, now = Date.now()) {
   if (meta.next_poll_at && meta.next_poll_at.toMillis() > now) return 'throttled';
 
   if (!open()) return 'no-key';
-  if (api.dailyLimit && usedBefore + api.used >= api.dailyLimit) return 'out-of-requests';
-  const after = await pollOnce(db, api, messaging, active);
+  // Hak bitti mi? Sağlayıcı kalan isteği bildiriyorsa (son turdaki değer) ona, yoksa günlük sayaca bak.
+  const knownLeft = meta.req_day === today && typeof meta.last_remaining_header === 'number' ? meta.last_remaining_header : null;
+  if (knownLeft !== null ? knownLeft <= 1 : api.dailyLimit && usedBefore + api.used >= api.dailyLimit) return 'out-of-requests';
+  const minMs = fast ? FAST_MIN_MS : 60_000;
+  const t0 = Date.now();
+  let after = await pollOnce(db, api, messaging, active);
   budget();
   const later = api.dailyLimit ? await laterMatchesToday(db, now) : [];
-  const wait = after.length ? nextWaitMs(api, after, later) : 0;
+  let wait = after.length ? nextWaitMs(api, after, later, minMs) : 0;
+  let polls = 1;
+  let planned = 0; // görev içinde planlanan toplam bekleme (pencereyi aşmasın; saatten bağımsız, test edilebilir)
+  // Hızlı mod: aynı görev içinde pencere dolana kadar tekrar kontrol (gol anında yakalanır).
+  while (fast && after.length && planned + wait <= FAST_WINDOW_MS && (api.remaining ?? 0) > 8) {
+    await sleep(wait);
+    planned += wait;
+    after = await pollOnce(db, api, messaging, after);
+    budget();
+    polls += 1;
+    wait = after.length ? nextWaitMs(api, after, later, minMs) : 0;
+  }
+  const spent = Date.now() - t0;
   // Görev dakikada bir çalıştığı için bekleme dakikaya yuvarlanır (en az 1 tur atlanmaz).
-  await save({ next_poll_at: Timestamp.fromMillis(now + Math.max(0, wait - 30_000)), last_remaining: api.remaining ?? null });
-  log(`Skor turu: ${active.length} maç | kalan istek ${api.remaining ?? '?'} | sonraki ~${Math.round(wait / 1000)} sn`);
+  await save({ next_poll_at: Timestamp.fromMillis(now + spent + Math.max(0, wait - 30_000)), last_remaining: api.remaining ?? null });
+  log(`Skor turu: ${active.length} maç, ${polls} kontrol | kalan istek ${api.remaining ?? '?'} | sonraki ~${Math.round(wait / 1000)} sn`);
   return 'polled';
 }
 
