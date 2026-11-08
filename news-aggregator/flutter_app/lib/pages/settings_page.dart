@@ -162,6 +162,14 @@ class _SettingsPageState extends State<SettingsPage> with WidgetsBindingObserver
                 if (v && notifGranted != true) await _requestNotifications();
               },
             ),
+            if (settings.followsFootball)
+              SwitchListTile(
+                secondary: const Icon(Icons.scoreboard_outlined),
+                title: Text(s.liveScorePanel),
+                subtitle: Text(s.liveScorePanelDesc),
+                value: settings.liveScorePanel,
+                onChanged: (v) => settings.setLiveScorePanel(v),
+              ),
             SwitchListTile(
               secondary: const Icon(Icons.flag_outlined),
               title: Text(s.observanceNotifications),

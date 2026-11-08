@@ -35,7 +35,8 @@ test('canlı maç izlenir, goller bildirilir, maç bitince döngü sona erer', {
   ];
   const api = { remaining: 1000, used: 0, get: async () => { api.used++; return [frames.shift() || frames[frames.length - 1]]; } };
   const sent = [];
-  const messaging = { sendEach: async (m) => { sent.push(...m); return { successCount: m.length, failureCount: 0 }; } };
+  const panels = [];
+  const messaging = { sendEach: async (m) => { sent.push(...m.filter((x) => x.notification)); panels.push(...m.filter((x) => !x.notification)); return { successCount: m.length, failureCount: 0 }; } };
 
   const waits = [];
   await watch(db, api, messaging, { sleep: async (ms) => { waits.push(ms); } });

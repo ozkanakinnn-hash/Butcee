@@ -121,3 +121,19 @@ test('takım çözücü: API adları kendi kimliğimize eşlenir, bilinmeyen tak
   assert.equal(teamKeyText('Gaziantep FK'), 'gaziantep');
   assert.equal(r.team('galatasaray').short, 'GS');
 });
+
+test('canlı skor paneli verisi: kısaltma, renk, skor, dakika; yalnızca veri (bildirimsiz)', () => {
+  const m = {
+    fixture_id: 9, league: { name: 'Süper Lig' },
+    home: { id: 'besiktas', name: 'Beşiktaş', short: 'BJK', colors: ['#111111', '#FFFFFF'] },
+    away: { id: 'yeni-kulup', name: 'Yeni Kulüp', short: '', colors: [] },
+    goals: { home: 2, away: 1 }, status: { short: '2H', elapsed: 67 }, is_finished: false,
+  };
+  const msg = fb.buildLiveMessage(m, 1000);
+  assert.equal(msg.notification, undefined);
+  assert.match(msg.condition, /'team_besiktas' in topics \|\| 'team_yeni-kulup' in topics/);
+  assert.equal(msg.data.home_color, '#FFFFFF', 'siyaha yakın renk yerine ikinci renk');
+  assert.equal(msg.data.away_short, 'YEN');
+  assert.deepEqual([msg.data.gh, msg.data.ga, msg.data.status, msg.data.elapsed, msg.data.finished], ['2', '1', '2H', '67', '0']);
+  assert.ok(Object.values(msg.data).every((v) => typeof v === 'string'), 'FCM veri alanları metin olmalı');
+});

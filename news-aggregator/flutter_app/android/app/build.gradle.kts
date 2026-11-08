@@ -88,4 +88,8 @@ flutter {
 
 dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
+    // Canlı skor paneli (Kotlin): FCM mesaj servisi + NotificationCompat. Sürüm, firebase_core eklentisiyle aynı BOM.
+    implementation(platform("com.google.firebase:firebase-bom:35.1.0"))
+    implementation("com.google.firebase:firebase-messaging")
+    implementation("androidx.core:core-ktx:1.15.0")
 }

@@ -266,3 +266,8 @@ description: Flutter/FlutterFlow + Firebase (Firestore, Cloud Functions) uygulam
 - Kullanıcı belirli bir telefon/marka sesini (ör. Samsung "Dudum") isterse: KOPYALAMA (telifli). Yol: kanal sesini
   kullanıcı Android ayarlarından seçebilir (Ayarlar → Bildirimler → Uygulama → kanal → Ses) — bunu anlat; uygulamaya
   yalnızca o tarzda özgün varsayılan ses koy. Ses turları uzarsa (13 tur yaşandı) erken sor: "uzunluk / sertlik / referans?"
+
+## 18. Canlı skor paneli (bildirimde sabit, yerinde güncellenen skor — Android)
+- flutter_local_notifications özel düzen (RemoteViews) desteklemez → yerli Kotlin: `LiveScoreMessagingService` (eklentinin `FlutterFirebaseMessagingService`'ini genişletir; `type=match_live` veri mesajını yakalar, gerisini `super`'e verir) + manifest'te eklenti servisi `tools:node="remove"` + kendi servisin MESSAGING_EVENT ile. app/build.gradle.kts'e firebase-bom (firebase_core ile aynı sürüm, gradle.properties `FirebaseSDKVersion`) + firebase-messaging + androidx core-ktx.
+- `LiveScoreNotifier`: `RemoteViews` (yalnız LinearLayout/TextView/ImageView/Chronometer), `DecoratedCustomViewStyle`, sabit tag+id ile `notify` (yeni bildirim açmaz, günceller), `setOnlyAlertOnce`+`setSilent`, `setOngoing(!bitti)`, bitti → `setTimeoutAfter(2 sa)`. Dakika `Chronometer` (base = elapsedRealtime − (dakika·60 sn + gecikme)) → sunucu her dakika göndermez. Takım armaları YOK: kısaltma + renk noktası (`setColorFilter`), siyaha yakın renk yerine ikinci renk.
+- Ayar Flutter SharedPreferences'tan okunur: dosya `FlutterSharedPreferences`, anahtar `flutter.<ad>`. Sunucu: her skor turunda canlı/devre/biten maçlar için veri mesajı (tüm değerler string), `logSentMessages`'a GİRMEZ; testlerde sahte `sendEach` uyarı ve panel mesajlarını ayırmalı.

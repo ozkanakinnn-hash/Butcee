@@ -1,4 +1,5 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
     <!-- Haberleri ve WebView sayfalarını yüklemek için -->
     <uses-permission android:name="android.permission.INTERNET" />
     <!-- Android 13+: bildirim izni (ilgi alanı haberleri, gol bildirimleri) -->
@@ -57,6 +58,18 @@
         <meta-data
             android:name="com.google.android.gms.ads.flag.NATIVE_AD_DEBUGGER_ENABLED"
             android:value="false" />
+        <!-- FCM mesaj servisi: canlı skor paneli verisini yakalar, diğer mesajları Flutter eklentisine iletir.
+             Eklentinin kendi servisi kaldırılır (aynı anda iki MESSAGING_EVENT servisi olmasın). -->
+        <service
+            android:name="io.flutter.plugins.firebase.messaging.FlutterFirebaseMessagingService"
+            tools:node="remove" />
+        <service
+            android:name=".LiveScoreMessagingService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
         <!-- FCM: kanal belirtilmeyen bildirimler için varsayılanlar -->
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_channel_id"

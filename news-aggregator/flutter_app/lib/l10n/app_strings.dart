@@ -187,6 +187,13 @@ class S {
       _t('Önbellekte $size (haber görselleri ve sayfalar)', '$size cached (images and pages)');
   String get cacheCleared => _t('Önbellek temizlendi', 'Cache cleared');
 
+  // Canlı skor paneli
+  String get liveScorePanel => _t('Canlı skor paneli', 'Live score panel');
+  String get liveScorePanelDesc => _t(
+    'Takımının maçı boyunca bildirimlerde sabit duran, kendini güncelleyen skor paneli.',
+    'A pinned, self-updating score panel in notifications during your team\'s match.',
+  );
+
   // Bayram ve anma
   String get observanceNotifications => _t('Bayram, kandil ve anma günleri', 'Holidays, holy nights & commemorations');
   String get observanceNotificationsDesc => _t(

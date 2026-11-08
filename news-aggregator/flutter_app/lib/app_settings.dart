@@ -28,6 +28,8 @@ class AppSettings extends ChangeNotifier {
   static const _topicsKey = 'subscribed_topics';
   static const _layoutKey = 'feed_layout';
   static const _observanceKey = 'notify_observances';
+  // Android tarafı (LiveScoreNotifier.kt) aynı anahtarı "flutter.liveScorePanel" olarak okur — adı değiştirme.
+  static const _liveScoreKey = 'liveScorePanel';
   static const _recentSearchKey = 'recent_searches';
 
   /// Futbol takım seçimi bu ilgi alanına bağlıdır.
@@ -159,6 +161,13 @@ class AppSettings extends ChangeNotifier {
   bool get observanceNotifications => _prefs.getBool(_observanceKey) ?? true;
   Future<void> setObservanceNotifications(bool v) async {
     await _prefs.setBool(_observanceKey, v);
+    notifyListeners();
+  }
+
+  /// Maç boyunca bildirim alanında sabit, kendini güncelleyen canlı skor paneli (Android).
+  bool get liveScorePanel => _prefs.getBool(_liveScoreKey) ?? true;
+  Future<void> setLiveScorePanel(bool v) async {
+    await _prefs.setBool(_liveScoreKey, v);
     notifyListeners();
   }
 }

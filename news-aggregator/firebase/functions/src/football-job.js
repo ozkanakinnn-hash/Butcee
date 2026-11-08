@@ -187,6 +187,7 @@ async function pollOnce(db, api, messaging, active) {
     log(`Skor alınamadı: ${err.message}`);
   }
   const messages = [];
+  const panels = []; // canlı skor paneli (veri mesajı; bildirim geçmişine yazılmaz)
   const batch = db.batch();
   for (const f of fixtures) {
     const next = fb.matchDocFromFixture(f);
@@ -196,6 +197,8 @@ async function pollOnce(db, api, messaging, active) {
       if (msg) messages.push(msg);
       log(`Olay: ${ev.type} ${next.home.name} ${next.goals.home}-${next.goals.away} ${next.away.name}`);
     }
+    const justFinished = next.is_finished && prev && !prev.is_finished;
+    if (next.is_live || justFinished || ['HT', 'BT', 'P'].includes(next.status.short)) panels.push(fb.buildLiveMessage(next));
     batch.set(db.doc(`matches/${next.fixture_id}`), { ...next, updated_at: Timestamp.now() }, { merge: true });
   }
   if (fixtures.length) await batch.commit();
@@ -203,6 +206,14 @@ async function pollOnce(db, api, messaging, active) {
     const res = await messaging.sendEach(messages);
     log(`Bildirim: ${res.successCount} gönderildi, ${res.failureCount} hata`);
     await logSentMessages(db, messages, res.responses);
+  }
+  if (panels.length) {
+    try {
+      const res = await messaging.sendEach(panels);
+      log(`Canlı skor paneli: ${res.successCount} güncellendi`);
+    } catch (err) {
+      log(`Canlı skor paneli gönderilemedi: ${err.message}`);
+    }
   }
   return activeMatches(db);
 }

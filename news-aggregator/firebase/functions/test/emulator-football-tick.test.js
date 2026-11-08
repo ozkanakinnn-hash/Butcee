@@ -22,7 +22,8 @@ test('tick: maç yokken API çağrılmaz; canlı maçta tur atar, aralığı kor
   const api = { remaining: 1000, used: 0, get: async () => { api.used++; return [frames.shift()]; } };
   const makeApi = () => { made++; return api; };
   const sent = [];
-  const messaging = { sendEach: async (m) => { sent.push(...m); return { successCount: m.length, failureCount: 0, responses: m.map(() => ({ success: true })) }; } };
+  const panels = [];
+  const messaging = { sendEach: async (m) => { sent.push(...m.filter((x) => x.notification)); panels.push(...m.filter((x) => !x.notification)); return { successCount: m.length, failureCount: 0, responses: m.map(() => ({ success: true })) }; } };
 
   // 1) Maç yok → boşta, API istemcisi bile oluşturulmaz
   assert.equal(await tick(db, makeApi, messaging), 'idle');
@@ -48,6 +49,12 @@ test('tick: maç yokken API çağrılmaz; canlı maçta tur atar, aralığı kor
   assert.equal(api.used, 1);
   assert.deepEqual(sent.map((m) => m.notification.title), ['⚽ GOL! Galatasaray 1-0 Fenerbahçe']);
   assert.ok((await db.doc('football_meta/state').get()).get('next_poll_at'));
+  // Canlı skor paneli: aynı turda veri mesajı (bildirim geçmişine yazılmaz)
+  assert.equal(panels.length, 1);
+  assert.equal(panels[0].data.type, 'match_live');
+  assert.equal(panels[0].data.gh, '1');
+  assert.equal(panels[0].data.home_short, 'GS');
+  assert.equal(panels[0].data.finished, '0');
 
   // 4) Hemen ardından gelen tur: aralık dolmadı → istek yok
   assert.equal(await tick(db, makeApi, messaging), 'throttled');
@@ -57,6 +64,7 @@ test('tick: maç yokken API çağrılmaz; canlı maçta tur atar, aralığı kor
   frames.push(mk('FT', 1, 0, [{ time: { elapsed: 11 }, team: { id: 645 }, player: { name: 'M. Icardi' }, type: 'Goal', detail: 'Normal Goal' }]));
   assert.equal(await tick(db, makeApi, messaging, Date.now() + 70_000), 'polled');
   assert.equal(sent[sent.length - 1].notification.title, '🏁 Maç sonucu');
+  assert.equal(panels[panels.length - 1].data.finished, '1', 'maç bitince panel son kez "bitti" olarak güncellenir');
   assert.equal(await tick(db, makeApi, messaging, Date.now() + 200_000), 'idle', 'biten maç izlenmez');
 });
 
@@ -87,7 +95,8 @@ test('tick + Highlightly: günlük bütçe sayılır, lig kimliği saklanır, go
   makeApi.provider = 'highlightly';
   await db.doc('football_meta/state').set({ teams_source: 'local' }, { merge: true });
   const sent = [];
-  const messaging = { sendEach: async (m) => { sent.push(...m); return { successCount: m.length, failureCount: 0, responses: m.map(() => ({ success: true })) }; } };
+  const panels = [];
+  const messaging = { sendEach: async (m) => { sent.push(...m.filter((x) => x.notification)); panels.push(...m.filter((x) => !x.notification)); return { successCount: m.length, failureCount: 0, responses: m.map(() => ({ success: true })) }; } };
 
   // Maç kaydı (günlük fikstür senkronunun yazdığı hali)
   const { toFixture } = require('../src/football-highlightly');

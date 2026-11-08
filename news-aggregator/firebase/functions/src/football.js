@@ -207,6 +207,45 @@ function buildMatchMessage(event, match, now = new Date()) {
   };
 }
 
+/** Takım kısaltması: listede varsa o (GS, BJK), yoksa adın ilk 3 harfi (Türkçe büyük harf). */
+const shortOf = (t) => (t.short || String(t.name || '').replace(/[^A-Za-zÇĞİÖŞÜçğıöşü]/g, '').slice(0, 3).toLocaleUpperCase('tr-TR'));
+/** Panel noktası rengi: takımın ilk rengi; neredeyse siyahsa ikincisi (koyu temada görünsün). */
+function dotColor(t) {
+  const [a, b] = t.colors || [];
+  const dark = (hex) => /^#?([0-9a-f]{6})$/i.test(hex || '') && parseInt(hex.replace('#', '').slice(0, 2), 16) +
+    parseInt(hex.replace('#', '').slice(2, 4), 16) + parseInt(hex.replace('#', '').slice(4, 6), 16) < 90;
+  return (a && !dark(a) ? a : b || a) || '#8E8E93';
+}
+
+/**
+ * Canlı skor paneli verisi (yalnızca VERİ mesajı; bildirimi telefondaki LiveScoreNotifier.kt çizer ve yerinde günceller).
+ * Her skor turunda canlı maçlar için gönderilir; maç bitince bir kez `finished: '1'`. Bildirim geçmişine yazılmaz.
+ */
+function buildLiveMessage(match, now = Date.now()) {
+  const condition = `'${teamTopic(match.home.id)}' in topics || '${teamTopic(match.away.id)}' in topics`;
+  return {
+    condition,
+    data: {
+      type: 'match_live',
+      fixture_id: String(match.fixture_id),
+      league: match.league && match.league.name ? match.league.name : 'Süper Lig',
+      home_short: shortOf(match.home),
+      home_name: match.home.name || '',
+      home_color: dotColor(match.home),
+      away_short: shortOf(match.away),
+      away_name: match.away.name || '',
+      away_color: dotColor(match.away),
+      gh: String(match.goals.home ?? 0),
+      ga: String(match.goals.away ?? 0),
+      status: match.status.short,
+      elapsed: String(match.status.elapsed ?? 0),
+      sent_ms: String(now),
+      finished: match.is_finished ? '1' : '0',
+    },
+    android: { priority: 'high', ttl: 10 * 60 * 1000, collapseKey: `live_${match.fixture_id}` },
+  };
+}
+
 /**
  * Bir sonraki tur için bekleme süresi: kalan istekleri, maçların kalan süresine yay.
  * En az 60 sn (ücretsiz planda dakikada 10 istek sınırı), en fazla 10 dk.
@@ -230,6 +269,7 @@ module.exports = {
   defaultResolver,
   diffMatch,
   buildMatchMessage,
+  buildLiveMessage,
   pollIntervalMs,
   teamTopic,
 };
