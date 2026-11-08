@@ -11,6 +11,7 @@ import 'pages/article_webview_page.dart';
 import 'pages/interests_page.dart';
 import 'pages/match_detail_page.dart';
 import 'services/notification_service.dart';
+import 'services/team_follow_sync.dart';
 import 'theme.dart';
 
 Future<void> main() async {
@@ -33,6 +34,8 @@ Future<void> main() async {
     // Bildirim kanalları, dokunma yönlendirmesi ve konu abonelikleri (hata uygulamayı durdurmaz).
     NotificationService.instance.taps.listen(_openTarget);
     NotificationService.instance.init(settings).catchError((Object e) => debugPrint('Bildirim başlatılamadı: $e'));
+    // Takip edilen takımlar → isimsiz sayaç (sunucu yalnızca bu takımların maçlarına canlı skor isteği harcar)
+    TeamFollowSync(settings).start();
   }
   // Reklamlar: önce onay (UMP), sonra AdMob. İlk kare çizildikten sonra; hata uygulamayı durdurmaz.
   WidgetsBinding.instance.addPostFrameCallback((_) {

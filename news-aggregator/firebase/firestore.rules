@@ -35,6 +35,20 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // İsimsiz takip sayacı: uygulama takım seçilince +1, bırakılınca −1 yazar (kim takip ediyor bilgisi yok).
+    // Sunucu yalnızca takip edilen takımların maçları için canlı skor isteği harcar.
+    match /team_follows/{teamId} {
+      allow read: if false;
+      allow create: if request.resource.data.keys().hasOnly(['count'])
+                    && request.resource.data.count == 1
+                    && teamId.size() <= 40;
+      allow update: if request.resource.data.keys().hasOnly(['count'])
+                    && request.resource.data.count is int
+                    && request.resource.data.count >= 0
+                    && (request.resource.data.count - resource.data.count == 1
+                        || request.resource.data.count - resource.data.count == -1);
+    }
+
     // Gönderilen bildirimlerin kaydı (Bildirimler sekmesi) ve piyasa verileri
     match /notifications/{id} {
       allow get: if true;

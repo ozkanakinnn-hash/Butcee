@@ -180,3 +180,54 @@ test('hızlı mod: istek hakkı bolsa görev içinde 15 sn arayla birden çok ko
   const free = await run(60);
   assert.equal(free.calls, 1, 'ücretsiz bütçede görev içinde tekrar yok');
 });
+
+test('yalnızca takip edilen takımlar: takipsiz maç için istek yok; devre arasında istek yok', { skip }, async () => {
+  const { getFirestore, Timestamp } = require('firebase-admin/firestore');
+  const fb = require('../src/football');
+  const { tick, halftimeAwareWait } = require('../src/football-job');
+  const db = getFirestore();
+  for (const d of (await db.collection('matches').get()).docs) await d.ref.delete();
+  for (const d of (await db.collection('team_follows').get()).docs) await d.ref.delete();
+  const today = fb.istanbulDate();
+  const kickoff = new Date(Date.now() - 20 * 60_000);
+  const mk = (id, home, away, status = '1H') => ({
+    fixture: { id, date: kickoff.toISOString(), status: { short: status, elapsed: 20 } },
+    league: { id: 203, name: 'Süper Lig' },
+    teams: { home: { id: 1, name: home }, away: { id: 2, name: away } },
+    goals: { home: 0, away: 0 }, events: [],
+  });
+  const reset = async () => db.doc('football_meta/state').set({ season: 2026, teams_synced_at: Timestamp.now(), fixtures_date: today, teams_source: 'local' });
+  await reset();
+  await db.doc('matches/501').set(fb.matchDocFromFixture(mk(501, 'Konyaspor', 'Kayserispor')));
+  let calls = 0;
+  const api = { remaining: 1000, used: 0, get: async () => { calls++; api.used++; return [mk(501, 'Konyaspor', 'Kayserispor')]; } };
+  const messaging = { sendEach: async (m) => ({ successCount: m.length, failureCount: 0, responses: m.map(() => ({ success: true })) }) };
+
+  // Biri Beşiktaş'ı takip ediyor, Konyaspor–Kayserispor'u kimse → istek yok
+  await db.doc('team_follows/besiktas').set({ count: 1 });
+  await db.doc('team_follows/konyaspor').set({ count: 0 });
+  assert.equal(await tick(db, () => api, messaging), 'idle-unfollowed');
+  assert.equal(calls, 0);
+  assert.deepEqual((await db.doc('football_meta/state').get()).get('followed_teams'), ['besiktas']);
+
+  // Konyaspor takip edilmeye başladı (önbellek 15 dk → sıfırla) → istek atılır
+  await db.doc('team_follows/konyaspor').set({ count: 2 });
+  await reset();
+  assert.equal(await tick(db, () => api, messaging), 'polled');
+  assert.equal(calls, 1);
+
+  // Devre arası: istek harcamadan ~13 dk bekle
+  const now = Date.now();
+  const htMatch = { ...fb.matchDocFromFixture(mk(501, 'Konyaspor', 'Kayserispor', 'HT')), ht_since: Timestamp.fromMillis(now - 60_000) };
+  const w = halftimeAwareWait([htMatch], 70_000, now);
+  assert.ok(w > 11 * 60_000 && w <= 12 * 60_000, `devre arası beklemesi ~12 dk olmalı (${w})`);
+  const playing = fb.matchDocFromFixture(mk(502, 'Galatasaray', 'Fenerbahçe', '2H'));
+  assert.equal(halftimeAwareWait([htMatch, playing], 70_000, now), 70_000, 'başka maç oynanıyorsa normal aralık');
+
+  // Eski uygulama sürümleri: sayaç hiç yoksa tüm maçlar izlenir
+  for (const d of (await db.collection('team_follows').get()).docs) await d.ref.delete();
+  await reset();
+  calls = 0;
+  assert.equal(await tick(db, () => api, messaging, Date.now() + 120_000), 'polled');
+  assert.equal(calls, 1);
+});

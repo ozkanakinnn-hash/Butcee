@@ -20,6 +20,10 @@ const MATCH_LENGTH_MIN = 125;
 // Hızlı mod: istek hakkı yeterliyse (ör. Highlightly Pro) dakikalık görev içinde ~50 sn boyunca 15 sn'de bir
 // skor kontrolü → gol ~15–30 sn içinde panelde ve bildirimde. Ücretsiz planda bütçe aralığı zaten büyük tutar.
 const FAST_MIN_MS = 15_000;
+// Devre arası ~15 dk: bu sürede istek harcanmaz; ikinci yarıya doğru (13. dk) kontrol yeniden başlar.
+const HALFTIME_RESUME_MS = 13 * 60_000;
+// Takip sayaçları (team_follows) en fazla 15 dk'da bir okunur (≤18 belge).
+const FOLLOWS_TTL_MS = 15 * 60_000;
 const FAST_WINDOW_MS = 50_000;
 const TEAMS_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 const log = (...a) => console.log(new Date().toISOString().slice(11, 19), ...a);
@@ -132,6 +136,38 @@ async function cleanupOldMatches(db) {
   log(`Eski maç kayıtları silindi: ${old.size}`);
 }
 
+/**
+ * Uygulamada takip edilen takımlar (isimsiz sayaç: team_follows/{takım}.count > 0).
+ * Sayaç hiç yoksa (eski uygulama sürümleri) null → tüm maçlar izlenir.
+ */
+async function followedTeamIds(db, meta, now = Date.now()) {
+  if (meta.follows_at && now - meta.follows_at.toMillis() < FOLLOWS_TTL_MS && 'followed_teams' in meta) {
+    return meta.followed_teams;
+  }
+  const snap = await db.collection('team_follows').get();
+  const ids = snap.empty ? null : snap.docs.filter((d) => (d.get('count') || 0) > 0).map((d) => d.id);
+  await db.doc('football_meta/state').set({ followed_teams: ids, follows_at: Timestamp.fromMillis(now) }, { merge: true });
+  meta.followed_teams = ids;
+  return ids;
+}
+
+const involves = (ids) => (m) => !ids || ids.includes(m.home.id) || ids.includes(m.away.id);
+
+/**
+ * Devre arasındaki maçlar için bekleme: hepsi devre arasındaysa (ya da henüz başlamamışsa) istek harcamadan
+ * ikinci yarıya doğru (devre başlangıcı + 13 dk) ya da sıradaki başlama saatine kadar bekle.
+ */
+function halftimeAwareWait(after, wait, now = Date.now()) {
+  if (!after.length) return wait;
+  const playing = after.filter((m) => m.is_live && m.status.short !== 'HT');
+  const ht = after.filter((m) => m.status.short === 'HT');
+  if (playing.length || !ht.length) return wait;
+  const resume = Math.min(...ht.map((m) => (m.ht_since ? m.ht_since.toMillis() : now) + HALFTIME_RESUME_MS));
+  const kickoffs = after.filter((m) => !m.is_live && !m.is_finished).map((m) => m.kickoff.toMillis());
+  const until = Math.min(resume, ...kickoffs.filter((k) => k > now));
+  return Math.max(wait, until - now);
+}
+
 /** Bugün henüz başlamamış maçlar (istek bütçesini güne yaymak için). */
 async function laterMatchesToday(db, now = Date.now()) {
   const snap = await db.collection('matches')
@@ -196,6 +232,10 @@ async function pollOnce(db, api, messaging, active) {
   for (const f of fixtures) {
     const next = fb.matchDocFromFixture(f);
     const prev = active.find((m) => m.fixture_id === next.fixture_id);
+    // Devre arası başlangıcı (istek harcamadan beklemek için)
+    next.ht_since = next.status.short === 'HT'
+      ? (prev && prev.status.short === 'HT' && prev.ht_since ? prev.ht_since : Timestamp.now())
+      : null;
     for (const ev of fb.diffMatch(prev, next)) {
       const msg = fb.buildMatchMessage(ev, next);
       if (msg) messages.push(msg);
@@ -287,8 +327,12 @@ async function tick(db, makeApi, messaging, now = Date.now(), { fast = false, sl
     if (!ok) return 'plan-blocked';
   }
 
-  const active = await activeMatches(db, now);
+  let active = await activeMatches(db, now);
   if (active.length === 0) return 'idle';
+  // Yalnızca uygulamada takip edilen takımların maçları (kimse takip etmiyorsa istek harcanmaz)
+  const followed = await followedTeamIds(db, meta, now);
+  active = active.filter(involves(followed));
+  if (active.length === 0) return 'idle-unfollowed';
   const anyLive = active.some((m) => m.is_live);
   const nextKickoff = Math.min(...active.map((m) => m.kickoff.toMillis()));
   if (!anyLive && nextKickoff - now > 90_000) return 'waiting-kickoff';
@@ -302,18 +346,20 @@ async function tick(db, makeApi, messaging, now = Date.now(), { fast = false, sl
   const t0 = Date.now();
   let after = await pollOnce(db, api, messaging, active);
   budget();
-  const later = api.dailyLimit ? await laterMatchesToday(db, now) : [];
-  let wait = after.length ? nextWaitMs(api, after, later, minMs) : 0;
+  const later = api.dailyLimit ? (await laterMatchesToday(db, now)).filter(involves(followed)) : [];
+  const waitFor = (list) => (list.length ? halftimeAwareWait(list, nextWaitMs(api, list, later, minMs), Date.now()) : 0);
+  after = after.filter(involves(followed));
+  let wait = waitFor(after);
   let polls = 1;
   let planned = 0; // görev içinde planlanan toplam bekleme (pencereyi aşmasın; saatten bağımsız, test edilebilir)
   // Hızlı mod: aynı görev içinde pencere dolana kadar tekrar kontrol (gol anında yakalanır).
   while (fast && after.length && planned + wait <= FAST_WINDOW_MS && (api.remaining ?? 0) > 8) {
     await sleep(wait);
     planned += wait;
-    after = await pollOnce(db, api, messaging, after);
+    after = (await pollOnce(db, api, messaging, after)).filter(involves(followed));
     budget();
     polls += 1;
-    wait = after.length ? nextWaitMs(api, after, later, minMs) : 0;
+    wait = waitFor(after);
   }
   const spent = Date.now() - t0;
   // Görev dakikada bir çalıştığı için bekleme dakikaya yuvarlanır (en az 1 tur atlanmaz).
@@ -324,5 +370,5 @@ async function tick(db, makeApi, messaging, now = Date.now(), { fast = false, sl
 
 module.exports = {
   check, currentSeason, syncTeams, syncTodayFixtures, cleanupOldMatches, activeMatches,
-  prepare, pollOnce, nextWaitMs, laterMatchesToday, tick, START_EARLY_MS,
+  prepare, pollOnce, nextWaitMs, laterMatchesToday, followedTeamIds, halftimeAwareWait, tick, START_EARLY_MS,
 };
