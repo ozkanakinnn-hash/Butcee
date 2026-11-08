@@ -31,7 +31,7 @@ class NotificationRecord {
   final String channel;
   final DateTime? sentAt;
 
-  bool get isBreaking => channel == 'breaking' || categoryId == 'son-dakika';
+  bool get isBreaking => channel == 'breaking' || channel == 'breaking_alert' || categoryId == 'son-dakika';
   bool get isMatch => type == 'match';
 
   /// Listede gösterilecek ana metin: haber başlığı veya maç bildirimi başlığı.

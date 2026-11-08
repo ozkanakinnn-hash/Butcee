@@ -54,7 +54,8 @@ class MatchTarget extends NotificationTarget {
 ///
 /// Kanallar (sunucudaki `android.notification.channelId` ile aynı):
 ///  - news     : ilgi alanı haber özetleri
-///  - breaking : Son Dakika (yüksek öncelik)
+///  - breaking_alert : Son Dakika (yüksek öncelik, özel ses `res/raw/breaking_alert.wav`)
+///  - quiet    : gece 23:00–08:00 sessiz bildirimler (olağanüstü durumlar hariç)
 ///  - goals    : gol / gol iptali — özel ses `res/raw/goal_whistle.wav`
 ///  - match    : maç başladı / devre / sonuç
 class NotificationService {
@@ -78,10 +79,20 @@ class NotificationService {
       importance: Importance.defaultImportance,
     ),
     AndroidNotificationChannel(
-      'breaking',
+      'breaking_alert',
       'Son Dakika',
-      description: 'Son dakika haberleri',
+      description: 'Son dakika haberleri — özel uyarı sesi',
       importance: Importance.high,
+      sound: RawResourceAndroidNotificationSound('breaking_alert'),
+    ),
+    // Gece 23:00–08:00: deprem, afet, savaş, olağanüstü hal dışındaki bildirimler sessiz gelir (sunucu seçer).
+    AndroidNotificationChannel(
+      'quiet',
+      'Gece (sessiz)',
+      description: '23:00–08:00 arası bildirimler sessiz ve titreşimsiz gelir',
+      importance: Importance.low,
+      playSound: false,
+      enableVibration: false,
     ),
     AndroidNotificationChannel(
       'goals',
@@ -120,6 +131,8 @@ class NotificationService {
     for (final c in channels) {
       await android?.createNotificationChannel(c);
     }
+    // Eski "breaking" kanalı (sesi değiştirilemez, Android kuralı) yerine breaking_alert kullanılıyor.
+    await android?.deleteNotificationChannel(channelId: 'breaking');
 
     // Uygulama ön plandayken sistem bildirim göstermez → yerel bildirimle göster.
     FirebaseMessaging.onMessage.listen(_showForeground);

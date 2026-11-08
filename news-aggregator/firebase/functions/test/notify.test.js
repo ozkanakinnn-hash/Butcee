@@ -56,9 +56,10 @@ test('Son Dakika hemen gider, aynı haber tekrar gönderilmez, eski haber gönde
   assert.equal(first.messages.length, 1);
   const msg = first.messages[0];
   assert.equal(msg.topic, 'news_son-dakika');
-  assert.equal(msg.notification.title, '⚡ Son Dakika');
+  assert.equal(msg.notification.title, '🔴 SON DAKİKA');
   assert.equal(msg.android.priority, 'high');
-  assert.equal(msg.android.notification.channelId, 'breaking');
+  assert.equal(msg.android.notification.channelId, 'breaking_alert');
+  assert.equal(msg.android.notification.sound, 'breaking_alert');
   assert.equal(first.nextState.last_breaking_id, 'x');
 
   const again = planNotifications({ results, categories, state: first.nextState, now: NOW + 20 * 60_000 });
@@ -125,4 +126,45 @@ test('bildirimin altında kaynak yazar (son dakika dahil)', () => {
     articles: [art('x', 'son-dakika', '2026-11-06T11:00:00Z', { title: 'Deprem', source_name: 'AA' })],
   });
   assert.equal(m.notification.body, 'Deprem\nKaynak: AA');
+});
+
+test('gece 23:00–08:00 bildirimler sessiz kanaldan; deprem/afet/savaş son dakikası sesli', () => {
+  const { buildNewsMessage } = require('../src/notify');
+  const night = new Date('2026-11-06T23:30:00Z'); // İstanbul 02:30
+  const morning = new Date('2026-11-07T05:10:00Z'); // İstanbul 08:10
+  const msg = (title, opts = {}) => buildNewsMessage({
+    categoryId: opts.breaking ? 'son-dakika' : 'gundem', categoryName: 'Gündem', breaking: !!opts.breaking,
+    articles: [art('n', 'gundem', '2026-11-06T23:20:00Z', { title })], now: opts.now || night,
+  });
+  // Olağan haber gece → sessiz, normal öncelik
+  const plain = msg('Meclis yeni yasayı görüştü', { breaking: true });
+  assert.equal(plain.android.notification.channelId, 'quiet');
+  assert.equal(plain.android.priority, 'normal');
+  assert.equal(plain.android.notification.sound, undefined);
+  assert.equal(msg('Hava yarın yağışlı').android.notification.channelId, 'quiet');
+  // Olağanüstü durumlar gece de sesli
+  for (const t of [
+    'Malatya\'da 6,1 büyüklüğünde deprem', 'DEPREM! İstanbul sallandı', 'AFAD: Sel felaketi bölgesinde tahliye',
+    'Türkiye\'ye yönelik füze saldırısı', 'Olağanüstü hal ilan edildi', 'Savaş ilan edildi',
+  ]) {
+    const m = msg(t, { breaking: true });
+    assert.equal(m.android.notification.channelId, 'breaking_alert', t);
+    assert.equal(m.android.priority, 'high', t);
+  }
+  // Küçük deprem geceyi bölmez; olağanüstü olsa bile kategori özeti (son dakika değil) sessiz
+  assert.equal(msg('Ege Denizi\'nde 3.2 büyüklüğünde deprem', { breaking: true }).android.notification.channelId, 'quiet');
+  assert.equal(msg('Savaş ilan edildi').android.notification.channelId, 'quiet');
+  // Sabah 08:00'den sonra normal
+  assert.equal(msg('Meclis yeni yasayı görüştü', { breaking: true, now: morning }).android.notification.channelId, 'breaking_alert');
+});
+
+test('sessiz saat sınırları İstanbul saatine göre', () => {
+  const { isQuietHour, isCritical } = require('../src/quiet-hours');
+  assert.equal(isQuietHour(new Date('2026-11-06T19:59:00Z')), false); // 22:59
+  assert.equal(isQuietHour(new Date('2026-11-06T20:00:00Z')), true); // 23:00
+  assert.equal(isQuietHour(new Date('2026-11-07T04:59:00Z')), true); // 07:59
+  assert.equal(isQuietHour(new Date('2026-11-07T05:00:00Z')), false); // 08:00
+  assert.equal(isCritical('İSTANBUL\'DA DEPREM'), true);
+  assert.equal(isCritical('Ekonomide savaşım sürüyor'), false, 'kelime içinde geçen "savaş" sayılmaz');
+  assert.equal(isCritical('Borsa güne yükselişle başladı'), false);
 });

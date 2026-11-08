@@ -15,6 +15,7 @@
 
 const { getMessaging } = require('firebase-admin/messaging');
 const { logger } = require('firebase-functions');
+const { isQuietHour, isCritical } = require('./quiet-hours');
 
 const CATEGORY_COOLDOWN_MS = 2 * 60 * 60 * 1000;
 const BREAKING_COOLDOWN_MS = 10 * 60 * 1000;
@@ -27,12 +28,24 @@ function trimText(text, max) {
   return text.length <= max ? text : text.slice(0, max - 1).trimEnd() + '…';
 }
 
+/**
+ * Bildirim kanalları (uygulamadaki NotificationService.channels ile aynı):
+ *  breaking_alert : Son Dakika — özel haber uyarı sesi (res/raw/breaking_alert.wav), yüksek öncelik
+ *  news           : kategori özetleri — varsayılan ses
+ *  quiet          : gece 23:00–08:00 — sessiz (olağanüstü durum haberleri hariç)
+ */
+const BREAKING_TITLE = '🔴 SON DAKİKA';
+
 /** Tek bir kategori bildirimi için FCM mesajı oluşturur (saf fonksiyon; test edilir). */
-function buildNewsMessage({ categoryId, categoryName, articles, breaking = false }) {
+function buildNewsMessage({ categoryId, categoryName, articles, breaking = false, now = new Date() }) {
   const sorted = [...articles].sort((a, b) => b.data.published_at.toMillis() - a.data.published_at.toMillis());
   const top = sorted[0];
   const more = sorted.length - 1;
-  const title = breaking ? `⚡ Son Dakika` : categoryName;
+  const title = breaking ? BREAKING_TITLE : categoryName;
+  // Gece sessiz: deprem/afet/savaş/olağanüstü hal gibi son dakika haberleri hariç.
+  const critical = breaking && isCritical(top.data.title, top.data.summary);
+  const quiet = isQuietHour(now) && !critical;
+  const channelId = quiet ? 'quiet' : breaking ? 'breaking_alert' : 'news';
   // Telif ve şeffaflık: her bildirimde haberin kaynağı belirtilir (ör. "Kaynak: AA").
   const source = top.data.source_name ? `Kaynak: ${top.data.source_name}` : '';
   const extra = !breaking && more > 0 ? `ve ${more} haber daha` : '';
@@ -52,11 +65,12 @@ function buildNewsMessage({ categoryId, categoryName, articles, breaking = false
       source: top.data.source_name || '',
     },
     android: {
-      priority: breaking ? 'high' : 'normal',
+      priority: breaking && !quiet ? 'high' : 'normal',
       collapseKey: topicFor(categoryId), // aynı kategoriden gelen eski bildirim yenisiyle değişir
       notification: {
-        channelId: breaking ? 'breaking' : 'news',
+        channelId,
         tag: topicFor(categoryId),
+        ...(channelId === 'breaking_alert' ? { sound: 'breaking_alert' } : {}),
         icon: 'ic_stat_news',
         color: '#0A84FF',
       },
@@ -87,7 +101,7 @@ function planNotifications({ results, categories, state, now = Date.now() }) {
     if (now - (lastSent[categoryId] || 0) < CATEGORY_COOLDOWN_MS) continue;
     const category = categories.get(categoryId);
     if (!category) continue;
-    messages.push(buildNewsMessage({ categoryId, categoryName: category.name || categoryId, articles }));
+    messages.push(buildNewsMessage({ categoryId, categoryName: category.name || categoryId, articles, now: new Date(now) }));
     lastSent[categoryId] = now;
   }
 
@@ -97,7 +111,7 @@ function planNotifications({ results, categories, state, now = Date.now() }) {
     .filter((a) => now - a.data.published_at.toMillis() < MAX_BREAKING_AGE_MS)
     .filter((a) => a.id !== state.last_breaking_id);
   if (breaking.length && now - (lastSent[BREAKING_CATEGORY_ID] || 0) >= BREAKING_COOLDOWN_MS) {
-    const msg = buildNewsMessage({ categoryId: BREAKING_CATEGORY_ID, categoryName: 'Son Dakika', articles: breaking, breaking: true });
+    const msg = buildNewsMessage({ categoryId: BREAKING_CATEGORY_ID, categoryName: 'Son Dakika', articles: breaking, breaking: true, now: new Date(now) });
     messages.push(msg);
     lastSent[BREAKING_CATEGORY_ID] = now;
     return { messages, nextState: { last_sent: lastSent, last_breaking_id: msg.data.article_id } };
@@ -130,6 +144,7 @@ async function sendNewsNotifications(db, results, categories, { messaging = getM
 }
 
 module.exports = {
+  BREAKING_TITLE,
   buildNewsMessage,
   planNotifications,
   sendNewsNotifications,

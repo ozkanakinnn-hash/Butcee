@@ -16,6 +16,7 @@
 
 const { Timestamp } = require('firebase-admin/firestore');
 const { createTeamResolver } = require('./teams');
+const { isQuietHour } = require('./quiet-hours');
 
 const defaultResolver = createTeamResolver();
 
@@ -146,7 +147,7 @@ const scoreLine = (m) => `${m.home.name} ${m.goals.home}-${m.goals.away} ${m.awa
 const teamTopic = (id) => `team_${id}`;
 
 /** Olay için FCM mesajı (iki takımın konusuna tek mesaj; ikisini de takip eden tek bildirim alır). */
-function buildMatchMessage(event, match) {
+function buildMatchMessage(event, match, now = new Date()) {
   const condition = `'${teamTopic(match.home.id)}' in topics || '${teamTopic(match.away.id)}' in topics`;
   let title;
   let body;
@@ -186,12 +187,15 @@ function buildMatchMessage(event, match) {
     default:
       return null;
   }
+  // Gece 23:00–08:00 maç bildirimleri sessiz (geç biten maçlar / uzatmalar).
+  const quiet = isQuietHour(now);
+  if (quiet) channelId = 'quiet';
   return {
     condition,
     notification: { title, body },
     data: { type: 'match', fixture_id: String(match.fixture_id), event: event.type },
     android: {
-      priority: 'high',
+      priority: quiet ? 'normal' : 'high',
       notification: {
         channelId,
         tag: `match_${match.fixture_id}_${event.type === 'goal' ? 'goal' : 'status'}`,
