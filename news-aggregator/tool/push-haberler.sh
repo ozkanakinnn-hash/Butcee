@@ -12,3 +12,7 @@ TREE=$(printf '100644 blob %s\t.gitignore\n040000 tree %s\thaberler\n' "$GI" "$N
 if [ "$TREE" = "$(git rev-parse "$BASE^{tree}")" ]; then echo "Değişiklik yok."; exit 0; fi
 C=$(git commit-tree "$TREE" -p "$BASE" -m "${1:-Haber Akışı güncellemesi}")
 git -c credential.helper= push "$REMOTE" "$C:refs/heads/main"
+# Başarılı gönderimden sonra yerel "yayınlandı" işaretini güncelle: bu oturumun kontrolü (origin/<dal>)
+# askıdaki GitHub'ı gösteriyor; asıl yayın yeri Bitbucket olduğundan işaret son başarılı gönderime eşitlenir.
+git update-ref "refs/remotes/origin/$(git branch --show-current)" HEAD
+echo "✔ Bitbucket'a gönderildi; yerel yayın işareti güncellendi."
