@@ -3,12 +3,12 @@
 /**
  * Gece sessiz saatleri ve olağanüstü durum istisnası.
  *
- * 23:00–08:00 (İstanbul) arasında bildirimler `quiet` kanalından SESSİZ gider (bildirim yine düşer,
+ * 00:00–08:00 (İstanbul) arasında bildirimler `quiet` kanalından SESSİZ gider (bildirim yine düşer,
  * sabah görülür). İstisna: deprem, afet, savaş, olağanüstü hal gibi can güvenliğini ilgilendiren son dakika
  * haberleri gece de sesli gider (`breaking_alert` kanalı).
  */
 
-const QUIET_START_HOUR = 23;
+const QUIET_START_HOUR = 0; // gece yarısı
 const QUIET_END_HOUR = 8;
 
 /** İstanbul saatine göre saat (0–23). */
@@ -18,7 +18,9 @@ function istanbulHour(now = new Date()) {
 
 function isQuietHour(now = new Date()) {
   const h = istanbulHour(now);
-  return h >= QUIET_START_HOUR || h < QUIET_END_HOUR;
+  return QUIET_START_HOUR < QUIET_END_HOUR
+    ? h >= QUIET_START_HOUR && h < QUIET_END_HOUR // ör. 00–08
+    : h >= QUIET_START_HOUR || h < QUIET_END_HOUR; // ör. 23–08 (gece yarısını aşan)
 }
 
 /** Türkçe karakterleri sadeleştirir (İ/ı/ş/ğ/ç/ö/ü → i/s/g/c/o/u), küçük harf. */

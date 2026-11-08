@@ -32,7 +32,7 @@ function trimText(text, max) {
  * Bildirim kanalları (uygulamadaki NotificationService.channels ile aynı):
  *  breaking_alert : Son Dakika — özel haber uyarı sesi (res/raw/breaking_alert.wav), yüksek öncelik
  *  news           : kategori özetleri — varsayılan ses
- *  quiet          : gece 23:00–08:00 — sessiz (olağanüstü durum haberleri hariç)
+ *  quiet          : gece 00:00–08:00 — sessiz (olağanüstü durum haberleri hariç)
  */
 const BREAKING_TITLE = '🔴 SON DAKİKA';
 

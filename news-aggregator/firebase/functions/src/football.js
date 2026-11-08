@@ -187,7 +187,7 @@ function buildMatchMessage(event, match, now = new Date()) {
     default:
       return null;
   }
-  // Gece 23:00–08:00 maç bildirimleri sessiz (geç biten maçlar / uzatmalar).
+  // Gece 00:00–08:00 maç bildirimleri sessiz (geç biten maçlar / uzatmalar).
   const quiet = isQuietHour(now);
   if (quiet) channelId = 'quiet';
   return {

@@ -74,8 +74,8 @@ test('gol bildirimi: iki takımın konusuna tek mesaj, gol kanalı ve sesi', () 
   assert.equal(msg.data.fixture_id, '1001');
 
   const end = fb.buildMatchMessage({ type: 'fulltime' }, m, new Date('2026-11-06T17:00:00Z'));
-  const late = fb.buildMatchMessage({ type: 'goal', side: 'home', scorer: m.goal_events[2] }, m, new Date('2026-11-06T20:30:00Z'));
-  assert.equal(late.android.notification.channelId, 'quiet', 'gece 23:30 golü sessiz');
+  const late = fb.buildMatchMessage({ type: 'goal', side: 'home', scorer: m.goal_events[2] }, m, new Date('2026-11-06T21:30:00Z'));
+  assert.equal(late.android.notification.channelId, 'quiet', 'gece 00:30 golü sessiz');
   assert.equal(late.android.notification.sound, undefined);
   assert.equal(end.notification.body, 'Galatasaray 2-1 Fenerbahçe');
   assert.equal(end.android.notification.channelId, 'match');

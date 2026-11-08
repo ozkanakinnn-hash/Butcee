@@ -128,7 +128,7 @@ test('bildirimin altında kaynak yazar (son dakika dahil)', () => {
   assert.equal(m.notification.body, 'Deprem\nKaynak: AA');
 });
 
-test('gece 23:00–08:00 bildirimler sessiz kanaldan; deprem/afet/savaş son dakikası sesli', () => {
+test('gece 00:00–08:00 bildirimler sessiz kanaldan; deprem/afet/savaş son dakikası sesli', () => {
   const { buildNewsMessage } = require('../src/notify');
   const night = new Date('2026-11-06T23:30:00Z'); // İstanbul 02:30
   const morning = new Date('2026-11-07T05:10:00Z'); // İstanbul 08:10
@@ -160,8 +160,9 @@ test('gece 23:00–08:00 bildirimler sessiz kanaldan; deprem/afet/savaş son dak
 
 test('sessiz saat sınırları İstanbul saatine göre', () => {
   const { isQuietHour, isCritical } = require('../src/quiet-hours');
-  assert.equal(isQuietHour(new Date('2026-11-06T19:59:00Z')), false); // 22:59
-  assert.equal(isQuietHour(new Date('2026-11-06T20:00:00Z')), true); // 23:00
+  assert.equal(isQuietHour(new Date('2026-11-06T20:30:00Z')), false); // 23:30 — henüz sesli
+  assert.equal(isQuietHour(new Date('2026-11-06T20:59:00Z')), false); // 23:59
+  assert.equal(isQuietHour(new Date('2026-11-06T21:00:00Z')), true); // 00:00
   assert.equal(isQuietHour(new Date('2026-11-07T04:59:00Z')), true); // 07:59
   assert.equal(isQuietHour(new Date('2026-11-07T05:00:00Z')), false); // 08:00
   assert.equal(isCritical('İSTANBUL\'DA DEPREM'), true);
