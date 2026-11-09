@@ -1,5 +1,6 @@
 package com.example.ui.components
 
+import com.example.ui.theme.*
 import androidx.compose.foundation.BorderStroke
 import com.example.i18n.t
 import androidx.compose.foundation.background
@@ -99,8 +100,8 @@ fun ReactionNoteDialog(
 
     val reactionTypes = listOf(
         Triple("loved", "❤️ Çok Sevdi", SageSoft),
-        Triple("neutral", "😐 Nötr / Alışıyor", Color(0xFFEDF4F8)),
-        Triple("disliked", "😣 Sevmedi / İtti", Color(0xFFFEF9EB)),
+        Triple("neutral", "😐 Nötr / Alışıyor", SlateBlueSoft),
+        Triple("disliked", "😣 Sevmedi / İtti", OchreSoft),
         Triple("allergy", "🚨 Alerji / Tepki", ReactionAllergySoft)
     )
 
@@ -305,7 +306,7 @@ fun ReactionNoteDialog(
                 Card(
                     shape = RoundedCornerShape(16.dp),
                     colors = CardDefaults.cardColors(containerColor = ReactionAllergySoft.copy(alpha = 0.6f)),
-                    border = BorderStroke(1.dp, Color(0xFFFBC4C8))
+                    border = BorderStroke(1.dp, AllergyBorder)
                 ) {
                     Column(
                         modifier = Modifier.padding(14.dp),
@@ -315,14 +316,14 @@ fun ReactionNoteDialog(
                             Icon(
                                 imageVector = Icons.Default.WarningAmber,
                                 contentDescription = null,
-                                tint = Color(0xFFC026D3),
+                                tint = ReactionAllergy,
                                 modifier = Modifier.size(18.dp)
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
                                 text = "Alerjik bir reaksiyondan şüpheleniyorsanız, yiyeceği yedirmeyi derhal bırakın. Küçük bir miktar yedirmiş olsanız bile daha fazla beslemekten kaçının.",
                                 style = MaterialTheme.typography.bodySmall,
-                                color = Color(0xFF881337),
+                                color = AllergyText,
                                 lineHeight = 18.sp
                             )
                         }

@@ -66,9 +66,9 @@ class FeedingViewModel(
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
-            initialValue = BabyProfile(name = "Alp", ageMonths = 7, startDate = "2024-01-15")
+            initialValue = BabyProfile(name = "", ageMonths = 6, startDate = "")
         ).let { flow ->
-            MutableStateFlow(BabyProfile(name = "Alp", ageMonths = 7, startDate = "2024-01-15")).also { state ->
+            MutableStateFlow(BabyProfile(name = "", ageMonths = 6, startDate = "")).also { state ->
                 viewModelScope.launch {
                     repository.babyProfile.collect { profile ->
                         if (profile != null) {
@@ -524,6 +524,55 @@ class FeedingViewModel(
                 notes = notes
             )
             repository.updateProfile(profile)
+        }
+    }
+
+    // Alışveriş listesi
+    val shoppingItems: StateFlow<List<com.example.data.model.ShoppingItem>> = repository.shoppingItems
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    /** Tarifin malzemelerini (seçilen porsiyon katsayısıyla) alışveriş listesine ekler. */
+    fun addIngredientsToShopping(recipe: BabyRecipe, factor: Float, only: com.example.data.model.RecipeIngredient? = null) {
+        viewModelScope.launch {
+            val list = (if (only != null) listOf(only) else recipe.ingredients).map {
+                com.example.data.model.ShoppingItem(name = it.name, amount = it.amount, factor = factor, emoji = it.emoji, source = recipe.title)
+            }
+            repository.addShoppingItems(list)
+        }
+    }
+
+    fun addManualShoppingItem(name: String) {
+        if (name.isBlank()) return
+        viewModelScope.launch { repository.addShoppingItems(listOf(com.example.data.model.ShoppingItem(name = name.trim()))) }
+    }
+
+    fun setShoppingChecked(id: Long, checked: Boolean) = viewModelScope.launch { repository.setShoppingChecked(id, checked) }
+    fun deleteShoppingItem(id: Long) = viewModelScope.launch { repository.deleteShoppingItem(id) }
+    fun clearCheckedShopping() = viewModelScope.launch { repository.clearCheckedShopping() }
+
+    /** "puree" / "blw" / "mixed": tarifler ekranının varsayılan filtresi. */
+    fun applyFeedingStyle(style: String?) {
+        _selectedRecipeStyleFilter.value = when (style) {
+            "puree" -> "Püre"
+            "blw" -> "BLW"
+            else -> "Tümü"
+        }
+    }
+
+    /** Beslenme istatistiklerini sıfırlar (öğünler + alerjen testleri). Profil ve gelişim kayıtları korunur. */
+    fun resetFeedingStatistics() {
+        viewModelScope.launch { repository.resetFeedingStatistics() }
+    }
+
+    /** İlk açılış: bebek profilini ve ilk boy/kilo ölçümünü kaydeder. */
+    fun completeOnboarding(name: String, ageMonths: Int, weightKg: Float, heightCm: Float) {
+        viewModelScope.launch {
+            val today = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US).format(java.util.Date())
+            repository.updateProfile(BabyProfile(id = 1, name = name.trim(), ageMonths = ageMonths, startDate = today))
+            repository.insertGrowthRecord(
+                GrowthRecord(date = today, weightKg = weightKg, heightCm = heightCm, ageMonths = ageMonths)
+            )
+            _selectedGuideMonth.value = ageMonths
         }
     }
 

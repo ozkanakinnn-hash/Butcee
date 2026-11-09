@@ -1,5 +1,6 @@
 package com.example.ui.components
 
+import com.example.ui.theme.*
 import androidx.compose.foundation.BorderStroke
 import com.example.i18n.t
 import androidx.compose.foundation.background
@@ -581,7 +582,7 @@ fun FeedingCalendarView(
                                     .clip(RoundedCornerShape(14.dp))
                                     .background(
                                         when (meal.mealType) {
-                                            "Sabah" -> Color(0xFFFEF9EB)
+                                            "Sabah" -> OchreSoft
                                             "Öğle" -> CoralSoft
                                             "Akşam" -> SageSoft
                                             else -> SlateBlueSoft

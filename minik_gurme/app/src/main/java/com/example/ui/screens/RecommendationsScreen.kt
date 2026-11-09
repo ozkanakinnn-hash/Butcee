@@ -1,5 +1,6 @@
 package com.example.ui.screens
 
+import com.example.ui.theme.*
 import androidx.compose.animation.AnimatedVisibility
 import com.example.i18n.t
 import androidx.compose.foundation.BorderStroke
@@ -147,7 +148,7 @@ fun RecommendationsScreen(
                         .fillMaxWidth()
                         .background(
                             Brush.linearGradient(
-                                listOf(Color(0xFFE76F51), Color(0xFFF48B70), Color(0xFFE9C46A))
+                                HeroGradient
                             )
                         )
                         .padding(20.dp)
@@ -372,7 +373,7 @@ fun RecommendationsScreen(
                         Surface(
                             shape = RoundedCornerShape(12.dp),
                             color = OchreSoft,
-                            border = BorderStroke(1.dp, Color(0xFFF9E8B8)),
+                            border = BorderStroke(1.dp, OchreBorder),
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Row(
@@ -430,7 +431,7 @@ fun RecommendationsScreen(
                         Surface(
                             shape = RoundedCornerShape(12.dp),
                             color = SageSoft,
-                            border = BorderStroke(1.dp, Color(0xFFBCE3DD)),
+                            border = BorderStroke(1.dp, SageBorder),
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Row(
@@ -463,7 +464,7 @@ fun RecommendationsScreen(
                 Surface(
                     shape = RoundedCornerShape(22.dp),
                     color = SlateBlueSoft,
-                    border = BorderStroke(1.dp, Color(0xFFD0E1FD)),
+                    border = BorderStroke(1.dp, BlueBorder),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Row(
@@ -545,7 +546,7 @@ fun RecommendationsScreen(
                 Card(
                     shape = RoundedCornerShape(22.dp),
                     colors = CardDefaults.cardColors(containerColor = ReactionAllergySoft.copy(alpha = 0.5f)),
-                    border = BorderStroke(1.dp, Color(0xFFFBC4C8))
+                    border = BorderStroke(1.dp, AllergyBorder)
                 ) {
                     Column(
                         modifier = Modifier.padding(18.dp),
@@ -570,7 +571,7 @@ fun RecommendationsScreen(
                         Text(
                             text = "❌ Bal (Botulizm felci riski)\n❌ Tuz ve İlave Şeker (Böbrek yükü ve tat eşiği)\n❌ Çiğ süt / Pastörize edilmemiş peynir\n❌ Çiğ sert kuruyemiş ve çiğ havuç (Boğulma tehlikesi)",
                             style = MaterialTheme.typography.bodySmall,
-                            color = Color(0xFF881337),
+                            color = AllergyText,
                             lineHeight = 20.sp
                         )
                     }

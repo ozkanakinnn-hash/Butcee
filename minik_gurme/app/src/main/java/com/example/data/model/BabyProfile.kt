@@ -6,8 +6,8 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "baby_profile")
 data class BabyProfile(
     @PrimaryKey val id: Int = 1,
-    val name: String = "Alp",
-    val ageMonths: Int = 7,
-    val startDate: String = "2024-01-15",
+    val name: String = "",
+    val ageMonths: Int = 6,
+    val startDate: String = "",
     val notes: String = ""
 )

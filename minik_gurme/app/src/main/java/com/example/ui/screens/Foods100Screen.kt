@@ -1,5 +1,6 @@
 package com.example.ui.screens
 
+import com.example.ui.theme.*
 import androidx.compose.animation.AnimatedVisibility
 import com.example.i18n.t
 import androidx.compose.foundation.BorderStroke
@@ -230,7 +231,7 @@ fun Foods100Screen(
                         onClick = { onSelectFood(nextSuggestion) },
                         shape = RoundedCornerShape(16.dp),
                         color = OchreSoft,
-                        border = BorderStroke(1.dp, Color(0xFFF9E8B8)),
+                        border = BorderStroke(1.dp, OchreBorder),
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Row(
@@ -381,7 +382,7 @@ fun Foods100Screen(
                 ),
                 border = BorderStroke(
                     1.dp,
-                    if (isChecked) Color(0xFFBCE3DD) else CardBorder
+                    if (isChecked) SageBorder else CardBorder
                 ),
                 modifier = Modifier
                     .fillMaxWidth()

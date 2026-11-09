@@ -1,5 +1,6 @@
 package com.example.ui.components
 
+import com.example.ui.theme.*
 import androidx.compose.foundation.BorderStroke
 import com.example.i18n.t
 import androidx.compose.foundation.background
@@ -541,7 +542,7 @@ fun AddDiaryEntryBottomSheet(
             Spacer(modifier = Modifier.height(6.dp))
 
             val reactions = listOf(
-                "Sorunsuz / Keyifli ✨" to (SageSoft to Color(0xFF16A34A)),
+                "Sorunsuz / Keyifli ✨" to (SageSoft to SuccessGreen),
                 "Hafif Gaz / Huysuzluk 💨" to (OchreSoft to OchreDark),
                 "Kızarıklık / Döküntü ⚠️" to (ReactionAllergySoft to ReactionAllergy),
                 "Reflü / Tükürme 🚨" to (ReactionRejectedSoft to ReactionRejected)

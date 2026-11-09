@@ -1,5 +1,6 @@
 package com.example.ui.components
 
+import com.example.ui.theme.*
 import androidx.compose.foundation.BorderStroke
 import com.example.i18n.t
 import androidx.compose.foundation.background
@@ -248,8 +249,8 @@ fun AddMealBottomSheet(
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = CoralPrimary,
                     unfocusedBorderColor = CardBorder,
-                    focusedContainerColor = Color.White,
-                    unfocusedContainerColor = Color.White
+                    focusedContainerColor = CardSurface,
+                    unfocusedContainerColor = CardSurface
                 )
             )
 
@@ -420,8 +421,8 @@ fun AddMealBottomSheet(
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = CoralPrimary,
                     unfocusedBorderColor = CardBorder,
-                    focusedContainerColor = Color.White,
-                    unfocusedContainerColor = Color.White
+                    focusedContainerColor = CardSurface,
+                    unfocusedContainerColor = CardSurface
                 )
             )
 

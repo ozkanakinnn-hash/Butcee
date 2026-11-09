@@ -1,5 +1,6 @@
 package com.example.ui.screens
 
+import com.example.ui.theme.*
 import androidx.compose.foundation.BorderStroke
 import com.example.i18n.t
 import androidx.compose.foundation.background
@@ -231,9 +232,9 @@ fun RecipesScreen(
                                     border = BorderStroke(
                                         1.dp,
                                         when (mealTime) {
-                                            "Kahvaltı" -> Color(0xFFF9E8B8)
-                                            "Öğle" -> Color(0xFFF8D3C8)
-                                            else -> Color(0xFFBCE3DD)
+                                            "Kahvaltı" -> OchreBorder
+                                            "Öğle" -> CoralBorder
+                                            else -> SageBorder
                                         }
                                     )
                                 ) {

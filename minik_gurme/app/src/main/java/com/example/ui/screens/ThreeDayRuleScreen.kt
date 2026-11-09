@@ -1,5 +1,6 @@
 package com.example.ui.screens
 
+import com.example.ui.theme.*
 import androidx.compose.animation.animateColorAsState
 import com.example.i18n.t
 import androidx.compose.foundation.BorderStroke
@@ -173,7 +174,7 @@ fun ThreeDayRuleScreen(
                         Text(
                             text = "Yeni bir besini ilk kez verirken 3 gün boyunca başka yeni besin eklemeden, sabah/öğle saatlerinde az miktarla (1 çay kaşığı) başlayıp kademeli artırın. Döküntü, kusma veya sindirim değişimini 2 saat boyunca gözlemleyin.",
                             style = MaterialTheme.typography.bodySmall,
-                            color = Color(0xFF6B2A1C),
+                            color = CoralText,
                             lineHeight = 18.sp
                         )
                     }
@@ -308,7 +309,7 @@ fun ThreeDayRuleScreen(
                                 Text(
                                     text = "• Ağız çevresinde kızarıklık\n• Kurdeşen (deride döküntü)\n• Hafif kusma / ishal",
                                     style = MaterialTheme.typography.bodySmall,
-                                    color = Color(0xFF6B4B03),
+                                    color = OchreText,
                                     lineHeight = 16.sp
                                 )
                             }
@@ -331,7 +332,7 @@ fun ThreeDayRuleScreen(
                                 Text(
                                     text = "• Nefes darlığı / hırıltı\n• Yüz, dudak, dil şişliği\n• Fışkırır tarzda kusma\n• Acil 112 aranmalıdır!",
                                     style = MaterialTheme.typography.bodySmall,
-                                    color = Color(0xFF881337),
+                                    color = AllergyText,
                                     lineHeight = 16.sp
                                 )
                             }

@@ -1,5 +1,10 @@
 package com.example.ui.components
 
+import androidx.compose.material3.TextButton
+import androidx.compose.material.icons.filled.AddShoppingCart
+import androidx.compose.material.icons.filled.AddCircleOutline
+import androidx.compose.material.icons.filled.RemoveCircleOutline
+import com.example.ui.theme.*
 import androidx.compose.foundation.BorderStroke
 import com.example.i18n.t
 import androidx.compose.foundation.Image
@@ -91,9 +96,13 @@ fun RecipeDetailBottomSheet(
     onDismiss: () -> Unit,
     onToggleFavorite: () -> Unit,
     onAddToMeals: () -> Unit,
-    onAddToDiary: () -> Unit = onAddToMeals
+    onAddToDiary: () -> Unit = onAddToMeals,
+    onAddToShopping: (factor: Float, ingredient: com.example.data.model.RecipeIngredient?) -> Unit = { _, _ -> }
 ) {
     var selectedTab by remember { mutableIntStateOf(0) } // 0: Malzemeler, 1: Talimatlar
+    val base = remember(recipe.id) { com.example.util.baseServings(recipe.servings) }
+    var portions by remember(recipe.id) { mutableIntStateOf(base) }
+    val factor = portions.toFloat() / base
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -168,7 +177,7 @@ fun RecipeDetailBottomSheet(
                         modifier = Modifier
                             .size(36.dp)
                             .clip(CircleShape)
-                            .background(if (isFavorite) Color(0xFFFDE8EA) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                            .background(if (isFavorite) ReactionAllergySoft else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
                     ) {
                         Icon(
                             imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
@@ -272,7 +281,7 @@ fun RecipeDetailBottomSheet(
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
-                                text = recipe.servings,
+                                text = com.example.util.scaleAmount(com.example.i18n.t(recipe.servings), factor),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = TextSecondary,
                                 fontWeight = FontWeight.SemiBold
@@ -343,6 +352,41 @@ fun RecipeDetailBottomSheet(
             }
 
             if (selectedTab == 0) {
+                // Porsiyon ayarı + tümünü alışveriş listesine ekle
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    IconButton(
+                        onClick = { if (portions > 1) portions-- },
+                        modifier = Modifier.size(34.dp).testTag("portion_minus")
+                    ) { Icon(Icons.Default.RemoveCircleOutline, contentDescription = null, tint = CoralPrimary) }
+                    Text(
+                        text = "$portions",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = TextPrimary,
+                        modifier = Modifier.padding(horizontal = 6.dp).testTag("portion_value")
+                    )
+                    IconButton(
+                        onClick = { if (portions < 12) portions++ },
+                        modifier = Modifier.size(34.dp).testTag("portion_plus")
+                    ) { Icon(Icons.Default.AddCircleOutline, contentDescription = null, tint = CoralPrimary) }
+                    Text(
+                        text = "porsiyon",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = TextSecondary,
+                        modifier = Modifier.weight(1f)
+                    )
+                    TextButton(
+                        onClick = { onAddToShopping(factor, null) },
+                        modifier = Modifier.testTag("add_all_to_shopping")
+                    ) {
+                        Icon(Icons.Default.AddShoppingCart, contentDescription = null, modifier = Modifier.size(18.dp), tint = CoralDark)
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("Tümünü listeye ekle", color = CoralDark, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.labelLarge)
+                    }
+                }
                 // Malzemeler Listesi
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     recipe.ingredients.forEach { ingredient ->
@@ -378,12 +422,18 @@ fun RecipeDetailBottomSheet(
                                     color = CoralSoft
                                 ) {
                                     Text(
-                                        text = ingredient.amount,
+                                        text = com.example.util.scaleAmount(com.example.i18n.t(ingredient.amount), factor),
                                         style = MaterialTheme.typography.labelSmall,
                                         fontWeight = FontWeight.Bold,
                                         color = CoralDark,
                                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                                     )
+                                }
+                                IconButton(
+                                    onClick = { onAddToShopping(factor, ingredient) },
+                                    modifier = Modifier.size(32.dp)
+                                ) {
+                                    Icon(Icons.Default.AddCircleOutline, contentDescription = com.example.i18n.t("Listeye ekle"), tint = CoralPrimary, modifier = Modifier.size(20.dp))
                                 }
                             }
                         }
@@ -434,7 +484,7 @@ fun RecipeDetailBottomSheet(
             Card(
                 shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(containerColor = SageSoft.copy(alpha = 0.6f)),
-                border = BorderStroke(1.dp, Color(0xFFBCE3DD))
+                border = BorderStroke(1.dp, SageBorder)
             ) {
                 Row(
                     modifier = Modifier.padding(14.dp),
@@ -450,7 +500,7 @@ fun RecipeDetailBottomSheet(
                     Text(
                         text = recipe.doctorTip,
                         style = MaterialTheme.typography.bodySmall,
-                        color = Color(0xFF144D46),
+                        color = SageText,
                         lineHeight = 18.sp
                     )
                 }

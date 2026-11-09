@@ -2,6 +2,7 @@ package com.example.ui
 
 import androidx.activity.compose.BackHandler
 import com.example.i18n.t
+import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -131,6 +132,7 @@ fun MainScreen(
 
     // 100 Foods state
     val allTriedFoods by viewModel.allTriedFoods.collectAsStateWithLifecycle()
+    val shoppingItems by viewModel.shoppingItems.collectAsStateWithLifecycle()
     val foodSearchQuery by viewModel.foodSearchQuery.collectAsStateWithLifecycle()
     val selectedFoodCategory by viewModel.selectedFoodCategory.collectAsStateWithLifecycle()
 
@@ -170,7 +172,7 @@ fun MainScreen(
     val scope = rememberCoroutineScope()
 
     // Handle Android system back gesture when in Profile or Growth screen
-    BackHandler(enabled = currentTab == "profile" || currentTab == "growth") {
+    BackHandler(enabled = currentTab == "profile" || currentTab == "growth" || currentTab == "shopping") {
         currentTab = previousTab
     }
 
@@ -186,31 +188,59 @@ fun MainScreen(
         modifier = Modifier.semantics { testTagsAsResourceId = true },
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
-            CenterAlignedTopAppBar(
+            androidx.compose.material3.TopAppBar(
                 title = {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        Box(
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        androidx.compose.foundation.Image(
+                            painter = androidx.compose.ui.res.painterResource(com.example.R.drawable.logo_emblem),
+                            contentDescription = "Minik Gurme",
                             modifier = Modifier
-                                .size(34.dp)
+                                .size(42.dp)
                                 .clip(CircleShape)
-                                .background(CoralSoft),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(text = "🍼", fontSize = 16.sp)
-                        }
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "Minik Gurme",
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.ExtraBold,
-                            color = CoralPrimary
+                                .background(Color.White)
+                                .testTag("app_logo")
                         )
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Column {
+                            Text(
+                                text = "Minik Gurme",
+                                style = MaterialTheme.typography.titleLarge,
+                                fontWeight = FontWeight.ExtraBold,
+                                color = CoralPrimary,
+                                maxLines = 1
+                            )
+                            Text(
+                                text = java.text.SimpleDateFormat("d MMMM, EEEE", java.util.Locale(com.example.i18n.AppLanguage.current)).format(java.util.Date()),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = TextSecondary,
+                                maxLines = 1
+                            )
+                        }
                     }
                 },
                 actions = {
+                    androidx.compose.material3.BadgedBox(
+                        badge = {
+                            val open = shoppingItems.count { !it.checked }
+                            if (open > 0) androidx.compose.material3.Badge(containerColor = CoralPrimary) {
+                                androidx.compose.material3.Text("$open")
+                            }
+                        },
+                        modifier = Modifier.padding(end = 6.dp)
+                    ) {
+                        androidx.compose.material3.IconButton(
+                            onClick = {
+                                if (currentTab != "shopping") { previousTab = currentTab; currentTab = "shopping" }
+                            },
+                            modifier = Modifier.testTag("top_shopping")
+                        ) {
+                            Icon(
+                                imageVector = androidx.compose.material.icons.Icons.Filled.ShoppingCart,
+                                contentDescription = t("Alışveriş Listesi"),
+                                tint = if (currentTab == "shopping") CoralPrimary else TextSecondary
+                            )
+                        }
+                    }
                     Surface(
                         modifier = Modifier
                             .padding(end = 12.dp)
@@ -244,7 +274,7 @@ fun MainScreen(
                         }
                     }
                 },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface
                 )
             )
@@ -438,9 +468,18 @@ fun MainScreen(
                         onOpenGrowthTracking = {
                             previousTab = currentTab
                             currentTab = "growth"
-                        }
+                        },
+                        onResetStatistics = { viewModel.resetFeedingStatistics() }
                     )
 
+                    "shopping" -> com.example.ui.screens.ShoppingListScreen(
+                        items = shoppingItems,
+                        onBack = { currentTab = previousTab },
+                        onAdd = { viewModel.addManualShoppingItem(it) },
+                        onToggle = { viewModel.setShoppingChecked(it.id, !it.checked) },
+                        onDelete = { viewModel.deleteShoppingItem(it.id) },
+                        onClearChecked = { viewModel.clearCheckedShopping() }
+                    )
                     "growth" -> GrowthTrackingScreen(
                         profile = babyProfile,
                         records = allGrowthRecords,
@@ -501,6 +540,15 @@ fun MainScreen(
                 selectedRecipeForDetail = null
                 scope.launch {
                     snackbarHostState.showSnackbar(t("${recipe.title} bugünkü öğün tablosuna eklendi! 🍽️"))
+                }
+            },
+            onAddToShopping = { factor, ingredient ->
+                viewModel.addIngredientsToShopping(recipe, factor, ingredient)
+                scope.launch {
+                    snackbarHostState.showSnackbar(
+                        if (ingredient == null) t("Malzemeler alışveriş listesine eklendi 🛒")
+                        else t("Alışveriş listesine eklendi 🛒")
+                    )
                 }
             },
             onAddToDiary = {

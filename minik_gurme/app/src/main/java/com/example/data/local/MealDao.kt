@@ -29,6 +29,9 @@ interface MealDao {
     @Query("DELETE FROM meals WHERE id = :id")
     suspend fun deleteMealById(id: Long)
 
+    @Query("DELETE FROM meals")
+    suspend fun deleteAllMeals()
+
     @Query("SELECT COUNT(*) FROM meals")
     fun getMealCount(): Flow<Int>
 }

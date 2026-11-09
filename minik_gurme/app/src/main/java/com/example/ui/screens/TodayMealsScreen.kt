@@ -1,5 +1,6 @@
 package com.example.ui.screens
 
+import com.example.ui.theme.*
 import androidx.compose.foundation.BorderStroke
 import com.example.i18n.t
 import androidx.compose.foundation.Image
@@ -210,7 +211,7 @@ fun TodayMealsScreen(
                                 }
                                 Spacer(modifier = Modifier.height(4.dp))
                                 Text(
-                                    text = "${profile.name}'in Menüsü 👶",
+                                    text = "${com.example.i18n.trGenitive(profile.name)} Menüsü 👶",
                                     style = MaterialTheme.typography.titleLarge,
                                     fontWeight = FontWeight.ExtraBold,
                                     color = Color.White
@@ -253,7 +254,7 @@ fun TodayMealsScreen(
                                     modifier = Modifier
                                         .size(8.dp)
                                         .clip(CircleShape)
-                                        .background(if (meals.isNotEmpty()) Color(0xFF16A34A) else Color(0xFFEAB308))
+                                        .background(if (meals.isNotEmpty()) SuccessGreen else OchreWarm)
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
@@ -717,7 +718,7 @@ fun TodayMealsScreen(
                             Text(
                                 text = "Yeni besinleri daima sabah veya öğle saatlerinde deneyin; böylece olası alerji belirtilerini gün boyunca gözlemleyebilirsiniz.",
                                 style = MaterialTheme.typography.bodySmall,
-                                color = Color(0xFF6B4B03),
+                                color = OchreText,
                                 lineHeight = 18.sp
                             )
                         }
@@ -777,7 +778,7 @@ fun MealItemCard(
     onDelete: () -> Unit
 ) {
     val mealColor = when (meal.mealType) {
-        "Sabah" -> Color(0xFFFEF9EB)
+        "Sabah" -> OchreSoft
         "Öğle" -> CoralSoft
         "Akşam" -> SageSoft
         else -> SlateBlueSoft

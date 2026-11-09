@@ -23,8 +23,16 @@ class FeedingRepository(
     private val allergenTestDao: AllergenTestDao,
     private val babyProfileDao: BabyProfileDao,
     private val triedFoodDao: TriedFoodDao,
-    private val favoriteRecipeDao: FavoriteRecipeDao
+    private val favoriteRecipeDao: FavoriteRecipeDao,
+    private val shoppingItemDao: com.example.data.local.ShoppingItemDao
 ) {
+    // Alışveriş listesi
+    val shoppingItems: Flow<List<com.example.data.model.ShoppingItem>> = shoppingItemDao.getAll()
+    suspend fun addShoppingItems(items: List<com.example.data.model.ShoppingItem>) = shoppingItemDao.insertAll(items)
+    suspend fun setShoppingChecked(id: Long, checked: Boolean) = shoppingItemDao.setChecked(id, checked)
+    suspend fun deleteShoppingItem(id: Long) = shoppingItemDao.deleteById(id)
+    suspend fun clearCheckedShopping() = shoppingItemDao.deleteChecked()
+
     // Growth Tracking (Gelişim Takibi)
     val allGrowthRecords: Flow<List<GrowthRecord>> = growthRecordDao.getAllGrowthRecords()
     val latestGrowthRecord: Flow<GrowthRecord?> = growthRecordDao.getLatestGrowthRecord()
@@ -82,6 +90,12 @@ class FeedingRepository(
     val babyProfile: Flow<BabyProfile?> = babyProfileDao.getProfile()
 
     suspend fun updateProfile(profile: BabyProfile) = babyProfileDao.insertOrUpdateProfile(profile)
+
+    /** Beslenme istatistiklerini sıfırlar: tüm öğün kayıtları ve alerjen testleri silinir. */
+    suspend fun resetFeedingStatistics() {
+        mealDao.deleteAllMeals()
+        allergenTestDao.deleteAllTests()
+    }
 
     // 100 Foods Challenge & Food Tracking
     val allTriedFoods: Flow<List<TriedFood>> = triedFoodDao.getAllTriedFoods()

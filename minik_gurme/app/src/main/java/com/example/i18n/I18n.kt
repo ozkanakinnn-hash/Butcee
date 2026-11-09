@@ -139,3 +139,22 @@ fun Text(
         style = style,
     )
 }
+
+/**
+ * Türkçe tamlayan eki: "Alp" → "Alp'in", "Defne" → "Defne'nin", "Umut" → "Umut'un", "Ayşe" → "Ayşe'nin".
+ * Son ünlüye göre ünlü uyumu uygulanır; ünlüyle bitiyorsa kaynaştırma "n" eklenir.
+ */
+fun trGenitive(name: String): String {
+    val n = name.trim()
+    if (n.isEmpty()) return n
+    val lower = n.lowercase(Locale("tr"))
+    val lastVowel = lower.lastOrNull { it in "aeıioöuü" } ?: 'e'
+    val suffix = when (lastVowel) {
+        'a', 'ı' -> "ın"
+        'e', 'i' -> "in"
+        'o', 'u' -> "un"
+        else -> "ün"
+    }
+    val buffer = if (lower.last() in "aeıioöuü") "n" else ""
+    return "$n'$buffer$suffix"
+}

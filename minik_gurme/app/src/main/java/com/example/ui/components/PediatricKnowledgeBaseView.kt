@@ -1,5 +1,6 @@
 package com.example.ui.components
 
+import com.example.ui.theme.*
 import androidx.compose.animation.AnimatedVisibility
 import com.example.i18n.t
 import androidx.compose.foundation.BorderStroke
@@ -130,7 +131,7 @@ fun PediatricKnowledgeBaseView(
                             modifier = Modifier
                                 .size(38.dp)
                                 .clip(CircleShape)
-                                .background(Color.White),
+                                .background(CardSurface),
                             contentAlignment = Alignment.Center
                         ) {
                             Text(text = "📚", fontSize = 20.sp)
@@ -680,7 +681,7 @@ private fun WeeklyFoodItemCard(food: KnowledgeBaseFoodItem) {
                 modifier = Modifier
                     .size(38.dp)
                     .clip(CircleShape)
-                    .background(Color.White),
+                    .background(CardSurface),
                 contentAlignment = Alignment.Center
             ) {
                 Text(text = food.emoji, fontSize = 20.sp)

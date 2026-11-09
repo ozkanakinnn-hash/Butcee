@@ -1,5 +1,6 @@
 package com.example.ui.components
 
+import com.example.ui.theme.*
 import androidx.compose.foundation.BorderStroke
 import com.example.i18n.t
 import androidx.compose.foundation.Image
@@ -197,7 +198,7 @@ fun FoodDetailBottomSheet(
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(16.dp),
                     color = SlateBlueSoft,
-                    border = BorderStroke(1.dp, Color(0xFFD0E1FD))
+                    border = BorderStroke(1.dp, BlueBorder)
                 ) {
                     Column(
                         modifier = Modifier.padding(vertical = 10.dp, horizontal = 8.dp),
@@ -224,7 +225,7 @@ fun FoodDetailBottomSheet(
                     color = if (food.isAllergen) ReactionAllergySoft else SageSoft,
                     border = BorderStroke(
                         1.dp,
-                        if (food.isAllergen) Color(0xFFFBC4C8) else Color(0xFFBCE3DD)
+                        if (food.isAllergen) AllergyBorder else SageBorder
                     )
                 ) {
                     Column(
@@ -252,7 +253,7 @@ fun FoodDetailBottomSheet(
                     color = if (food.isChokingHazard) OchreSoft else SageSoft,
                     border = BorderStroke(
                         1.dp,
-                        if (food.isChokingHazard) Color(0xFFF9E8B8) else Color(0xFFBCE3DD)
+                        if (food.isChokingHazard) OchreBorder else SageBorder
                     )
                 ) {
                     Column(
@@ -371,7 +372,7 @@ fun FoodDetailBottomSheet(
                     Surface(
                         shape = RoundedCornerShape(12.dp),
                         color = OchreSoft.copy(alpha = 0.5f),
-                        border = BorderStroke(1.dp, Color(0xFFF9E8B8)),
+                        border = BorderStroke(1.dp, OchreBorder),
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Column(modifier = Modifier.padding(12.dp)) {
@@ -395,7 +396,7 @@ fun FoodDetailBottomSheet(
                     Surface(
                         shape = RoundedCornerShape(12.dp),
                         color = SageSoft.copy(alpha = 0.5f),
-                        border = BorderStroke(1.dp, Color(0xFFBCE3DD)),
+                        border = BorderStroke(1.dp, SageBorder),
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Column(modifier = Modifier.padding(12.dp)) {
@@ -424,7 +425,7 @@ fun FoodDetailBottomSheet(
                     color = if (food.isChokingHazard) OchreSoft else ReactionAllergySoft.copy(alpha = 0.5f),
                     border = BorderStroke(
                         1.dp,
-                        if (food.isChokingHazard) Color(0xFFF9E8B8) else Color(0xFFFBC4C8)
+                        if (food.isChokingHazard) OchreBorder else AllergyBorder
                     ),
                     modifier = Modifier.fillMaxWidth()
                 ) {
@@ -443,7 +444,7 @@ fun FoodDetailBottomSheet(
                             text = food.safetyAlert,
                             style = MaterialTheme.typography.bodySmall,
                             fontWeight = FontWeight.SemiBold,
-                            color = if (food.isChokingHazard) Color(0xFF6B4B03) else Color(0xFF881337),
+                            color = if (food.isChokingHazard) OchreText else AllergyText,
                             lineHeight = 18.sp
                         )
                     }
@@ -483,7 +484,7 @@ fun FoodDetailBottomSheet(
                 Surface(
                     shape = RoundedCornerShape(14.dp),
                     color = SageSoft,
-                    border = BorderStroke(1.dp, Color(0xFFBCE3DD)),
+                    border = BorderStroke(1.dp, SageBorder),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Row(

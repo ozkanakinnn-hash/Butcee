@@ -28,9 +28,10 @@ import java.util.Locale
         AllergenTest::class,
         BabyProfile::class,
         TriedFood::class,
-        FavoriteRecipe::class
+        FavoriteRecipe::class,
+        com.example.data.model.ShoppingItem::class
     ],
-    version = 4,
+    version = 6,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -41,6 +42,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun babyProfileDao(): BabyProfileDao
     abstract fun triedFoodDao(): TriedFoodDao
     abstract fun favoriteRecipeDao(): FavoriteRecipeDao
+    abstract fun shoppingItemDao(): ShoppingItemDao
 
     companion object {
         @Volatile
@@ -54,7 +56,7 @@ abstract class AppDatabase : RoomDatabase() {
                     "minik_gurme_db"
                 )
                     .fallbackToDestructiveMigration()
-                    .addCallback(DatabaseCallback(scope))
+                    // Örnek veri eklenmez: uygulama boş açılır, ilk açılışta bebek bilgileri sorulur.
                     .build()
                 INSTANCE = instance
                 instance

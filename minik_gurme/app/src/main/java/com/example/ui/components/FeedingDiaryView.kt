@@ -1,5 +1,6 @@
 package com.example.ui.components
 
+import com.example.ui.theme.*
 import androidx.compose.animation.AnimatedVisibility
 import com.example.i18n.t
 import androidx.compose.foundation.BorderStroke
@@ -188,7 +189,7 @@ fun FeedingDiaryView(
                                 color = TextPrimary
                             )
                             Text(
-                                text = "${profile.name}'in tükettiği tüm besinlerin geçmişi",
+                                text = "${com.example.i18n.trGenitive(profile.name)} tükettiği tüm besinlerin geçmişi",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = TextSecondary
                             )
@@ -324,7 +325,7 @@ fun FeedingDiaryView(
                     modifier = Modifier
                         .size(40.dp)
                         .clip(CircleShape)
-                        .background(Color.White),
+                        .background(CardSurface),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(text = "🍲", fontSize = 20.sp)
@@ -799,7 +800,7 @@ fun DiaryEntryCard(
                 // Reaction Status
                 val isAllergyAlert = entry.reaction.contains("Kızarıklık") || entry.reaction.contains("Gaz") || entry.reaction.contains("Reflü")
                 val reactionBg = if (isAllergyAlert) ReactionAllergySoft else SageSoft
-                val reactionColor = if (isAllergyAlert) ReactionAllergy else Color(0xFF16A34A)
+                val reactionColor = if (isAllergyAlert) ReactionAllergy else SuccessGreen
 
                 Surface(
                     color = reactionBg,

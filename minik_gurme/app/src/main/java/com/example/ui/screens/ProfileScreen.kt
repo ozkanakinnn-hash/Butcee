@@ -1,8 +1,16 @@
 package com.example.ui.screens
 
+import com.example.ui.theme.*
 import androidx.compose.foundation.BorderStroke
 import com.example.i18n.t
 import com.example.i18n.AppLanguage
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
+import androidx.compose.material.icons.filled.RestartAlt
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -114,8 +122,33 @@ fun ProfileScreen(
     allAllergens: List<AllergenTest>,
     growthRecords: List<GrowthRecord> = emptyList(),
     onOpenEditProfile: () -> Unit,
-    onOpenGrowthTracking: () -> Unit = {}
+    onOpenGrowthTracking: () -> Unit = {},
+    onResetStatistics: () -> Unit = {}
 ) {
+    var showResetDialog by remember { mutableStateOf(false) }
+    if (showResetDialog) {
+        AlertDialog(
+            onDismissRequest = { showResetDialog = false },
+            icon = { Icon(Icons.Filled.Warning, contentDescription = null, tint = ReactionAllergy) },
+            title = { Text("İstatistikler sıfırlansın mı?") },
+            text = {
+                Text("Tüm öğün kayıtları ve alerjen testleri kalıcı olarak silinecek. Bebek profili ve boy/kilo ölçümleri korunur. Bu işlem geri alınamaz.")
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        onResetStatistics()
+                        showResetDialog = false
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = ReactionAllergy, contentColor = Color.White),
+                    modifier = Modifier.testTag("reset_confirm")
+                ) { Text("Evet, sıfırla") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showResetDialog = false }) { Text("Vazgeç") }
+            }
+        )
+    }
     val latestGrowth = remember(growthRecords) {
         growthRecords.maxByOrNull { it.ageMonths }
     }
@@ -319,13 +352,27 @@ fun ProfileScreen(
         // Stats Grid
         item {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                Text(
-                    text = "BESLENME İSTATİSTİKLERİ",
-                    style = MaterialTheme.typography.labelSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = TextSecondary,
-                    letterSpacing = 1.sp
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "BESLENME İSTATİSTİKLERİ",
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = TextSecondary,
+                        letterSpacing = 1.sp,
+                        modifier = Modifier.weight(1f)
+                    )
+                    TextButton(
+                        onClick = { showResetDialog = true },
+                        modifier = Modifier.testTag("reset_stats_button")
+                    ) {
+                        Icon(Icons.Filled.RestartAlt, contentDescription = null, modifier = Modifier.size(18.dp), tint = ReactionAllergy)
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("Sıfırla", color = ReactionAllergy, fontWeight = FontWeight.SemiBold)
+                    }
+                }
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -353,7 +400,7 @@ fun ProfileScreen(
                                 text = "Toplam Öğün",
                                 style = MaterialTheme.typography.bodySmall,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFF6B2A1C)
+                                color = CoralText
                             )
                         }
                     }
@@ -363,7 +410,7 @@ fun ProfileScreen(
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(20.dp),
                         color = SageSoft,
-                        border = BorderStroke(1.dp, Color(0xFFBCE3DD))
+                        border = BorderStroke(1.dp, SageBorder)
                     ) {
                         Column(
                             modifier = Modifier.padding(16.dp),
@@ -380,7 +427,7 @@ fun ProfileScreen(
                                 text = "Güvenli Gıda",
                                 style = MaterialTheme.typography.bodySmall,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFF144D46)
+                                color = SageText
                             )
                         }
                     }
@@ -395,7 +442,7 @@ fun ProfileScreen(
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(20.dp),
                         color = OchreSoft,
-                        border = BorderStroke(1.dp, Color(0xFFF9E8B8))
+                        border = BorderStroke(1.dp, OchreBorder)
                     ) {
                         Column(
                             modifier = Modifier.padding(16.dp),
@@ -412,7 +459,7 @@ fun ProfileScreen(
                                 text = "Devam Eden Test",
                                 style = MaterialTheme.typography.bodySmall,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFF6B4B03)
+                                color = OchreText
                             )
                         }
                     }
@@ -422,7 +469,7 @@ fun ProfileScreen(
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(20.dp),
                         color = ReactionAllergySoft,
-                        border = BorderStroke(1.dp, Color(0xFFFBC4C8))
+                        border = BorderStroke(1.dp, AllergyBorder)
                     ) {
                         Column(
                             modifier = Modifier.padding(16.dp),
@@ -439,7 +486,7 @@ fun ProfileScreen(
                                 text = "Alerji Sinyali",
                                 style = MaterialTheme.typography.bodySmall,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFF881337)
+                                color = AllergyText
                             )
                         }
                     }
@@ -481,7 +528,7 @@ fun ProfileScreen(
                                 Icon(
                                     imageVector = Icons.Default.CheckCircle,
                                     contentDescription = null,
-                                    tint = Color(0xFF16A34A),
+                                    tint = SuccessGreen,
                                     modifier = Modifier.size(22.dp)
                                 )
                             }
@@ -509,7 +556,7 @@ fun ProfileScreen(
                                 text = "${safeFoodList.size} Onaylı",
                                 style = MaterialTheme.typography.labelSmall,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFF15803D),
+                                color = SageText,
                                 modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
                             )
                         }
@@ -550,7 +597,7 @@ fun ProfileScreen(
                                 Surface(
                                     shape = RoundedCornerShape(14.dp),
                                     color = SageSoft.copy(alpha = 0.4f),
-                                    border = BorderStroke(1.dp, Color(0xFFBCE3DD)),
+                                    border = BorderStroke(1.dp, SageBorder),
                                     modifier = Modifier.fillMaxWidth()
                                 ) {
                                     Row(
@@ -595,9 +642,9 @@ fun ProfileScreen(
                                         }
 
                                         Surface(
-                                            color = Color(0xFFDCFCE7),
+                                            color = SageSoft,
                                             shape = RoundedCornerShape(10.dp),
-                                            border = BorderStroke(1.dp, Color(0xFF86EFAC))
+                                            border = BorderStroke(1.dp, SageBorder)
                                         ) {
                                             Row(
                                                 modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
@@ -606,7 +653,7 @@ fun ProfileScreen(
                                                 Icon(
                                                     imageVector = Icons.Default.CheckCircle,
                                                     contentDescription = t("Güvenli"),
-                                                    tint = Color(0xFF16A34A),
+                                                    tint = SuccessGreen,
                                                     modifier = Modifier.size(16.dp)
                                                 )
                                                 Spacer(modifier = Modifier.width(6.dp))
@@ -614,7 +661,7 @@ fun ProfileScreen(
                                                     text = "Güvenli",
                                                     style = MaterialTheme.typography.labelMedium,
                                                     fontWeight = FontWeight.Bold,
-                                                    color = Color(0xFF15803D)
+                                                    color = SageText
                                                 )
                                             }
                                         }

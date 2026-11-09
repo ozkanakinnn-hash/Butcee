@@ -1,5 +1,9 @@
 [
 [
+"^(\\d+) kalem alınacak$",
+"$1 items to buy"
+],
+[
 "^(.+) • (\\d+) Ay$",
 "$1 • $2 mo"
 ],
@@ -64,7 +68,7 @@
 "M$1"
 ],
 [
-"^(.+)'in tükettiği tüm besinlerin geçmişi$",
+"^(.+)'n?[iıuü]n tükettiği tüm besinlerin geçmişi$",
 "History of all foods $1 has eaten"
 ],
 [
@@ -244,7 +248,7 @@
 "Day $1"
 ],
 [
-"^(.+)'in Menüsü 👶$",
+"^(.+)'n?[iıuü]n Menüsü 👶$",
 "$1's Menu 👶"
 ],
 [

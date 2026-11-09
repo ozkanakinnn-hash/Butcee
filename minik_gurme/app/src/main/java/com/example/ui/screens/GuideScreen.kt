@@ -1,5 +1,6 @@
 package com.example.ui.screens
 
+import com.example.ui.theme.*
 import androidx.compose.animation.AnimatedVisibility
 import com.example.i18n.t
 import androidx.compose.foundation.BorderStroke
@@ -732,7 +733,7 @@ fun GuideScreen(
                                 Text(
                                     text = currentMonthGuide.sampleMealRoutine,
                                     style = MaterialTheme.typography.bodySmall,
-                                    color = Color(0xFF6B4B03),
+                                    color = OchreText,
                                     lineHeight = 18.sp
                                 )
                             }
@@ -782,7 +783,7 @@ fun GuideScreen(
                                         Text(
                                             text = warning,
                                             style = MaterialTheme.typography.bodySmall,
-                                            color = Color(0xFF881337),
+                                            color = AllergyText,
                                             lineHeight = 17.sp
                                         )
                                     }
@@ -1104,7 +1105,7 @@ fun GuideScreen(
                                                 Text(
                                                     text = item.chokingFeature,
                                                     style = MaterialTheme.typography.bodySmall,
-                                                    color = Color(0xFF881337),
+                                                    color = AllergyText,
                                                     lineHeight = 16.sp
                                                 )
                                             }
@@ -1232,7 +1233,7 @@ fun GuideScreen(
                             Text(
                                 text = "❌ ${mistake.wrongAction}",
                                 style = MaterialTheme.typography.bodySmall,
-                                color = Color(0xFF881337),
+                                color = AllergyText,
                                 modifier = Modifier.padding(10.dp)
                             )
                         }
@@ -1280,7 +1281,7 @@ fun GuideScreen(
                         Text(
                             text = "Mercimek, nohut ve yulaf gibi bitkisel demir kaynaklarının vücut tarafından emilimini artırmak için yanına mandalina, portakal, kivi, çilek veya kırmızı biber gibi C vitamini zengini besinler ekleyin.",
                             style = MaterialTheme.typography.bodySmall,
-                            color = Color(0xFF78350F),
+                            color = OchreText,
                             lineHeight = 18.sp
                         )
                     }
@@ -1394,7 +1395,7 @@ fun GuideScreen(
                             Text(
                                 text = myth,
                                 style = MaterialTheme.typography.bodySmall,
-                                color = Color(0xFF78350F),
+                                color = OchreText,
                                 lineHeight = 18.sp
                             )
                         }
@@ -1635,7 +1636,7 @@ fun FoodIntroCard(food: FoodStartRecommendation) {
                         Text(
                             text = "📌 ${food.specialNotes}",
                             style = MaterialTheme.typography.bodySmall,
-                            color = Color(0xFF78350F),
+                            color = OchreText,
                             lineHeight = 17.sp
                         )
                     }

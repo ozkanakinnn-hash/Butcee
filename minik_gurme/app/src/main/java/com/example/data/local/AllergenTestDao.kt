@@ -23,6 +23,9 @@ interface AllergenTestDao {
     @Delete
     suspend fun deleteTest(test: AllergenTest)
 
+    @Query("DELETE FROM allergen_tests")
+    suspend fun deleteAllTests()
+
     @Query("DELETE FROM allergen_tests WHERE id = :id")
     suspend fun deleteTestById(id: Long)
 }

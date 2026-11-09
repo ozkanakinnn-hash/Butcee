@@ -110,3 +110,21 @@ gradle/actions/setup-gradle@v5 → `./gradlew assembleDebug` → upload-artifact
 - README "debugConfig imzasını kaldır" der; Firebase AI/App Check, Retrofit/Moshi/OkHttp, secrets ve google-services
   eklentileri kodda kullanılmıyorsa kaldır (aksi hâlde `google-services.json` yokken derleme düşer).
 - `applicationId`'yi koru (kullanıcının mevcut kurulumu üzerine gelsin), release'i depodaki debug.keystore ile imzala.
+
+## Okunurluk, tema ve logo (Minik Gurme v1.1'den)
+- **Koyu modda kaybolan yazılar**: ekranlar `TextPrimary` gibi sabit açık-tema renkleri kullanıyorsa her token'ı
+  `val TextPrimary get() = if (ThemeState.dark) koyu else açık` getter'ına çevir (`ThemeState.dark` bir `mutableStateOf`,
+  temada `isSystemInDarkTheme()` ile ayarlanır). Yüzlerce kullanım yeri değişmeden açık/koyu uyumlu olur; koda gömülü
+  `Color(0xFF...)` yazı/kenarlık renklerini de token'lara eşle. Koyu zemin saf siyah değil #14171C, yazı kırık beyaz.
+- **"Yazılar silik" şikâyeti**: `FontFamily` tek bir TTF'yi tüm ağırlıklara bağlıyorsa kalın yazı hiç kalın çizilmez.
+  Gerçek ağırlıkları Google Fonts CSS'inden (`User-Agent: Mozilla/4.0` → .ttf linkleri) indir, `pyftsubset` ile
+  Latin + Türkçe alt kümesine indir (~32 KB/ağırlık).
+- **İlk açılış**: örnek veri (seed) koyma; `onboarding_done` tercihi yoksa ad/ay/kilo/boy (+ püre/BLW) soran ekran göster.
+  DB sürümünü artır (`fallbackToDestructiveMigration`) ki eski örnek veriler silinsin. Sıfırlama butonları onay diyaloğuyla.
+- **Kullanıcının logo görseli**: PIL+numpy ile HSV ton kaydırarak tema renklerine boya (bölgeye göre: başlık yazısı,
+  halka, illüstrasyon), daire maske ile amblem (`drawable-nodpi/logo_emblem.webp`), yazısız orta kırpıntıyla adaptive
+  icon ön planı (432px, beyaz arka plan) + mipmap PNG'leri. Fotoğraf gibi görsellerde `<monochrome>` katmanını kaldır.
+- **Türkçe iyelik eki**: `trGenitive("Defne")` → "Defne'nin" (son ünlüye göre ın/in/un/ün, ünlüyle bitiyorsa n).
+- **Robolectric ekran görüntüsü**: `captureToImage` takılabiliyor; `scenario.onActivity { decorView.draw(Canvas(bmp)) }`
+  + `@GraphicsMode(NATIVE)`. Gece modu niteleyicisi sırası: `w411dp-h891dp-night-xxhdpi`.
+
