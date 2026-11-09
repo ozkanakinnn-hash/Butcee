@@ -74,6 +74,7 @@ fun AddGrowthRecordDialog(
     currentBabyAgeMonths: Int = 7,
     latestWeightKg: Float? = null,
     latestHeightCm: Float? = null,
+    editing: com.example.data.model.GrowthRecord? = null,
     onDismiss: () -> Unit,
     onSave: (date: String, weightKg: Float, heightCm: Float, headCircumferenceCm: Float?, ageMonths: Int, notes: String) -> Unit
 ) {
@@ -81,16 +82,16 @@ fun AddGrowthRecordDialog(
         SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
     }
 
-    var dateText by remember { mutableStateOf(todayDate) }
-    var ageMonths by remember { mutableStateOf(currentBabyAgeMonths.coerceAtLeast(0)) }
+    var dateText by remember { mutableStateOf(editing?.date ?: todayDate) }
+    var ageMonths by remember { mutableStateOf((editing?.ageMonths ?: currentBabyAgeMonths).coerceAtLeast(0)) }
     var weightText by remember {
-        mutableStateOf(if (latestWeightKg != null && latestWeightKg > 0) String.format(Locale.US, "%.2f", latestWeightKg) else "8.45")
+        mutableStateOf(editing?.let { String.format(Locale.US, "%.2f", it.weightKg) } ?: if (latestWeightKg != null && latestWeightKg > 0) String.format(Locale.US, "%.2f", latestWeightKg) else "")
     }
     var heightText by remember {
-        mutableStateOf(if (latestHeightCm != null && latestHeightCm > 0) String.format(Locale.US, "%.1f", latestHeightCm) else "69.5")
+        mutableStateOf(editing?.let { String.format(Locale.US, "%.1f", it.heightCm) } ?: if (latestHeightCm != null && latestHeightCm > 0) String.format(Locale.US, "%.1f", latestHeightCm) else "")
     }
-    var headCircumferenceText by remember { mutableStateOf("44.0") }
-    var notesText by remember { mutableStateOf("") }
+    var headCircumferenceText by remember { mutableStateOf(editing?.headCircumferenceCm?.let { String.format(Locale.US, "%.1f", it) } ?: "") }
+    var notesText by remember { mutableStateOf(editing?.notes ?: "") }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
     AlertDialog(
@@ -112,7 +113,7 @@ fun AddGrowthRecordDialog(
                 Spacer(modifier = Modifier.width(10.dp))
                 Column {
                     Text(
-                        text = "Yeni Ölçüm Ekle",
+                        text = if (editing != null) "Ölçümü Düzenle" else "Yeni Ölçüm Ekle",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = TextPrimary

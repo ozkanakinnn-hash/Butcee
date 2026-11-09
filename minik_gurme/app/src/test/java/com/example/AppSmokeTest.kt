@@ -212,4 +212,26 @@ class AppSmokeTest {
             assertEquals("system", com.example.ui.theme.ThemePrefs.mode)
         }
     }
+
+    /** Büyük yazı boyutunda (telefondaki gibi) taşma olmadan kilo/boy düzenlenebilmeli. */
+    @Test
+    @Config(qualifiers = "w411dp-h891dp-night-xxhdpi", fontScale = 1.3f)
+    fun growthBoxesEditableWithLargeFont() {
+        setOnboarded(false)
+        launch("tr").use {
+            compose.waitForIdle()
+            compose.onNodeWithTag("onb_name").performTextInput("Kübra")
+            compose.onNodeWithTag("onb_weight").performTextInput("5,5")
+            compose.onNodeWithTag("onb_height").performTextInput("65")
+            compose.onNodeWithTag("onb_start").performScrollTo().performClick()
+            compose.waitUntil(5000) { has("Kübra • 6 Ay") }
+            compose.waitUntil(10000) { compose.onAllNodes(androidx.compose.ui.test.hasTestTag("metric_weight_edit")).fetchSemanticsNodes().isNotEmpty() }
+            compose.onNodeWithTag("metric_weight").performScrollTo()
+            compose.waitForIdle()
+            shot("tr_dark_large_font_growth")
+            compose.onNodeWithTag("metric_height_edit").assertExists()
+        }
+    }
+
+
 }

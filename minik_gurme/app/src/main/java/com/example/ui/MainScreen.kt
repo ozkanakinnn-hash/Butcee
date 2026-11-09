@@ -1,5 +1,6 @@
 package com.example.ui
 
+import androidx.compose.foundation.layout.widthIn
 import com.example.ui.theme.*
 import androidx.activity.compose.BackHandler
 import com.example.i18n.t
@@ -163,6 +164,7 @@ fun MainScreen(
     var showAddGrowthDialog by remember { mutableStateOf(false) }
     var showAddAllergenDialog by remember { mutableStateOf(false) }
     var showEditProfileDialog by remember { mutableStateOf(false) }
+    var growthRecordToEdit by remember { mutableStateOf<com.example.data.model.GrowthRecord?>(null) }
     var selectedFoodForDetail by remember { mutableStateOf<FoodDirectoryItem?>(null) }
     var selectedRecipeForDetail by remember { mutableStateOf<BabyRecipe?>(null) }
     var foodForReactionNote by remember { mutableStateOf<Triple<String, String, TriedFood?>?>(null) }
@@ -207,16 +209,18 @@ fun MainScreen(
                         Column {
                             Text(
                                 text = "Minik Gurme",
-                                style = MaterialTheme.typography.titleLarge,
+                                style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.ExtraBold,
                                 color = CoralPrimary,
-                                maxLines = 1
+                                maxLines = 1,
+                                softWrap = false
                             )
                             Text(
-                                text = java.text.SimpleDateFormat("d MMMM, EEEE", java.util.Locale(com.example.i18n.AppLanguage.current)).format(java.util.Date()),
+                                text = java.text.SimpleDateFormat("d MMMM, EEE", java.util.Locale(com.example.i18n.AppLanguage.current)).format(java.util.Date()),
                                 style = MaterialTheme.typography.labelSmall,
                                 color = TextSecondary,
-                                maxLines = 1
+                                maxLines = 1,
+                                softWrap = false
                             )
                         }
                     }
@@ -235,7 +239,7 @@ fun MainScreen(
                             onClick = {
                                 if (currentTab != "shopping") { previousTab = currentTab; currentTab = "shopping" }
                             },
-                            modifier = Modifier.size(44.dp).testTag("top_shopping")
+                            modifier = Modifier.size(40.dp).testTag("top_shopping")
                         ) {
                             Icon(
                                 imageVector = androidx.compose.material.icons.Icons.Filled.ShoppingCart,
@@ -258,7 +262,7 @@ fun MainScreen(
                         color = if (currentTab == "profile") CoralPrimary else CoralSoft
                     ) {
                         Row(
-                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Icon(
@@ -272,6 +276,9 @@ fun MainScreen(
                                 text = "${babyProfile.name} • ${babyProfile.ageMonths} Ay",
                                 style = MaterialTheme.typography.labelSmall,
                                 fontWeight = FontWeight.Bold,
+                                maxLines = 1,
+                                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                                modifier = Modifier.widthIn(max = 104.dp),
                                 color = if (currentTab == "profile") OnAccent else CoralDark
                             )
                         }
@@ -280,7 +287,7 @@ fun MainScreen(
                         onClick = {
                             if (currentTab != "settings") { previousTab = currentTab; currentTab = "settings" }
                         },
-                        modifier = Modifier.size(44.dp).testTag("top_settings")
+                        modifier = Modifier.size(40.dp).testTag("top_settings")
                     ) {
                         Icon(
                             imageVector = androidx.compose.material.icons.Icons.Filled.Settings,
@@ -370,6 +377,7 @@ fun MainScreen(
                             currentTab = "growth"
                         },
                         onOpenAddGrowthRecord = { showAddGrowthDialog = true },
+                        onEditGrowthRecord = { growthRecordToEdit = it },
                         onOpenRecipes = {
                             previousTab = currentTab
                             currentTab = "recipes"
@@ -514,6 +522,7 @@ fun MainScreen(
                         diaryEntries = allDiaryEntries,
                         onBack = { currentTab = previousTab },
                         onOpenAddRecord = { showAddGrowthDialog = true },
+                        onEditRecord = { growthRecordToEdit = it },
                         onDeleteRecord = { id ->
                             viewModel.deleteGrowthRecord(id)
                             scope.launch { snackbarHostState.showSnackbar(t("Ölçüm kaydı silindi.")) }
@@ -682,6 +691,22 @@ fun MainScreen(
                 scope.launch {
                     snackbarHostState.showSnackbar(t("Bebek profili güncellendi!"))
                 }
+            }
+        )
+    }
+
+    // Ölçümü düzenle (kilo/boy kutularındaki kalem)
+    growthRecordToEdit?.let { rec ->
+        AddGrowthRecordDialog(
+            currentBabyAgeMonths = rec.ageMonths,
+            editing = rec,
+            onDismiss = { growthRecordToEdit = null },
+            onSave = { date, weight, height, head, age, notes ->
+                viewModel.updateGrowthRecord(
+                    rec.copy(date = date, weightKg = weight, heightCm = height, headCircumferenceCm = head, ageMonths = age, notes = notes)
+                )
+                growthRecordToEdit = null
+                scope.launch { snackbarHostState.showSnackbar(t("Ölçüm güncellendi.")) }
             }
         )
     }

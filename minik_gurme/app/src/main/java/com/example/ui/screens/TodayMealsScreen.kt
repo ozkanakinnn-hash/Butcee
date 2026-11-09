@@ -114,6 +114,7 @@ fun TodayMealsScreen(
     onOpenAddDiaryEntry: () -> Unit = onOpenAddMeal,
     onOpenGrowthTracking: () -> Unit = {},
     onOpenAddGrowthRecord: () -> Unit = {},
+    onEditGrowthRecord: (com.example.data.model.GrowthRecord) -> Unit = {},
     onOpenRecipes: () -> Unit = {},
     onOpenGuide: () -> Unit = {},
     onDeleteMeal: (Long) -> Unit,
@@ -346,7 +347,8 @@ fun TodayMealsScreen(
                 diaryEntries = diaryEntries,
                 isCompact = true,
                 onOpenFullTracking = onOpenGrowthTracking,
-                onAddNewRecord = onOpenAddGrowthRecord
+                onAddNewRecord = onOpenAddGrowthRecord,
+                onEditRecord = onEditGrowthRecord
             )
         }
 

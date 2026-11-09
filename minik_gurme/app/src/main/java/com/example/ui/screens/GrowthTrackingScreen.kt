@@ -95,6 +95,7 @@ fun GrowthTrackingScreen(
     diaryEntries: List<FeedingDiaryEntry> = emptyList(),
     onBack: () -> Unit,
     onOpenAddRecord: () -> Unit,
+    onEditRecord: (com.example.data.model.GrowthRecord) -> Unit = {},
     onDeleteRecord: (Long) -> Unit
 ) {
     BackHandler {
@@ -260,7 +261,8 @@ fun GrowthTrackingScreen(
                     meals = meals,
                     diaryEntries = diaryEntries,
                     isCompact = false,
-                    onAddNewRecord = onOpenAddRecord
+                    onAddNewRecord = onOpenAddRecord,
+                    onEditRecord = onEditRecord
                 )
             }
 

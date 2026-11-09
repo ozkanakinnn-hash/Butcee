@@ -54,8 +54,9 @@ fun MinikGurmeTheme(
     val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
     val view = LocalView.current
     if (!view.isInEditMode) {
-        SideEffect {
-            val window = (view.context as? Activity)?.window ?: return@SideEffect
+        // Yalnızca tema değişince uygula (her çizimde uygulamak diyaloglarla sonsuz yeniden ölçüme yol açıyordu)
+        androidx.compose.runtime.LaunchedEffect(darkTheme) {
+            val window = (view.context as? Activity)?.window ?: return@LaunchedEffect
             val controller = WindowCompat.getInsetsController(window, view)
             controller.isAppearanceLightStatusBars = !darkTheme
             controller.isAppearanceLightNavigationBars = !darkTheme

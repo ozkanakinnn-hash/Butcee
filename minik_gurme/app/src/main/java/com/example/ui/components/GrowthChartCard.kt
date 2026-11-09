@@ -1,5 +1,8 @@
 package com.example.ui.components
 
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.IntrinsicSize
 import com.example.ui.theme.*
 import androidx.compose.animation.AnimatedVisibility
 import com.example.i18n.t
@@ -119,7 +122,8 @@ fun GrowthChartCard(
     modifier: Modifier = Modifier,
     isCompact: Boolean = false,
     onOpenFullTracking: (() -> Unit)? = null,
-    onAddNewRecord: (() -> Unit)? = null
+    onAddNewRecord: (() -> Unit)? = null,
+    onEditRecord: ((GrowthRecord) -> Unit)? = null
 ) {
     var selectedMetric by remember { mutableStateOf(GrowthMetricType.WEIGHT) }
     var selectedPointIndex by remember { mutableIntStateOf(-1) }
@@ -172,7 +176,9 @@ fun GrowthChartCard(
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.clickable(enabled = onOpenFullTracking != null) { onOpenFullTracking?.invoke() }
+                    modifier = Modifier
+                        .weight(1f)
+                        .clickable(enabled = onOpenFullTracking != null) { onOpenFullTracking?.invoke() }
                 ) {
                     Box(
                         modifier = Modifier
@@ -205,9 +211,10 @@ fun GrowthChartCard(
 
                     Spacer(modifier = Modifier.width(10.dp))
 
-                    Column {
+                    Column(modifier = Modifier.weight(1f)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
+                                modifier = Modifier.weight(1f, fill = false),
                                 text = "Büyüme & Beslenme Grafiği",
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.ExtraBold,
@@ -231,6 +238,7 @@ fun GrowthChartCard(
                 }
 
                 if (onAddNewRecord != null) {
+                    Spacer(modifier = Modifier.width(8.dp))
                     Surface(
                         onClick = onAddNewRecord,
                         shape = CircleShape,
@@ -255,145 +263,55 @@ fun GrowthChartCard(
 
             Spacer(modifier = Modifier.height(14.dp))
 
-            // Metrik Seçim Butonları (Kilo, Boy, Beslenme Korelasyonu)
+            // Metrik kutuları: üçü de aynı boyutta; kilo ve boy kalem simgesiyle düzenlenebilir
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                // Kilo (kg)
-                Surface(
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(14.dp),
-                    color = if (selectedMetric == GrowthMetricType.WEIGHT) CoralSoft else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
-                    border = BorderStroke(1.dp, if (selectedMetric == GrowthMetricType.WEIGHT) CoralBorder else CardBorder),
-                    onClick = { selectedMetric = GrowthMetricType.WEIGHT }
-                ) {
-                    Column(modifier = Modifier.padding(9.dp)) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Text(
-                                text = "KİLO (KG)",
-                                style = MaterialTheme.typography.labelSmall,
-                                fontWeight = FontWeight.Bold,
-                                color = if (selectedMetric == GrowthMetricType.WEIGHT) CoralDark else TextSecondary,
-                                fontSize = 10.sp
-                            )
-                            if (totalWeightGain > 0) {
-                                Text(
-                                    text = "+${String.format(Locale.US, "%.1f", totalWeightGain)}kg",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    fontWeight = FontWeight.Bold,
-                                    color = CoralPrimary,
-                                    fontSize = 10.sp
-                                )
-                            }
-                        }
-                        Spacer(modifier = Modifier.height(2.dp))
-                        Text(
-                            text = if (latestRecord != null) "${String.format(Locale.US, "%.2f", latestRecord.weightKg)} kg" else "-",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.ExtraBold,
-                            color = TextPrimary
-                        )
-                    }
-                }
-
-                // Boy (cm)
-                Surface(
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(14.dp),
-                    color = if (selectedMetric == GrowthMetricType.HEIGHT) SageSoft else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
-                    border = BorderStroke(1.dp, if (selectedMetric == GrowthMetricType.HEIGHT) SageBorder else CardBorder),
-                    onClick = { selectedMetric = GrowthMetricType.HEIGHT }
-                ) {
-                    Column(modifier = Modifier.padding(9.dp)) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Text(
-                                text = "BOY (CM)",
-                                style = MaterialTheme.typography.labelSmall,
-                                fontWeight = FontWeight.Bold,
-                                color = if (selectedMetric == GrowthMetricType.HEIGHT) SageDark else TextSecondary,
-                                fontSize = 10.sp
-                            )
-                            if (totalHeightGain > 0) {
-                                Text(
-                                    text = "+${String.format(Locale.US, "%.1f", totalHeightGain)}cm",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    fontWeight = FontWeight.Bold,
-                                    color = SageDark,
-                                    fontSize = 10.sp
-                                )
-                            }
-                        }
-                        Spacer(modifier = Modifier.height(2.dp))
-                        Text(
-                            text = if (latestRecord != null) "${String.format(Locale.US, "%.1f", latestRecord.heightCm)} cm" else "-",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.ExtraBold,
-                            color = TextPrimary
-                        )
-                    }
-                }
-
-                // Beslenme & Öğün Alımı
-                Surface(
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(14.dp),
-                    color = if (selectedMetric == GrowthMetricType.NUTRITION_CORRELATION) OchreSoft else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
-                    border = BorderStroke(1.dp, if (selectedMetric == GrowthMetricType.NUTRITION_CORRELATION) OchreBorder else CardBorder),
-                    onClick = { selectedMetric = GrowthMetricType.NUTRITION_CORRELATION }
-                ) {
-                    Column(modifier = Modifier.padding(9.dp)) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Text(
-                                text = "BESLENME",
-                                style = MaterialTheme.typography.labelSmall,
-                                fontWeight = FontWeight.Bold,
-                                color = if (selectedMetric == GrowthMetricType.NUTRITION_CORRELATION) OchreDark else TextSecondary,
-                                fontSize = 10.sp
-                            )
-                            Text(
-                                text = "Korelasyon",
-                                style = MaterialTheme.typography.labelSmall,
-                                fontWeight = FontWeight.Bold,
-                                color = OchreDark,
-                                fontSize = 9.sp
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(2.dp))
-                        Text(
-                            text = "${meals.size + diaryEntries.size} Öğün",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.ExtraBold,
-                            color = TextPrimary
-                        )
-                    }
-                }
+                MetricBox(
+                    label = "KİLO (KG)",
+                    value = if (latestRecord != null) "${String.format(Locale.US, "%.2f", latestRecord.weightKg)} kg" else "-",
+                    sub = if (totalWeightGain > 0) "+${String.format(Locale.US, "%.1f", totalWeightGain)} kg" else null,
+                    selected = selectedMetric == GrowthMetricType.WEIGHT,
+                    soft = CoralSoft, border = CoralBorder, accent = CoralDark,
+                    onClick = { selectedMetric = GrowthMetricType.WEIGHT },
+                    onEdit = if (latestRecord != null && onEditRecord != null) ({ onEditRecord(latestRecord) }) else null,
+                    tag = "metric_weight",
+                    modifier = Modifier.weight(1f).fillMaxHeight()
+                )
+                MetricBox(
+                    label = "BOY (CM)",
+                    value = if (latestRecord != null) "${String.format(Locale.US, "%.1f", latestRecord.heightCm)} cm" else "-",
+                    sub = if (totalHeightGain > 0) "+${String.format(Locale.US, "%.1f", totalHeightGain)} cm" else null,
+                    selected = selectedMetric == GrowthMetricType.HEIGHT,
+                    soft = SageSoft, border = SageBorder, accent = SageDark,
+                    onClick = { selectedMetric = GrowthMetricType.HEIGHT },
+                    onEdit = if (latestRecord != null && onEditRecord != null) ({ onEditRecord(latestRecord) }) else null,
+                    tag = "metric_height",
+                    modifier = Modifier.weight(1f).fillMaxHeight()
+                )
+                MetricBox(
+                    label = "BESLENME",
+                    value = "${meals.size + diaryEntries.size} Öğün",
+                    sub = null,
+                    selected = selectedMetric == GrowthMetricType.NUTRITION_CORRELATION,
+                    soft = OchreSoft, border = OchreBorder, accent = OchreDark,
+                    onClick = { selectedMetric = GrowthMetricType.NUTRITION_CORRELATION },
+                    onEdit = null,
+                    tag = "metric_nutrition",
+                    modifier = Modifier.weight(1f).fillMaxHeight()
+                )
             }
 
             Spacer(modifier = Modifier.height(10.dp))
 
             // Gösterge Açıklamaları (Legend)
-            Row(
+            FlowRow(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
+                run {
                     // Bebeğinizin eğrisi
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Box(
@@ -492,7 +410,7 @@ fun GrowthChartCard(
                 val mealsInMonth = remember(record, meals, diaryEntries) {
                     val count = meals.count { it.date.startsWith(record.date.take(7)) } +
                             diaryEntries.count { it.date.startsWith(record.date.take(7)) }
-                    max(count, if (record.ageMonths >= 6) 15 else 0)
+                    count
                 }
 
                 Spacer(modifier = Modifier.height(10.dp))
@@ -508,9 +426,9 @@ fun GrowthChartCard(
                             .fillMaxWidth()
                             .padding(10.dp),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Column {
+                        Column(modifier = Modifier.weight(1f)) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Text(
                                     text = "${record.ageMonths}. Ay • ${record.date}",
@@ -518,20 +436,6 @@ fun GrowthChartCard(
                                     fontWeight = FontWeight.Bold,
                                     color = TextPrimary
                                 )
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Surface(
-                                    color = SageSoft,
-                                    shape = RoundedCornerShape(6.dp)
-                                ) {
-                                    Text(
-                                        text = "WHO İdeal Aralık",
-                                        modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp),
-                                        style = MaterialTheme.typography.labelSmall,
-                                        fontWeight = FontWeight.Bold,
-                                        color = SageDark,
-                                        fontSize = 9.sp
-                                    )
-                                }
                             }
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
@@ -542,6 +446,19 @@ fun GrowthChartCard(
                             )
                         }
 
+                        if (onEditRecord != null) {
+                            Icon(
+                                imageVector = Icons.Default.Edit,
+                                contentDescription = com.example.i18n.t("Ölçümü düzenle"),
+                                tint = TextSecondary,
+                                modifier = Modifier
+                                    .size(30.dp)
+                                    .clip(CircleShape)
+                                    .clickable { onEditRecord(record) }
+                                    .padding(6.dp)
+                                    .testTag("edit_record_inline")
+                            )
+                        }
                         // Beslenme özeti rozeti
                         Surface(
                             color = OchreSoft,
@@ -549,7 +466,9 @@ fun GrowthChartCard(
                             border = BorderStroke(1.dp, OchreBorder)
                         ) {
                             Text(
-                                text = "🥣 ~$mealsInMonth Öğün",
+                                text = "🥣 $mealsInMonth Öğün",
+                                maxLines = 1,
+                                softWrap = false,
                                 modifier = Modifier.padding(horizontal = 7.dp, vertical = 3.dp),
                                 style = MaterialTheme.typography.labelSmall,
                                 fontWeight = FontWeight.Bold,
@@ -569,7 +488,7 @@ fun GrowthChartCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
                     Icon(
                         imageVector = Icons.Default.TrendingUp,
                         contentDescription = null,
@@ -578,7 +497,7 @@ fun GrowthChartCard(
                     )
                     Spacer(modifier = Modifier.width(5.dp))
                     Text(
-                        text = "Pediatrik Büyüme Eğrisi & Beslenme Korelasyonu",
+                        text = "Büyüme Eğrisi & Beslenme",
                         style = MaterialTheme.typography.labelSmall,
                         color = SageDark,
                         fontWeight = FontWeight.SemiBold
@@ -588,6 +507,8 @@ fun GrowthChartCard(
                 if (onOpenFullTracking != null && isCompact) {
                     Text(
                         text = "Tümünü Gör →",
+                        maxLines = 1,
+                        softWrap = false,
                         style = MaterialTheme.typography.labelSmall,
                         color = CoralPrimary,
                         fontWeight = FontWeight.Bold,
@@ -874,6 +795,76 @@ private fun InteractiveGrowthCanvas(
                     monthLabelPaint
                 )
             }
+        }
+    }
+}
+
+/** Kilo / Boy / Beslenme kutusu. Etiket ve değer tek satır; büyük yazı boyutunda da taşmaz. */
+@Composable
+private fun MetricBox(
+    label: String,
+    value: String,
+    sub: String?,
+    selected: Boolean,
+    soft: androidx.compose.ui.graphics.Color,
+    border: androidx.compose.ui.graphics.Color,
+    accent: androidx.compose.ui.graphics.Color,
+    onClick: () -> Unit,
+    onEdit: (() -> Unit)?,
+    tag: String,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        modifier = modifier.testTag(tag),
+        shape = RoundedCornerShape(14.dp),
+        color = if (selected) soft else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+        border = BorderStroke(1.dp, if (selected) border else CardBorder),
+        onClick = onClick
+    ) {
+        Column(modifier = Modifier.padding(horizontal = 9.dp, vertical = 8.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    text = label,
+                    style = MaterialTheme.typography.labelSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = if (selected) accent else TextSecondary,
+                    fontSize = 10.sp,
+                    maxLines = 1,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f)
+                )
+                if (onEdit != null) {
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = com.example.i18n.t("Düzenle"),
+                        tint = accent,
+                        modifier = Modifier
+                            .size(22.dp)
+                            .clip(CircleShape)
+                            .clickable(onClick = onEdit)
+                            .padding(3.dp)
+                            .testTag("${tag}_edit")
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+                text = value,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.ExtraBold,
+                color = TextPrimary,
+                maxLines = 1,
+                softWrap = false,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+            )
+            Text(
+                text = sub ?: " ",
+                style = MaterialTheme.typography.labelSmall,
+                fontWeight = FontWeight.Bold,
+                color = accent,
+                fontSize = 10.sp,
+                maxLines = 1
+            )
         }
     }
 }
