@@ -43,7 +43,15 @@ ile referans verilen ama olmayan kaynakları bul:
   `gradle wrapper --gradle-version 9.3.1 --distribution-type bin`, sonra dosyaları kopyala.
 
 ## 4. Bulut ortamı kısıtı
-Bu konteynerde `dl.google.com` engelli → Android SDK/Google Maven indirilemez, yerel derleme yapılamaz.
+Önce `curl -s -o /dev/null -w '%{http_code}' https://dl.google.com/android/repository/repository2-3.xml` ile dene: erişilebiliyorsa
+yerelde derle (cmdline-tools zip → `/opt/android-sdk`, `sdkmanager "platforms;android-36.1"`, `local.properties` sdk.dir).
+Maven Central 429 (Too Many Requests) verirse: `--no-configuration-cache --max-workers=2` ile yeniden dene; büyük jar'ı
+(ör. Robolectric `android-all-instrumented`) `https://maven-central.storage-download.googleapis.com/maven2/...` aynasından
+`~/.m2/repository` altına indir. `/dev/kvm` yoksa emülatör çalışmaz → Robolectric + Compose UI test ile duman testi yap
+(`createEmptyComposeRule` + `ActivityScenario.launch(intent)`, testTag ile sekmelere tıkla).
+GitHub hesabı yoksa APK'yı SendUserFile ile doğrudan kullanıcıya gönder, kaynak kodu da zip olarak ver.
+
+Eski not: bazı konteynerlerde `dl.google.com` engelli → Android SDK/Google Maven indirilemez, yerel derleme yapılamaz.
 Çözüm: `.github/workflows/android-build.yml` ekle ve doğrulamayı CI'da yap:
 checkout@v5 → setup-java@v5 (21) → runner'daki hazır SDK ile
 `yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses` + `"platforms;android-36.1"` →
