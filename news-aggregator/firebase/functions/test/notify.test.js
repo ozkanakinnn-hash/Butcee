@@ -26,19 +26,58 @@ const categories = new Map([
   ['son-dakika', { name: 'Son Dakika' }],
 ]);
 
-test('kategori başına tek özet: en yeni haber + "ve N haber daha"', () => {
+test('tek kategori: normal bildirim, en yeni haber + "ve N haber daha"', () => {
   const results = [
     { addedArticles: [art('a', 'saglik', '2026-11-06T10:00:00Z'), art('b', 'saglik', '2026-11-06T11:30:00Z')] },
-    { addedArticles: [art('c', 'saglik', '2026-11-06T11:00:00Z'), art('d', 'spor', '2026-11-06T11:59:00Z')] },
+    { addedArticles: [art('c', 'saglik', '2026-11-06T11:00:00Z')] },
   ];
   const { messages, nextState } = planNotifications({ results, categories, state: {}, now: NOW });
-  assert.equal(messages.length, 2);
-  const saglik = messages.find((m) => m.topic === 'news_saglik');
+  assert.equal(messages.length, 1);
+  const saglik = messages[0];
+  assert.equal(saglik.topic, 'news_saglik');
   assert.equal(saglik.notification.title, 'Sağlık');
   assert.equal(saglik.notification.body, 'Başlık b\nKaynak: Kaynak · ve 2 haber daha');
   assert.equal(saglik.data.url, 'https://ornek.com/b');
   assert.equal(saglik.android.notification.channelId, 'news');
   assert.equal(nextState.last_sent.saglik, NOW);
+  assert.deepEqual(nextState.pending, {});
+});
+
+test('aynı anda birden çok kategori → TEK özet bildirim; 18 dk dolmadan yenisi gitmez; fazlası sıraya girer', () => {
+  const cats = new Map([...categories, ['gundem', { name: 'Gündem' }], ['ekonomi', { name: 'Ekonomi' }], ['dunya', { name: 'Dünya' }]]);
+  const results = [{ addedArticles: [
+    art('g', 'gundem', '2026-11-06T11:58:00Z', { source_name: 'NTV' }),
+    art('e', 'ekonomi', '2026-11-06T11:57:00Z', { source_name: 'AA' }),
+    art('d', 'dunya', '2026-11-06T11:56:00Z', { source_name: 'NTV' }),
+    art('s', 'spor', '2026-11-06T11:40:00Z', { source_name: 'A Spor' }),
+  ] }];
+  const first = planNotifications({ results, categories: cats, state: {}, now: NOW });
+  assert.equal(first.messages.length, 1, 'aynı anda tek bildirim');
+  const d = first.messages[0];
+  assert.equal(d.notification.title, '📰 3 yeni haber');
+  assert.equal(d.notification.body, 'Gündem: Başlık g\nEkonomi: Başlık e\nDünya: Başlık d\nKaynak: NTV, AA');
+  assert.equal(d.condition, "'news_gundem' in topics || 'news_ekonomi' in topics || 'news_dunya' in topics");
+  assert.deepEqual(Object.keys(first.nextState.pending), ['spor'], 'en eski (4.) kategori sıraya girdi');
+
+  // 10 dk sonra: yeni haber gelse de bildirim yok (gün içine yayılır)
+  const later = planNotifications({ results: [{ addedArticles: [art('s2', 'spor', '2026-11-06T12:05:00Z')] }], categories: cats, state: first.nextState, now: NOW + 10 * 60_000 });
+  assert.equal(later.messages.length, 0);
+  assert.equal(later.nextState.pending.spor.count, 2);
+
+  // 20 dk sonra: sıradaki kategori tek bildirim olarak
+  const next = planNotifications({ results: [], categories: cats, state: later.nextState, now: NOW + 20 * 60_000 });
+  assert.equal(next.messages.length, 1);
+  assert.equal(next.messages[0].topic, 'news_spor');
+  assert.match(next.messages[0].notification.body, /ve 1 haber daha$/);
+  assert.deepEqual(next.nextState.pending, {});
+});
+
+test('son dakika bekletilmez: kategori aralığı dolmamışken de hemen gider', () => {
+  const state = { last_digest_at: NOW - 60_000, pending: {} };
+  const results = [{ addedArticles: [art('a', 'saglik', '2026-11-06T11:59:00Z')], breakingArticles: [art('x', 'gundem', '2026-11-06T11:59:00Z')] }];
+  const { messages, nextState } = planNotifications({ results, categories, state, now: NOW });
+  assert.deepEqual(messages.map((m) => m.topic), ['news_son-dakika']);
+  assert.ok(nextState.pending.saglik, 'kategori haberi sıraya girdi');
 });
 
 test('2 saat dolmadan aynı kategoriye tekrar bildirim gitmez', () => {
