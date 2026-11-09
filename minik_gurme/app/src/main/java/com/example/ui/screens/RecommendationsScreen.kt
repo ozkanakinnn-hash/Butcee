@@ -206,7 +206,7 @@ fun RecommendationsScreen(
                         )
 
                         Text(
-                            text = "Uzm. Dr. Eda Nur Tezgel Oruç protokollerine uygun ay ay beslenme, doku ve güvenlik tavsiyeleri.",
+                            text = "Pediatrik beslenme kılavuzlarına uygun ay ay beslenme, doku ve güvenlik tavsiyeleri.",
                             style = MaterialTheme.typography.bodySmall,
                             color = OnHero.copy(alpha = 0.95f),
                             lineHeight = 18.sp
@@ -340,7 +340,7 @@ fun RecommendationsScreen(
                 }
             }
 
-            // Örnek Günlük Rutin Önerisi (Matching Dr. Eda infographic)
+            // Örnek Günlük Rutin Önerisi 
             item {
                 Card(
                     shape = RoundedCornerShape(22.dp),

@@ -116,7 +116,7 @@ object PediatricGuideData {
         "❌ Sadece anne sütü veya formül mama alan bebeklerin 6 aydan önce ek gıdaya erken başlatılması sindirim ve alerji riskini artırır."
     )
 
-    // 2. Ay Ay Pediatrik Rehber (Dr. Eda Tezgel rehberiyle tam uyumlu)
+    // 2. Ay Ay Pediatrik Rehber
     val monthlyGuides = listOf(
         MonthGuide(
             month = 6,
@@ -328,7 +328,7 @@ object PediatricGuideData {
         )
     )
 
-    // 3. 4 Haftalık 6. Ay Adım Adım Başlangıç Planı (Dr. Eda Tezgel infografiği)
+    // 3. 4 Haftalık 6. Ay Adım Adım Başlangıç Planı
     val fourWeekStarterPlan = listOf(
         StarterWeekPlan(
             weekNumber = 1,
@@ -476,7 +476,7 @@ object PediatricGuideData {
         )
     )
 
-    // 5. Ek Gıdada En Sık Yapılan 6 Hata (Dr. Eda Tezgel infografiği)
+    // 5. Ek Gıdada En Sık Yapılan 6 Hata
     val commonMistakesList = listOf(
         CommonMistake(
             title = "1. Zorla Yedirmek",

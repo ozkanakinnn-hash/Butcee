@@ -267,7 +267,7 @@ fun ThreeDayRuleScreen(
             }
         }
 
-        // Alerjik Reaksiyon Belirtileri (Dr. Eda Tezgel infografiği: Hafif vs Ciddi)
+        // Alerjik Reaksiyon Belirtileri (Hafif vs Ciddi)
         item {
             Card(
                 modifier = Modifier.fillMaxWidth(),
