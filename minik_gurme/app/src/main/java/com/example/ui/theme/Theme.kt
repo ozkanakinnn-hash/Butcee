@@ -43,7 +43,11 @@ private val DarkColorScheme = darkColorScheme(
 /** Tema sistem ayarını izler (açık / koyu). Palet renkleri [ThemeState] üzerinden aynı seçimi kullanır. */
 @Composable
 fun MinikGurmeTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    darkTheme: Boolean = when (ThemePrefs.mode) {
+        "light" -> false
+        "dark" -> true
+        else -> isSystemInDarkTheme()
+    },
     content: @Composable () -> Unit
 ) {
     ThemeState.dark = darkTheme

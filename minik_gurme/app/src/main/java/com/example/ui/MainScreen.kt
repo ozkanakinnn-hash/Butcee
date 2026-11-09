@@ -4,6 +4,7 @@ import com.example.ui.theme.*
 import androidx.activity.compose.BackHandler
 import com.example.i18n.t
 import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -134,6 +135,7 @@ fun MainScreen(
     // 100 Foods state
     val allTriedFoods by viewModel.allTriedFoods.collectAsStateWithLifecycle()
     val shoppingItems by viewModel.shoppingItems.collectAsStateWithLifecycle()
+    val context = androidx.compose.ui.platform.LocalContext.current
     val foodSearchQuery by viewModel.foodSearchQuery.collectAsStateWithLifecycle()
     val selectedFoodCategory by viewModel.selectedFoodCategory.collectAsStateWithLifecycle()
 
@@ -173,7 +175,7 @@ fun MainScreen(
     val scope = rememberCoroutineScope()
 
     // Handle Android system back gesture when in Profile or Growth screen
-    BackHandler(enabled = currentTab == "profile" || currentTab == "growth" || currentTab == "shopping") {
+    BackHandler(enabled = currentTab == "profile" || currentTab == "growth" || currentTab == "shopping" || currentTab == "settings") {
         currentTab = previousTab
     }
 
@@ -227,13 +229,13 @@ fun MainScreen(
                                 androidx.compose.material3.Text("$open")
                             }
                         },
-                        modifier = Modifier.padding(end = 6.dp)
+                        modifier = Modifier.padding(end = 2.dp)
                     ) {
                         androidx.compose.material3.IconButton(
                             onClick = {
                                 if (currentTab != "shopping") { previousTab = currentTab; currentTab = "shopping" }
                             },
-                            modifier = Modifier.testTag("top_shopping")
+                            modifier = Modifier.size(44.dp).testTag("top_shopping")
                         ) {
                             Icon(
                                 imageVector = androidx.compose.material.icons.Icons.Filled.ShoppingCart,
@@ -273,6 +275,18 @@ fun MainScreen(
                                 color = if (currentTab == "profile") OnAccent else CoralDark
                             )
                         }
+                    }
+                    androidx.compose.material3.IconButton(
+                        onClick = {
+                            if (currentTab != "settings") { previousTab = currentTab; currentTab = "settings" }
+                        },
+                        modifier = Modifier.size(44.dp).testTag("top_settings")
+                    ) {
+                        Icon(
+                            imageVector = androidx.compose.material.icons.Icons.Filled.Settings,
+                            contentDescription = t("Ayarlar"),
+                            tint = if (currentTab == "settings") CoralPrimary else TextSecondary
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -473,6 +487,18 @@ fun MainScreen(
                         onResetStatistics = { viewModel.resetFeedingStatistics() }
                     )
 
+                    "settings" -> com.example.ui.screens.SettingsScreen(
+                        versionName = remember {
+                            runCatching { context.packageManager.getPackageInfo(context.packageName, 0).versionName }.getOrNull() ?: ""
+                        },
+                        onBack = { currentTab = previousTab },
+                        onEditProfile = { showEditProfileDialog = true },
+                        onResetStatistics = {
+                            viewModel.resetFeedingStatistics()
+                            scope.launch { snackbarHostState.showSnackbar(t("İstatistikler sıfırlandı.")) }
+                        },
+                        onClearShopping = { viewModel.clearAllShopping() }
+                    )
                     "shopping" -> com.example.ui.screens.ShoppingListScreen(
                         items = shoppingItems,
                         onBack = { currentTab = previousTab },

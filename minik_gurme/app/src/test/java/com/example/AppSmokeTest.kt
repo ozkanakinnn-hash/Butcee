@@ -189,4 +189,27 @@ class AppSmokeTest {
             compose.waitUntil(3000) { has("Tariflerden malzeme ekleyin veya aşağıya yazın.") }
         }
     }
+
+    @Test
+    fun settingsGearThemeAndReset() {
+        setOnboarded(true)
+        launch("tr").use {
+            compose.waitForIdle()
+            shot("tr_light_04_topbar")
+            compose.onNodeWithTag("top_settings").performClick(); compose.waitForIdle()
+            assertTrue(has("Ayarlar"))
+            shot("tr_light_05_settings")
+            compose.onNodeWithTag("theme_dark").performClick(); compose.waitForIdle()
+            assertEquals("dark", com.example.ui.theme.ThemePrefs.mode)
+            assertTrue(com.example.ui.theme.ThemeState.dark)
+            shot("tr_dark_05_settings")
+            compose.onNodeWithTag("theme_light").performClick(); compose.waitForIdle()
+            assertTrue(!com.example.ui.theme.ThemeState.dark)
+            compose.onNodeWithTag("settings_reset_stats").performScrollTo().performClick(); compose.waitForIdle()
+            assertTrue(has("İstatistikler sıfırlansın mı?"))
+            compose.onNodeWithTag("settings_confirm").performClick(); compose.waitForIdle()
+            compose.onNodeWithTag("theme_system").performScrollTo().performClick(); compose.waitForIdle()
+            assertEquals("system", com.example.ui.theme.ThemePrefs.mode)
+        }
+    }
 }

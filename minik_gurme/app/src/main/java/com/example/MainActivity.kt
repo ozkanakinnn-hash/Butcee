@@ -35,6 +35,7 @@ class MainActivity : ComponentActivity() {
 
         CrashReporter.install(applicationContext)
         AppLanguage.init(applicationContext)
+        com.example.ui.theme.ThemePrefs.init(applicationContext)
         // Duman testi / ilk açılış için dil seçimi: adb shell am start ... --es lang en
         intent?.getStringExtra("lang")?.let { if (it == "tr" || it == "en") AppLanguage.set(applicationContext, it) }
 

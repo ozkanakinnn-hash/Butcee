@@ -1,5 +1,9 @@
 [
 [
+"^Minik Gurme • Sürüm (.+)$",
+"Minik Gurme • Version $1"
+],
+[
 "^(\\d+) kalem alınacak$",
 "$1 items to buy"
 ],

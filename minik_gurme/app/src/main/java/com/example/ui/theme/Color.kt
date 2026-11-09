@@ -112,3 +112,20 @@ internal object Dark {
     val onSurface = Color(0xFFEFE9E2); val onSurfaceVariant = Color(0xFFBDB5AC); val outline = Color(0xFF454C56)
     val outlineVariant = Color(0xFF2F353E); val error = Color(0xFFF0828A)
 }
+
+/** Kullanıcının tema tercihi: "system" (telefona göre), "light" veya "dark". Ayarlar'dan değişir, kaydedilir. */
+object ThemePrefs {
+    private const val PREFS = "app_prefs"
+    private const val KEY = "theme_mode"
+    var mode by mutableStateOf("system")
+        private set
+
+    fun init(context: android.content.Context) {
+        mode = context.getSharedPreferences(PREFS, android.content.Context.MODE_PRIVATE).getString(KEY, "system") ?: "system"
+    }
+
+    fun set(context: android.content.Context, value: String) {
+        mode = value
+        context.getSharedPreferences(PREFS, android.content.Context.MODE_PRIVATE).edit().putString(KEY, value).apply()
+    }
+}

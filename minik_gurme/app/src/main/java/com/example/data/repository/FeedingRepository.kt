@@ -32,6 +32,7 @@ class FeedingRepository(
     suspend fun setShoppingChecked(id: Long, checked: Boolean) = shoppingItemDao.setChecked(id, checked)
     suspend fun deleteShoppingItem(id: Long) = shoppingItemDao.deleteById(id)
     suspend fun clearCheckedShopping() = shoppingItemDao.deleteChecked()
+    suspend fun clearAllShopping() = shoppingItemDao.deleteAll()
 
     // Growth Tracking (Gelişim Takibi)
     val allGrowthRecords: Flow<List<GrowthRecord>> = growthRecordDao.getAllGrowthRecords()

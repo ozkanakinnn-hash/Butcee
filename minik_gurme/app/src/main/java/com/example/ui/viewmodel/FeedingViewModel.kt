@@ -549,6 +549,7 @@ class FeedingViewModel(
     fun setShoppingChecked(id: Long, checked: Boolean) = viewModelScope.launch { repository.setShoppingChecked(id, checked) }
     fun deleteShoppingItem(id: Long) = viewModelScope.launch { repository.deleteShoppingItem(id) }
     fun clearCheckedShopping() = viewModelScope.launch { repository.clearCheckedShopping() }
+    fun clearAllShopping() = viewModelScope.launch { repository.clearAllShopping() }
 
     /** "puree" / "blw" / "mixed": tarifler ekranının varsayılan filtresi. */
     fun applyFeedingStyle(style: String?) {
