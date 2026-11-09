@@ -358,12 +358,6 @@ fun GrowthChartCard(
                     }
                 }
 
-                Text(
-                    text = "Noktaya dokunun 👆",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = TextTertiary,
-                    fontSize = 10.sp
-                )
             }
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -482,40 +476,41 @@ fun GrowthChartCard(
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            // Footer note & Tümünü gör
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
-                    Icon(
-                        imageVector = Icons.Default.TrendingUp,
-                        contentDescription = null,
-                        tint = SageDark,
-                        modifier = Modifier.size(15.dp)
-                    )
-                    Spacer(modifier = Modifier.width(5.dp))
-                    Text(
-                        text = "Büyüme Eğrisi & Beslenme",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = SageDark,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                }
-
-                if (onOpenFullTracking != null && isCompact) {
+            // Alt bilgi; "Tümünü Gör" ayrı satırda, altta
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                Icon(
+                    imageVector = Icons.Default.TrendingUp,
+                    contentDescription = null,
+                    tint = SageDark,
+                    modifier = Modifier.size(15.dp)
+                )
+                Spacer(modifier = Modifier.width(5.dp))
+                Text(
+                    text = "Büyüme Eğrisi & Beslenme",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = SageDark,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+            if (onOpenFullTracking != null && isCompact) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Surface(
+                    onClick = onOpenFullTracking,
+                    shape = RoundedCornerShape(12.dp),
+                    color = CoralSoft,
+                    border = BorderStroke(1.dp, CoralBorder),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag("dashboard_growth_see_all_btn")
+                ) {
                     Text(
                         text = "Tümünü Gör →",
-                        maxLines = 1,
-                        softWrap = false,
-                        style = MaterialTheme.typography.labelSmall,
-                        color = CoralPrimary,
+                        style = MaterialTheme.typography.labelLarge,
+                        color = CoralDark,
                         fontWeight = FontWeight.Bold,
-                        modifier = Modifier
-                            .clickable { onOpenFullTracking() }
-                            .padding(4.dp)
-                            .testTag("dashboard_growth_see_all_btn")
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                        maxLines = 1,
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 10.dp)
                     )
                 }
             }
