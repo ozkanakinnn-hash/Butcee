@@ -139,7 +139,7 @@ fun PediatricKnowledgeBaseView(
                         Spacer(modifier = Modifier.width(10.dp))
                         Column {
                             Text(
-                                text = "Pediatrik Bilgi Bankası",
+                                text = "Bilgi Bankası",
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.ExtraBold,
                                 color = TextPrimary
@@ -152,31 +152,6 @@ fun PediatricKnowledgeBaseView(
                         }
                     }
 
-                    Surface(
-                        color = SageSoft,
-                        shape = RoundedCornerShape(10.dp),
-                        border = BorderStroke(1.dp, SageBorder)
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Verified,
-                                contentDescription = null,
-                                tint = SageDark,
-                                modifier = Modifier.size(13.dp)
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(
-                                text = "WHO / ESPGHAN",
-                                style = MaterialTheme.typography.labelSmall,
-                                fontWeight = FontWeight.Bold,
-                                color = SageDark,
-                                fontSize = 10.sp
-                            )
-                        }
-                    }
                 }
 
                 Spacer(modifier = Modifier.height(10.dp))

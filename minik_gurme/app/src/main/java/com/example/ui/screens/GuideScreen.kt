@@ -167,29 +167,6 @@ fun GuideScreen(
                         color = TextPrimary
                     )
 
-                    Surface(
-                        color = SageSoft,
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.MedicalServices,
-                                contentDescription = null,
-                                tint = SageDark,
-                                modifier = Modifier.size(13.dp)
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(
-                                text = "WHO & CDC Uyumlu",
-                                style = MaterialTheme.typography.labelSmall,
-                                fontWeight = FontWeight.Bold,
-                                color = SageDark
-                            )
-                        }
-                    }
                 }
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
@@ -241,7 +218,7 @@ fun GuideScreen(
         }
 
         // -------------------------------------------------------------
-        // TAB: PEDİATRİK BİLGİ BANKASI (HAFTALIK REHBERLER)
+        // TAB: BİLGİ BANKASI (HAFTALIK REHBERLER)
         // -------------------------------------------------------------
         if (selectedTab == "knowledge_base") {
             item {

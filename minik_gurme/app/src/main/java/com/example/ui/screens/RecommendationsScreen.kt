@@ -175,7 +175,7 @@ fun RecommendationsScreen(
                                     )
                                     Spacer(modifier = Modifier.width(6.dp))
                                     Text(
-                                        text = "PEDİATRİK BESLENME ÖNERİLERİ",
+                                        text = "BESLENME ÖNERİLERİ",
                                         style = MaterialTheme.typography.labelSmall,
                                         fontWeight = FontWeight.Bold,
                                         color = OnHero,

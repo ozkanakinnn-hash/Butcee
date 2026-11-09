@@ -312,20 +312,6 @@ fun ProfileScreen(
                                 fontWeight = FontWeight.Bold,
                                 color = TextPrimary
                             )
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Surface(
-                                shape = RoundedCornerShape(6.dp),
-                                color = SageSoft
-                            ) {
-                                Text(
-                                    text = "WHO",
-                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                                    style = MaterialTheme.typography.labelSmall,
-                                    fontWeight = FontWeight.Bold,
-                                    color = SageDark,
-                                    fontSize = 10.sp
-                                )
-                            }
                         }
                         Spacer(modifier = Modifier.height(2.dp))
                         Text(

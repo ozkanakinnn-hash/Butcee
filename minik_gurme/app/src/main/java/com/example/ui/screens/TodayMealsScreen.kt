@@ -270,7 +270,7 @@ fun TodayMealsScreen(
             }
         }
 
-        // Haftalık Pediatrik Bilgi Bankası Banner
+        // Haftalık Bilgi Bankası Banner
         item {
             Card(
                 modifier = Modifier
@@ -301,7 +301,7 @@ fun TodayMealsScreen(
                     Column(modifier = Modifier.weight(1f)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
-                                text = "Haftalık Pediatrik Bilgi Bankası",
+                                text = "Haftalık Bilgi Bankası",
                                 style = MaterialTheme.typography.titleSmall,
                                 fontWeight = FontWeight.Bold,
                                 color = TextPrimary
