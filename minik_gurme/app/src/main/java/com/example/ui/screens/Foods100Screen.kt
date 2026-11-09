@@ -214,13 +214,7 @@ fun Foods100Screen(
                                 .clip(RoundedCornerShape(8.dp))
                                 .background(
                                     Brush.horizontalGradient(
-                                        listOf(
-                                            Color(0xFFFF9EAA),
-                                            Color(0xFFE9C46A),
-                                            Color(0xFF2DD4BF),
-                                            Color(0xFF38BDF8),
-                                            Color(0xFFA855F7)
-                                        )
+                                        RainbowGradient
                                     )
                                 )
                         )
@@ -339,7 +333,7 @@ fun Foods100Screen(
                             text = category,
                             style = MaterialTheme.typography.labelMedium,
                             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                            color = if (isSelected) Color.White else TextPrimary,
+                            color = if (isSelected) OnAccent else TextPrimary,
                             modifier = Modifier.padding(horizontal = 14.dp, vertical = 9.dp)
                         )
                     }
@@ -405,7 +399,7 @@ fun Foods100Screen(
                         colors = CheckboxDefaults.colors(
                             checkedColor = SageGreen,
                             uncheckedColor = CardBorder,
-                            checkmarkColor = Color.White
+                            checkmarkColor = OnAccent
                         ),
                         modifier = Modifier.testTag("checkbox_${food.id}")
                     )

@@ -71,6 +71,24 @@ val AllergyBorder get() = c(0xFFF4C4C9, 0xFF5E3238)
 val AllergyText get() = c(0xFF8A1E32, 0xFFF7B0B7)
 val SuccessGreen get() = c(0xFF1E8E4E, 0xFF6FD39B)
 
+// Renkli dolgu (mercan/adaçayı/alerji butonları, seçili çipler) üzerindeki yazı ve simgeler.
+// Açık temada beyaz; koyu temada dolgular açık tonlu olduğundan koyu kahve (okunurluk için).
+val OnAccent get() = c(0xFFFFFFFF, 0xFF26140E)
+// Fotoğraf ve turuncu→pembe geçişli kahraman kartları her iki temada da koyu kalır: üzerindeki yazı beyaz.
+val OnHero = Color(0xFFFFFFFF)
+// Kahraman kartlarındaki beyaz etiketlerin yazısı (zemin hep beyaz olduğu için sabit koyu mercan)
+val HeroPillText = Color(0xFFB9502F)
+// Fotoğraf üstü karartma (yazının okunması için)
+val PhotoScrim = Color(0xA6000000)
+// Logo beyaz zemin üzerinde tasarlandı; her iki temada beyaz daire içinde gösterilir.
+val LogoBackdrop = Color(0xFFFFFFFF)
+// Grafik ızgara çizgileri
+val ChartGrid get() = c(0x66D9CFC3, 0x40454C56)
+// "100 Gıda" ilerleme çubuğu: palet tonlarıyla gökkuşağı
+val RainbowGradient: List<Color> get() = if (ThemeState.dark)
+    listOf(Color(0xFFF0828A), Color(0xFFF08C72), Color(0xFFEBC160), Color(0xFF5CC4A6), Color(0xFF86B9DB), Color(0xFFB7A8DD))
+else listOf(Color(0xFFEE7B84), Color(0xFFE8735A), Color(0xFFE5A92F), Color(0xFF2F9478), Color(0xFF3F7AA0), Color(0xFF7D6AAE))
+
 // Kahraman kartı geçişi (turuncu → mercan → pembe; koyu temada biraz daha derin)
 val HeroGradient: List<Color> get() = if (ThemeState.dark)
     listOf(Color(0xFFD9823A), Color(0xFFCF5F4C), Color(0xFFB84A68))

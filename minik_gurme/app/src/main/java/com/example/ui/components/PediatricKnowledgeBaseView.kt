@@ -252,7 +252,7 @@ fun PediatricKnowledgeBaseView(
                             modifier = Modifier.padding(horizontal = 14.dp, vertical = 9.dp),
                             style = MaterialTheme.typography.labelMedium,
                             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                            color = if (isSelected) Color.White else TextPrimary
+                            color = if (isSelected) OnAccent else TextPrimary
                         )
                     }
                 }
@@ -366,7 +366,7 @@ private fun WeeklyGuideCard(
                             modifier = Modifier.padding(horizontal = 9.dp, vertical = 4.dp),
                             style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.Bold,
-                            color = if (isExpanded) Color.White else CoralDark
+                            color = if (isExpanded) OnAccent else CoralDark
                         )
                     }
 

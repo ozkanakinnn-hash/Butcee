@@ -1,5 +1,6 @@
 package com.example.ui
 
+import com.example.ui.theme.*
 import androidx.activity.compose.BackHandler
 import com.example.i18n.t
 import androidx.compose.material.icons.filled.ShoppingCart
@@ -197,7 +198,7 @@ fun MainScreen(
                             modifier = Modifier
                                 .size(42.dp)
                                 .clip(CircleShape)
-                                .background(Color.White)
+                                .background(LogoBackdrop)
                                 .testTag("app_logo")
                         )
                         Spacer(modifier = Modifier.width(10.dp))
@@ -261,7 +262,7 @@ fun MainScreen(
                             Icon(
                                 imageVector = Icons.Default.ChildCare,
                                 contentDescription = null,
-                                tint = if (currentTab == "profile") Color.White else CoralDark,
+                                tint = if (currentTab == "profile") OnAccent else CoralDark,
                                 modifier = Modifier.size(16.dp)
                             )
                             Spacer(modifier = Modifier.width(4.dp))
@@ -269,7 +270,7 @@ fun MainScreen(
                                 text = "${babyProfile.name} • ${babyProfile.ageMonths} Ay",
                                 style = MaterialTheme.typography.labelSmall,
                                 fontWeight = FontWeight.Bold,
-                                color = if (currentTab == "profile") Color.White else CoralDark
+                                color = if (currentTab == "profile") OnAccent else CoralDark
                             )
                         }
                     }

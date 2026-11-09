@@ -1,5 +1,6 @@
 package com.example.ui.components
 
+import com.example.ui.theme.*
 import androidx.compose.foundation.clickable
 import com.example.i18n.t
 import androidx.compose.foundation.layout.Arrangement
@@ -183,7 +184,7 @@ fun EditProfileDialog(
                 shape = RoundedCornerShape(14.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = CoralPrimary,
-                    contentColor = Color.White
+                    contentColor = OnAccent
                 ),
                 modifier = Modifier.testTag("profile_save_button")
             ) {

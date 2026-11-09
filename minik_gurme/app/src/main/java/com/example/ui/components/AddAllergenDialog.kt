@@ -1,5 +1,6 @@
 package com.example.ui.components
 
+import com.example.ui.theme.*
 import androidx.compose.foundation.background
 import com.example.i18n.t
 import androidx.compose.foundation.clickable
@@ -219,7 +220,7 @@ fun AddAllergenDialog(
                 shape = RoundedCornerShape(14.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = CoralPrimary,
-                    contentColor = Color.White
+                    contentColor = OnAccent
                 ),
                 modifier = Modifier.testTag("add_allergen_confirm_button")
             ) {

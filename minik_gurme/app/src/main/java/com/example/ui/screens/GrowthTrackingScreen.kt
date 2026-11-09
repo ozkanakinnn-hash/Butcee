@@ -1,5 +1,6 @@
 package com.example.ui.screens
 
+import com.example.ui.theme.*
 import androidx.activity.compose.BackHandler
 import com.example.i18n.t
 import androidx.compose.foundation.BorderStroke
@@ -116,7 +117,7 @@ fun GrowthTrackingScreen(
             FloatingActionButton(
                 onClick = onOpenAddRecord,
                 containerColor = CoralPrimary,
-                contentColor = Color.White,
+                contentColor = OnAccent,
                 shape = CircleShape,
                 modifier = Modifier.testTag("growth_screen_fab_add")
             ) {
@@ -626,7 +627,7 @@ fun GrowthTrackingScreen(
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
                     shape = RoundedCornerShape(12.dp)
                 ) {
-                    Text("Sil", color = Color.White)
+                    Text("Sil", color = OnAccent)
                 }
             },
             dismissButton = {
@@ -707,7 +708,7 @@ private fun GrowthRecordRowCard(
                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
                             style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.Bold,
-                            color = if (isLatest) Color.White else TextPrimary
+                            color = if (isLatest) OnAccent else TextPrimary
                         )
                     }
 

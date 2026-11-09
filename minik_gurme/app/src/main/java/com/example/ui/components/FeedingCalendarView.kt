@@ -354,7 +354,7 @@ fun FeedingCalendarView(
                                             style = MaterialTheme.typography.bodySmall,
                                             fontWeight = if (isSelected || isCurrentDay) FontWeight.ExtraBold else FontWeight.Medium,
                                             color = when {
-                                                isSelected -> Color.White
+                                                isSelected -> OnAccent
                                                 isCurrentDay -> CoralDark
                                                 else -> TextPrimary
                                             }
@@ -372,7 +372,7 @@ fun FeedingCalendarView(
                                                         .clip(CircleShape)
                                                         .background(
                                                             when {
-                                                                isSelected -> Color.White
+                                                                isSelected -> OnAccent
                                                                 hasAllergy -> ReactionAllergy
                                                                 else -> SageGreen
                                                             }
@@ -383,7 +383,7 @@ fun FeedingCalendarView(
                                                         modifier = Modifier
                                                             .size(5.dp)
                                                             .clip(CircleShape)
-                                                            .background(if (isSelected) Color.White.copy(alpha = 0.7f) else CoralPrimary)
+                                                            .background(if (isSelected) OnAccent.copy(alpha = 0.7f) else CoralPrimary)
                                                     )
                                                 }
                                             }
@@ -512,7 +512,7 @@ fun FeedingCalendarView(
             Icon(
                 imageVector = Icons.Default.Add,
                 contentDescription = null,
-                tint = Color.White,
+                tint = OnAccent,
                 modifier = Modifier.size(16.dp)
             )
             Spacer(modifier = Modifier.width(4.dp))
@@ -520,7 +520,7 @@ fun FeedingCalendarView(
                 text = "Öğün Ekle",
                 style = MaterialTheme.typography.labelMedium,
                 fontWeight = FontWeight.Bold,
-                color = Color.White
+                color = OnAccent
             )
         }
     }

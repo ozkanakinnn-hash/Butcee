@@ -232,7 +232,7 @@ fun GuideScreen(
                             text = label,
                             style = MaterialTheme.typography.labelMedium,
                             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                            color = if (isSelected) Color.White else TextPrimary,
+                            color = if (isSelected) OnAccent else TextPrimary,
                             modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp)
                         )
                     }
@@ -870,7 +870,7 @@ fun GuideScreen(
                                     text = "${plan.weekNumber}. Hafta",
                                     style = MaterialTheme.typography.labelMedium,
                                     fontWeight = FontWeight.Bold,
-                                    color = if (isSelected) Color.White else TextPrimary
+                                    color = if (isSelected) OnAccent else TextPrimary
                                 )
                             }
                         }
@@ -1693,7 +1693,7 @@ fun ForbiddenFoodCard(item: ForbiddenFoodItem) {
                         text = item.severityLevel,
                         style = MaterialTheme.typography.labelSmall,
                         fontWeight = FontWeight.ExtraBold,
-                        color = Color.White,
+                        color = OnAccent,
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
                         fontSize = 10.sp
                     )

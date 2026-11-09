@@ -113,7 +113,7 @@ fun OnboardingScreen(onComplete: (name: String, ageMonths: Int, weightKg: Float,
                 contentDescription = "Minik Gurme",
                 modifier = Modifier
                     .size(170.dp)
-                    .background(androidx.compose.ui.graphics.Color.White, CircleShape)
+                    .background(LogoBackdrop, CircleShape)
                     .padding(4.dp)
             )
             Spacer(Modifier.height(16.dp))

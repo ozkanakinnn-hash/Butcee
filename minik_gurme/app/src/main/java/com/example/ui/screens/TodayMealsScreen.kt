@@ -182,7 +182,7 @@ fun TodayMealsScreen(
                                     Brush.verticalGradient(
                                         colors = listOf(
                                             Color.Transparent,
-                                            Color.Black.copy(alpha = 0.65f)
+                                            PhotoScrim
                                         )
                                     )
                                 )
@@ -205,7 +205,7 @@ fun TodayMealsScreen(
                                         text = "GÜNLÜK BESLENME REHBERİ",
                                         style = MaterialTheme.typography.labelSmall,
                                         fontWeight = FontWeight.Bold,
-                                        color = Color.White,
+                                        color = OnHero,
                                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
                                     )
                                 }
@@ -214,13 +214,13 @@ fun TodayMealsScreen(
                                     text = "${com.example.i18n.trGenitive(profile.name)} Menüsü 👶",
                                     style = MaterialTheme.typography.titleLarge,
                                     fontWeight = FontWeight.ExtraBold,
-                                    color = Color.White
+                                    color = OnHero
                                 )
                             }
 
                             Surface(
                                 shape = RoundedCornerShape(16.dp),
-                                color = Color.White.copy(alpha = 0.9f)
+                                color = OnHero.copy(alpha = 0.9f)
                             ) {
                                 Row(
                                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
@@ -230,7 +230,7 @@ fun TodayMealsScreen(
                                         text = "${profile.ageMonths}. Ay",
                                         style = MaterialTheme.typography.labelMedium,
                                         fontWeight = FontWeight.ExtraBold,
-                                        color = CoralDark
+                                        color = HeroPillText
                                     )
                                 }
                             }
@@ -381,7 +381,7 @@ fun TodayMealsScreen(
                             Icon(
                                 imageVector = Icons.Default.ViewAgenda,
                                 contentDescription = null,
-                                tint = if (viewMode == "timeline") Color.White else TextSecondary,
+                                tint = if (viewMode == "timeline") OnAccent else TextSecondary,
                                 modifier = Modifier.size(15.dp)
                             )
                             Spacer(modifier = Modifier.width(4.dp))
@@ -389,7 +389,7 @@ fun TodayMealsScreen(
                                 text = "Akış",
                                 style = MaterialTheme.typography.labelMedium,
                                 fontWeight = if (viewMode == "timeline") FontWeight.Bold else FontWeight.Medium,
-                                color = if (viewMode == "timeline") Color.White else TextPrimary
+                                color = if (viewMode == "timeline") OnAccent else TextPrimary
                             )
                         }
                     }
@@ -411,7 +411,7 @@ fun TodayMealsScreen(
                             Icon(
                                 imageVector = Icons.Default.Book,
                                 contentDescription = null,
-                                tint = if (viewMode == "diary") Color.White else TextSecondary,
+                                tint = if (viewMode == "diary") OnAccent else TextSecondary,
                                 modifier = Modifier.size(15.dp)
                             )
                             Spacer(modifier = Modifier.width(4.dp))
@@ -419,7 +419,7 @@ fun TodayMealsScreen(
                                 text = "Günlük 📖",
                                 style = MaterialTheme.typography.labelMedium,
                                 fontWeight = if (viewMode == "diary") FontWeight.Bold else FontWeight.Medium,
-                                color = if (viewMode == "diary") Color.White else TextPrimary
+                                color = if (viewMode == "diary") OnAccent else TextPrimary
                             )
                         }
                     }
@@ -441,7 +441,7 @@ fun TodayMealsScreen(
                             Icon(
                                 imageVector = Icons.Default.CalendarMonth,
                                 contentDescription = null,
-                                tint = if (viewMode == "calendar") Color.White else TextSecondary,
+                                tint = if (viewMode == "calendar") OnAccent else TextSecondary,
                                 modifier = Modifier.size(15.dp)
                             )
                             Spacer(modifier = Modifier.width(4.dp))
@@ -449,7 +449,7 @@ fun TodayMealsScreen(
                                 text = "Takvim",
                                 style = MaterialTheme.typography.labelMedium,
                                 fontWeight = if (viewMode == "calendar") FontWeight.Bold else FontWeight.Medium,
-                                color = if (viewMode == "calendar") Color.White else TextPrimary
+                                color = if (viewMode == "calendar") OnAccent else TextPrimary
                             )
                         }
                     }
@@ -577,7 +577,7 @@ fun TodayMealsScreen(
                     shape = RoundedCornerShape(18.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = CoralPrimary,
-                        contentColor = Color.White
+                        contentColor = OnAccent
                     ),
                     elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp)
                 ) {
@@ -758,7 +758,7 @@ fun TodayMealsScreen(
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = ReactionAllergy)
                 ) {
-                    Text("Sil", color = Color.White)
+                    Text("Sil", color = OnAccent)
                 }
             },
             dismissButton = {

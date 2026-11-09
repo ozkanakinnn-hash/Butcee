@@ -464,7 +464,7 @@ fun RecipeDetailBottomSheet(
                                         text = "${index + 1}",
                                         style = MaterialTheme.typography.labelSmall,
                                         fontWeight = FontWeight.Bold,
-                                        color = Color.White
+                                        color = OnAccent
                                     )
                                 }
                                 Spacer(modifier = Modifier.width(12.dp))
@@ -524,7 +524,7 @@ fun RecipeDetailBottomSheet(
                     Icon(
                         imageVector = Icons.Default.Book,
                         contentDescription = null,
-                        tint = Color.White,
+                        tint = OnAccent,
                         modifier = Modifier.size(18.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
@@ -532,7 +532,7 @@ fun RecipeDetailBottomSheet(
                         text = "Beslenme Günlüğüne Kaydet 📖",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
-                        color = Color.White
+                        color = OnAccent
                     )
                 }
 

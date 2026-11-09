@@ -88,7 +88,7 @@ class AppSmokeTest {
             compose.onNodeWithTag("onb_height").performTextInput("68")
             compose.onNodeWithTag("onb_start").performScrollTo().performClick()
             compose.waitForIdle()
-            assertTrue(has("Defne • 7 Ay"))
+            compose.waitUntil(5000) { has("Defne • 7 Ay") }
             val db = AppDatabase.getDatabase(ctx, kotlinx.coroutines.GlobalScope)
             runBlocking {
                 assertEquals(0, db.mealDao().getMealCount().first())

@@ -444,7 +444,7 @@ fun AddMealBottomSheet(
                 shape = RoundedCornerShape(16.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = CoralPrimary,
-                    contentColor = Color.White
+                    contentColor = OnAccent
                 ),
                 elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp)
             ) {

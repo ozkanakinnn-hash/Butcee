@@ -195,7 +195,7 @@ fun ReactionNoteDialog(
                                 text = label,
                                 style = MaterialTheme.typography.labelMedium,
                                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                                color = if (isSelected) Color.White else TextPrimary,
+                                color = if (isSelected) OnAccent else TextPrimary,
                                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 9.dp)
                             )
                         }
@@ -250,7 +250,7 @@ fun ReactionNoteDialog(
                                     Icon(
                                         imageVector = Icons.Default.Emergency,
                                         contentDescription = null,
-                                        tint = if (isChecked) Color.White else ReactionAllergy,
+                                        tint = if (isChecked) OnAccent else ReactionAllergy,
                                         modifier = Modifier.size(14.dp)
                                     )
                                     Spacer(modifier = Modifier.width(4.dp))
@@ -260,7 +260,7 @@ fun ReactionNoteDialog(
                                     style = MaterialTheme.typography.bodySmall,
                                     fontWeight = if (isChecked) FontWeight.Bold else FontWeight.Normal,
                                     color = when {
-                                        isChecked && isEmergency -> Color.White
+                                        isChecked && isEmergency -> OnAccent
                                         isChecked -> CoralDark
                                         else -> TextPrimary
                                     }
@@ -364,7 +364,7 @@ fun ReactionNoteDialog(
                         text = "Kaydet",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
-                        color = Color.White
+                        color = OnAccent
                     )
                 }
             }

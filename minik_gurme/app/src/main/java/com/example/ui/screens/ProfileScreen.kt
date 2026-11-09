@@ -140,7 +140,7 @@ fun ProfileScreen(
                         onResetStatistics()
                         showResetDialog = false
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = ReactionAllergy, contentColor = Color.White),
+                    colors = ButtonDefaults.buttonColors(containerColor = ReactionAllergy, contentColor = OnAccent),
                     modifier = Modifier.testTag("reset_confirm")
                 ) { Text("Evet, sıfırla") }
             },

@@ -638,7 +638,7 @@ fun AddDiaryEntryBottomSheet(
                     text = "Günlüğe Kaydet 📖",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = Color.White
+                    color = OnAccent
                 )
             }
 

@@ -158,7 +158,7 @@ fun ThreeDayRuleScreen(
                         Icon(
                             imageVector = Icons.Default.Security,
                             contentDescription = null,
-                            tint = Color.White,
+                            tint = OnAccent,
                             modifier = Modifier.size(20.dp)
                         )
                     }
@@ -204,7 +204,7 @@ fun ThreeDayRuleScreen(
                             containerColor = MaterialTheme.colorScheme.surface,
                             labelColor = TextSecondary,
                             selectedContainerColor = CoralPrimary,
-                            selectedLabelColor = Color.White
+                            selectedLabelColor = OnAccent
                         ),
                         border = FilterChipDefaults.filterChipBorder(
                             enabled = true,
@@ -485,7 +485,7 @@ fun AllergenTestCard(
                             targetValue = if (isActive) SageGreen else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
                             label = "dayBtnColor"
                         )
-                        val textColor = if (isActive) Color.White else TextSecondary
+                        val textColor = if (isActive) OnAccent else TextSecondary
 
                         Surface(
                             modifier = Modifier
@@ -505,7 +505,7 @@ fun AllergenTestCard(
                                         Icon(
                                             imageVector = Icons.Default.CheckCircle,
                                             contentDescription = null,
-                                            tint = Color.White,
+                                            tint = OnAccent,
                                             modifier = Modifier.size(13.dp)
                                         )
                                         Spacer(modifier = Modifier.width(3.dp))

@@ -160,7 +160,7 @@ fun RecommendationsScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Surface(
-                                color = Color.White.copy(alpha = 0.25f),
+                                color = OnHero.copy(alpha = 0.25f),
                                 shape = RoundedCornerShape(10.dp)
                             ) {
                                 Row(
@@ -170,7 +170,7 @@ fun RecommendationsScreen(
                                     Icon(
                                         imageVector = Icons.Default.Lightbulb,
                                         contentDescription = null,
-                                        tint = Color.White,
+                                        tint = OnHero,
                                         modifier = Modifier.size(15.dp)
                                     )
                                     Spacer(modifier = Modifier.width(6.dp))
@@ -178,21 +178,21 @@ fun RecommendationsScreen(
                                         text = "PEDİATRİK BESLENME ÖNERİLERİ",
                                         style = MaterialTheme.typography.labelSmall,
                                         fontWeight = FontWeight.Bold,
-                                        color = Color.White,
+                                        color = OnHero,
                                         letterSpacing = 0.5.sp
                                     )
                                 }
                             }
 
                             Surface(
-                                color = Color.White.copy(alpha = 0.9f),
+                                color = OnHero.copy(alpha = 0.9f),
                                 shape = RoundedCornerShape(12.dp)
                             ) {
                                 Text(
                                     text = "${profile.ageMonths}. Ay Rehberi",
                                     style = MaterialTheme.typography.labelSmall,
                                     fontWeight = FontWeight.ExtraBold,
-                                    color = CoralDark,
+                                    color = HeroPillText,
                                     modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
                                 )
                             }
@@ -202,13 +202,13 @@ fun RecommendationsScreen(
                             text = "${profile.name} İçin Akıllı Öneriler 💡",
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.ExtraBold,
-                            color = Color.White
+                            color = OnHero
                         )
 
                         Text(
                             text = "Uzm. Dr. Eda Nur Tezgel Oruç protokollerine uygun ay ay beslenme, doku ve güvenlik tavsiyeleri.",
                             style = MaterialTheme.typography.bodySmall,
-                            color = Color.White.copy(alpha = 0.95f),
+                            color = OnHero.copy(alpha = 0.95f),
                             lineHeight = 18.sp
                         )
                     }
@@ -244,7 +244,7 @@ fun RecommendationsScreen(
                             Icon(
                                 imageVector = Icons.Default.Lightbulb,
                                 contentDescription = null,
-                                tint = if (selectedSectionTab == 0) Color.White else TextSecondary,
+                                tint = if (selectedSectionTab == 0) OnAccent else TextSecondary,
                                 modifier = Modifier.size(16.dp)
                             )
                             Spacer(modifier = Modifier.width(6.dp))
@@ -252,7 +252,7 @@ fun RecommendationsScreen(
                                 text = "Beslenme Önerileri",
                                 style = MaterialTheme.typography.labelMedium,
                                 fontWeight = if (selectedSectionTab == 0) FontWeight.Bold else FontWeight.Medium,
-                                color = if (selectedSectionTab == 0) Color.White else TextPrimary
+                                color = if (selectedSectionTab == 0) OnAccent else TextPrimary
                             )
                         }
                     }
@@ -271,7 +271,7 @@ fun RecommendationsScreen(
                             Icon(
                                 imageVector = Icons.Default.Science,
                                 contentDescription = null,
-                                tint = if (selectedSectionTab == 1) Color.White else TextSecondary,
+                                tint = if (selectedSectionTab == 1) OnAccent else TextSecondary,
                                 modifier = Modifier.size(16.dp)
                             )
                             Spacer(modifier = Modifier.width(6.dp))
@@ -279,7 +279,7 @@ fun RecommendationsScreen(
                                 text = "3 Gün Kuralı (${tests.size})",
                                 style = MaterialTheme.typography.labelMedium,
                                 fontWeight = if (selectedSectionTab == 1) FontWeight.Bold else FontWeight.Medium,
-                                color = if (selectedSectionTab == 1) Color.White else TextPrimary
+                                color = if (selectedSectionTab == 1) OnAccent else TextPrimary
                             )
                         }
                     }
@@ -623,7 +623,7 @@ fun RecommendationsScreen(
                             label = { Text(filter) },
                             colors = FilterChipDefaults.filterChipColors(
                                 selectedContainerColor = CoralPrimary,
-                                selectedLabelColor = Color.White
+                                selectedLabelColor = OnAccent
                             ),
                             shape = RoundedCornerShape(12.dp)
                         )

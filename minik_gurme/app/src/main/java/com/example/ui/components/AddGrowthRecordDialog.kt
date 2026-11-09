@@ -1,5 +1,6 @@
 package com.example.ui.components
 
+import com.example.ui.theme.*
 import androidx.compose.foundation.BorderStroke
 import com.example.i18n.t
 import androidx.compose.foundation.background
@@ -376,7 +377,7 @@ fun AddGrowthRecordDialog(
                 Text(
                     text = "Kaydet",
                     fontWeight = FontWeight.Bold,
-                    color = Color.White
+                    color = OnAccent
                 )
             }
         },

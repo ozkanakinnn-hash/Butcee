@@ -575,7 +575,7 @@ fun FoodDetailBottomSheet(
                     Icon(
                         imageVector = Icons.Default.Add,
                         contentDescription = null,
-                        tint = Color.White,
+                        tint = OnAccent,
                         modifier = Modifier.size(18.dp)
                     )
                     Spacer(modifier = Modifier.width(6.dp))
@@ -583,7 +583,7 @@ fun FoodDetailBottomSheet(
                         text = "Öğüne Ekle",
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = FontWeight.Bold,
-                        color = Color.White
+                        color = OnAccent
                     )
                 }
             }

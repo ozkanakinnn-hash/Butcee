@@ -347,7 +347,7 @@ fun RecipesScreen(
                             text = filter,
                             style = MaterialTheme.typography.labelMedium,
                             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                            color = if (isSelected) Color.White else TextPrimary,
+                            color = if (isSelected) OnAccent else TextPrimary,
                             modifier = Modifier.padding(horizontal = 14.dp, vertical = 9.dp)
                         )
                     }
@@ -375,7 +375,7 @@ fun RecipesScreen(
                             text = style,
                             style = MaterialTheme.typography.labelSmall,
                             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                            color = if (isSelected) Color.White else TextPrimary,
+                            color = if (isSelected) OnAccent else TextPrimary,
                             modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp)
                         )
                     }

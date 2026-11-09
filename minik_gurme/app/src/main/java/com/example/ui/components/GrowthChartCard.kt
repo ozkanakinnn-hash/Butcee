@@ -1,5 +1,6 @@
 package com.example.ui.components
 
+import com.example.ui.theme.*
 import androidx.compose.animation.AnimatedVisibility
 import com.example.i18n.t
 import androidx.compose.foundation.BorderStroke
@@ -719,7 +720,7 @@ private fun InteractiveGrowthCanvas(
         for (i in 0..gridLines) {
             val gy = topPad + (usableHeight / gridLines) * i
             drawLine(
-                color = Color.LightGray.copy(alpha = 0.3f),
+                color = ChartGrid,
                 start = Offset(leftPad, gy),
                 end = Offset(width - rightPad, gy),
                 strokeWidth = 1.dp.toPx()
@@ -843,7 +844,7 @@ private fun InteractiveGrowthCanvas(
 
                 // İç beyaz merkez
                 drawCircle(
-                    color = Color.White,
+                    color = OnAccent,
                     radius = r - 1.5.dp.toPx(),
                     center = pt
                 )

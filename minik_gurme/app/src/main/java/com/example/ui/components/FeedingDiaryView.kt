@@ -208,14 +208,14 @@ fun FeedingDiaryView(
                             imageVector = Icons.Default.Add,
                             contentDescription = null,
                             modifier = Modifier.size(16.dp),
-                            tint = Color.White
+                            tint = OnAccent
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
                             text = "Besin Ekle",
                             style = MaterialTheme.typography.labelMedium,
                             fontWeight = FontWeight.Bold,
-                            color = Color.White
+                            color = OnAccent
                         )
                     }
                 }
@@ -359,7 +359,7 @@ fun FeedingDiaryView(
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                         style = MaterialTheme.typography.labelSmall,
                         fontWeight = FontWeight.Bold,
-                        color = Color.White
+                        color = OnAccent
                     )
                 }
             }
@@ -494,7 +494,7 @@ fun FeedingDiaryView(
                             text = "İlk Besini Kaydet 🥣",
                             style = MaterialTheme.typography.labelLarge,
                             fontWeight = FontWeight.Bold,
-                            color = Color.White
+                            color = OnAccent
                         )
                     }
                 }
@@ -595,7 +595,7 @@ fun FeedingDiaryView(
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
                 ) {
-                    Text("Sil", color = Color.White)
+                    Text("Sil", color = OnAccent)
                 }
             },
             dismissButton = {
