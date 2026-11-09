@@ -86,3 +86,19 @@ gradle/actions/setup-gradle@v5 → `./gradlew assembleDebug` → upload-artifact
 - Paylaşım: cache/shared_images → `FileProvider` Uri → `ACTION_SEND` chooser; Instagram için `com.instagram.share.ADD_TO_STORY` (facebook_app_id gerekir), yoksa genel paylaşıma düş.
 - Tasarım onayı için önce HTML/SVG ile örnek kart çiz, Playwright ile PNG al ve kullanıcıya göster. Onaydan sonra aynı sahneleri **metinsiz** 1080x1920 render edip `drawable-nodpi/*.webp` (quality ~86, kart başı 25–100 KB) olarak göm; metni uygulamada Canvas ile çiz (çok dilli ve çok mesajlı kalır). Yazı tiplerini `res/font` içine göm (Google Fonts TTF, OFL; `ResourcesCompat.getFont`). `StaticLayout` için `BREAK_STRATEGY_BALANCED` başlıkları dengeli böler.
 - CI emülatöründe "Pixel Launcher isn't responding" uyarısı çıkabilir: betikte `tap_text "Wait"` ile kapat.
+
+## Kodda gömülü binlerce Türkçe metne İngilizce ekleme (Minik Gurme'den)
+- `strings.xml`'e taşımak yerine **import gölgeleme**: `com.example.i18n.Text(text: String, ...)` aynı parametrelerle
+  `material3.Text(t(text))` çağırır; betikle tüm `import androidx.compose.material3.Text` satırlarını değiştir.
+  Böylece veri sınıflarındaki/DB'deki içerik de ekranda otomatik çevrilir. `contentDescription` ve `showSnackbar` için `t(...)`.
+- Sözlük `assets/i18n/en.json` (TR→EN, JVM 64KB metot sınırına takılmaz) + `en_patterns.json` (`[regex, "...$1..."]`,
+  yakalanan grup da sözlükten çevrilir). Kalıpları yerelde `java T.java` ile `Pattern.compile` ederek doğrula.
+- `AppLanguage.current` bir `mutableStateOf` → değişince her `Text` yeniden çizilir; `Locale("tr")` tarih biçimlerini
+  `Locale(AppLanguage.current)` yap. Metinleri çıkarıp `idx\tmetin` dosyalarında partiler hâlinde çevir.
+- Duman testi için `MainActivity` `--es lang en` ekstrasını okusun; kökte `Modifier.semantics { testTagsAsResourceId = true }`
+  ile uiautomator `resource-id` = testTag üzerinden dokunsun.
+
+## AI Studio dışa aktarımı temizliği
+- README "debugConfig imzasını kaldır" der; Firebase AI/App Check, Retrofit/Moshi/OkHttp, secrets ve google-services
+  eklentileri kodda kullanılmıyorsa kaldır (aksi hâlde `google-services.json` yokken derleme düşer).
+- `applicationId`'yi koru (kullanıcının mevcut kurulumu üzerine gelsin), release'i depodaki debug.keystore ile imzala.

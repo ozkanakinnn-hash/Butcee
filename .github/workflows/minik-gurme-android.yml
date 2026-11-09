@@ -1,0 +1,79 @@
+name: Minik Gurme (Android)
+
+on:
+  push:
+    paths: [ "minik_gurme/**", ".github/workflows/minik-gurme-android.yml" ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+defaults:
+  run:
+    working-directory: minik_gurme
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+      - name: Android SDK
+        run: |
+          SDKM="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          yes | "$SDKM" --licenses > /dev/null || true
+          "$SDKM" "platforms;android-36.1" "platform-tools" || true
+      - uses: gradle/actions/setup-gradle@v5
+      - name: Release APK
+        run: ./gradlew --no-daemon :app:assembleRelease
+      - name: APK boyutu
+        run: ls -la app/build/outputs/apk/release/*.apk | awk '{printf "%-60s %6.1f MB\n", $9, $5/1048576}'
+      - uses: actions/upload-artifact@v5
+        with:
+          name: minik-gurme-apk
+          path: minik_gurme/app/build/outputs/apk/release/app-release.apk
+      - name: KVM etkinleştir
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules && sudo udevadm trigger --name-match=kvm
+      - name: Emülatörde açılış ve ekran görüntüleri (Android 14)
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          disable-animations: true
+          working-directory: minik_gurme
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          script: ./tool/smoke.sh 2>&1 | tee smoke.log
+      - name: Sonuç
+        run: |
+          cat smoke.log || true
+          grep -q "SMOKE: tamam" smoke.log
+      - uses: actions/upload-artifact@v5
+        if: always()
+        with:
+          name: minik-gurme-ekran-goruntuleri
+          path: |
+            minik_gurme/screenshots/
+            minik_gurme/smoke.log
+      - name: Ekran görüntülerini dala yükle
+        if: success()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git fetch origin ${{ github.ref_name }}
+          git checkout -B shots origin/${{ github.ref_name }}
+          rm -rf ../docs/minik-gurme/screenshots && mkdir -p ../docs/minik-gurme
+          cp -r screenshots ../docs/minik-gurme/screenshots
+          git add ../docs/minik-gurme/screenshots
+          git commit -m "Minik Gurme ekran görüntüleri [skip ci]" || exit 0
+          for i in 1 2 3 4; do
+            git pull --rebase origin ${{ github.ref_name }} && git push origin HEAD:${{ github.ref_name }} && break
+            sleep $((i * 5))
+          done

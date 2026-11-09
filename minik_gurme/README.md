@@ -1,0 +1,24 @@
+# Minik Gurme (Android, Kotlin + Jetpack Compose)
+
+Bebeklerde ek gıdaya geçiş uygulaması: öğün planı, 100 gıda listesi, tarifler, öneriler, haftalık pediatrik rehber,
+alerjen (3 gün kuralı) takibi, büyüme grafiği ve bebek profili. Kaynak: AI Studio dışa aktarımı (Kasım 2026).
+
+## Dil desteği: Türkçe + İngilizce
+- Profil ekranında **🌐 Dil / Language** kartı. Seçim kaydedilir; ekranlar anında İngilizceye geçer.
+- Kaynak metinler Türkçe koda gömülüdür. Ekranlar `androidx.compose.material3.Text` yerine `com.example.i18n.Text`'i
+  import eder; bu, metni `assets/i18n/en.json` sözlüğünden (2.070 birebir metin: arayüz + rehber, tarif ve gıda verileri)
+  ve `assets/i18n/en_patterns.json` kalıplarından (değişken içeren metinler) çevirir. Bulunamayan metin Türkçe kalır.
+- Kullanıcının girdiği veriler (bebek adı, notlar) çevrilmez.
+
+## Dışa aktarımdan yapılan temizlik
+- Kullanılmayan Firebase AI / App Check, Retrofit, OkHttp, Moshi bağımlılıkları ve Secrets/Google Services eklentileri kaldırıldı
+  (kodda kullanılmıyordu; `google-services.json` olmadan derleme de başarısız oluyordu).
+- Release: R8 küçültme + kaynak küçültme; depodaki `debug.keystore` ile imzalı (güncellemeler üzerine kurulur).
+- Çökme raporlayıcı: yakalanmamış hata dosyaya yazılır, sonraki açılışta "Raporu kopyala" diyaloğu çıkar.
+
+## Derleme
+```bash
+./gradlew :app:assembleRelease   # app/build/outputs/apk/release/app-release.apk
+```
+CI: `.github/workflows/minik-gurme-android.yml` — APK (`minik-gurme-apk` artifact), emülatörde duman testi
+(`tool/smoke.sh`: tüm sekmeler TR + EN, dil değiştirme, çökme kontrolü), ekran görüntüleri `docs/minik-gurme/screenshots`.
