@@ -201,7 +201,7 @@ fun AddMealBottomSheet(
                             modifier = Modifier.padding(vertical = 12.dp, horizontal = 4.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            Text(text = item.emoji, fontSize = 18.sp)
+                            com.example.ui.components.FoodImage(item.emoji, 23.dp)
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
                                 text = item.type,

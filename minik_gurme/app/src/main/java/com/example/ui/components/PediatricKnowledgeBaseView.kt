@@ -134,7 +134,7 @@ fun PediatricKnowledgeBaseView(
                                 .background(CardSurface),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text(text = "📚", fontSize = 20.sp)
+                            com.example.ui.components.FoodImage("📚", 26.dp)
                         }
                         Spacer(modifier = Modifier.width(10.dp))
                         Column {
@@ -273,7 +273,7 @@ fun PediatricKnowledgeBaseView(
                     modifier = Modifier.padding(24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text(text = "🔍", fontSize = 32.sp)
+                    com.example.ui.components.FoodImage("🔍", 42.dp)
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = "Aranan terimle eşleşen rehber bulunamadı",
@@ -386,7 +386,7 @@ private fun WeeklyGuideCard(
                             modifier = Modifier.padding(12.dp),
                             verticalAlignment = Alignment.Top
                         ) {
-                            Text(text = "🎯", fontSize = 18.sp)
+                            com.example.ui.components.FoodImage("🎯", 23.dp)
                             Spacer(modifier = Modifier.width(8.dp))
                             Column {
                                 Text(
@@ -419,7 +419,7 @@ private fun WeeklyGuideCard(
                             modifier = Modifier.padding(12.dp),
                             verticalAlignment = Alignment.Top
                         ) {
-                            Text(text = "🥣", fontSize = 18.sp)
+                            com.example.ui.components.FoodImage("🥣", 23.dp)
                             Spacer(modifier = Modifier.width(8.dp))
                             Column {
                                 Text(
@@ -569,7 +569,7 @@ private fun WeeklyGuideCard(
                                         modifier = Modifier.padding(vertical = 2.dp),
                                         verticalAlignment = Alignment.Top
                                     ) {
-                                        Text(text = "⚠", fontSize = 12.sp)
+                                        com.example.ui.components.FoodImage("⚠", 16.dp)
                                         Spacer(modifier = Modifier.width(6.dp))
                                         Text(
                                             text = alert,
@@ -659,7 +659,7 @@ private fun WeeklyFoodItemCard(food: KnowledgeBaseFoodItem) {
                     .background(CardSurface),
                 contentAlignment = Alignment.Center
             ) {
-                Text(text = food.emoji, fontSize = 20.sp)
+                com.example.ui.components.FoodImage(food.emoji, 26.dp)
             }
 
             Spacer(modifier = Modifier.width(10.dp))

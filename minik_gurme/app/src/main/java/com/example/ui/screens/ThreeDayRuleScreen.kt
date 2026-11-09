@@ -234,7 +234,7 @@ fun ThreeDayRuleScreen(
                             .padding(28.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Text(text = "🥑", fontSize = 32.sp)
+                        com.example.ui.components.FoodImage("🥑", 42.dp)
                         Spacer(modifier = Modifier.height(10.dp))
                         Text(
                             text = "Bu filtrede kayıtlı besin bulunamadı",
@@ -416,7 +416,7 @@ fun AllergenTestCard(
                             .background(CoralSoft),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(text = "🥣", fontSize = 18.sp)
+                        com.example.ui.components.FoodImage("🥣", 23.dp)
                     }
                     Spacer(modifier = Modifier.width(12.dp))
                     Column {

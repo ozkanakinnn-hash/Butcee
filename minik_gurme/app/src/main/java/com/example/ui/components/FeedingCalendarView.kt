@@ -539,7 +539,7 @@ fun FeedingCalendarView(
                     .padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(text = "🥣", fontSize = 32.sp)
+                com.example.ui.components.FoodImage("🥣", 42.dp)
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = "Bu tarihte kayıtlı öğün yok",

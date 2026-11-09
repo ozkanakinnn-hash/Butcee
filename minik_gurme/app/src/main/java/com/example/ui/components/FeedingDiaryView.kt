@@ -328,7 +328,7 @@ fun FeedingDiaryView(
                         .background(CardSurface),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(text = "🍲", fontSize = 20.sp)
+                    com.example.ui.components.FoodImage("🍲", 26.dp)
                 }
 
                 Spacer(modifier = Modifier.width(12.dp))

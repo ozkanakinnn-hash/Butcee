@@ -108,7 +108,7 @@ fun AddGrowthRecordDialog(
                         .background(CoralSoft),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(text = "📏", fontSize = 18.sp)
+                    com.example.ui.components.FoodImage("📏", 23.dp)
                 }
                 Spacer(modifier = Modifier.width(10.dp))
                 Column {

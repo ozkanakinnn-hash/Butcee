@@ -296,7 +296,7 @@ fun TodayMealsScreen(
                             .background(OchreSoft),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(text = "📚", fontSize = 22.sp)
+                        com.example.ui.components.FoodImage("📚", 29.dp)
                     }
                     Spacer(modifier = Modifier.width(12.dp))
                     Column(modifier = Modifier.weight(1f)) {
@@ -643,7 +643,7 @@ fun TodayMealsScreen(
                                     .background(CoralSoft),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Text(text = "🥣", fontSize = 30.sp)
+                                com.example.ui.components.FoodImage("🥣", 39.dp)
                             }
                             Spacer(modifier = Modifier.height(16.dp))
                             Text(

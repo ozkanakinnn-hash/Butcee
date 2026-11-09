@@ -167,7 +167,7 @@ fun RecipesScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(text = "🍽️", fontSize = 20.sp)
+                            com.example.ui.components.FoodImage("🍽️", 26.dp)
                             Spacer(modifier = Modifier.width(8.dp))
                             Column {
                                 Text(
@@ -253,7 +253,7 @@ fun RecipesScreen(
                                             }
                                         )
                                         Spacer(modifier = Modifier.height(4.dp))
-                                        Text(text = recipe.emoji, fontSize = 28.sp)
+                                        com.example.ui.components.FoodImage(recipe.emoji, 36.dp)
                                         Spacer(modifier = Modifier.height(4.dp))
                                         Text(
                                             text = recipe.title,
@@ -442,7 +442,7 @@ fun RecipesScreen(
                                     .background(CoralLight),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Text(text = recipe.emoji, fontSize = 28.sp)
+                                com.example.ui.components.FoodImage(recipe.emoji, 36.dp)
                             }
 
                             Spacer(modifier = Modifier.width(14.dp))

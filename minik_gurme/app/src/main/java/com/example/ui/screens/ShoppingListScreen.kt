@@ -112,7 +112,7 @@ fun ShoppingListScreen(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Column(Modifier.padding(20.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                        androidx.compose.material3.Text("🧺", fontSize = 40.sp)
+                        com.example.ui.components.FoodImage("🧺", 52.dp)
                         Spacer(Modifier.height(8.dp))
                         Text(
                             "Listeniz boş. Bir tarifi açıp “Tümünü listeye ekle”ye dokunun.",
@@ -136,7 +136,7 @@ fun ShoppingListScreen(
                         onCheckedChange = { onToggle(item) },
                         colors = CheckboxDefaults.colors(checkedColor = SageGreen)
                     )
-                    androidx.compose.material3.Text(item.emoji, fontSize = 20.sp)
+                    com.example.ui.components.FoodImage(item.emoji, 26.dp)
                     Spacer(Modifier.width(10.dp))
                     Column(Modifier.weight(1f)) {
                         Text(

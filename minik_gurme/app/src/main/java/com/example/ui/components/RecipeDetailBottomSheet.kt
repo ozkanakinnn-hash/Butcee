@@ -237,7 +237,7 @@ fun RecipeDetailBottomSheet(
                         .background(CoralLight),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(text = recipe.emoji, fontSize = 44.sp)
+                    com.example.ui.components.FoodImage(recipe.emoji, 57.dp)
                 }
 
                 Spacer(modifier = Modifier.width(16.dp))
@@ -407,7 +407,7 @@ fun RecipeDetailBottomSheet(
                                     verticalAlignment = Alignment.CenterVertically,
                                     modifier = Modifier.weight(1f)
                                 ) {
-                                    Text(text = ingredient.emoji, fontSize = 20.sp)
+                                    com.example.ui.components.FoodImage(ingredient.emoji, 26.dp)
                                     Spacer(modifier = Modifier.width(12.dp))
                                     Text(
                                         text = ingredient.name,

@@ -209,7 +209,7 @@ fun GrowthTrackingScreen(
                                     .background(SageSoft),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Text(text = "🩺", fontSize = 26.sp)
+                                com.example.ui.components.FoodImage("🩺", 34.dp)
                             }
 
                             Spacer(modifier = Modifier.width(14.dp))
@@ -302,7 +302,7 @@ fun GrowthTrackingScreen(
                                         .background(OchreSoft),
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    Text(text = "📊", fontSize = 18.sp)
+                                    com.example.ui.components.FoodImage("📊", 23.dp)
                                 }
                                 Spacer(modifier = Modifier.width(10.dp))
                                 Column {
@@ -435,7 +435,7 @@ fun GrowthTrackingScreen(
                                 modifier = Modifier.padding(12.dp),
                                 verticalAlignment = Alignment.Top
                             ) {
-                                Text(text = "💡", fontSize = 16.sp)
+                                com.example.ui.components.FoodImage("💡", 21.dp)
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Column {
                                     Text(
@@ -550,7 +550,7 @@ fun GrowthTrackingScreen(
                             modifier = Modifier.padding(24.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            Text(text = "📏", fontSize = 32.sp)
+                            com.example.ui.components.FoodImage("📏", 42.dp)
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
                                 text = "Henüz boy ve kilo kaydı yok",

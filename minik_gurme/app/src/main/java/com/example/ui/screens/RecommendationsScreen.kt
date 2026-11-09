@@ -302,7 +302,7 @@ fun RecommendationsScreen(
                         verticalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(text = "🎯", fontSize = 20.sp)
+                            com.example.ui.components.FoodImage("🎯", 26.dp)
                             Spacer(modifier = Modifier.width(10.dp))
                             Column {
                                 Text(
@@ -380,7 +380,7 @@ fun RecommendationsScreen(
                                 modifier = Modifier.padding(12.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Text(text = "☀️", fontSize = 22.sp)
+                                com.example.ui.components.FoodImage("☀️", 29.dp)
                                 Spacer(modifier = Modifier.width(12.dp))
                                 Column {
                                     Text(
@@ -409,7 +409,7 @@ fun RecommendationsScreen(
                                 modifier = Modifier.padding(12.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Text(text = "🥣", fontSize = 22.sp)
+                                com.example.ui.components.FoodImage("🥣", 29.dp)
                                 Spacer(modifier = Modifier.width(12.dp))
                                 Column {
                                     Text(
@@ -438,7 +438,7 @@ fun RecommendationsScreen(
                                 modifier = Modifier.padding(12.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Text(text = "🌙", fontSize = 22.sp)
+                                com.example.ui.components.FoodImage("🌙", 29.dp)
                                 Spacer(modifier = Modifier.width(12.dp))
                                 Column {
                                     Text(
@@ -471,7 +471,7 @@ fun RecommendationsScreen(
                         modifier = Modifier.padding(18.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(text = "🥩🍋", fontSize = 26.sp)
+                        com.example.ui.components.FoodImage("🥩🍋", 34.dp)
                         Spacer(modifier = Modifier.width(14.dp))
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
@@ -519,7 +519,7 @@ fun RecommendationsScreen(
                                     modifier = Modifier.padding(12.dp),
                                     horizontalAlignment = Alignment.CenterHorizontally
                                 ) {
-                                    Text(text = food.emoji, fontSize = 28.sp)
+                                    com.example.ui.components.FoodImage(food.emoji, 36.dp)
                                     Spacer(modifier = Modifier.height(4.dp))
                                     Text(
                                         text = food.name,
@@ -644,7 +644,7 @@ fun RecommendationsScreen(
                             modifier = Modifier.padding(28.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            Text(text = "🧪", fontSize = 32.sp)
+                            com.example.ui.components.FoodImage("🧪", 42.dp)
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
                                 text = "Kayıtlı alerjen denemesi yok",

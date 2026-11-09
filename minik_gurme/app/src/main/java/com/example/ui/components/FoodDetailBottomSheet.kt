@@ -166,7 +166,7 @@ fun FoodDetailBottomSheet(
                         .background(CoralLight),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(text = food.emoji, fontSize = 44.sp)
+                    com.example.ui.components.FoodImage(food.emoji, 57.dp)
                 }
 
                 Spacer(modifier = Modifier.width(16.dp))
@@ -326,7 +326,7 @@ fun FoodDetailBottomSheet(
                                 .background(SageSoft),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text(text = "🥣", fontSize = 16.sp)
+                            com.example.ui.components.FoodImage("🥣", 21.dp)
                         }
                         Spacer(modifier = Modifier.width(10.dp))
                         Column {

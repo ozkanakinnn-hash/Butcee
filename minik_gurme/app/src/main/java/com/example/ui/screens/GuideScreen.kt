@@ -444,7 +444,7 @@ fun GuideScreen(
                                 .padding(28.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            Text(text = "🔍", fontSize = 36.sp)
+                            com.example.ui.components.FoodImage("🔍", 47.dp)
                             Spacer(modifier = Modifier.height(10.dp))
                             Text(
                                 text = "Aradığınız kriterlere uygun besin bulunamadı",
@@ -776,7 +776,7 @@ fun GuideScreen(
                                     .fillMaxWidth()
                                     .padding(top = 4.dp)
                             ) {
-                                Text(text = "🩺", fontSize = 16.sp)
+                                com.example.ui.components.FoodImage("🩺", 21.dp)
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
                                     text = currentMonthGuide.doctorNote,
@@ -906,7 +906,7 @@ fun GuideScreen(
                                     modifier = Modifier.padding(12.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Text(text = food.emoji, fontSize = 24.sp)
+                                    com.example.ui.components.FoodImage(food.emoji, 31.dp)
                                     Spacer(modifier = Modifier.width(12.dp))
                                     Column(modifier = Modifier.weight(1f)) {
                                         Text(
@@ -1422,10 +1422,7 @@ fun FoodIntroCard(food: FoodStartRecommendation) {
                             .background(CoralSoft),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(
-                            text = food.emoji,
-                            fontSize = 24.sp
-                        )
+                        com.example.ui.components.FoodImage(food.emoji, 31.dp)
                     }
                     Spacer(modifier = Modifier.width(12.dp))
                     Column {
@@ -1651,7 +1648,7 @@ fun ForbiddenFoodCard(item: ForbiddenFoodItem) {
                             .background(ReactionAllergySoft),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(text = item.emoji, fontSize = 22.sp)
+                        com.example.ui.components.FoodImage(item.emoji, 29.dp)
                     }
                     Spacer(modifier = Modifier.width(12.dp))
                     Text(

@@ -299,7 +299,7 @@ fun ProfileScreen(
                             .background(CoralSoft),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(text = "📏", fontSize = 22.sp)
+                        com.example.ui.components.FoodImage("📏", 29.dp)
                     }
 
                     Spacer(modifier = Modifier.width(14.dp))
@@ -560,7 +560,7 @@ fun ProfileScreen(
                                     .padding(20.dp),
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
-                                Text(text = "🛡️", fontSize = 28.sp)
+                                com.example.ui.components.FoodImage("🛡️", 36.dp)
                                 Spacer(modifier = Modifier.height(6.dp))
                                 Text(
                                     text = "Henüz onaylanmış güvenli gıda yok",

@@ -145,7 +145,7 @@ fun Foods100Screen(
         ),
         verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
-        // 1. "Bire Kadar 100 Gıda" Rainbow Progress Banner (Matching Screenshot 9)
+        // 1. "1 Yaşına Kadar 100 Gıda" ilerleme kartı
         item {
             Card(
                 shape = RoundedCornerShape(26.dp),
@@ -167,29 +167,28 @@ fun Foods100Screen(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Column {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(text = "🌈", fontSize = 20.sp)
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Text(
-                                    text = "Bire Kadar 100 Gıda",
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.ExtraBold,
-                                    color = TextPrimary
-                                )
-                            }
+                        Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = "1 yaşına kadar 100 farklı besinle tanışma yolculuğu",
+                                text = "1 Yaşına Kadar 100 Gıda",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.ExtraBold,
+                                color = TextPrimary
+                            )
+                            Text(
+                                text = "Bebeğinizin tattığı besinleri işaretleyin",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = TextSecondary
                             )
                         }
 
+                        Spacer(modifier = Modifier.width(10.dp))
                         Surface(
                             color = SageSoft,
                             shape = RoundedCornerShape(14.dp)
                         ) {
                             Text(
+                                maxLines = 1,
+                                softWrap = false,
                                 text = "$triedCount / $totalGoal",
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Black,
@@ -236,7 +235,7 @@ fun Foods100Screen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(text = "💡", fontSize = 18.sp)
+                                com.example.ui.components.FoodImage(nextSuggestion.emoji, 34.dp)
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Column {
                                     Text(
@@ -246,7 +245,7 @@ fun Foods100Screen(
                                         fontWeight = FontWeight.Bold
                                     )
                                     Text(
-                                        text = "${nextSuggestion.emoji} ${nextSuggestion.name} (${nextSuggestion.ageDisplay})",
+                                        text = "${nextSuggestion.name} (${nextSuggestion.ageDisplay})",
                                         style = MaterialTheme.typography.titleSmall,
                                         fontWeight = FontWeight.ExtraBold,
                                         color = TextPrimary
@@ -273,7 +272,7 @@ fun Foods100Screen(
                 onValueChange = onSearchChange,
                 placeholder = {
                     Text(
-                        text = "100 gıda içinde ara (örn: avokado, demir)...",
+                        text = "Besin ara",
                         style = MaterialTheme.typography.bodyMedium,
                         color = TextTertiary
                     )
@@ -411,7 +410,7 @@ fun Foods100Screen(
                         modifier = Modifier.weight(1f),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(text = food.emoji, fontSize = 24.sp)
+                        com.example.ui.components.FoodImage(food.emoji, 31.dp)
                         Spacer(modifier = Modifier.width(12.dp))
                         Column {
                             Row(verticalAlignment = Alignment.CenterVertically) {
