@@ -21,37 +21,37 @@ private fun c(light: Long, dark: Long): Color = if (ThemeState.dark) Color(dark)
 // Ana renk: sıcak kayısı / mercan
 val CoralPrimary get() = c(0xFFE8735A, 0xFFF08C72)
 val CoralDark get() = c(0xFFB9502F, 0xFFF7AE98)
-val CoralSoft get() = c(0xFFFFF0E9, 0xFF3A2721)
-val CoralLight get() = c(0xFFFFF8F4, 0xFF2B221F)
-val CoralBorder get() = c(0xFFF5D3C6, 0xFF5B3B31)
+val CoralSoft get() = c(0xFFFFF0E9, 0xFF2E1F1A)
+val CoralLight get() = c(0xFFFFF8F4, 0xFF211A18)
+val CoralBorder get() = c(0xFFF5D3C6, 0xFF4A3028)
 val CoralText get() = c(0xFF6E2C1D, 0xFFF8C0AF)
 
 // İkincil: adaçayı yeşili (güven, güvenli gıda)
 val SageGreen get() = c(0xFF2F9478, 0xFF5CC4A6)
 val SageDark get() = c(0xFF1F6B57, 0xFF93DBC5)
-val SageSoft get() = c(0xFFE8F5EF, 0xFF1C3530)
-val SageBorder get() = c(0xFFBFE4D6, 0xFF2E5248)
+val SageSoft get() = c(0xFFE8F5EF, 0xFF152925)
+val SageBorder get() = c(0xFFBFE4D6, 0xFF254239)
 val SageText get() = c(0xFF14523F, 0xFFAEE6D4)
 
 // Üçüncül: bal / papatya
 val OchreWarm get() = c(0xFFE5A92F, 0xFFEBC160)
 val OchreDark get() = c(0xFF8C640A, 0xFFF1D08A)
-val OchreSoft get() = c(0xFFFFF7E3, 0xFF35301F)
-val OchreBorder get() = c(0xFFF2DFA6, 0xFF5A4C29)
+val OchreSoft get() = c(0xFFFFF7E3, 0xFF2A2618)
+val OchreBorder get() = c(0xFFF2DFA6, 0xFF493E21)
 val OchreText get() = c(0xFF6A4A05, 0xFFF3D99C)
 
 // Vurgu: gök mavisi ve lavanta
 val SlateBlue get() = c(0xFF3F7AA0, 0xFF86B9DB)
-val SlateBlueSoft get() = c(0xFFECF3F9, 0xFF1D2B37)
-val BlueBorder get() = c(0xFFCADDED, 0xFF33485A)
+val SlateBlueSoft get() = c(0xFFECF3F9, 0xFF17222C)
+val BlueBorder get() = c(0xFFCADDED, 0xFF293A49)
 val SoftPurple get() = c(0xFF7D6AAE, 0xFFB7A8DD)
-val SoftPurpleSoft get() = c(0xFFF3F0FA, 0xFF29253A)
+val SoftPurpleSoft get() = c(0xFFF3F0FA, 0xFF201D2E)
 
 // Zemin ve yüzeyler
-val CanvasBackground get() = c(0xFFFAF6F1, 0xFF14171C)
-val CardSurface get() = c(0xFFFFFFFF, 0xFF1D2127)
-val CardBorder get() = c(0xFFEAE2D7, 0xFF2F353E)
-val DividerColor get() = c(0xFFF1EAE0, 0xFF272C33)
+val CanvasBackground get() = c(0xFFFAF6F1, 0xFF0C0E11)
+val CardSurface get() = c(0xFFFFFFFF, 0xFF15181D)
+val CardBorder get() = c(0xFFEAE2D7, 0xFF262B33)
+val DividerColor get() = c(0xFFF1EAE0, 0xFF1E2228)
 
 // Yazı renkleri (açıkta sıcak koyu kahve-gri, koyuda sıcak kırık beyaz)
 val TextPrimary get() = c(0xFF27221E, 0xFFEFE9E2)
@@ -66,8 +66,8 @@ val ReactionNeutralSoft get() = SlateBlueSoft
 val ReactionRejected get() = OchreWarm
 val ReactionRejectedSoft get() = OchreSoft
 val ReactionAllergy get() = c(0xFFD6454E, 0xFFF0828A)
-val ReactionAllergySoft get() = c(0xFFFDECEE, 0xFF3A2327)
-val AllergyBorder get() = c(0xFFF4C4C9, 0xFF5E3238)
+val ReactionAllergySoft get() = c(0xFFFDECEE, 0xFF2E1C1F)
+val AllergyBorder get() = c(0xFFF4C4C9, 0xFF4C282D)
 val AllergyText get() = c(0xFF8A1E32, 0xFFF7B0B7)
 val SuccessGreen get() = c(0xFF1E8E4E, 0xFF6FD39B)
 
@@ -83,7 +83,7 @@ val PhotoScrim = Color(0xA6000000)
 // Logo beyaz zemin üzerinde tasarlandı; her iki temada beyaz daire içinde gösterilir.
 val LogoBackdrop = Color(0xFFFFFFFF)
 // Grafik ızgara çizgileri
-val ChartGrid get() = c(0x66D9CFC3, 0x40454C56)
+val ChartGrid get() = c(0x66D9CFC3, 0x403A4049)
 // "100 Gıda" ilerleme çubuğu: palet tonlarıyla gökkuşağı
 val RainbowGradient: List<Color> get() = if (ThemeState.dark)
     listOf(Color(0xFFF0828A), Color(0xFFF08C72), Color(0xFFEBC160), Color(0xFF5CC4A6), Color(0xFF86B9DB), Color(0xFFB7A8DD))
@@ -105,12 +105,12 @@ internal object Light {
 }
 
 internal object Dark {
-    val primary = Color(0xFFF08C72); val primaryContainer = Color(0xFF3A2721); val onPrimaryContainer = Color(0xFFF8C0AF)
-    val secondary = Color(0xFF5CC4A6); val secondaryContainer = Color(0xFF1C3530); val onSecondaryContainer = Color(0xFFAEE6D4)
-    val tertiary = Color(0xFFEBC160); val tertiaryContainer = Color(0xFF35301F); val onTertiaryContainer = Color(0xFFF3D99C)
-    val background = Color(0xFF14171C); val surface = Color(0xFF1D2127); val surfaceVariant = Color(0xFF262B32)
-    val onSurface = Color(0xFFEFE9E2); val onSurfaceVariant = Color(0xFFBDB5AC); val outline = Color(0xFF454C56)
-    val outlineVariant = Color(0xFF2F353E); val error = Color(0xFFF0828A)
+    val primary = Color(0xFFF08C72); val primaryContainer = Color(0xFF2E1F1A); val onPrimaryContainer = Color(0xFFF8C0AF)
+    val secondary = Color(0xFF5CC4A6); val secondaryContainer = Color(0xFF152925); val onSecondaryContainer = Color(0xFFAEE6D4)
+    val tertiary = Color(0xFFEBC160); val tertiaryContainer = Color(0xFF2A2618); val onTertiaryContainer = Color(0xFFF3D99C)
+    val background = Color(0xFF0C0E11); val surface = Color(0xFF15181D); val surfaceVariant = Color(0xFF1C2026)
+    val onSurface = Color(0xFFEFE9E2); val onSurfaceVariant = Color(0xFFBDB5AC); val outline = Color(0xFF3A4049)
+    val outlineVariant = Color(0xFF262B33); val error = Color(0xFFF0828A)
 }
 
 /** Kullanıcının tema tercihi: "system" (telefona göre), "light" veya "dark". Ayarlar'dan değişir, kaydedilir. */
