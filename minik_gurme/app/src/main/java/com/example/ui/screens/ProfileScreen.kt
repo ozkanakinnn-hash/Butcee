@@ -231,14 +231,14 @@ fun ProfileScreen(
                             )
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
-                                text = "${profile.ageMonths}. Ayında Minik Gurme 👶",
+                                text = "${profile.ageMonths}. Ayında Minik Gurme",
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = CoralDark,
                                 fontWeight = FontWeight.SemiBold
                             )
                             if (profile.startDate.isNotBlank()) {
                                 Text(
-                                    text = "Başlangıç: ${profile.startDate}",
+                                    text = "Başlangıç: ${com.example.util.prettyDate(profile.startDate)}",
                                     style = MaterialTheme.typography.bodySmall,
                                     color = TextTertiary
                                 )
@@ -685,7 +685,7 @@ fun ProfileScreen(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text(text = "😋 Severek Yenenler", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
+                        Text(text = "Severek Yenenler", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
                         Text(text = "$lovedCount öğün", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, color = SageDark)
                     }
 
@@ -693,7 +693,7 @@ fun ProfileScreen(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text(text = "😐 Kararsız Kalınanlar", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
+                        Text(text = "Kararsız Kalınanlar", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
                         Text(text = "$neutralCount öğün", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, color = SlateBlue)
                     }
 
@@ -701,7 +701,7 @@ fun ProfileScreen(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text(text = "😣 İstenmeyenler / Reddedilenler", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
+                        Text(text = "İstenmeyenler / Reddedilenler", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
                         Text(text = "$rejectedCount öğün", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, color = OchreDark)
                     }
                 }
@@ -820,7 +820,7 @@ private fun LanguageCard() {
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
-                text = "🌐 Dil / Language",
+                text = "Dil / Language",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = TextPrimary

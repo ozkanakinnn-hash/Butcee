@@ -635,7 +635,7 @@ fun AddDiaryEntryBottomSheet(
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "Günlüğe Kaydet 📖",
+                    text = "Günlüğe Kaydet",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = OnAccent

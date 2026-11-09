@@ -103,7 +103,7 @@ fun SettingsScreen(
             Text("Tema", style = MaterialTheme.typography.bodyMedium, color = TextSecondary)
             Spacer(Modifier.height(8.dp))
             Segmented(
-                options = listOf("system" to "📱 Sistem", "light" to "☀️ Açık", "dark" to "🌙 Koyu"),
+                options = listOf("system" to "Sistem", "light" to "Açık", "dark" to "Koyu"),
                 selected = ThemePrefs.mode,
                 tagPrefix = "theme_",
                 onSelect = { ThemePrefs.set(context, it) }

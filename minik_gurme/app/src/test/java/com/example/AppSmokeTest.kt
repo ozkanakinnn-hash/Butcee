@@ -156,7 +156,7 @@ class AppSmokeTest {
         assertEquals("Kaya'nın", trGenitive("Kaya"))
         launch("en").use {
             assertEquals("Day 5 saved.", Translator.toEnglish("5. gün kaydedildi."))
-            assertEquals("Defne's Menu 👶", Translator.toEnglish("Defne'nin Menüsü 👶"))
+            assertEquals("Defne's Menu", Translator.toEnglish("Defne'nin Menüsü"))
         }
     }
 
@@ -177,7 +177,7 @@ class AppSmokeTest {
         launch("tr").use {
             compose.waitForIdle()
             compose.onNodeWithTag("top_shopping").performClick(); compose.waitForIdle()
-            assertTrue(has("Alışveriş Listesi 🛒"))
+            assertTrue(has("Alışveriş Listesi"))
             compose.onNodeWithTag("shopping_input").performTextInput("Avokado")
             compose.onNodeWithTag("shopping_add").performClick(); compose.waitForIdle()
             compose.waitUntil(3000) { has("1 kalem alınacak") }

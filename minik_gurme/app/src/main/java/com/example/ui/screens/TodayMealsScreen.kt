@@ -212,7 +212,7 @@ fun TodayMealsScreen(
                                 }
                                 Spacer(modifier = Modifier.height(4.dp))
                                 Text(
-                                    text = "${com.example.i18n.trGenitive(profile.name)} Menüsü 👶",
+                                    text = "${com.example.i18n.trGenitive(profile.name)} Menüsü",
                                     style = MaterialTheme.typography.titleLarge,
                                     fontWeight = FontWeight.ExtraBold,
                                     color = OnHero
@@ -418,7 +418,7 @@ fun TodayMealsScreen(
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
-                                text = "Günlük 📖",
+                                text = "Günlük",
                                 style = MaterialTheme.typography.labelMedium,
                                 fontWeight = if (viewMode == "diary") FontWeight.Bold else FontWeight.Medium,
                                 color = if (viewMode == "diary") OnAccent else TextPrimary

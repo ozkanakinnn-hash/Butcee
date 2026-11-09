@@ -300,7 +300,7 @@ fun ThreeDayRuleScreen(
                         ) {
                             Column(modifier = Modifier.padding(10.dp)) {
                                 Text(
-                                    text = "⚠️ Hafif Belirtiler",
+                                    text = "Hafif Belirtiler",
                                     style = MaterialTheme.typography.labelSmall,
                                     fontWeight = FontWeight.Bold,
                                     color = OchreDark
@@ -323,7 +323,7 @@ fun ThreeDayRuleScreen(
                         ) {
                             Column(modifier = Modifier.padding(10.dp)) {
                                 Text(
-                                    text = "🚨 Ciddi (Acil Durum)",
+                                    text = "Ciddi (Acil Durum)",
                                     style = MaterialTheme.typography.labelSmall,
                                     fontWeight = FontWeight.Bold,
                                     color = ReactionAllergy
@@ -572,7 +572,7 @@ fun AllergenTestCard(
                         modifier = Modifier.height(34.dp)
                     ) {
                         Text(
-                            text = "📝 Not & Belirtiler",
+                            text = "Not & Belirtiler",
                             style = MaterialTheme.typography.labelSmall,
                             color = CoralDark,
                             fontWeight = FontWeight.Bold

@@ -529,7 +529,7 @@ fun RecipeDetailBottomSheet(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "Beslenme Günlüğüne Kaydet 📖",
+                        text = "Beslenme Günlüğüne Kaydet",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = OnAccent
@@ -554,7 +554,7 @@ fun RecipeDetailBottomSheet(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "Bugünün Öğün Tablosuna Ekle 🥣",
+                        text = "Bugünün Öğün Tablosuna Ekle",
                         style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.Bold,
                         color = CoralDark

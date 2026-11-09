@@ -230,7 +230,7 @@ fun GrowthChartCard(
                             }
                         }
                         Text(
-                            text = if (latestRecord != null) "${latestRecord.ageMonths}. Ay • Son Ölçüm: ${latestRecord.date}" else "Henüz ölçüm girilmedi",
+                            text = if (latestRecord != null) "${latestRecord.ageMonths}. Ay • Son Ölçüm: ${com.example.util.prettyDate(latestRecord.date)}" else "Henüz ölçüm girilmedi",
                             style = MaterialTheme.typography.bodySmall,
                             color = TextSecondary
                         )
@@ -425,7 +425,7 @@ fun GrowthChartCard(
                         Column(modifier = Modifier.weight(1f)) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Text(
-                                    text = "${record.ageMonths}. Ay • ${record.date}",
+                                    text = "${record.ageMonths}. Ay • ${com.example.util.prettyDate(record.date)}",
                                     style = MaterialTheme.typography.labelMedium,
                                     fontWeight = FontWeight.Bold,
                                     color = TextPrimary
@@ -460,7 +460,7 @@ fun GrowthChartCard(
                             border = BorderStroke(1.dp, OchreBorder)
                         ) {
                             Text(
-                                text = "🥣 $mealsInMonth Öğün",
+                                text = "$mealsInMonth Öğün",
                                 maxLines = 1,
                                 softWrap = false,
                                 modifier = Modifier.padding(horizontal = 7.dp, vertical = 3.dp),

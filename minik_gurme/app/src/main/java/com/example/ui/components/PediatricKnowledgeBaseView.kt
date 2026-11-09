@@ -250,7 +250,7 @@ fun PediatricKnowledgeBaseView(
 
             if (onOpenRecipesForMonth != null) {
                 Text(
-                    text = "İlgili Tarifler 🍲",
+                    text = "İlgili Tarifler",
                     style = MaterialTheme.typography.labelSmall,
                     fontWeight = FontWeight.Bold,
                     color = CoralPrimary,
@@ -597,7 +597,7 @@ private fun WeeklyGuideCard(
                             ) {
                                 Column(modifier = Modifier.padding(10.dp)) {
                                     Text(
-                                        text = "❓ ${faq.question}",
+                                        text = "${faq.question}",
                                         style = MaterialTheme.typography.labelMedium,
                                         fontWeight = FontWeight.Bold,
                                         color = TextPrimary
@@ -692,14 +692,14 @@ private fun WeeklyFoodItemCard(food: KnowledgeBaseFoodItem) {
                 }
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
-                    text = "🍳 ${food.prepInstructions}",
+                    text = "${food.prepInstructions}",
                     style = MaterialTheme.typography.bodySmall,
                     color = TextSecondary,
                     fontSize = 11.sp,
                     lineHeight = 15.sp
                 )
                 Text(
-                    text = "📏 Porsiyon: ${food.portionGuide} • 🌿 ${food.pediatricBenefit}",
+                    text = "Porsiyon: ${food.portionGuide} • ${food.pediatricBenefit}",
                     style = MaterialTheme.typography.bodySmall,
                     color = CoralDark,
                     fontSize = 10.sp,

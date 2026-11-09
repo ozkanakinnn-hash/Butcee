@@ -240,7 +240,7 @@ fun GrowthTrackingScreen(
                                 Spacer(modifier = Modifier.height(4.dp))
                                 Text(
                                     text = if (latestRecord != null) {
-                                        "Son ölçüm: ${latestRecord.weightKg} kg, ${latestRecord.heightCm} cm (${latestRecord.date}). Büyüme temposu standartlara uygundur."
+                                        "Son ölçüm: ${latestRecord.weightKg} kg, ${latestRecord.heightCm} cm (${com.example.util.prettyDate(latestRecord.date)}). Büyüme temposu standartlara uygundur."
                                     } else {
                                         "İlk ölçümünüzü ekleyerek bebeğinizin persentil grafiğini başlatın."
                                     },
@@ -320,19 +320,6 @@ fun GrowthTrackingScreen(
                                 }
                             }
 
-                            Surface(
-                                shape = RoundedCornerShape(8.dp),
-                                color = SageSoft,
-                                border = BorderStroke(1.dp, SageBorder)
-                            ) {
-                                Text(
-                                    text = "WHO Uyumlu ✓",
-                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                                    style = MaterialTheme.typography.labelSmall,
-                                    fontWeight = FontWeight.Bold,
-                                    color = SageDark
-                                )
-                            }
                         }
 
                         Spacer(modifier = Modifier.height(14.dp))
@@ -615,7 +602,7 @@ fun GrowthTrackingScreen(
             },
             text = {
                 Text(
-                    text = "${record.date} tarihindeki (${record.ageMonths}. Ay: ${record.weightKg} kg, ${record.heightCm} cm) ölçümünü silmek istediğinize emin misiniz?",
+                    text = "${com.example.util.prettyDate(record.date)} tarihindeki (${record.ageMonths}. Ay: ${record.weightKg} kg, ${record.heightCm} cm) ölçümünü silmek istediğinize emin misiniz?",
                     style = MaterialTheme.typography.bodyMedium,
                     color = TextSecondary
                 )
@@ -717,7 +704,7 @@ private fun GrowthRecordRowCard(
                     Spacer(modifier = Modifier.width(8.dp))
 
                     Text(
-                        text = record.date,
+                        text = com.example.util.prettyDate(record.date),
                         style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.SemiBold,
                         color = TextPrimary
@@ -880,7 +867,7 @@ private fun GrowthRecordRowCard(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
-                        text = "📝 ${record.notes}",
+                        text = "${record.notes}",
                         modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
                         style = MaterialTheme.typography.bodySmall,
                         color = TextSecondary

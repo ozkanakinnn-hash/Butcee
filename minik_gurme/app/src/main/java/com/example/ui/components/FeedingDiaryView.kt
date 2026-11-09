@@ -491,7 +491,7 @@ fun FeedingDiaryView(
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
-                            text = "İlk Besini Kaydet 🥣",
+                            text = "İlk Besini Kaydet",
                             style = MaterialTheme.typography.labelLarge,
                             fontWeight = FontWeight.Bold,
                             color = OnAccent
@@ -582,7 +582,7 @@ fun FeedingDiaryView(
             },
             text = {
                 Text(
-                    text = "${entry.date} tarihli '${entry.foodItems}' kaydı günlüğünüzden silinecektir.",
+                    text = "${com.example.util.prettyDate(entry.date)} tarihli '${entry.foodItems}' kaydı günlüğünüzden silinecektir.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = TextSecondary
                 )
@@ -676,7 +676,7 @@ fun DiaryEntryCard(
                             border = BorderStroke(1.dp, OchreBorder)
                         ) {
                             Text(
-                                text = "🍲 Tariften",
+                                text = "Tariften",
                                 modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
                                 style = MaterialTheme.typography.labelSmall,
                                 fontWeight = FontWeight.Bold,
@@ -756,7 +756,7 @@ fun DiaryEntryCard(
                     shape = RoundedCornerShape(8.dp)
                 ) {
                     Text(
-                        text = "🥄 ${entry.portionAmount}",
+                        text = "${entry.portionAmount}",
                         style = MaterialTheme.typography.labelSmall,
                         fontWeight = FontWeight.Medium,
                         color = TextSecondary,
@@ -770,7 +770,7 @@ fun DiaryEntryCard(
                     shape = RoundedCornerShape(8.dp)
                 ) {
                     Text(
-                        text = "🥣 ${entry.texture}",
+                        text = "${entry.texture}",
                         style = MaterialTheme.typography.labelSmall,
                         fontWeight = FontWeight.Medium,
                         color = SageDark,
@@ -827,7 +827,7 @@ fun DiaryEntryCard(
                     Column(modifier = Modifier.padding(10.dp)) {
                         if (entry.notes.isNotBlank()) {
                             Text(
-                                text = "📝 ${entry.notes}",
+                                text = "${entry.notes}",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = TextSecondary
                             )
@@ -835,7 +835,7 @@ fun DiaryEntryCard(
                         if (entry.reactionNotes.isNotBlank()) {
                             if (entry.notes.isNotBlank()) Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = "⚠️ Gözlem: ${entry.reactionNotes}",
+                                text = "Gözlem: ${entry.reactionNotes}",
                                 style = MaterialTheme.typography.bodySmall,
                                 fontWeight = FontWeight.SemiBold,
                                 color = ReactionAllergy

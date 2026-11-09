@@ -302,9 +302,11 @@ fun MainScreen(
             )
         },
         bottomBar = {
+            Column {
+            androidx.compose.material3.HorizontalDivider(thickness = 1.dp, color = CardBorder)
             NavigationBar(
-                containerColor = MaterialTheme.colorScheme.surface,
-                tonalElevation = 6.dp,
+                containerColor = CardSurface,
+                tonalElevation = 0.dp,
                 modifier = Modifier
                     .windowInsetsPadding(WindowInsets.navigationBars)
                     .testTag("bottom_nav_bar")
@@ -342,6 +344,7 @@ fun MainScreen(
                         modifier = Modifier.testTag(item.testTag)
                     )
                 }
+            }
             }
         }
     ) { innerPadding ->
@@ -443,7 +446,7 @@ fun MainScreen(
                         onQuickAddToDiary = { recipe ->
                             viewModel.addRecipeToDiary(recipe)
                             scope.launch {
-                                snackbarHostState.showSnackbar(t("${recipe.title} Beslenme Günlüğüne kaydedildi! 📖✨"))
+                                snackbarHostState.showSnackbar(t("${recipe.title} Beslenme Günlüğüne kaydedildi!"))
                             }
                         }
                     )
@@ -555,7 +558,7 @@ fun MainScreen(
                 )
                 selectedFoodForDetail = null
                 scope.launch {
-                    snackbarHostState.showSnackbar(t("${food.name} bugünkü öğünlere eklendi! 🥣"))
+                    snackbarHostState.showSnackbar(t("${food.name} bugünkü öğünlere eklendi!"))
                 }
             }
         )
@@ -575,15 +578,15 @@ fun MainScreen(
                 viewModel.addRecipeToMeals(recipe)
                 selectedRecipeForDetail = null
                 scope.launch {
-                    snackbarHostState.showSnackbar(t("${recipe.title} bugünkü öğün tablosuna eklendi! 🍽️"))
+                    snackbarHostState.showSnackbar(t("${recipe.title} bugünkü öğün tablosuna eklendi!"))
                 }
             },
             onAddToShopping = { factor, ingredient ->
                 viewModel.addIngredientsToShopping(recipe, factor, ingredient)
                 scope.launch {
                     snackbarHostState.showSnackbar(
-                        if (ingredient == null) t("Malzemeler alışveriş listesine eklendi 🛒")
-                        else t("Alışveriş listesine eklendi 🛒")
+                        if (ingredient == null) t("Malzemeler alışveriş listesine eklendi")
+                        else t("Alışveriş listesine eklendi")
                     )
                 }
             },
@@ -591,7 +594,7 @@ fun MainScreen(
                 viewModel.addRecipeToDiary(recipe)
                 selectedRecipeForDetail = null
                 scope.launch {
-                    snackbarHostState.showSnackbar(t("${recipe.title} Beslenme Günlüğüne kaydedildi! 📖✨"))
+                    snackbarHostState.showSnackbar(t("${recipe.title} Beslenme Günlüğüne kaydedildi!"))
                 }
             }
         )
@@ -658,7 +661,7 @@ fun MainScreen(
                 )
                 showAddDiarySheet = false
                 scope.launch {
-                    snackbarHostState.showSnackbar(t("Beslenme günlüğüne kaydedildi! 📖"))
+                    snackbarHostState.showSnackbar(t("Beslenme günlüğüne kaydedildi!"))
                 }
             }
         )
@@ -728,7 +731,7 @@ fun MainScreen(
                     notes = notes
                 )
                 scope.launch {
-                    snackbarHostState.showSnackbar(t("Yeni gelişim ölçümü kaydedildi! 📈"))
+                    snackbarHostState.showSnackbar(t("Yeni gelişim ölçümü kaydedildi!"))
                 }
             }
         )

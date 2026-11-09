@@ -297,7 +297,7 @@ fun FoodDetailBottomSheet(
                             border = BorderStroke(1.dp, CardBorder)
                         ) {
                             Text(
-                                text = "✨ $nutrient",
+                                text = "$nutrient",
                                 style = MaterialTheme.typography.labelSmall,
                                 fontWeight = FontWeight.SemiBold,
                                 color = TextPrimary,
@@ -509,7 +509,7 @@ fun FoodDetailBottomSheet(
                                 )
                                 if (triedInfo.triedDate.isNotBlank()) {
                                     Text(
-                                        text = "Tadım tarihi: ${triedInfo.triedDate}",
+                                        text = "Tadım tarihi: ${com.example.util.prettyDate(triedInfo.triedDate)}",
                                         style = MaterialTheme.typography.bodySmall,
                                         color = TextSecondary
                                     )

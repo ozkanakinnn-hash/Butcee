@@ -20,8 +20,16 @@
 "$1 marked as not tried."
 ],
 [
+"^(.+) 100 Gıda listesinde denendi olarak işaretlendi!$",
+"$1 marked as tried in the 100 Foods list!"
+],
+[
 "^(.+) 100 Gıda listesinde denendi olarak işaretlendi! 🎉$",
 "$1 marked as tried in the 100 Foods list! 🎉"
+],
+[
+"^(.+) Beslenme Günlüğüne kaydedildi!$",
+"$1 saved to the Feeding Diary!"
 ],
 [
 "^(.+) Beslenme Günlüğüne kaydedildi! 📖✨$",
@@ -40,8 +48,16 @@
 "$1 tasted."
 ],
 [
+"^(.+) bugünkü öğünlere eklendi!$",
+"$1 added to today's meals!"
+],
+[
 "^(.+) bugünkü öğünlere eklendi! 🥣$",
 "$1 added to today's meals! 🥣"
+],
+[
+"^(.+) bugünkü öğün tablosuna eklendi!$",
+"$1 added to today's meal table!"
 ],
 [
 "^(.+) bugünkü öğün tablosuna eklendi! 🍽️$",
@@ -74,6 +90,10 @@
 [
 "^(.+)'n?[iıuü]n tükettiği tüm besinlerin geçmişi$",
 "History of all foods $1 has eaten"
+],
+[
+"^~(\\d+) Öğün$",
+"~$1 Meals"
 ],
 [
 "^🥣 ~(\\d+) Öğün$",
@@ -116,6 +136,10 @@
 "The '$2' entry dated $1 will be deleted from your diary."
 ],
 [
+"^Gözlem: (.+)$",
+"Observation: $1"
+],
+[
 "^⚠️ Gözlem: (.+)$",
 "⚠️ Observation: $1"
 ],
@@ -152,6 +176,10 @@
 "Source: $1"
 ],
 [
+"^Porsiyon: (.+) • (.+)$",
+"Portion: $1 • $2"
+],
+[
 "^📏 Porsiyon: (.+) • 🌿 (.+)$",
 "📏 Portion: $1 • 🌿 $2"
 ],
@@ -184,16 +212,32 @@
 "Hazard: $1"
 ],
 [
+"^Doğrusu: (.+)$",
+"Instead: $1"
+],
+[
 "^✅ Doğrusu: (.+)$",
 "✅ Instead: $1"
+],
+[
+"^Risk: (.+)$",
+"Risk: $1"
 ],
 [
 "^🚨 Risk: (.+)$",
 "🚨 Risk: $1"
 ],
 [
+"^Güvenli Başlangıç: (.+)$",
+"Safe Start: $1"
+],
+[
 "^✅ Güvenli Başlangıç: (.+)$",
 "✅ Safe Start: $1"
+],
+[
+"^(\\d+)\\. Ayında Minik Gurme$",
+"Minik Gurme at Month $1"
 ],
 [
 "^(\\d+)\\. Ayında Minik Gurme 👶$",
@@ -228,6 +272,10 @@
 "Month $1 Guide"
 ],
 [
+"^(.+) İçin Akıllı Öneriler$",
+"Smart Tips for $1"
+],
+[
 "^(.+) İçin Akıllı Öneriler 💡$",
 "Smart Tips for $1 💡"
 ],
@@ -250,6 +298,10 @@
 [
 "^(\\d+)\\. Gün$",
 "Day $1"
+],
+[
+"^(.+)'n?[iıuü]n Menüsü$",
+"$1's Menu"
 ],
 [
 "^(.+)'n?[iıuü]n Menüsü 👶$",

@@ -13,7 +13,7 @@ val PlusJakartaSans = FontFamily(
     Font(R.font.plus_jakarta_sans_medium, FontWeight.Medium),
     Font(R.font.plus_jakarta_sans_semibold, FontWeight.SemiBold),
     Font(R.font.plus_jakarta_sans_bold, FontWeight.Bold),
-    Font(R.font.plus_jakarta_sans_extrabold, FontWeight.ExtraBold),
+    Font(R.font.plus_jakarta_sans_bold, FontWeight.ExtraBold),
     Font(R.font.plus_jakarta_sans_extrabold, FontWeight.Black)
 )
 
@@ -92,6 +92,6 @@ val Typography = Typography(
         fontWeight = FontWeight.Medium,
         fontSize = 11.sp,
         lineHeight = 16.sp,
-        letterSpacing = 0.5.sp
+        letterSpacing = 0.2.sp
     )
 )

@@ -586,7 +586,7 @@ fun GuideScreen(
                         // 1. Hedefler
                         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                             Text(
-                                text = "🎯 BU AYIN TEMEL HEDEFLERİ",
+                                text = "BU AYIN TEMEL HEDEFLERİ",
                                 style = MaterialTheme.typography.labelSmall,
                                 fontWeight = FontWeight.Bold,
                                 color = TextSecondary,
@@ -619,7 +619,7 @@ fun GuideScreen(
                         // 2. Kıvamlar
                         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                             Text(
-                                text = "🥣 KIVAM BASAMAKLARI",
+                                text = "KIVAM BASAMAKLARI",
                                 style = MaterialTheme.typography.labelSmall,
                                 fontWeight = FontWeight.Bold,
                                 color = TextSecondary,
@@ -651,7 +651,7 @@ fun GuideScreen(
                         // 3. Uygun Besinler
                         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                             Text(
-                                text = "🥦 ÖNERİLEN VE EKLENEBİLECEK BESİNLER",
+                                text = "ÖNERİLEN VE EKLENEBİLECEK BESİNLER",
                                 style = MaterialTheme.typography.labelSmall,
                                 fontWeight = FontWeight.Bold,
                                 color = TextSecondary,
@@ -669,7 +669,7 @@ fun GuideScreen(
                                         border = BorderStroke(1.dp, CardBorder)
                                     ) {
                                         Text(
-                                            text = "✨ $food",
+                                            text = "$food",
                                             style = MaterialTheme.typography.bodySmall,
                                             fontWeight = FontWeight.Medium,
                                             color = TextPrimary,
@@ -1052,7 +1052,7 @@ fun GuideScreen(
                                         ) {
                                             Column(modifier = Modifier.padding(8.dp)) {
                                                 Text(
-                                                    text = "✅ Öğürme",
+                                                    text = "Öğürme",
                                                     style = MaterialTheme.typography.labelSmall,
                                                     fontWeight = FontWeight.Bold,
                                                     color = SageDark
@@ -1074,7 +1074,7 @@ fun GuideScreen(
                                         ) {
                                             Column(modifier = Modifier.padding(8.dp)) {
                                                 Text(
-                                                    text = "🚨 Boğulma",
+                                                    text = "Boğulma",
                                                     style = MaterialTheme.typography.labelSmall,
                                                     fontWeight = FontWeight.Bold,
                                                     color = ReactionAllergy
@@ -1119,7 +1119,7 @@ fun GuideScreen(
                             .padding(16.dp)
                     ) {
                         Text(
-                            text = "⚠️ ${tip.foodName}",
+                            text = "${tip.foodName}",
                             style = MaterialTheme.typography.titleSmall,
                             fontWeight = FontWeight.Bold,
                             color = TextPrimary
@@ -1208,7 +1208,7 @@ fun GuideScreen(
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Text(
-                                text = "❌ ${mistake.wrongAction}",
+                                text = "${mistake.wrongAction}",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = AllergyText,
                                 modifier = Modifier.padding(10.dp)
@@ -1224,7 +1224,7 @@ fun GuideScreen(
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Text(
-                                text = "✅ Doğrusu: ${mistake.correctAction}",
+                                text = "Doğrusu: ${mistake.correctAction}",
                                 style = MaterialTheme.typography.bodySmall,
                                 fontWeight = FontWeight.Medium,
                                 color = SageDark,
@@ -1249,7 +1249,7 @@ fun GuideScreen(
                             .padding(18.dp)
                     ) {
                         Text(
-                            text = "💡 Altın Kural: Bitkisel Demir + C Vitamini",
+                            text = "Altın Kural: Bitkisel Demir + C Vitamini",
                             style = MaterialTheme.typography.titleSmall,
                             fontWeight = FontWeight.Bold,
                             color = OchreDark
@@ -1363,7 +1363,7 @@ fun GuideScreen(
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Text(
-                            text = "⚠️ Sadece Bu Belirtiler Yeterli Değil! (Doğru Bilinen Yanlışlar)",
+                            text = "Sadece Bu Belirtiler Yeterli Değil! (Doğru Bilinen Yanlışlar)",
                             style = MaterialTheme.typography.titleSmall,
                             fontWeight = FontWeight.Bold,
                             color = OchreDark
@@ -1488,7 +1488,7 @@ fun FoodIntroCard(food: FoodStartRecommendation) {
                 Column(modifier = Modifier.padding(12.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
-                            text = "🥣 İlk Sunum & Kıvam:",
+                            text = "İlk Sunum & Kıvam:",
                             style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.Bold,
                             color = TextPrimary
@@ -1521,7 +1521,7 @@ fun FoodIntroCard(food: FoodStartRecommendation) {
             // Neden Bu Ayda Başlanır?
             Column {
                 Text(
-                    text = "💡 Neden Bu Ayda ve Faydası:",
+                    text = "Neden Bu Ayda ve Faydası:",
                     style = MaterialTheme.typography.labelSmall,
                     fontWeight = FontWeight.Bold,
                     color = CoralDark
@@ -1611,7 +1611,7 @@ fun FoodIntroCard(food: FoodStartRecommendation) {
                         verticalAlignment = Alignment.Top
                     ) {
                         Text(
-                            text = "📌 ${food.specialNotes}",
+                            text = "${food.specialNotes}",
                             style = MaterialTheme.typography.bodySmall,
                             color = OchreText,
                             lineHeight = 17.sp
@@ -1680,7 +1680,7 @@ fun ForbiddenFoodCard(item: ForbiddenFoodItem) {
             // Neden Yasak
             Column {
                 Text(
-                    text = "🧬 Neden 1 Yaşa Kadar Yasak?",
+                    text = "Neden 1 Yaşa Kadar Yasak?",
                     style = MaterialTheme.typography.labelSmall,
                     fontWeight = FontWeight.Bold,
                     color = ReactionAllergy
@@ -1705,7 +1705,7 @@ fun ForbiddenFoodCard(item: ForbiddenFoodItem) {
                     verticalAlignment = Alignment.Top
                 ) {
                     Text(
-                        text = "🚨 Risk: ${item.risk}",
+                        text = "Risk: ${item.risk}",
                         style = MaterialTheme.typography.bodySmall,
                         fontWeight = FontWeight.SemiBold,
                         color = ReactionAllergy,
@@ -1725,7 +1725,7 @@ fun ForbiddenFoodCard(item: ForbiddenFoodItem) {
                     verticalAlignment = Alignment.Top
                 ) {
                     Text(
-                        text = "✅ Güvenli Başlangıç: ${item.whenAllowed}",
+                        text = "Güvenli Başlangıç: ${item.whenAllowed}",
                         style = MaterialTheme.typography.bodySmall,
                         fontWeight = FontWeight.Medium,
                         color = SageDark,

@@ -71,7 +71,7 @@ fun ShoppingListScreen(
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 6.dp)) {
                 IconButton(onClick = onBack) { Icon(Icons.Filled.ArrowBack, contentDescription = t("Geri"), tint = TextPrimary) }
                 Column(modifier = Modifier.weight(1f)) {
-                    Text("Alışveriş Listesi 🛒", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.ExtraBold, color = TextPrimary)
+                    Text("Alışveriş Listesi", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.ExtraBold, color = TextPrimary)
                     Text(
                         if (items.isEmpty()) "Tariflerden malzeme ekleyin veya aşağıya yazın." else "$remaining kalem alınacak",
                         style = MaterialTheme.typography.bodySmall,

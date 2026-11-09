@@ -199,7 +199,7 @@ fun RecommendationsScreen(
                         }
 
                         Text(
-                            text = "${profile.name} İçin Akıllı Öneriler 💡",
+                            text = "${profile.name} İçin Akıllı Öneriler",
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.ExtraBold,
                             color = OnHero
@@ -569,7 +569,7 @@ fun RecommendationsScreen(
                         }
 
                         Text(
-                            text = "❌ Bal (Botulizm felci riski)\n❌ Tuz ve İlave Şeker (Böbrek yükü ve tat eşiği)\n❌ Çiğ süt / Pastörize edilmemiş peynir\n❌ Çiğ sert kuruyemiş ve çiğ havuç (Boğulma tehlikesi)",
+                            text = "• Bal (Botulizm felci riski)\n• Tuz ve İlave Şeker (Böbrek yükü ve tat eşiği)\n• Çiğ süt / Pastörize edilmemiş peynir\n• Çiğ sert kuruyemiş ve çiğ havuç (Boğulma tehlikesi)",
                             style = MaterialTheme.typography.bodySmall,
                             color = AllergyText,
                             lineHeight = 20.sp
