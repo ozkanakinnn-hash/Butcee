@@ -9,6 +9,9 @@ Ayrıntılı referans tasarım: `docs/ilac-takip/01-ileri-ozellikler.md` ve `02-
 Çalışan iskelet (kopyalanabilir kalıplar): `ilac_takip/` — bkz. §8.
 
 ## 0. Kullanıcının kalıcı kuralları
+- **APK YALNIZCA İSTENİNCE (kullanıcı kuralı, tüm projeler):** Kullanıcı açıkça "APK derle" demeden APK/derleme çıktısı
+  üretme ve gönderme (release derlemesi, SendUserFile ile .apk, CI artifact linki dahil). Değişiklikleri yap, kodu derlenebilir tut,
+  gerekirse birim testleri çalıştır, commit et; sonunda "APK hazır değil, isterseniz derleyeyim" diye belirt ve komutu bekle.
 - Her uygulamada **Türkçe + İngilizce** (Flutter: `flutter_localizations` + `intl` + `app_tr.arb`/`app_en.arb`; sunucu bildirimleri alıcının `locale` alanına göre).
 - Türkçe arayüz/doküman; kod tanımlayıcıları İngilizce.
 

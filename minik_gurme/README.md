@@ -24,6 +24,8 @@ CI: `.github/workflows/minik-gurme-android.yml` — APK (`minik-gurme-apk` artif
 (`tool/smoke.sh`: tüm sekmeler TR + EN, dil değiştirme, çökme kontrolü), ekran görüntüleri `docs/minik-gurme/screenshots`.
 
 ## Görseller
-Besin, tarif ve kart ikonları Microsoft **Fluent Emoji (3D)** çizimleridir (MIT lisansı; npm `@lobehub/fluent-emoji-3d`),
-`res/drawable-nodpi/emoji_<kod>.webp` (144 px). Eşleme `ui/components/FoodImage.kt` içindedir; yeni bir emoji
-eklenirse ilgili `.webp` dosyası ve eşleme satırı da eklenmelidir (yoksa emojinin kendisi gösterilir).
+- **Besin görselleri (43 adet)** uygulamaya özel elle çizilmiş SVG illüstrasyonlardır (gerçek görünümleri referans alınarak):
+  kaynak `tool/food_art/art.py` → `node tool/food_art/render.js` ile 144 px PNG → `res/drawable-nodpi/emoji_<kod>.webp`.
+  Örn. 🥒 sakız kabağı, 🧀 kâsede lor/labne, 🥩 çiğ kıyma, 🫘 kırmızı mercimek, 🧆 köfte, 🌾 tahıl çuvalı.
+- Kart/arayüz ikonları (📚, 🎯 vb.) Microsoft **Fluent Emoji (3D)** çizimleridir (MIT lisansı; npm `@lobehub/fluent-emoji-3d`).
+- Eşleme `ui/components/FoodImage.kt` içindedir; yeni bir emoji eklenirse `.webp` dosyası ve eşleme satırı da eklenmelidir.

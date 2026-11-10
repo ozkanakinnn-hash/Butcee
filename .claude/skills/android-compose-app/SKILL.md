@@ -5,6 +5,11 @@ description: Kotlin + Jetpack Compose Android uygulaması oluşturma/iskeletini 
 
 # Android Compose Uygulaması — Öğrenilenler
 
+## 0a. Kullanıcının kalıcı kuralları
+- **APK YALNIZCA İSTENİNCE (kullanıcı kuralı, tüm projeler):** Kullanıcı açıkça "APK derle" demeden APK/derleme çıktısı
+  üretme ve gönderme (release derlemesi, SendUserFile ile .apk, CI artifact linki dahil). Değişiklikleri yap, kodu derlenebilir tut,
+  gerekirse birim testleri çalıştır, commit et; sonunda "APK hazır değil, isterseniz derleyeyim" diye belirt ve komutu bekle.
+
 ## 0. HER UYGULAMADA ZORUNLU: İngilizce dil desteği (kullanıcı kuralı)
 Kullanıcı hangi uygulamayı yaparsa yapsın **Türkçe + İngilizce** dil desteği istenir; Ayarlar'da dil seçici olmalı.
 - **Yeni uygulamada (önerilen):** Metinleri baştan `res/values/strings.xml` (Türkçe, varsayılan) ve
@@ -127,4 +132,11 @@ gradle/actions/setup-gradle@v5 → `./gradlew assembleDebug` → upload-artifact
 - **Türkçe iyelik eki**: `trGenitive("Defne")` → "Defne'nin" (son ünlüye göre ın/in/un/ün, ünlüyle bitiyorsa n).
 - **Robolectric ekran görüntüsü**: `captureToImage` takılabiliyor; `scenario.onActivity { decorView.draw(Canvas(bmp)) }`
   + `@GraphicsMode(NATIVE)`. Gece modu niteleyicisi sırası: `w411dp-h891dp-night-xxhdpi`.
+
+## Uygulama içi görseller (Minik Gurme'den)
+- Kullanıcı "görselleri kendin üret" derse: her öğe için elle SVG çiz (256 viewBox, gradyanlı yarı gerçekçi stil, altta yumuşak
+  gölge), Playwright ile şeffaf PNG'ye çevir (`omitBackground: true`), `drawable-nodpi/*.webp` olarak göm. Aynı HTML sayfasında
+  önizlerken gradyan `id`'lerini her çizime özgü yap (yoksa renkler karışır). Önizleme sayfasını kullanıcıya göster.
+- Emoji yazı tipi cihaza göre değişir; `FoodImage(emoji, size)` gibi tek bir composable ile emoji → görsel eşlemesi yap, eşleşme yoksa emojiye düş.
+- Wikimedia Commons otomatik indirmede iletişim adresli User-Agent ister; kullanıcının e-postasını izinsiz kullanma.
 
