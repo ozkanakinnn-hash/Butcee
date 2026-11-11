@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
@@ -11,6 +13,12 @@ if (file("google-services.json").exists()) {
     apply(plugin = "com.google.firebase.crashlytics")
 } else {
     logger.warn("UYARI: android/app/google-services.json bulunamadı — Firebase devre dışı.")
+}
+
+// Play yükleme anahtarı bilgileri (android/key.properties — depoya girmez)
+val keyProps = Properties().apply {
+    val f = rootProject.file("key.properties")
+    if (f.exists()) f.inputStream().use { load(it) }
 }
 
 android {
@@ -53,14 +61,17 @@ android {
             keyAlias = "test"
             keyPassword = "haberakisi-test"
         }
-        // Play Store yükleme anahtarı: GitHub Secrets'tan ortam değişkenleriyle (varsa).
-        val uploadStore = System.getenv("UPLOAD_KEYSTORE_PATH")
+        // Play Store YÜKLEME anahtarı (Play App Signing). Öncelik: android/key.properties (yerel, .gitignore'da),
+        // yoksa ortam değişkenleri (CI gizli değişkenleri). Hiçbiri yoksa sürüm derlemesi test anahtarıyla imzalanır
+        // (yalnızca yan yükleme için; Play'e yüklenemez).
+        val uploadStore = keyProps.getProperty("storeFile")?.let { rootProject.file(it).path }
+            ?: System.getenv("UPLOAD_KEYSTORE_PATH")
         if (uploadStore != null && file(uploadStore).exists()) {
             create("upload") {
                 storeFile = file(uploadStore)
-                storePassword = System.getenv("UPLOAD_KEYSTORE_PASSWORD")
-                keyAlias = System.getenv("UPLOAD_KEY_ALIAS")
-                keyPassword = System.getenv("UPLOAD_KEY_PASSWORD")
+                storePassword = keyProps.getProperty("storePassword") ?: System.getenv("UPLOAD_KEYSTORE_PASSWORD")
+                keyAlias = keyProps.getProperty("keyAlias") ?: System.getenv("UPLOAD_KEY_ALIAS")
+                keyPassword = keyProps.getProperty("keyPassword") ?: System.getenv("UPLOAD_KEY_PASSWORD")
             }
         }
     }
