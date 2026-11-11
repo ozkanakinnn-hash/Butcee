@@ -55,10 +55,10 @@ news-aggregator/
   Firestore'da `search_keywords (array-contains) + published_at DESC` birleşik dizini gerekir.
 - **Bildirimler sekmesi:** Bot gönderdiği her bildirimi `notifications` koleksiyonuna yazar (7 gün saklanır);
   uygulama kullanıcının konularını (`news_*`, `team_*`) süzerek yeniden eskiye listeler.
-- **Sağ üst panel (☰):** Dolar/TL, Euro/TL, gram altın (TL), ons altın ($), BIST 100, Brent; bot 30 dakikada bir
-  Truncgil Finans'tan (ücretsiz, anahtarsız) çeker (`src/market.js`) → `market/latest`. Ons fiyatı gram altın ve
-  dolardan hesaplanır; Brent'in fiyatı bu kaynakta çoğu zaman yok → fiyat yoksa gösterilmez.
-  (Yahoo Finance GitHub sunucularını HTTP 429 ile reddediyor; koruması aşılmaz.)
+- **Sağ üst panel (☰):** Dolar/TL ve Euro/TL (TCMB gösterge kurları, resmî kaynak; günde bir kez), gram altın (TL)
+  ve ons altın ($) (Truncgil Finans). `src/market.js` → `market/latest`. BIST 100 ve Brent yayın öncesi lisans
+  nedeniyle kaldırıldı (Borsa İstanbul verisi yalnızca lisanslı dağıtıcıyla yayımlanabilir). Panelde "yatırım
+  tavsiyesi değildir" notu ve kaynak adı gösterilir.
   Kaynakları denemek için: Actions → **Piyasa Kaynak Kontrolü** (`scripts/probe-market.js`).
   Altında konumdaki hava durumu. Panelden Ayarlar'a da gidilir.
 - **Haber dizilimi:** Ayarlar → Haber dizilimi: Standart (ilk haber büyük) / Büyük kart / Sade liste.

@@ -119,7 +119,7 @@ class S {
     'Approximate location is used only to show the weather for your city.',
   );
   String get weatherCard => _t('Hava durumu kartı', 'Weather card');
-  String get weatherSource => _t('Hava durumu: MET Norway', 'Weather: MET Norway');
+  String get weatherSource => _t('Veri: MET Norway (CC BY 4.0)', 'Data: MET Norway (CC BY 4.0)');
 
   // Futbol
   String get myTeams => _t('Takımların', 'Your teams');
@@ -167,6 +167,9 @@ class S {
   String get matchLabel => _t('MAÇ', 'MATCH');
   String get markets => _t('Piyasalar', 'Markets');
   String marketUpdated(String t) => _t('Güncelleme: $t', 'Updated: $t');
+  String get marketDisclaimer => _t(
+      'Bilgi amaçlıdır, yatırım tavsiyesi değildir. Döviz: TCMB gösterge kurları (günde bir kez).',
+      'For information only, not investment advice. FX: CBRT indicative rates (daily).');
   String get marketUnavailable => _t('Piyasa verileri henüz yok.', 'Market data not available yet.');
   String get weather => _t('Hava Durumu', 'Weather');
   String get showWeather => _t('Konumundaki hava durumunu göster', 'Show weather for your location');

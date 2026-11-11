@@ -8,7 +8,7 @@ import '../pages/settings_page.dart';
 import '../services/weather_service.dart';
 import 'weather_card.dart';
 
-/// Sağ üstteki ☰ ile açılan panel: piyasalar (Dolar, Euro, gram/ons altın, BIST 100, Brent) ve hava durumu.
+/// Sağ üstteki ☰ ile açılan panel: piyasalar (Dolar, Euro — TCMB; gram/ons altın) ve hava durumu.
 class MarketPanel extends StatelessWidget {
   const MarketPanel({super.key, required this.settings, required this.repository, required this.weather});
 
@@ -76,6 +76,8 @@ class MarketPanel extends StatelessWidget {
                         '${s.marketUpdated(_hhmm(m.updatedAt!.toLocal()))} · ${m.source}',
                         style: theme.textTheme.bodySmall?.copyWith(color: muted),
                       ),
+                    const SizedBox(height: 4),
+                    Text(s.marketDisclaimer, style: theme.textTheme.bodySmall?.copyWith(color: muted, fontSize: 11)),
                   ],
                 );
               },
