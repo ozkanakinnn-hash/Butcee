@@ -13,7 +13,7 @@ android {
   compileSdk { version = release(36) { minorApiLevel = 1 } }
 
   defaultConfig {
-    applicationId = "com.ozkanakin.ramazanrehberi"
+    applicationId = "akin.ai2"
     minSdk = 24
     targetSdk = 36
     versionCode = (project.findProperty("APP_VERSION_CODE") as String).toInt()

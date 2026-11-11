@@ -2,7 +2,7 @@ import Foundation
 
 /// Uygulama ile widget arasında paylaşılan depolama.
 enum Shared {
-  static let appGroup = "group.com.ozkanakin.ramazanrehberi"
+  static let appGroup = "group.akin.ai2"
   static var defaults: UserDefaults = UserDefaults(suiteName: appGroup) ?? .standard
 }
 

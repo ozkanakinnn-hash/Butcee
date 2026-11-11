@@ -5,7 +5,7 @@ import UserNotifications
 final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDelegate {
   func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
     UNUserNotificationCenter.current().delegate = self
-    BGTaskScheduler.shared.register(forTaskWithIdentifier: "com.ozkanakin.ramazanrehberi.refresh", using: nil) { task in
+    BGTaskScheduler.shared.register(forTaskWithIdentifier: "akin.ai2.refresh", using: nil) { task in
       // Arka planda vakitleri tazele ve önümüzdeki günlerin bildirimlerini yeniden planla
       DispatchQueue.main.async {
         PrayerService.shared.reload()
@@ -17,7 +17,7 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
   }
 
   static func scheduleRefresh() {
-    let req = BGAppRefreshTaskRequest(identifier: "com.ozkanakin.ramazanrehberi.refresh")
+    let req = BGAppRefreshTaskRequest(identifier: "akin.ai2.refresh")
     req.earliestBeginDate = Date(timeIntervalSinceNow: 6 * 3600)
     try? BGTaskScheduler.shared.submit(req)
   }

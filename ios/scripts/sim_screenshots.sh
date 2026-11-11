@@ -1,7 +1,7 @@
 #!/bin/bash
 # iOS simülatöründe uygulamayı farklı ekranlarla açıp ekran görüntüsü alır.
 set -x
-APP="$1"; OUT="$2"; BID=com.ozkanakin.ramazanrehberi
+APP="$1"; OUT="$2"; BID=akin.ai2
 mkdir -p "$OUT"
 DEV=$(xcrun simctl list devices available | grep -E "iPhone 16 \(|iPhone 16 Pro \(|iPhone 15 \(" | head -1 | grep -oE "[0-9A-F-]{36}")
 xcrun simctl boot "$DEV"; xcrun simctl bootstatus "$DEV" -b

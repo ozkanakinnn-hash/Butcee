@@ -3,6 +3,6 @@
 <plist version="1.0">
 <dict>
   <key>com.apple.security.application-groups</key>
-  <array><string>group.com.ozkanakin.ramazanrehberi</string></array>
+  <array><string>group.akin.ai2</string></array>
 </dict>
 </plist>
