@@ -390,33 +390,6 @@
       "rss_url": "https://www.haberturk.com/rss/kategori/spor.xml",
       "category": "spor",
       "domain": "haberturk.com"
-    },
-    {
-      "id": "investing-ekonomi",
-      "source_name": "Investing.com",
-      "rss_url": "https://tr.investing.com/rss/news_14.rss",
-      "category": "ekonomi",
-      "domain": "tr.investing.com",
-      "topic_only": true,
-      "allow_images": false
-    },
-    {
-      "id": "investing-borsa",
-      "source_name": "Investing.com",
-      "rss_url": "https://tr.investing.com/rss/news_25.rss",
-      "category": "ekonomi",
-      "domain": "tr.investing.com",
-      "topic_only": true,
-      "allow_images": false
-    },
-    {
-      "id": "investing-doviz",
-      "source_name": "Investing.com",
-      "rss_url": "https://tr.investing.com/rss/news_1.rss",
-      "category": "ekonomi",
-      "domain": "tr.investing.com",
-      "topic_only": true,
-      "allow_images": false
     }
   ]
 }

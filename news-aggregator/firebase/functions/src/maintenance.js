@@ -106,7 +106,7 @@ async function rescanTopicSources(db) {
  * "seed" çalıştırmaya gerek kalmaz. Var olan kaynağın ayarlarına (is_active vb.) dokunmaz.
  */
 const SOURCES_VERSION = 1;
-const NEW_SOURCE_IDS = ['investing-ekonomi', 'investing-borsa', 'investing-doviz'];
+const NEW_SOURCE_IDS = []; // (Investing kaynakları telif nedeniyle kaldırıldı — bkz. retireSources)
 
 async function addNewSources(db, { data = require('../scripts/seed-data.json') } = {}) {
   const metaRef = db.doc('app_meta/sources');
@@ -134,13 +134,33 @@ async function addNewSources(db, { data = require('../scripts/seed-data.json') }
   return { done: true, added };
 }
 
+/**
+ * Bir kerelik: hukuken sorunlu kaynakları emekliye ayırır (kaynak kapatılır, haberleri silinir, takedowns kaydı).
+ * v1 (2026-11-11): Investing.com — kullanım koşulları ticari yeniden yayını yasaklıyor.
+ */
+const RETIRED_SOURCES = { version: 1, ids: ['investing-ekonomi', 'investing-borsa', 'investing-doviz'], note: 'Yayın öncesi telif temizliği: Investing.com koşulları ticari yeniden yayına kapalı' };
+
+async function retireSources(db, cfg = RETIRED_SOURCES) {
+  const metaRef = db.doc('app_meta/retired_sources');
+  if (((await metaRef.get()).data() || {}).version >= cfg.version) return { done: true, removed: 0 };
+  const { removeSource } = require('./takedown');
+  let removed = 0;
+  for (const id of cfg.ids) {
+    if (!(await db.collection('sources').doc(id).get()).exists) continue;
+    removed += (await removeSource(db, id, { note: cfg.note })).removed;
+  }
+  await metaRef.set({ version: cfg.version }, { merge: true });
+  return { done: true, removed };
+}
+
 async function runMaintenance(db) {
+  const retired = await retireSources(db);
   const newSources = await addNewSources(db);
   const topicRescan = await rescanTopicSources(db);
   const breaking = await moveBreakingSourceArticles(db);
   const search = await backfillSearchKeywords(db);
   const deletedNotifications = await cleanupNotificationLog(db);
-  return { newSources, topicRescan, breaking, search, deletedNotifications };
+  return { retired, newSources, topicRescan, breaking, search, deletedNotifications };
 }
 
-module.exports = { backfillSearchKeywords, moveBreakingSourceArticles, rescanTopicSources, addNewSources, runMaintenance, SEARCH_INDEX_VERSION };
+module.exports = { backfillSearchKeywords, moveBreakingSourceArticles, rescanTopicSources, addNewSources, retireSources, runMaintenance, SEARCH_INDEX_VERSION };

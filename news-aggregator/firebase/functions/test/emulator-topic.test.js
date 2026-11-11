@@ -51,23 +51,21 @@ test('genel akıştan önce kaydedilen haber konu kategorisine taşınır; Son D
   assert.ok(after.every((d) => d.get('category_id').id === 'ekonomi'));
 });
 
-test('Investing kaynakları bir kez eklenir; haberleri topic_only, görselsiz ve Ekonomi kategorisinde', { skip }, async () => {
+test('emekliye ayrılan kaynaklar (Investing) bir kez kapatılır ve haberleri silinir', { skip }, async () => {
   const { getFirestore } = require('firebase-admin/firestore');
-  const { addNewSources } = require('../src/maintenance');
-  const { buildArticle } = require('../src/ingest');
+  const { retireSources, addNewSources } = require('../src/maintenance');
   const db = getFirestore();
+  await db.doc('sources/investing-ekonomi').set({ source_name: 'Investing.com', is_active: true });
+  await db.doc('articles/inv1').set({ source_id: 'investing-ekonomi', title: 'x' });
+  await db.doc('articles/inv2').set({ source_id: 'investing-ekonomi', title: 'y' });
+  await db.doc('articles/ntv1').set({ source_id: 'ntv-ekonomi', title: 'z' });
 
-  assert.deepEqual(await addNewSources(db), { done: true, added: 3 });
+  assert.deepEqual(await retireSources(db), { done: true, removed: 2 });
+  assert.equal((await db.doc('sources/investing-ekonomi').get()).get('is_active'), false);
+  assert.equal((await db.doc('articles/inv1').get()).exists, false);
+  assert.equal((await db.doc('articles/ntv1').get()).exists, true, 'diğer kaynaklara dokunulmaz');
+  assert.deepEqual(await retireSources(db), { done: true, removed: 0 }, 'bir kerelik');
+  // Yeni kaynak ekleme adımı Investing'i geri getirmez
+  await db.doc('app_meta/sources').delete();
   assert.deepEqual(await addNewSources(db), { done: true, added: 0 });
-  const src = (await db.doc('sources/investing-ekonomi').get()).data();
-  assert.equal(src.category_id.id, 'ekonomi');
-  assert.equal(src.topic_only, true);
-  assert.equal(src.allow_images, false);
-
-  const a = buildArticle(
-    { title: 'Dolar yükseldi', link: 'https://tr.investing.com/news/x', enclosure: { url: 'https://i.investing.com/a.jpg', type: 'image/jpeg' } },
-    { source: { id: 'investing-ekonomi', ...src }, categoryRef: src.category_id, placeholderImageUrl: '', now: new Date() }
-  ).data;
-  assert.equal(a.topic_only, true);
-  assert.equal(a.image_url, '');
 });
