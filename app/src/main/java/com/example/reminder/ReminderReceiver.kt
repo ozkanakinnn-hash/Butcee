@@ -37,6 +37,23 @@ class ReminderReceiver : BroadcastReceiver() {
           val title = if (en) "🌙 Ramadan Day $day • Daily Tip" else "🌙 Ramazan'ın $day. Günü • Günün Bilgisi"
           NotificationHelper.sendNotification(context, title, com.example.data.FastingKnowledge.tipForDay(day).text, notificationId = type.requestCode)
         }
+      } else if (type == ReminderScheduler.Type.CUMA) {
+        val en = prefs.language == "en"
+        val time = String.format(java.util.Locale.ROOT, "%02d:%02d", targetDay.get(Calendar.HOUR_OF_DAY), targetDay.get(Calendar.MINUTE))
+        val title = if (en) "🕌 Friday prayer at $time" else "🕌 Cuma namazı $time'de"
+        NotificationHelper.sendNotification(context, title, CumaMessages.random(en), notificationId = type.requestCode)
+      } else if (type == ReminderScheduler.Type.IFTAR_LIVE) {
+        if (isFastingDay) {
+          val en = prefs.language == "en"
+          NotificationHelper.sendLiveCountdown(
+            context,
+            title = if (en) "🍽️ Time until iftar" else "🍽️ İftara kalan süre",
+            message = if (en) "${prefs.province} • Iftar ${String.format(java.util.Locale.ROOT, "%02d:%02d", targetDay.get(Calendar.HOUR_OF_DAY), targetDay.get(Calendar.MINUTE))}"
+                      else "${prefs.province} • İftar ${String.format(java.util.Locale.ROOT, "%02d:%02d", targetDay.get(Calendar.HOUR_OF_DAY), targetDay.get(Calendar.MINUTE))}",
+            targetMillis = targetMillis,
+            notificationId = type.requestCode,
+          )
+        }
       } else if (type.name.startsWith("PRAYER_")) {
         val time = String.format(java.util.Locale.ROOT, "%02d:%02d", targetDay.get(Calendar.HOUR_OF_DAY), targetDay.get(Calendar.MINUTE))
         val place = "${prefs.province} / ${prefs.district}"

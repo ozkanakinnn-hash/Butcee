@@ -60,6 +60,20 @@ object DiyanetSource {
     return findDay(sp.getString("month|$id", null), dateStr)
   }
 
+  /** Önbellekteki tüm tablo (imsakiye için), bugünden itibaren; yoksa boş. */
+  fun cachedMonth(context: Context, country: String, province: String, district: String, fromDateStr: String? = null): List<Day> {
+    val sp = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+    val id = sp.getString("id|${norm(country)}|${norm(province)}|${norm(district)}", null) ?: return emptyList()
+    return parseAll(sp.getString("month|$id", null)).let { all ->
+      if (fromDateStr == null) all else all.dropWhile { it.date != fromDateStr }.ifEmpty { all }
+    }
+  }
+
+  internal fun parseAll(json: String?): List<Day> = try {
+    val arr = JSONArray(json ?: "[]")
+    (0 until arr.length()).mapNotNull { parse(arr.getJSONObject(it)) }
+  } catch (_: Exception) { emptyList() }
+
   internal fun findDay(json: String?, dateStr: String): Day? {
     if (json.isNullOrBlank()) return null
     return try {

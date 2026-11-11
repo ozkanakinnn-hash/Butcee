@@ -85,6 +85,48 @@ object NotificationHelper {
     }
   }
 
+  /** Canlı geri sayım kanalı: sessiz, bildirim çubuğunda kalır. */
+  private const val LIVE_CHANNEL_ID = "ramazan_rehberi_live_v1"
+
+  /**
+   * İftara canlı geri sayım: bildirimde saniye saniye azalan sayaç (Chronometer), hedefte kendiliğinden kalkar.
+   * Ses çalmaz; iftar anında ezan bildirimi ayrıca gelir.
+   */
+  fun sendLiveCountdown(context: Context, title: String, message: String, targetMillis: Long, notificationId: Int) {
+    if (targetMillis <= System.currentTimeMillis()) return
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+      val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+      manager.createNotificationChannel(
+        NotificationChannel(LIVE_CHANNEL_ID, "İftar Geri Sayımı", NotificationManager.IMPORTANCE_LOW).apply {
+          description = "Ramazan'da iftara kalan süre (sessiz)"
+          setShowBadge(false)
+        }
+      )
+    }
+    val launchIntent = context.packageManager.getLaunchIntentForPackage(context.packageName)
+    val contentIntent = launchIntent?.let {
+      PendingIntent.getActivity(context, 0, it, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
+    }
+    val builder = NotificationCompat.Builder(context, LIVE_CHANNEL_ID)
+      .setSmallIcon(R.drawable.ic_stat_mosque)
+      .setContentTitle(title)
+      .setContentText(message)
+      .setWhen(targetMillis)
+      .setShowWhen(true)
+      .setUsesChronometer(true)
+      .setChronometerCountDown(true)
+      .setOngoing(true)
+      .setOnlyAlertOnce(true)
+      .setSilent(true)
+      .setCategory(NotificationCompat.CATEGORY_PROGRESS)
+      .setTimeoutAfter(targetMillis - System.currentTimeMillis())
+      .setContentIntent(contentIntent)
+    try {
+      NotificationManagerCompat.from(context).notify(notificationId, builder.build())
+    } catch (e: SecurityException) {
+    }
+  }
+
   /** Ezan sesli kanal (res/raw/ezan_aksam.mp3). Kanal sesi sonradan değişmez; ses değişirse ID değiştirilmeli. */
   private const val EZAN_CHANNEL_ID = "ramazan_rehberi_ezan_v2"
 

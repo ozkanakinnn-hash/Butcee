@@ -20,6 +20,8 @@ object ReminderScheduler {
     PRAYER_AKSAM(7204, "Akşam"), PRAYER_YATSI(7205, "Yatsı"),
     // Ramazan boyunca her gün farklı faydalı oruç bilgisi
     FASTING_TIP(7301, "Oruç Bilgisi"),
+    // Cuma namazı hatırlatıcısı ve Ramazan'da canlı iftar geri sayımı
+    CUMA(7302, "Cuma"), IFTAR_LIVE(7303, "İftar Sayacı"),
     // Bildirim sihirbazı: 1 dakika sonra arka plan testi
     TEST(7901, "Test")
   }
@@ -65,6 +67,9 @@ object ReminderScheduler {
     schedule(context, Type.PRAYER_YATSI, on && prefs.notifyYatsi, prefs.lastYatsi, 0, tomorrow?.yatsi)
     // Her gün 13:00'te kurulur; yalnızca Ramazan günlerinde bildirim gösterilir
     schedule(context, Type.FASTING_TIP, on, FASTING_TIP_TIME, 0)
+    // İftardan 60 dk önce canlı geri sayım (yalnızca oruç günlerinde gösterilir)
+    schedule(context, Type.IFTAR_LIVE, on && prefs.liveIftarCountdown, prefs.lastAksam, 60, tomorrow?.aksam)
+    scheduleCuma(context, prefs, on && prefs.notifyCuma)
     // Ana ekran widget'larını da güncel tut
     com.example.widget.WidgetUpdater.updateAll(context)
   }
@@ -98,8 +103,37 @@ object ReminderScheduler {
     if (type == Type.FASTING_TIP) {
       // Günlük bilgi kritik değil: esnek pencere (pil dostu, ezan alarmlarının kotasını kullanmaz)
       alarmManager.setWindow(AlarmManager.RTC_WAKEUP, triggerAt, 15 * 60_000L, pi)
+    } else if (type == Type.IFTAR_LIVE) {
+      // Canlı sayaç hedef saati gösterdiğinden birkaç dk gecikme sorun değil
+      alarmManager.setWindow(AlarmManager.RTC_WAKEUP, triggerAt, 3 * 60_000L, pi)
     } else {
       setPrecise(context, alarmManager, triggerAt, pi)
+    }
+  }
+
+  /** Bir sonraki Cuma, öğle vaktinden [AppPreferences.cumaMinutesBefore] dk önce. */
+  private fun scheduleCuma(context: Context, prefs: AppPreferences, enabled: Boolean) {
+    val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+    if (!enabled) { alarmManager.cancel(pendingIntent(context, Type.CUMA, 0L)); return }
+    val now = System.currentTimeMillis()
+    val day = Calendar.getInstance()
+    repeat(8) {
+      if (day.get(Calendar.DAY_OF_WEEK) == Calendar.FRIDAY) {
+        val ds = java.text.SimpleDateFormat("dd.MM.yyyy", java.util.Locale.ROOT).format(day.time)
+        val ogle = (if (prefs.useCoordinates) null else runCatching {
+          com.example.data.DiyanetSource.cachedDay(context, prefs.country, prefs.province, prefs.district, ds)?.ogle
+        }.getOrNull()) ?: prefs.lastOgle
+        val m = PrayerTimeUtils.parseTimeToMinutes(ogle)
+        val target = (day.clone() as Calendar).apply {
+          set(Calendar.HOUR_OF_DAY, m / 60); set(Calendar.MINUTE, m % 60); set(Calendar.SECOND, 0); set(Calendar.MILLISECOND, 0)
+        }
+        val triggerAt = target.timeInMillis - prefs.cumaMinutesBefore * 60_000L
+        if (triggerAt > now + 30_000L) {
+          alarmManager.setWindow(AlarmManager.RTC_WAKEUP, triggerAt, 5 * 60_000L, pendingIntent(context, Type.CUMA, target.timeInMillis))
+          return
+        }
+      }
+      day.add(Calendar.DAY_OF_MONTH, 1)
     }
   }
 

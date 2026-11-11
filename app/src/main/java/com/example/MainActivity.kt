@@ -99,6 +99,9 @@ sealed class ActiveSubScreen {
   data object SpiritualNotes : ActiveSubScreen()
   data object Zikirmatik : ActiveSubScreen()
   data object Esma : ActiveSubScreen()
+  data object Calculators : ActiveSubScreen()
+  data object Imsakiye : ActiveSubScreen()
+  data object Backup : ActiveSubScreen()
 }
 
 data class NavTabItem(
@@ -466,7 +469,10 @@ fun RamazanRehberiApp(
             onOpenNotes = { activeSubScreen = ActiveSubScreen.SpiritualNotes },
             onOpenSettings = { showSettingsDialog = true },
             onOpenZikirmatik = { activeSubScreen = ActiveSubScreen.Zikirmatik },
-            onOpenEsma = { activeSubScreen = ActiveSubScreen.Esma }
+            onOpenEsma = { activeSubScreen = ActiveSubScreen.Esma },
+            onOpenCalculators = { activeSubScreen = ActiveSubScreen.Calculators },
+            onOpenImsakiye = { activeSubScreen = ActiveSubScreen.Imsakiye },
+            onOpenBackup = { activeSubScreen = ActiveSubScreen.Backup }
           )
         }
       }
@@ -553,6 +559,18 @@ fun RamazanRehberiApp(
           }
           is ActiveSubScreen.Zikirmatik -> com.example.ui.screens.ZikirmatikScreen(onNavigateBack = { activeSubScreen = null })
           is ActiveSubScreen.Esma -> com.example.ui.screens.EsmaulHusnaScreen(onNavigateBack = { activeSubScreen = null })
+          is ActiveSubScreen.Calculators -> com.example.ui.screens.CalculatorsScreen(onNavigateBack = { activeSubScreen = null })
+          is ActiveSubScreen.Imsakiye -> com.example.ui.screens.ImsakiyeScreen(prefs = prefs, onNavigateBack = { activeSubScreen = null })
+          is ActiveSubScreen.Backup -> {
+            val act = androidx.compose.ui.platform.LocalContext.current as? android.app.Activity
+            com.example.ui.screens.BackupScreen(
+              onNavigateBack = { activeSubScreen = null },
+              onRestored = {
+                ReminderScheduler.rescheduleAll(AppHolder.context)
+                act?.recreate()
+              }
+            )
+          }
           is ActiveSubScreen.SpiritualNotes -> SpiritualNotesScreen(
             prefs = prefs,
             onNavigateBack = { activeSubScreen = null }

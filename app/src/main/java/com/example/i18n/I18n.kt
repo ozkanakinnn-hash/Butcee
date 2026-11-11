@@ -10,6 +10,18 @@ object AppLanguage {
 }
 
 private val dictionary: Map<String, String> = mapOf(
+    "İmsakiye" to "Timetable",
+    "30 günlük vakitler\nPDF olarak paylaş" to "30-day prayer times\nShare as PDF",
+    "Fitre • Zekât" to "Fitrah • Zakat",
+    "Fitre, fidye ve\nzekât hesaplayıcı" to "Fitrah, fidyah and\nzakat calculator",
+    "Yedekle & Geri Yükle" to "Backup & Restore",
+    "Zikir, kaza, hatim\nve notlarınızı koruyun" to "Keep your dhikr, prayers,\nkhatm and notes",
+    "🕌 Cuma Hatırlatıcısı" to "🕌 Friday Reminder",
+    "Cuma günü öğleden önce ayet/hadisle hatırlatır" to "Reminds you before Friday prayer with a verse or hadith",
+    "Öğleden önce:" to "Before Dhuhr:",
+    "dk" to "min",
+    "⏳ Canlı İftar Sayacı" to "⏳ Live Iftar Countdown",
+    "Oruç günlerinde iftardan 1 saat önce bildirim çubuğunda saniye saniye geri sayım" to "On fasting days, a live countdown in the notification bar 1 hour before iftar",
     "(Resmî ilçe vakitleri)" to "(Official district times)",
     "🔒 Kayıtlarınız cihazınızda kalır. Vakitler, Diyanet İşleri Başkanlığı'nın yayımladığı tablolar esas alınarak gösterilir; bu uygulama Diyanet ile bağlantılı değildir." to "🔒 Your data stays on your device. Times are based on the tables published by Türkiye's Presidency of Religious Affairs (Diyanet); this app is not affiliated with Diyanet.",
     "Tüm dünya şehirleri" to "Cities worldwide",

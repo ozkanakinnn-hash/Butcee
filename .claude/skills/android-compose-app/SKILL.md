@@ -178,3 +178,11 @@ gradle/actions/setup-gradle@v5 → `./gradlew assembleDebug` → upload-artifact
 - Diyanet "Kıble Açısı" = manyetik, ~2010 sapmasıyla (Saruhanlı 141, İstanbul 147, Ankara 155 birebir). iOS'ta WMM yok: bugünkü sapma − 0,1°×(yıl−2010,5).
 - Kıble ekranı testleri: Robolectric'te `captureToImage` zaman aşımına uğrar → `createAndroidComposeRule<ComponentActivity>()` + `decorView.draw(Canvas)`; sonsuz `LaunchedEffect` döngüsü varsa `mainClock.autoAdvance = false`.
 - Pusula kararlılığı: uyarlamalı süzgeç (birim vektör, sakin τ=0,45 sn / dönüşte τ=0,08 sn, histerezis 15°→2°, 0,6° ölü bölge) → 4° ham gürültü ekranda 0,5°, 90° dönüş 0,32 sn'de; manyetik parazit = ölçülen alan WMM beklenen alandan %30+ farklı.
+
+## Dinî araçlar ve yardımcı özellikler (Ramazan Rehberi'nden)
+- **Fitre/fidye/zekât:** Diyanet Din İşleri Yüksek Kurulu her Ramazan fitreyi açıklar (2026→2027: 240 TL; günlük fidye = fitre). Zekât: nisap 80,18 g altın (20 miskal), oran %2,5; altın fiyatını kullanıcı girer. Tutarı sabit + düzenlenebilir alan yap, yılı ekranda yaz.
+- **İmsakiye PDF:** `PdfDocument` (A4 595×842) + `FileProvider` + `ACTION_SEND` (application/pdf). Robolectric'te PdfDocument yerel kodu yok ("document is closed!") → sayfa çizimini ayrı fonksiyona ayır, testte Bitmap'e çiz.
+- **Canlı geri sayım bildirimi:** `setUsesChronometer(true)` + `setChronometerCountDown(true)` + `setWhen(hedef)` + `setOngoing` + `setTimeoutAfter`; sessiz düşük önemli kanal; alarmı `setWindow` ile kur (kritik değil).
+- **Cuma hatırlatıcısı:** sonraki Cuma'nın öğle vakti (Diyanet tablosundan) − N dk, `setWindow`.
+- **Yedekleme:** SharedPreferences dosyalarını tipli JSON'a dök (b/i/l/f/s/ss), SAF `CreateDocument`/`OpenDocument`; satın alma (Premium) durumunu ASLA yedeğe koyma (yedekle Premium açılmasın); geri yüklemeden sonra alarmları kur + `activity.recreate()`; dosya boyut sınırı.
+- Yeni ekranları `Surface` ya da `CompositionLocalProvider(LocalContentColor provides onBackground)` içine al; yoksa renksiz `Text` koyu temada siyah kalır.

@@ -122,6 +122,20 @@ class AppPreferences(context: Context) {
     get() = prefs.getBoolean("key_notify_yatsi", true)
     set(value) = prefs.edit().putBoolean("key_notify_yatsi", value).apply()
 
+  /** Cuma namazı hatırlatıcısı (Cuma günü öğleden önce) */
+  var notifyCuma: Boolean
+    get() = prefs.getBoolean("key_notify_cuma", true)
+    set(value) = prefs.edit().putBoolean("key_notify_cuma", value).apply()
+
+  var cumaMinutesBefore: Int
+    get() = prefs.getInt("key_cuma_minutes_before", 45)
+    set(value) = prefs.edit().putInt("key_cuma_minutes_before", value).apply()
+
+  /** Ramazan'da iftardan 1 saat önce bildirim çubuğunda canlı geri sayım */
+  var liveIftarCountdown: Boolean
+    get() = prefs.getBoolean("key_live_iftar_countdown", true)
+    set(value) = prefs.edit().putBoolean("key_live_iftar_countdown", value).apply()
+
   // Vaktinden Önce Hatırlatıcılar & Dinamik Dakika Barları
   var remindBeforeImsak: Boolean
     get() = prefs.getBoolean("key_remind_before_imsak", false)

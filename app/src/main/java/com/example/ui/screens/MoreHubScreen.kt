@@ -71,6 +71,9 @@ fun MoreHubScreen(
   onOpenSettings: () -> Unit,
   onOpenZikirmatik: () -> Unit = {},
   onOpenEsma: () -> Unit = {},
+  onOpenCalculators: () -> Unit = {},
+  onOpenImsakiye: () -> Unit = {},
+  onOpenBackup: () -> Unit = {},
   modifier: Modifier = Modifier
 ) {
   LazyColumn(
@@ -262,6 +265,31 @@ fun MoreHubScreen(
       }
     }
 
+    // İmsakiye & Hesaplayıcılar
+    item {
+      Row(
+        modifier = Modifier
+          .fillMaxWidth()
+          .padding(horizontal = 16.dp, vertical = 6.dp),
+        horizontalArrangement = Arrangement.spacedBy(10.dp)
+      ) {
+        HubCard(
+          title = t("İmsakiye"),
+          subtitle = t("30 günlük vakitler\nPDF olarak paylaş"),
+          iconRes = R.drawable.ic_hub_imsakiye,
+          onClick = onOpenImsakiye,
+          modifier = Modifier.weight(1f)
+        )
+        HubCard(
+          title = t("Fitre • Zekât"),
+          subtitle = t("Fitre, fidye ve\nzekât hesaplayıcı"),
+          iconRes = R.drawable.ic_hub_calc,
+          onClick = onOpenCalculators,
+          modifier = Modifier.weight(1f)
+        )
+      }
+    }
+
     // Özel Gün Kartları & Widget
     item {
       Row(
@@ -309,6 +337,24 @@ fun MoreHubScreen(
           onClick = onOpenSettings,
           modifier = Modifier.weight(1f)
         )
+      }
+    }
+
+    item {
+      Row(
+        modifier = Modifier
+          .fillMaxWidth()
+          .padding(horizontal = 16.dp, vertical = 6.dp),
+        horizontalArrangement = Arrangement.spacedBy(10.dp)
+      ) {
+        HubCard(
+          title = t("Yedekle & Geri Yükle"),
+          subtitle = t("Zikir, kaza, hatim\nve notlarınızı koruyun"),
+          iconRes = R.drawable.ic_hub_backup,
+          onClick = onOpenBackup,
+          modifier = Modifier.weight(1f)
+        )
+        Spacer(modifier = Modifier.weight(1f))
       }
     }
 

@@ -444,6 +444,39 @@ fun SettingsDialog(
                   minutes = remindBeforeYatsiMin,
                   onMinutesChanged = { remindBeforeYatsiMin = it; prefs.remindBeforeYatsiMinutes = it }
                 )
+
+                // Cuma hatırlatıcısı ve canlı iftar sayacı
+                HorizontalDivider(modifier = Modifier.padding(vertical = 10.dp), color = MaterialTheme.colorScheme.outlineVariant)
+                var notifyCuma by remember { mutableStateOf(prefs.notifyCuma) }
+                var cumaMin by remember { mutableStateOf(prefs.cumaMinutesBefore) }
+                var liveIftar by remember { mutableStateOf(prefs.liveIftarCountdown) }
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                  Column(Modifier.weight(1f)) {
+                    Text(t("🕌 Cuma Hatırlatıcısı"), fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                    Text(t("Cuma günü öğleden önce ayet/hadisle hatırlatır"), fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                  }
+                  Switch(checked = notifyCuma, onCheckedChange = { notifyCuma = it; prefs.notifyCuma = it })
+                }
+                if (notifyCuma) {
+                  Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Text(t("Öğleden önce:"), fontSize = 12.sp)
+                    listOf(15, 30, 45, 60).forEach { m ->
+                      androidx.compose.material3.FilterChip(
+                        selected = cumaMin == m,
+                        onClick = { cumaMin = m; prefs.cumaMinutesBefore = m },
+                        label = { Text("$m " + t("dk"), fontSize = 12.sp) }
+                      )
+                    }
+                  }
+                }
+                Spacer(modifier = Modifier.height(6.dp))
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                  Column(Modifier.weight(1f)) {
+                    Text(t("⏳ Canlı İftar Sayacı"), fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                    Text(t("Oruç günlerinde iftardan 1 saat önce bildirim çubuğunda saniye saniye geri sayım"), fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                  }
+                  Switch(checked = liveIftar, onCheckedChange = { liveIftar = it; prefs.liveIftarCountdown = it })
+                }
               }
             }
           }
