@@ -1,4 +1,9 @@
+import 'dart:ui';
+
+import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
@@ -14,6 +19,17 @@ import 'services/notification_service.dart';
 import 'services/team_follow_sync.dart';
 import 'theme.dart';
 
+/// Çökme raporları (Firebase Crashlytics): yalnızca sürüm derlemelerinde gönderilir.
+void _setupCrashReporting() {
+  final crashlytics = FirebaseCrashlytics.instance;
+  crashlytics.setCrashlyticsCollectionEnabled(kReleaseMode);
+  FlutterError.onError = crashlytics.recordFlutterFatalError;
+  PlatformDispatcher.instance.onError = (error, stack) {
+    crashlytics.recordError(error, stack, fatal: true);
+    return true;
+  };
+}
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final settings = await AppSettings.load();
@@ -23,6 +39,12 @@ Future<void> main() async {
     // android/app/google-services.json varsa seçenekler oradan okunur.
     await Firebase.initializeApp();
     AppStorage.configure(); // Firestore ve görsel önbellek sınırları
+    _setupCrashReporting();
+    // App Check: istekler Play Integrity ile doğrulanır. Konsolda "zorunlu" yapılana kadar yalnızca ölçülür;
+    // zorunlu kılma YALNIZCA uygulama Play Store'dan dağıtılırken açılmalı (yan yüklenen APK doğrulanamaz).
+    FirebaseAppCheck.instance
+        .activate(providerAndroid: kReleaseMode ? const AndroidPlayIntegrityProvider() : const AndroidDebugProvider())
+        .catchError((Object e) => debugPrint('App Check başlatılamadı: $e'));
   } catch (e) {
     debugPrint('Firebase başlatılamadı: $e');
     firebaseReady = false;

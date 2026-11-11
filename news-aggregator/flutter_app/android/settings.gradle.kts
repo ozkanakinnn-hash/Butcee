@@ -23,6 +23,8 @@ plugins {
     id("org.jetbrains.kotlin.android") version "2.4.0" apply false
     // Firebase: android/app/google-services.json dosyasını okur.
     id("com.google.gms.google-services") version "4.4.4" apply false
+    // Crashlytics: R8 eşleme dosyasını yükler (yerel Android yığın izleri okunur olsun).
+    id("com.google.firebase.crashlytics") version "3.0.6" apply false
 }
 
 include(":app")

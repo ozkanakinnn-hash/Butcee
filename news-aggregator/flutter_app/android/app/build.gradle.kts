@@ -8,6 +8,7 @@ plugins {
 // yoksa uygulama yine derlenir ve açılışta "Firebase yapılandırılmadı" ekranı gösterir.
 if (file("google-services.json").exists()) {
     apply(plugin = "com.google.gms.google-services")
+    apply(plugin = "com.google.firebase.crashlytics")
 } else {
     logger.warn("UYARI: android/app/google-services.json bulunamadı — Firebase devre dışı.")
 }
