@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Yasal sayfalardaki ve config.dart'taki [[...]] yer tutucularını doldurur.
 # Kullanım: tool/fill-legal.sh "Ad Soyad" "eposta@ornek.com" "+90 5xx xxx xx xx" "İlçe / İl, Türkiye"
+# (E-posta zaten işlendiyse ikinci argüman yok sayılır.)
 set -euo pipefail
 cd "$(dirname "$0")/.."
 [ $# -eq 4 ] || { echo "Kullanım: $0 \"Ad Soyad\" \"eposta\" \"telefon\" \"adres\""; exit 1; }

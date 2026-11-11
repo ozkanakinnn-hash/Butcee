@@ -12,7 +12,7 @@ class AppConfig {
 
   /// Telif hakkı sahiplerinin içerik kaldırma talebi göndereceği adres ("Uyar-Kaldır").
   /// tool/fill-legal.sh iletişim e-postasıyla doldurur.
-  static const copyrightEmail = '[[EPOSTA]]';
+  static const copyrightEmail = 'haberakisinfo@gmail.com';
 
   static const privacyPolicyUrl = '$siteUrl/gizlilik';
   static const termsUrl = '$siteUrl/kullanim-kosullari';
