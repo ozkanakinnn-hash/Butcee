@@ -1,4 +1,4 @@
-package com.haberakisi.haber_akisi
+package akinai.app1
 
 import com.google.firebase.messaging.RemoteMessage
 import io.flutter.plugins.firebase.messaging.FlutterFirebaseMessagingService

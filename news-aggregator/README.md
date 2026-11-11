@@ -150,7 +150,7 @@ yayından önce tarayıcıda açıp doğrulayın.
 ### 3b. Uygulama — Flutter koduyla (FlutterFlow'suz)
 ```bash
 cd news-aggregator/flutter_app
-# Firebase Console → Android uygulaması ekle (paket: com.haberakisi.haber_akisi)
+# Firebase Console → Android uygulaması ekle (paket: akinai.app1)
 # indirilen google-services.json → android/app/google-services.json
 flutter pub get
 flutter run

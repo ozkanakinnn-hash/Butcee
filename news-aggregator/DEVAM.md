@@ -4,7 +4,7 @@ Bu klasörü Claude Desktop'ta açtıktan sonra yeni sohbete şunu yaz:
 "news-aggregator/DEVAM.md dosyasını oku ve oradan devam edelim."
 
 ## Durum (7 Kasım 2026)
-- Uygulama: Flutter (news-aggregator/flutter_app), paket `com.haberakisi.haber_akisi`, Firebase projesi `haber-68a3c`.
+- Uygulama: Flutter (news-aggregator/flutter_app), paket `akinai.app1` (eski: com.haberakisi.haber_akisi), Firebase projesi `haber-68a3c`.
 - Botlar Firebase Cloud Functions'ta (Blaze) çalışıyor: fetchRssFeeds (20 dk), cleanupOldArticles (04:00),
   footballTick (1 dk). Kod: news-aggregator/firebase/functions. Dağıtım: `npx -y firebase-tools@15 deploy --only functions,firestore`
   (news-aggregator/firebase klasöründe; önce `firebase login` ve `firebase use haber-68a3c`).

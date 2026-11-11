@@ -1,4 +1,4 @@
-package com.haberakisi.haber_akisi
+package akinai.app1
 
 import io.flutter.embedding.android.FlutterActivity
 

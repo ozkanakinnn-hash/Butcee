@@ -289,3 +289,8 @@ description: Flutter/FlutterFlow + Firebase (Firestore, Cloud Functions) uygulam
 - **Gizlilik metni gerçeği yansıtsın:** hesap yok, tercihler cihazda, FCM token/konu, anonim sayaç, AdMob+UMP, Crashlytics, App Check; yurt dışı aktarım KVKK m.9 (standart sözleşme / arızi hâlde açık rıza). Avukat incelemesi öner.
 - **Crashlytics + App Check:** `firebase_crashlytics`, `firebase_app_check`; `setCrashlyticsCollectionEnabled(kReleaseMode)`, FlutterError + PlatformDispatcher.onError. App Check `AndroidPlayIntegrityProvider` (release) / `AndroidDebugProvider` (debug). ⚠️ Zorunlu kılmayı (enforcement) ancak uygulama Play'den dağıtılınca aç — yan yüklenen APK'lar doğrulanamaz ve Firestore'a erişemez. Gradle: `com.google.firebase.crashlytics` 3.0.x eklentisi (google-services ile birlikte koşullu uygula).
 - **Hesap türü:** Kişisel Play hesabı → 12 testçi × 14 gün kapalı test şartı; kurumsal hesap D-U-N-S ister. Vergi (GVK 20/B vs ticari kazanç) için mali müşavire yönlendir.
+
+## 20. Paket adı düzeni (kullanıcı kararı 2026-11-11) ⭐ TÜM UYGULAMALARDA
+- Kullanıcının uygulamaları **`akinai.appN`** düzeniyle adlandırılır: Haber Akışı = `akinai.app1`, sonraki uygulama `akinai.app2`, sonra `akinai.app3` … Yeni uygulamaya başlarken sıradaki numarayı sor/kontrol et (kullanılanlar: app1 = Haber Akışı).
+- Tamamı küçük harf (Apple paket kimlikleri büyük/küçük harf duyarsız). Android `applicationId` + `namespace` aynı; Kotlin dosyaları `kotlin/akinai/appN/`. iOS bundle ID de aynı değer.
+- Yayından sonra paket adı DEĞİŞTİRİLEMEZ. Değiştirirken: Firebase'de yeni Android uygulaması ekle → yeni google-services.json (package_name eşleşmezse derleme düşer); telefondaki eski paket ayrı uygulama olarak kalır, kaldırılmalı.

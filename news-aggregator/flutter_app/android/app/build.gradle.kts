@@ -14,7 +14,7 @@ if (file("google-services.json").exists()) {
 }
 
 android {
-    namespace = "com.haberakisi.haber_akisi"
+    namespace = "akinai.app1"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -27,7 +27,7 @@ android {
 
     defaultConfig {
         // Uygulama kimliği Play Store'a ilk yüklemeden sonra DEĞİŞTİRİLEMEZ — yayından önce kesinleştirin.
-        applicationId = "com.haberakisi.haber_akisi"
+        applicationId = "akinai.app1"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion

@@ -1,4 +1,4 @@
-package com.haberakisi.haber_akisi
+package akinai.app1
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
