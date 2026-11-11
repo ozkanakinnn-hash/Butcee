@@ -32,7 +32,7 @@ class WeatherService {
   Weather? _cache;
   DateTime? _cachedAt;
 
-  static const _userAgent = 'HaberAkisi/1.0 github.com/ozkanakinnn-hash/Butcee';
+  static const _userAgent = 'HaberAkisi/1.0 +https://haber-68a3c.web.app';
 
   /// Konum izni durumu (yalnızca okur, istemez).
   static Future<LocationPermission> permission() => Geolocator.checkPermission();
@@ -76,10 +76,10 @@ class WeatherService {
       }
     } catch (_) {}
 
-    // MET Norway en fazla 4 ondalık basamak ister.
+    // MET Norway en fazla 4 ondalık ister; gizlilik için 2 ondalık (≈1 km) gönderilir.
     final uri = Uri.https('api.met.no', '/weatherapi/locationforecast/2.0/compact', {
-      'lat': pos.latitude.toStringAsFixed(3),
-      'lon': pos.longitude.toStringAsFixed(3),
+      'lat': pos.latitude.toStringAsFixed(2),
+      'lon': pos.longitude.toStringAsFixed(2),
     });
     final res = await _client.get(uri, headers: {'User-Agent': _userAgent});
     if (res.statusCode != 200) return _cache;

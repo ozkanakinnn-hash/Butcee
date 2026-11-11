@@ -290,6 +290,16 @@ class _SettingsPageState extends State<SettingsPage> with WidgetsBindingObserver
               onTap: () => _open(Uri.parse(AppConfig.termsUrl)),
             ),
             ListTile(
+              leading: const Icon(Icons.policy_outlined),
+              title: Text(s.kvkkNotice),
+              onTap: () => _open(Uri.parse(AppConfig.kvkkUrl)),
+            ),
+            ListTile(
+              leading: const Icon(Icons.badge_outlined),
+              title: Text(s.imprint),
+              onTap: () => _open(Uri.parse(AppConfig.imprintUrl)),
+            ),
+            ListTile(
               leading: const Icon(Icons.copyright),
               title: Text(s.copyrightNotice),
               subtitle: Text('${s.copyrightNoticeDesc}\n${AppConfig.copyrightEmail}'),

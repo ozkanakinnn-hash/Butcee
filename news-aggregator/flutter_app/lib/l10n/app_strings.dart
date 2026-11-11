@@ -52,6 +52,8 @@ class S {
   String get legal => _t('Yasal', 'Legal');
   String get privacyPolicy => _t('Gizlilik Politikası (KVKK/GDPR)', 'Privacy Policy (GDPR)');
   String get terms => _t('Kullanım Koşulları', 'Terms of Use');
+  String get kvkkNotice => _t('KVKK Aydınlatma Metni', 'Personal Data Notice (KVKK)');
+  String get imprint => _t('Künye ve İletişim', 'Imprint & Contact');
   String get copyrightNotice => _t('Telif Hakkı Bildirimi (Uyar-Kaldır)', 'Copyright Notice (Takedown)');
   String get copyrightNoticeDesc => _t(
     'İçeriğinizin kaldırılmasını istiyorsanız bize e-posta gönderin; talepler en geç 48 saat içinde işleme alınır.',

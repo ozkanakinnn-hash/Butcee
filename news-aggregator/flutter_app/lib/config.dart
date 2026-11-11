@@ -7,10 +7,15 @@ class AppConfig {
   /// Ana akışta her sayfada çekilecek haber sayısı (Firestore kuralı en fazla 50'ye izin verir).
   static const pageSize = 20;
 
-  /// Telif hakkı sahiplerinin içerik kaldırma talebi göndereceği adres ("Uyar-Kaldır").
-  static const copyrightEmail = 'telif@uygulamaadiniz.com';
+  /// Yasal sayfaların yayınlandığı site (Firebase Hosting: firebase/hosting/public).
+  static const siteUrl = 'https://haber-68a3c.web.app';
 
-  /// GitHub Pages veya kendi sitenizde yayınlanan metinler.
-  static const privacyPolicyUrl = 'https://uygulamaadiniz.com/gizlilik';
-  static const termsUrl = 'https://uygulamaadiniz.com/kullanim-kosullari';
+  /// Telif hakkı sahiplerinin içerik kaldırma talebi göndereceği adres ("Uyar-Kaldır").
+  /// tool/fill-legal.sh iletişim e-postasıyla doldurur.
+  static const copyrightEmail = '[[EPOSTA]]';
+
+  static const privacyPolicyUrl = '$siteUrl/gizlilik';
+  static const termsUrl = '$siteUrl/kullanim-kosullari';
+  static const kvkkUrl = '$siteUrl/kvkk';
+  static const imprintUrl = '$siteUrl/kunye';
 }
