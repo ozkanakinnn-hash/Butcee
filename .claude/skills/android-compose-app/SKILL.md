@@ -109,6 +109,9 @@ gradle/actions/setup-gradle@v5 → `./gradlew assembleDebug` → upload-artifact
 
 ## Play Store yayın hazırlığı (her uygulamada kontrol et)
 - Paket adı (applicationId) ilk yüklemeden sonra değişmez: geçici/şablon adları yayından önce değiştir.
+- **Kullanıcının paket adı kuralı:** `com.ozkanakin.<uygulamaadi>` (Android applicationId = iOS bundle id). Uygulamalar: 1) Haber Akışı (`com.haberakisi.haber_akisi`, eski kural), 2) Ramazan Rehberi (`com.ozkanakin.ramazanrehberi`). Yeni uygulamalarda bu öneki kullan; Wear sürümü aynı applicationId'yi kullanır. Firebase `google-services.json` bu ada göre indirilmeli.
+- Play politikası: `USE_EXACT_ALARM` yalnızca alarm saati/takvim uygulamalarına; namaz/hatırlatıcı uygulamalarında `SCHEDULE_EXACT_ALARM` kullan + izin yoksa Ayarlar'da uyarı ve `ACTION_REQUEST_SCHEDULE_EXACT_ALARM` düğmesi.
+- "Diyanet" adı 633 sayılı Kanun gereği izinsiz isim/marka olarak kullanılamaz: arayüzde "resmî takvim/ilçe vakitleri" de, bağlantısızlık notu ekle; mağaza adında/ikonda kullanma. Diyanet meali telifli (izin ya da telifsiz meal).
 - Gizlilik politikası (docs/ + GitHub Pages), uygulama içi bağlantı; "veriler yalnızca cihazda" gibi iddialar reklam/analitik SDK varken yanıltıcıdır.
 - Test/hata ayıklama düğmeleri `BuildConfig.DEBUG` arkasında.
 - Wear + telefon aynı ilanda: sürüm kodları farklı olmalı (wear = 1_000_000 + kod), kod tek yerden (gradle.properties).

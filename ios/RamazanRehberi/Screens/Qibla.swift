@@ -235,9 +235,9 @@ struct QiblaView: View {
 
         // Diyanet bilgileri
         VStack(alignment: .leading, spacing: 8) {
-          Text(en ? "Qibla Data (Diyanet method)" : "Diyanet Kıble Bilgileri").font(.system(size: 16, weight: .bold))
+          Text(en ? "Qibla Data" : "Kıble Bilgileri").font(.system(size: 16, weight: .bold))
           if let d = compass.declination {
-            row(en ? "Qibla angle (Diyanet)" : "Kıble Açısı (Diyanet)", "\(QiblaCalc.diyanetPublishedAngle(trueBearing: q, currentDeclination: d))°", bold: true)
+            row(en ? "Qibla angle (official calendar)" : "Kıble açısı (resmî takvim)", "\(QiblaCalc.diyanetPublishedAngle(trueBearing: q, currentDeclination: d))°", bold: true)
           }
           row(en ? "Qibla angle (true north)" : "Kıble açısı (gerçek kuzey)", String(format: "%.1f°", q))
           if let d = compass.declination {

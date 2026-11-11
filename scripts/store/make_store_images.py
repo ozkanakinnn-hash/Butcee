@@ -123,7 +123,7 @@ slides = [
     shot_slide('ss01_ramazan.png', "Ramazan'ı Dolu<br>Dolu Yaşayın", "İftar ve sahur sayacı, fener süslemeleri ve her gün değişen mahya ile Ramazan ruhu cebinizde.", '16_ramazan_anasayfa'),
     shot_slide('ss02_oruc_ilerleme.png', "Orucunuzun Ne<br>Kadarı Tamam?", "Yüzde ilerleme çubuğu, iftara kalan süre ve sizi motive eden ayet ve hadisler.", '16b_ramazan_oruc_ilerleme'),
     notif_slide(),
-    shot_slide('ss04_kuran.png', "Kur'an-ı Kerim<br>Sayfa Sayfa", "604 sayfa Medine mushafı; Arapça, Türkçe okunuş ve Diyanet meali tek dokunuşla.", '04b_okuyucu_bakara'),
+    shot_slide('ss04_kuran.png', "Kur'an-ı Kerim<br>Sayfa Sayfa", "604 sayfa Medine mushafı; Arapça, Türkçe okunuş ve meal tek dokunuşla.", '04b_okuyucu_bakara'),
     shot_slide('ss05_hatim.png', "Hatminizi<br>Takip Edin", "Okuduğunuz cüz ve sureleri işaretleyin, ilerlemenizi görün, hatimlerinizi sayın.", '04f_hatim'),
     shot_slide('ss06_kible.png', "Kıbleyi<br>Hassas Bulun", "Pusula ile kıble yönü, günün Kıble Saati ve yakındaki camilere yol tarifi.", '07_kible'),
     shot_slide('ss07_takvim.png', "Oruç Takvimi ve<br>Dini Günler", "Oruçlarınızı planlayın, kaza borcunuzu takip edin; kandil ve bayramları kaçırmayın.", '05_takvim'),

@@ -10,7 +10,7 @@ android {
   compileSdk { version = release(36) { minorApiLevel = 1 } }
 
   defaultConfig {
-    applicationId = "com.abacusai.ramazanrehberi.t1793533738"
+    applicationId = "com.ozkanakin.ramazanrehberi"
     minSdk = 30
     targetSdk = 36
     versionCode = 1_000_000 + (project.findProperty("APP_VERSION_CODE") as String).toInt()

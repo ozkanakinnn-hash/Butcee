@@ -1,5 +1,6 @@
 package com.example.ui.screens
 
+import com.example.i18n.t
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
@@ -179,7 +180,7 @@ fun OnboardingScreen(
               )
               Spacer(modifier = Modifier.height(4.dp))
               Text(
-                text = "Diyanet İşleri Başkanlığı'nın desteklediği tüm dünya şehirlerinden vakitler hesaplanır.",
+                text = t("Türkiye'deki tüm ilçeler ve dünya şehirleri için namaz vakitleri gösterilir."),
                 fontSize = 12.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
               )

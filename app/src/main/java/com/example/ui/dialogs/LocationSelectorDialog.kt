@@ -1,5 +1,6 @@
 package com.example.ui.dialogs
 
+import com.example.i18n.t
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
@@ -140,7 +141,7 @@ fun LocationSelectorDialog(
               color = MaterialTheme.colorScheme.onSurface
             )
             Text(
-              text = "Diyanet destekli tüm dünya şehirleri",
+              text = t("Tüm dünya şehirleri"),
               style = MaterialTheme.typography.bodySmall,
               color = MaterialTheme.colorScheme.onSurfaceVariant
             )

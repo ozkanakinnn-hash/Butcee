@@ -310,16 +310,16 @@ fun QiblaFinderScreen(
     // ── Diyanet verileri ──
     Card(Modifier.fillMaxWidth().testTag("qibla_diyanet_card"), shape = RoundedCornerShape(18.dp)) {
       Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text(L("Diyanet Kıble Bilgileri", "Qibla Data (Diyanet method)"), fontWeight = FontWeight.Bold, fontSize = 16.sp)
-        InfoRow(L("Kıble Açısı (Diyanet)", "Qibla angle (Diyanet)"), "${diyanetAngle}°", bold = true)
+        Text(L("Kıble Bilgileri", "Qibla Data"), fontWeight = FontWeight.Bold, fontSize = 16.sp)
+        InfoRow(L("Kıble açısı (resmî takvim)", "Qibla angle (official calendar)"), "${diyanetAngle}°", bold = true)
         InfoRow(L("Kıble açısı (gerçek kuzey)", "Qibla angle (true north)"), String.format(Locale.ROOT, "%.1f°", trueBearing))
         InfoRow(L("Bugünkü el pusulası açısı", "Today's hand-compass angle"), "${QiblaCalculator.diyanetAngle(trueBearing, declination)}°")
         InfoRow(L("Manyetik sapma (bugün)", "Magnetic declination (today)"), String.format(Locale.ROOT, "%+.1f°", declination))
         distanceKm?.let { InfoRow(L("Kâbe'ye uzaklık", "Distance to the Kaaba"), String.format(Locale.ROOT, "%,.0f km", it)) }
         InfoRow(L("Bugünkü Kıble Saati", "Today's qibla time"), qiblaTime ?: "—", bold = true)
         Text(
-          L("Kıble Saati'nde güneşe dönen kişi kıbleye dönmüş olur; güneş mıknatıs ve metalden etkilenmez. Diyanet'in açısı tablonun hazırlandığı yılın manyetik sapmasına göredir; bugün manyetik kuzey biraz kaydığı için el pusulasında 1–2° farklı okunur. Uygulamanın ibresi gerçek kuzeye göre hesaplandığından bu farktan etkilenmez.",
-            "At the qibla time, facing the sun means facing the qibla. Diyanet's angle uses the magnetic declination of the year its table was prepared, so a hand compass today reads 1–2° differently. The app's needle uses true north and is not affected."),
+          L("Kıble Saati'nde güneşe dönen kişi kıbleye dönmüş olur; güneş mıknatıs ve metalden etkilenmez. Resmî takvimdeki açı, tablonun hazırlandığı yılın manyetik sapmasına göredir; bugün manyetik kuzey biraz kaydığı için el pusulasında 1–2° farklı okunur. Uygulamanın ibresi gerçek kuzeye göre hesaplandığından bu farktan etkilenmez.",
+            "At the qibla time, facing the sun means facing the qibla. The official calendar angle uses the magnetic declination of the year its table was prepared, so a hand compass today reads 1–2° differently. The app's needle uses true north and is not affected."),
           fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
       }

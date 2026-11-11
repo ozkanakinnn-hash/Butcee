@@ -45,6 +45,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -270,7 +271,7 @@ fun SettingsDialog(
                     fontSize = 14.sp
                   )
                   Text(
-                    text = "${prefs.country} " + (if (prefs.useCoordinates) t("(GPS koordinatına göre)") else t("(Diyanet Uyumlu Vakitler)")),
+                    text = "${prefs.country} " + (if (prefs.useCoordinates) t("(GPS koordinatına göre)") else t("(Resmî ilçe vakitleri)")),
                     fontSize = 11.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                   )
@@ -359,6 +360,26 @@ fun SettingsDialog(
               }
 
               if (notificationsEnabled) {
+                // Android 12+: tam zamanlı alarm kullanıcı onayı ister; yoksa ezan birkaç dakika gecikebilir
+                val exactOk = android.os.Build.VERSION.SDK_INT < 31 ||
+                  (context.getSystemService(android.content.Context.ALARM_SERVICE) as android.app.AlarmManager).canScheduleExactAlarms()
+                if (!exactOk) {
+                  Spacer(modifier = Modifier.height(8.dp))
+                  Column(
+                    modifier = Modifier.fillMaxWidth()
+                      .background(MaterialTheme.colorScheme.errorContainer, RoundedCornerShape(12.dp))
+                      .padding(10.dp)
+                  ) {
+                    Text(t("⏰ Ezanın dakikası dakikasına gelmesi için \"Alarm ve hatırlatıcılar\" iznini açın."),
+                      fontSize = 12.sp, color = MaterialTheme.colorScheme.onErrorContainer)
+                    TextButton(onClick = {
+                      runCatching {
+                        context.startActivity(android.content.Intent(android.provider.Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM,
+                          android.net.Uri.parse("package:${context.packageName}")).addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK))
+                      }
+                    }) { Text(t("İzni aç")) }
+                  }
+                }
                 HorizontalDivider(modifier = Modifier.padding(vertical = 10.dp), color = MaterialTheme.colorScheme.outlineVariant)
 
                 // 1. İmsak / Sahur
@@ -604,7 +625,7 @@ fun SettingsDialog(
             Icon(imageVector = Icons.Default.Lock, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(14.dp))
             Spacer(modifier = Modifier.width(6.dp))
             Text(
-              text = t("🔒 Kayıtlarınız cihazınızda kalır • Diyanet ile resmî bağı yoktur"),
+              text = t("🔒 Kayıtlarınız cihazınızda kalır. Vakitler, Diyanet İşleri Başkanlığı'nın yayımladığı tablolar esas alınarak gösterilir; bu uygulama Diyanet ile bağlantılı değildir."),
               fontSize = 10.sp,
               color = MaterialTheme.colorScheme.onSurfaceVariant
             )

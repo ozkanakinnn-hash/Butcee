@@ -10,6 +10,12 @@ object AppLanguage {
 }
 
 private val dictionary: Map<String, String> = mapOf(
+    "(Resmî ilçe vakitleri)" to "(Official district times)",
+    "🔒 Kayıtlarınız cihazınızda kalır. Vakitler, Diyanet İşleri Başkanlığı'nın yayımladığı tablolar esas alınarak gösterilir; bu uygulama Diyanet ile bağlantılı değildir." to "🔒 Your data stays on your device. Times are based on the tables published by Türkiye's Presidency of Religious Affairs (Diyanet); this app is not affiliated with Diyanet.",
+    "Tüm dünya şehirleri" to "Cities worldwide",
+    "Türkiye'deki tüm ilçeler ve dünya şehirleri için namaz vakitleri gösterilir." to "Prayer times for every district in Türkiye and cities worldwide.",
+    "⏰ Ezanın dakikası dakikasına gelmesi için \"Alarm ve hatırlatıcılar\" iznini açın." to "⏰ Turn on \"Alarms & reminders\" so the adhan arrives on the exact minute.",
+    "İzni aç" to "Allow",
     "Uygulama beklenmedik şekilde kapandı" to "The app closed unexpectedly",
     "Raporu Kopyala" to "Copy report",
     "Kapat" to "Close",
