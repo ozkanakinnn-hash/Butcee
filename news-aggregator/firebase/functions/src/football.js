@@ -282,6 +282,10 @@ function buildLiveMessage(match, now = Date.now()) {
       elapsed: String(match.status.elapsed ?? 0),
       sent_ms: String(now),
       finished: match.is_finished ? '1' : '0',
+      // Başlamadıysa panelin ortasında başlama saati (ör. "20:00")
+      kickoff_text: match.kickoff && match.kickoff.toDate
+        ? new Intl.DateTimeFormat('tr-TR', { timeZone: TIMEZONE, hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(match.kickoff.toDate())
+        : '',
     },
     android: { priority: 'high', ttl: 10 * 60 * 1000, collapseKey: `live_${match.fixture_id}` },
   };

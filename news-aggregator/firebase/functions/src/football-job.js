@@ -25,6 +25,8 @@ const HALFTIME_RESUME_MS = 13 * 60_000;
 // Takip sayaçları (team_follows) en fazla 15 dk'da bir okunur (≤18 belge).
 const FOLLOWS_TTL_MS = 15 * 60_000;
 const FAST_WINDOW_MS = 50_000;
+/** Canlı skor paneli maçtan bu kadar önce (başlama saatiyle) bir kez gösterilir; API isteği harcamaz. */
+const PREMATCH_PANEL_MS = 10 * 60_000;
 const TEAMS_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 const log = (...a) => console.log(new Date().toISOString().slice(11, 19), ...a);
 
@@ -313,6 +315,24 @@ async function pollOnce(db, api, messaging, active) {
   return activeMatches(db);
 }
 
+/** Başlamak üzere olan maçlar için panel (kayıtlı bilgiyle, istek yok); maç başına bir kez. */
+async function sendPrematchPanels(db, messaging, active, now = Date.now()) {
+  const pre = active.filter((m) => !m.is_live && !m.is_finished && !m.prematch_sent &&
+    (m.status ? m.status.short : 'NS') === 'NS' &&
+    m.kickoff.toMillis() - now <= PREMATCH_PANEL_MS && m.kickoff.toMillis() > now - 5 * 60_000);
+  if (!pre.length) return 0;
+  try {
+    await messaging.sendEach(pre.map((m) => fb.buildLiveMessage(m, now)));
+    const batch = db.batch();
+    pre.forEach((m) => batch.set(db.doc(`matches/${m.fixture_id}`), { prematch_sent: true }, { merge: true }));
+    await batch.commit();
+    log(`Maç öncesi panel: ${pre.map((m) => `${m.home.name}-${m.away.name}`).join(', ')}`);
+  } catch (err) {
+    log(`Maç öncesi panel gönderilemedi: ${err.message}`);
+  }
+  return pre.length;
+}
+
 /**
  * Kalan maç süresine ve günlük kalan isteğe göre bir sonraki kontrole kadar bekleme.
  * `later`: bugün daha sonra başlayacak maçlar — günlük istek sınırı olan sağlayıcıda (Highlightly, 100/gün)
@@ -384,6 +404,7 @@ async function tick(db, makeApi, messaging, now = Date.now(), { fast = false, sl
   const followed = await followedTeamIds(db, meta, now);
   active = active.filter(involves(followed));
   if (active.length === 0) return 'idle-unfollowed';
+  await sendPrematchPanels(db, messaging, active, now);
   const anyLive = active.some((m) => m.is_live);
   const nextKickoff = Math.min(...active.map((m) => m.kickoff.toMillis()));
   if (!anyLive && nextKickoff - now > 90_000) return 'waiting-kickoff';
@@ -421,5 +442,5 @@ async function tick(db, makeApi, messaging, now = Date.now(), { fast = false, sl
 
 module.exports = {
   check, currentSeason, syncTeams, syncTodayFixtures, syncNationalFixtures, cleanupOldMatches, activeMatches,
-  prepare, pollOnce, nextWaitMs, laterMatchesToday, followedTeamIds, halftimeAwareWait, tick, START_EARLY_MS,
+  prepare, pollOnce, sendPrematchPanels, nextWaitMs, laterMatchesToday, followedTeamIds, halftimeAwareWait, tick, START_EARLY_MS,
 };

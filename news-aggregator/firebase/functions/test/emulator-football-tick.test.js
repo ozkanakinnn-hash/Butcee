@@ -312,6 +312,13 @@ test('milli maç: lig maçı olmayan gün Türkiye maçı bulunur; takip olmasa 
 
   await tick(db, makeApi, messaging);
   const doc = (await db.doc('matches/501').get()).data();
+  // Maçtan önce (başlama 1 dk sonra): panel saatle bir kez gösterilir, API isteği yok
+  assert.equal(panels.length, 1, 'maç öncesi panel');
+  assert.equal(panels[0].data.status, 'NS');
+  assert.match(panels[0].data.kickoff_text, /^\d\d:\d\d$/);
+  assert.equal(doc.prematch_sent, true);
+  await tick(db, makeApi, messaging);
+  assert.equal(panels.length, 1, 'ikinci kez gönderilmez');
   assert.equal(doc.national, true);
   assert.equal(doc.home.name, 'Türkiye');
   assert.equal(doc.away.name, 'Belçika');
