@@ -383,4 +383,14 @@ class AppSmokeTest {
         assertEquals(R.drawable.emoji_1f952, akinai.minikgurme.ui.components.emojiArtFor(kabak.emoji))
         assertEquals(R.drawable.emoji_cucumber, akinai.minikgurme.ui.components.emojiArtFor(salatalik.emoji))
     }
+
+    @Test
+    fun everyFoodHasItsOwnImage() {
+        val foods = akinai.minikgurme.data.guide.FoodDirectoryData.allFoods
+        val art = foods.associate { it.name to akinai.minikgurme.ui.components.emojiArtFor(it.emoji) }
+        assertTrue("Görseli olmayan: " + art.filterValues { it == null }.keys, art.values.none { it == null })
+        val dup = art.entries.groupBy({ it.value }, { it.key }).filterValues { it.size > 1 }.values
+        assertTrue("Aynı görseli paylaşanlar: $dup", dup.isEmpty())
+        assertEquals(R.drawable.food_karnabahar, akinai.minikgurme.ui.components.emojiArtFor(akinai.minikgurme.data.guide.FoodDirectoryData.getFoodById("karnabahar")!!.emoji))
+    }
 }

@@ -184,7 +184,7 @@ object FoodDirectoryData {
             serving12m = "Karnabahar tabanlı bebek pizzası veya fırın mücver.",
             storageTips = "Buharda pişirildikten sonra 48 saat buzdolabında saklanabilir.",
             safetyAlert = "Çatalla ezilecek yumuşaklığa gelene kadar haşlayın.",
-            emoji = "🥦"
+            emoji = "🥦︀"
         ),
 
         // === MEYVELER ===
@@ -348,7 +348,7 @@ object FoodDirectoryData {
             serving12m = "Fırınlanmış zeytinyağlı somon dilimleri.",
             storageTips = "Pişirildiği gün taze tüketilmelidir.",
             safetyAlert = "KILÇIKLARI PARMAKLARINIZLA DEFALARCA KONTROL EDİN! En ufak kılçık kalmamalıdır.",
-            emoji = "🐟"
+            emoji = "🐟︀"
         ),
         FoodDirectoryItem(
             id = "tavuk_eti",
@@ -452,7 +452,7 @@ object FoodDirectoryData {
             serving12m = "Kendi kendine kaşıkla yeme pratikleri veya cacık şeklinde.",
             storageTips = "Buzdolabında taze mayalanmış olarak 5-7 gün saklanabilir.",
             safetyAlert = "Meyveli hazır şekerli yoğurtlar asla kullanılmamalıdır; yalnızca doğal sade yoğurt tercih edin.",
-            emoji = "🥣"
+            emoji = "🥣︀"
         ),
         FoodDirectoryItem(
             id = "bebek_loru",
@@ -472,7 +472,7 @@ object FoodDirectoryData {
             serving12m = "Lorlu bebek poğaçası veya fırın mücver harcında.",
             storageTips = "Taze hazırlanmalı ve 3 gün içinde tüketilmelidir.",
             safetyAlert = "Market peynirlerindeki yüksek tuzdan kaçının; mutlaka tuzsuz lor hazırlayın.",
-            emoji = "🧀"
+            emoji = "🧀︀"
         ),
         FoodDirectoryItem(
             id = "labne",
@@ -554,7 +554,7 @@ object FoodDirectoryData {
             serving12m = "Bebek keki veya pankeki harcına toz ceviz katılır.",
             storageTips = "Çekilmiş ceviz tozu buzdolabında cam kavanozda saklanmalı, acılaşmaması için taze çekilmelidir.",
             safetyAlert = "BÜTÜN CEVİZ PARÇALARI KESİNLİKLE BOĞULMA RİSKİDİR! Sadece un/toz halinde verin.",
-            emoji = "🌰"
+            emoji = "🌰︀"
         ),
         FoodDirectoryItem(
             id = "tahin",
@@ -695,7 +695,7 @@ object FoodDirectoryData {
             serving12m = "Pırasalı köfte veya sebzeli pilav içinde.",
             storageTips = "Yıkanıp doğranmış pırasa buzdolabında 3 gün dayanır.",
             safetyAlert = "Katmanlar arasındaki toprağı iyice yıkayın; lifli kısımları ince kıyın.",
-            emoji = "🥬"
+            emoji = "🥬︀"
         ),
         FoodDirectoryItem(
             id = "kereviz",
@@ -715,7 +715,7 @@ object FoodDirectoryData {
             serving12m = "Sebze çorbalarında ve yemeklerde.",
             storageTips = "Kesilen yüzeyi limonla kararmaz; buzdolabında 3 gün.",
             safetyAlert = "Çiğ sap kerevizi lifli ve serttir; 12 aydan önce çiğ vermeyin.",
-            emoji = "🥬"
+            emoji = "🥬︁"
         ),
         FoodDirectoryItem(
             id = "taze_fasulye",
@@ -795,7 +795,7 @@ object FoodDirectoryData {
             serving12m = "Lahana yemeği veya çorbası.",
             storageTips = "Bütün lahana buzdolabında 1–2 hafta dayanır.",
             safetyAlert = "Gaz sancısı olursa miktarı azaltın.",
-            emoji = "🥬"
+            emoji = "🥬︂"
         ),
         FoodDirectoryItem(
             id = "bruksel",
@@ -815,7 +815,7 @@ object FoodDirectoryData {
             serving12m = "Fırında yumuşak, dörde bölünmüş.",
             storageTips = "Buzdolabında 4–5 gün saklanır.",
             safetyAlert = "Bütün yuvarlak lahana boğulma riskidir; dörde bölün.",
-            emoji = "🥬"
+            emoji = "🥬︃"
         ),
         FoodDirectoryItem(
             id = "bamya",
@@ -835,7 +835,7 @@ object FoodDirectoryData {
             serving12m = "Küçük yumuşak dilimler halinde etli bamya.",
             storageTips = "Pişmiş bamya buzdolabında 2 gün dayanır.",
             safetyAlert = "Uç kısımlarını kesin ve iyice pişirin.",
-            emoji = "🫛"
+            emoji = "🫛︀"
         ),
         FoodDirectoryItem(
             id = "pazi",
@@ -855,7 +855,7 @@ object FoodDirectoryData {
             serving12m = "Pazılı omlet veya börek içi (tuzsuz).",
             storageTips = "Yıkanmış yapraklar buzdolabında 2 gün.",
             safetyAlert = "Nitrat nedeniyle pişmiş yeşillikleri bekletmeyin, aynı gün tüketin.",
-            emoji = "🥬"
+            emoji = "🥬︄"
         ),
         FoodDirectoryItem(
             id = "kuskonmaz",
@@ -935,7 +935,7 @@ object FoodDirectoryData {
             serving12m = "Rendelenmiş pişmiş pancar salatası.",
             storageTips = "Haşlanmış pancar buzdolabında 3 gün.",
             safetyAlert = "Nitrat içeriği nedeniyle 12 aydan önce az miktarda verin.",
-            emoji = "🍠"
+            emoji = "🍠︀"
         ),
         // === MEYVELER (eklenen) ===
         FoodDirectoryItem(
@@ -976,7 +976,7 @@ object FoodDirectoryData {
             serving12m = "Dilimler; kuru kayısı ise suda bekletilip ince kıyılmış.",
             storageTips = "Olgunlaşınca buzdolabında 3 gün saklayın.",
             safetyAlert = "Çekirdeğini mutlaka çıkarın; kuru kayısıyı bütün vermeyin.",
-            emoji = "🍑"
+            emoji = "🍑︀"
         ),
         FoodDirectoryItem(
             id = "erik",
@@ -996,7 +996,7 @@ object FoodDirectoryData {
             serving12m = "Dilimler halinde.",
             storageTips = "Olgun erik buzdolabında 3–4 gün dayanır.",
             safetyAlert = "Çekirdeğini çıkarın; fazlası ishal yapabilir.",
-            emoji = "🍑"
+            emoji = "🍑︁"
         ),
         FoodDirectoryItem(
             id = "kiraz",
@@ -1136,7 +1136,7 @@ object FoodDirectoryData {
             serving12m = "Zarı soyulmuş küçük dilimler.",
             storageTips = "Oda sıcaklığında 1 hafta, buzdolabında 2 hafta.",
             safetyAlert = "Meyve suyu vermeyin; meyvenin kendisini verin.",
-            emoji = "🍊"
+            emoji = "🍊︀"
         ),
         FoodDirectoryItem(
             id = "mango",
@@ -1196,7 +1196,7 @@ object FoodDirectoryData {
             serving12m = "Bütün olarak.",
             storageTips = "Yıkamadan buzdolabında 1–2 gün.",
             safetyAlert = "İyice yıkayın; dondurulmuşsa çözdürüp verin.",
-            emoji = "🍓"
+            emoji = "🍓︀"
         ),
         FoodDirectoryItem(
             id = "bogurtlen",
@@ -1216,7 +1216,7 @@ object FoodDirectoryData {
             serving12m = "Büyükse ikiye bölünmüş.",
             storageTips = "Yıkamadan buzdolabında 2 gün.",
             safetyAlert = "Büyük ve sert olanları bölün.",
-            emoji = "🫐"
+            emoji = "🫐︀"
         ),
         FoodDirectoryItem(
             id = "ayva",
@@ -1236,7 +1236,7 @@ object FoodDirectoryData {
             serving12m = "Şekersiz ayva tatlısından küçük parçalar.",
             storageTips = "Pişmiş ayva buzdolabında 3 gün.",
             safetyAlert = "Çiğ ayva çok serttir; asla çiğ vermeyin.",
-            emoji = "🍐"
+            emoji = "🍐︀"
         ),
         FoodDirectoryItem(
             id = "limon",
@@ -1297,7 +1297,7 @@ object FoodDirectoryData {
             serving12m = "Aile bulgur pilavı (tuzsuz).",
             storageTips = "Pişmiş bulgur buzdolabında 2 gün.",
             safetyAlert = "İri bulguru iyi pişirin, kuru kalmasın.",
-            emoji = "🌾"
+            emoji = "🌾︃"
         ),
         FoodDirectoryItem(
             id = "irmik",
@@ -1317,7 +1317,7 @@ object FoodDirectoryData {
             serving12m = "Şekersiz irmik tatlısı veya çorbalarda.",
             storageTips = "Kuru irmiği kapalı kapta serin yerde saklayın.",
             safetyAlert = "Şeker veya bal eklemeyin.",
-            emoji = "🌾"
+            emoji = "🌾︀"
         ),
         FoodDirectoryItem(
             id = "ekmek",
@@ -1377,7 +1377,7 @@ object FoodDirectoryData {
             serving12m = "Salata ve pilav olarak.",
             storageTips = "Pişmiş kinoa buzdolabında 3 gün.",
             safetyAlert = "Acılık veren saponini gidermek için pişirmeden önce iyice yıkayın.",
-            emoji = "🌾"
+            emoji = "🌾︁"
         ),
         FoodDirectoryItem(
             id = "karabugday",
@@ -1397,7 +1397,7 @@ object FoodDirectoryData {
             serving12m = "Karabuğday pankeki (şekersiz).",
             storageTips = "Kuru, kapalı kapta saklayın.",
             safetyAlert = "İyice pişirin.",
-            emoji = "🌾"
+            emoji = "🌾︂"
         ),
         FoodDirectoryItem(
             id = "arpa",
@@ -1437,7 +1437,7 @@ object FoodDirectoryData {
             serving12m = "Mercimek köftesi veya yemeği.",
             storageTips = "Pişmiş mercimek buzdolabında 3 gün, dondurucuda 1 ay.",
             safetyAlert = "Gaz yapmaması için ıslatın ve köpüğünü alın.",
-            emoji = "🫘"
+            emoji = "🫘︁"
         ),
         FoodDirectoryItem(
             id = "kuru_fasulye",
@@ -1457,7 +1457,7 @@ object FoodDirectoryData {
             serving12m = "Tuzsuz fasulye yemeği, taneler bastırılmış.",
             storageTips = "Pişmiş fasulye dondurucuda 1 ay.",
             safetyAlert = "Bütün sert taneler boğulma riskidir; ezerek verin.",
-            emoji = "🫘"
+            emoji = "🫘︀"
         ),
         FoodDirectoryItem(
             id = "barbunya",
@@ -1497,7 +1497,7 @@ object FoodDirectoryData {
             serving12m = "Sebzeli kuskus salatası.",
             storageTips = "Pişmiş kuskus buzdolabında 2 gün.",
             safetyAlert = "Kuru kalmamasına dikkat edin.",
-            emoji = "🍚"
+            emoji = "🍚︀"
         ),
         // === PROTEIN & ET (eklenen) ===
         FoodDirectoryItem(
@@ -1538,7 +1538,7 @@ object FoodDirectoryData {
             serving12m = "Hindi köftesi veya sebzeli yahni.",
             storageTips = "Pişmiş hindi buzdolabında 2 gün.",
             safetyAlert = "İçi pembe kalmayacak şekilde pişirin; işlenmiş hindi füme vermeyin.",
-            emoji = "🍗"
+            emoji = "🍗︀"
         ),
         FoodDirectoryItem(
             id = "ciger",
@@ -1558,7 +1558,7 @@ object FoodDirectoryData {
             serving12m = "Sebzeli yemeklere karıştırılmış.",
             storageTips = "Çiğ ciğeri aynı gün pişirin.",
             safetyAlert = "A vitamini çok yüksektir; haftada bir kezden fazla vermeyin.",
-            emoji = "🍖"
+            emoji = "🍖︀"
         ),
         FoodDirectoryItem(
             id = "levrek",
@@ -1578,7 +1578,7 @@ object FoodDirectoryData {
             serving12m = "Fırın balık, sebzelerle.",
             storageTips = "Taze balığı aynı gün pişirin.",
             safetyAlert = "KILÇIKLARI parmak uçlarınızla mutlaka kontrol edin.",
-            emoji = "🐟"
+            emoji = "🐟︁"
         ),
         FoodDirectoryItem(
             id = "cipura",
@@ -1598,7 +1598,7 @@ object FoodDirectoryData {
             serving12m = "Fırında balık, patatesle.",
             storageTips = "Taze balığı aynı gün pişirin.",
             safetyAlert = "Kılçıkları titizlikle ayıklayın.",
-            emoji = "🐟"
+            emoji = "🐟︂"
         ),
         FoodDirectoryItem(
             id = "mezgit",
@@ -1618,7 +1618,7 @@ object FoodDirectoryData {
             serving12m = "Balık köftesi veya buğulama.",
             storageTips = "Taze balığı aynı gün pişirin.",
             safetyAlert = "İnce kılçıklarını dikkatle ayıklayın.",
-            emoji = "🐟"
+            emoji = "🐟︃"
         ),
         FoodDirectoryItem(
             id = "sardalya",
@@ -1658,7 +1658,7 @@ object FoodDirectoryData {
             serving12m = "Yumuşak et parçaları sebzelerle.",
             storageTips = "Pişmiş et buzdolabında 2 gün.",
             safetyAlert = "Sert, iri parçalar boğulma riskidir; liflere ayırın.",
-            emoji = "🥩"
+            emoji = "🥩︀"
         ),
         FoodDirectoryItem(
             id = "tofu",
@@ -1678,7 +1678,7 @@ object FoodDirectoryData {
             serving12m = "Sebzelerle sotelenmiş küpler.",
             storageTips = "Açılan tofuyu suda, buzdolabında 3 gün saklayın.",
             safetyAlert = "Tuzsuz, sade tofu seçin.",
-            emoji = "🧈"
+            emoji = "🧈︀"
         ),
         FoodDirectoryItem(
             id = "karides",
@@ -1739,7 +1739,7 @@ object FoodDirectoryData {
             serving12m = "Küçük kare lokmalar, az miktarda.",
             storageTips = "Kendi suyunda buzdolabında saklayın.",
             safetyAlert = "Tuzlu peynir bebek böbreklerini yorar; tuzunu mutlaka alın.",
-            emoji = "🧀"
+            emoji = "🧀︁"
         ),
         FoodDirectoryItem(
             id = "mozzarella",
@@ -1779,7 +1779,7 @@ object FoodDirectoryData {
             serving12m = "Sos ve kahvaltılarda.",
             storageTips = "Açıldıktan sonra buzdolabında 3 gün.",
             safetyAlert = "Pastörize ürün seçin.",
-            emoji = "🥛"
+            emoji = "🥛︀"
         ),
         FoodDirectoryItem(
             id = "tereyagi",
@@ -1819,7 +1819,7 @@ object FoodDirectoryData {
             serving12m = "Ekmeğe sürülmüş veya sos olarak.",
             storageTips = "Açıldıktan sonra buzdolabında 3 gün.",
             safetyAlert = "Şekerli, aromalı yoğurt vermeyin.",
-            emoji = "🥛"
+            emoji = "🥛︁"
         ),
         // === TOHUMLAR & SAĞLIKLI YAĞLAR (eklenen) ===
         FoodDirectoryItem(
@@ -1840,7 +1840,7 @@ object FoodDirectoryData {
             serving12m = "Ezme veya toz olarak.",
             storageTips = "Kapalı kapta serin yerde saklayın.",
             safetyAlert = "BÜTÜN VEYA PARÇA BADEM 4 YAŞINA KADAR VERİLMEZ.",
-            emoji = "🌰"
+            emoji = "🌰︁"
         ),
         FoodDirectoryItem(
             id = "findik",
@@ -1880,7 +1880,7 @@ object FoodDirectoryData {
             serving12m = "Ezme veya öğütülmüş toz.",
             storageTips = "Kapalı kapta serin yerde saklayın.",
             safetyAlert = "Bütün kaju vermeyin.",
-            emoji = "🌰"
+            emoji = "🌰︂"
         ),
         FoodDirectoryItem(
             id = "chia",
@@ -1900,7 +1900,7 @@ object FoodDirectoryData {
             serving12m = "Chia puding (şekersiz).",
             storageTips = "Kuru, kapalı kapta saklayın.",
             safetyAlert = "Kuru chia boğazda şişebilir; mutlaka ıslatarak verin.",
-            emoji = "🌱"
+            emoji = "🌱︀"
         ),
         FoodDirectoryItem(
             id = "keten",
@@ -1920,7 +1920,7 @@ object FoodDirectoryData {
             serving12m = "Yoğurt ve lapalara serpilmiş.",
             storageTips = "Öğütülmüşü buzdolabında kapalı kapta saklayın.",
             safetyAlert = "Bütün tohum sindirilmez; öğütülmüş ve az miktarda verin.",
-            emoji = "🌱"
+            emoji = "🌱︁"
         ),
         FoodDirectoryItem(
             id = "kabak_cekirdegi",
@@ -1940,7 +1940,7 @@ object FoodDirectoryData {
             serving12m = "Toz olarak yoğurda.",
             storageTips = "Kapalı kapta serin yerde saklayın.",
             safetyAlert = "Bütün çekirdek boğulma riskidir; yalnızca toz verin.",
-            emoji = "🌰"
+            emoji = "🌰︃"
         ),
         // === BAHARAT & OTLAR (eklenen) ===
         FoodDirectoryItem(
@@ -1981,7 +1981,7 @@ object FoodDirectoryData {
             serving12m = "Mücver ve salatalarda.",
             storageTips = "Nemli kâğıda sarıp buzdolabında 3 gün.",
             safetyAlert = "İnce kıyın.",
-            emoji = "🌿"
+            emoji = "🌿︀"
         ),
         FoodDirectoryItem(
             id = "nane",
@@ -2001,7 +2001,7 @@ object FoodDirectoryData {
             serving12m = "Aile yemeklerindeki gibi.",
             storageTips = "Kuru naneyi kapalı kapta saklayın.",
             safetyAlert = "Nane yağı ve mentollü ürünler bebeğe uygun değildir.",
-            emoji = "🌿"
+            emoji = "🌿︁"
         ),
         FoodDirectoryItem(
             id = "tarcin",
@@ -2021,7 +2021,7 @@ object FoodDirectoryData {
             serving12m = "Fırın meyve ve pankeklerde.",
             storageTips = "Kapalı kapta, ışıksız yerde saklayın.",
             safetyAlert = "Yalnızca bir tutam kullanın; Seylan tarçını tercih edilir.",
-            emoji = "🌿"
+            emoji = "🌿︂"
         )
     )
 

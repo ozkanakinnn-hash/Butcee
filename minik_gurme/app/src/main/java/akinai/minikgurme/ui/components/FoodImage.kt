@@ -15,10 +15,56 @@ import akinai.minikgurme.R
 /**
  * Emoji → 3D çizim (Microsoft Fluent Emoji, MIT lisansı; drawable-nodpi/emoji_*.webp).
  * İstisnalar: 🥒 (emoji_1f952) sakız kabağı ve emoji_cucumber salatalık görselleri kullanıcı tarafından sağlandı.
+ * food_*.webp: aynı emojiyi paylaşan besinler için aynı çizimin besin rengine göre yeniden renklendirilmiş hâli
+ * (hindi: Fluent "Turkey", tarçın: Fluent "Wood"; ikisi de MIT).
  * Telefonun emoji yazı tipi yerine her cihazda aynı görünen görseller kullanılır.
  * Bu dosyadaki eşleme tool ile üretilir (README'ye bakın).
  */
 private val emojiArt: Map<String, Int> = mapOf(
+    // Aynı emojiyi paylaşan besinler: emoji + görünmez varyasyon seçici (U+FE00…) → yeniden renklendirilmiş çizim (food_*.webp)
+    "🍠\uFE00" to R.drawable.food_pancar,
+    "🥦\uFE00" to R.drawable.food_karnabahar,
+    "🥬\uFE00" to R.drawable.food_pirasa,
+    "🥬\uFE01" to R.drawable.food_kereviz,
+    "🥬\uFE02" to R.drawable.food_lahana,
+    "🥬\uFE03" to R.drawable.food_bruksel,
+    "🥬\uFE04" to R.drawable.food_pazi,
+    "🍐\uFE00" to R.drawable.food_ayva,
+    "🍑\uFE00" to R.drawable.food_kayisi,
+    "🍑\uFE01" to R.drawable.food_erik,
+    "🫐\uFE00" to R.drawable.food_bogurtlen,
+    "🥩\uFE00" to R.drawable.food_dana_eti,
+    "🐟\uFE00" to R.drawable.food_somon,
+    "🐟\uFE01" to R.drawable.food_levrek,
+    "🐟\uFE02" to R.drawable.food_cipura,
+    "🐟\uFE03" to R.drawable.food_mezgit,
+    "🍗\uFE00" to R.drawable.food_hindi,
+    "🥣\uFE00" to R.drawable.food_yogurt,
+    "🧀\uFE00" to R.drawable.food_bebek_loru,
+    "🧀\uFE01" to R.drawable.food_beyaz_peynir,
+    "🌰\uFE00" to R.drawable.food_ceviz,
+    "🌰\uFE01" to R.drawable.food_badem,
+    "🌰\uFE02" to R.drawable.food_kaju,
+    "🌰\uFE03" to R.drawable.food_kabak_cekirdegi,
+    "🫛\uFE00" to R.drawable.food_bamya,
+    "🌱\uFE00" to R.drawable.food_chia,
+    "🌱\uFE01" to R.drawable.food_keten,
+    "🍓\uFE00" to R.drawable.food_ahududu,
+    "🍊\uFE00" to R.drawable.food_portakal,
+    "🍚\uFE00" to R.drawable.food_kuskus,
+    "🌾\uFE00" to R.drawable.food_irmik,
+    "🌾\uFE01" to R.drawable.food_kinoa,
+    "🌾\uFE02" to R.drawable.food_karabugday,
+    "🌾\uFE03" to R.drawable.food_bulgur,
+    "🫘\uFE00" to R.drawable.food_kuru_fasulye,
+    "🫘\uFE01" to R.drawable.food_yesil_mercimek,
+    "🍖\uFE00" to R.drawable.food_ciger,
+    "🧈\uFE00" to R.drawable.food_tofu,
+    "🥛\uFE00" to R.drawable.food_keci_yogurdu,
+    "🥛\uFE01" to R.drawable.food_suzme_yogurt,
+    "🌿\uFE00" to R.drawable.food_dereotu,
+    "🌿\uFE01" to R.drawable.food_nane,
+    "🌿\uFE02" to R.drawable.food_tarcin,
     // Salatalık: 🥒 + metin seçici (U+FE0E) — 🥒 tek başına sakız kabağı çizimini gösterir
     "\uD83E\uDD52\uFE0E" to R.drawable.emoji_cucumber,
     "🫛" to R.drawable.emoji_1fadb,
@@ -111,6 +157,7 @@ private val emojiArt: Map<String, Int> = mapOf(
 
 /** Emojinin 3D çizimi; eşleşme yoksa null. */
 fun emojiArtFor(emoji: String): Int? = emojiArt[emoji] ?: emojiArt[emoji.replace("\uFE0F", "")]
+    ?: emojiArt[emoji.replace(Regex("[\uFE00-\uFE0D]"), "")]
 
 /** Besin/tarif görseli: emojinin 3D çizimi, yoksa emojinin kendisi. */
 @Composable
