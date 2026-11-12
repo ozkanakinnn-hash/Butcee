@@ -17,7 +17,7 @@ class IosPlatformServices : PlatformServices {
         NSBundle.mainBundle.objectForInfoDictionaryKey("CFBundleShortVersionString") as? String ?: ""
     override val isDebugBuild: Boolean = false
 
-    override fun toast(message: String) { /* 5. parçada: kısa bilgi balonu */ }
+    override fun toast(message: String) = akinai.minikgurme.ui.platform.InAppMessage.show(message)
 
     override fun copyText(text: String) { UIPasteboard.generalPasteboard.string = text }
 

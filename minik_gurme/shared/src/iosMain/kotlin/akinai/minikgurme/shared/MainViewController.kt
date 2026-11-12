@@ -24,7 +24,12 @@ fun MainViewController() = ComposeUIViewController {
         ThemePrefs.init()
         Community.init()
         Translator.load()
+        akinai.minikgurme.reminders.IosReminders.install()
+        akinai.minikgurme.reminders.IosReminders.reschedule()
         ready = true
     }
-    if (ready) MinikGurmeTheme { MinikGurmeApp() }
+    if (ready) MinikGurmeTheme {
+        MinikGurmeApp()
+        akinai.minikgurme.ui.platform.InAppMessageHost()
+    }
 }
