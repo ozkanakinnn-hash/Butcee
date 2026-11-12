@@ -1,0 +1,4 @@
+akinai.minikgurme.shared-androidMain-0 /home/user/Butcee/minik_gurme/shared/build/generated/updated_navigation_xml/androidMain/res
+akinai.minikgurme.shared-packageAndroidMainResources-1 /home/user/Butcee/minik_gurme/shared/build/intermediates/incremental/androidMain/packageAndroidMainResources/merged.dir
+akinai.minikgurme.shared-packageAndroidMainResources-2 /home/user/Butcee/minik_gurme/shared/build/intermediates/incremental/androidMain/packageAndroidMainResources/stripped.dir
+akinai.minikgurme.shared-packageAndroidMainResources-3 /home/user/Butcee/minik_gurme/shared/build/intermediates/packaged_res/androidMain/packageAndroidMainResources/res

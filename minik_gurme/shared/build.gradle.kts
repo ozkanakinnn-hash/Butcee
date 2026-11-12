@@ -12,6 +12,8 @@ kotlin {
     namespace = "akinai.minikgurme.shared"
     compileSdk = 36
     minSdk = 24
+    // Compose kaynakları (görseller, yazı tipleri, sözlük) Android'de de paketlensin
+    experimentalProperties["android.experimental.kmp.enableAndroidResources"] = true
   }
 
   listOf(iosArm64(), iosSimulatorArm64()).forEach { target ->
@@ -24,12 +26,16 @@ kotlin {
   sourceSets {
     commonMain.dependencies {
       implementation(libs.kotlinx.coroutines.core)
-      implementation(compose.runtime)
-      implementation(compose.foundation)
-      implementation(compose.material3)
-      implementation(compose.materialIconsExtended)
-      implementation(compose.components.resources)
+      api(compose.runtime)
+      api(compose.foundation)
+      api(compose.material3)
+      api(compose.materialIconsExtended)
+      api(compose.components.resources)
+      implementation(libs.kotlinx.serialization.json)
       api(libs.androidx.room.runtime) // @Entity modelleri (Room KMP)
+    }
+    androidMain.dependencies {
+      implementation(libs.androidx.core.ktx)
     }
     iosMain.dependencies {
       implementation(libs.androidx.sqlite.bundled)
@@ -38,6 +44,12 @@ kotlin {
       implementation(kotlin("test"))
     }
   }
+}
+
+compose.resources {
+  publicResClass = true
+  packageOfResClass = "akinai.minikgurme.resources"
+  generateResClass = always
 }
 
 // Room: veritabanı kodunu her platform için üret

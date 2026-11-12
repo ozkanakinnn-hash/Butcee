@@ -782,7 +782,7 @@ private fun LanguageCard() {
                             androidx.compose.material3.Text(label, maxLines = 1)
                         }
                     } else {
-                        OutlinedButton(onClick = { AppLanguage.set(context, code) }, modifier = tag) {
+                        OutlinedButton(onClick = { AppLanguage.set(code) }, modifier = tag) {
                             androidx.compose.material3.Text(label, maxLines = 1)
                         }
                     }

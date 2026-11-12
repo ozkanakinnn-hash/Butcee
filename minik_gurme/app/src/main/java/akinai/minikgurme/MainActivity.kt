@@ -43,11 +43,13 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         CrashReporter.install(applicationContext)
-        AppLanguage.init(applicationContext)
+        akinai.minikgurme.data.local.PlatformContext.init(applicationContext)
+        AppLanguage.init()
+        kotlinx.coroutines.runBlocking { akinai.minikgurme.i18n.Translator.load(akinai.minikgurme.i18n.composeFileReader(applicationContext)) }
         akinai.minikgurme.community.Community.init(applicationContext)
-        akinai.minikgurme.ui.theme.ThemePrefs.init(applicationContext)
+        akinai.minikgurme.ui.theme.ThemePrefs.init()
         // Duman testi / ilk açılış için dil seçimi: adb shell am start ... --es lang en
-        intent?.getStringExtra("lang")?.let { if (it == "tr" || it == "en") AppLanguage.set(applicationContext, it) }
+        intent?.getStringExtra("lang")?.let { if (it == "tr" || it == "en") AppLanguage.set(it) }
 
         val prefs = getSharedPreferences("app_prefs", MODE_PRIVATE)
         val babyId = Babies.activeId(this)

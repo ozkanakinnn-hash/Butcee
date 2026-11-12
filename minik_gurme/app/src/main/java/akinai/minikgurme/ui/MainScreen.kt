@@ -1,5 +1,6 @@
 package akinai.minikgurme.ui
 
+import akinai.minikgurme.resources.logo_emblem
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.foundation.layout.widthIn
 import akinai.minikgurme.ui.theme.*
@@ -207,7 +208,7 @@ fun MainScreen(
                 title = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         androidx.compose.foundation.Image(
-                            painter = androidx.compose.ui.res.painterResource(akinai.minikgurme.R.drawable.logo_emblem),
+                            painter = org.jetbrains.compose.resources.painterResource(akinai.minikgurme.resources.Res.drawable.logo_emblem),
                             contentDescription = "Minik Gurme",
                             modifier = Modifier
                                 .size(42.dp)

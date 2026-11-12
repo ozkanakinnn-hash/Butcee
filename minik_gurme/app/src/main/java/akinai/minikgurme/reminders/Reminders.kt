@@ -89,10 +89,11 @@ object Reminders {
 class ReminderReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         val kind = intent.getStringExtra("kind") ?: return
-        AppLanguage.init(context); Translator.load(context)
+        akinai.minikgurme.data.local.PlatformContext.init(context); AppLanguage.init()
         val pending = goAsync()
         CoroutineScope(Dispatchers.IO).launch {
             try {
+                Translator.load(akinai.minikgurme.i18n.composeFileReader(context))
                 when (kind) {
                     "allergen" -> {
                         val ongoing = AppDatabase.getDatabase(context).allergenTestDao().getAllTests().first().filter { it.status == "Devam Ediyor" }

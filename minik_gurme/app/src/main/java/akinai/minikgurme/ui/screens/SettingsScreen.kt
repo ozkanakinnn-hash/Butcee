@@ -273,10 +273,10 @@ fun SettingsScreen(
         Section("Görünüm") {
             Text("Tema", style = MaterialTheme.typography.bodyMedium, color = TextSecondary)
             Spacer(Modifier.height(8.dp))
-            Segmented(listOf("system" to "Sistem", "light" to "Açık", "dark" to "Koyu"), ThemePrefs.mode, "theme_") { ThemePrefs.set(context, it) }
+            Segmented(listOf("system" to "Sistem", "light" to "Açık", "dark" to "Koyu"), ThemePrefs.mode, "theme_") { ThemePrefs.set(it) }
         }
         Section("Dil / Language") {
-            Segmented(listOf("tr" to "Türkçe", "en" to "English"), AppLanguage.current, "settings_lang_", translate = false) { AppLanguage.set(context, it) }
+            Segmented(listOf("tr" to "Türkçe", "en" to "English"), AppLanguage.current, "settings_lang_", translate = false) { AppLanguage.set(it) }
         }
 
         Section("Hatırlatıcılar") {

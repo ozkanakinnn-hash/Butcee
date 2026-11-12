@@ -25,6 +25,9 @@ import org.robolectric.annotation.Config
 class DialogsTest {
     @get:Rule val compose = createComposeRule()
 
+    @org.junit.Before
+    fun initResources() = TestResources.init()
+
     private fun has(text: String) = compose.onAllNodesWithText(text).fetchSemanticsNodes().isNotEmpty()
 
     @Test

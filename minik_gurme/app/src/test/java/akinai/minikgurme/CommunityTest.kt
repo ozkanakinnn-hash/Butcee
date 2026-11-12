@@ -46,6 +46,7 @@ class CommunityTest {
 
     @Before
     fun setUp() {
+        TestResources.init()
         AppDatabase.closeAll()
         ctx.deleteDatabase("minik_gurme_db")
         ctx.getSharedPreferences("app_prefs", Context.MODE_PRIVATE).edit().clear().putBoolean(MainActivity.KEY_ONBOARDED, true)

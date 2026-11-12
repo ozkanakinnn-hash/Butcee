@@ -1,5 +1,8 @@
 package akinai.minikgurme
 
+import akinai.minikgurme.resources.emoji_1f952
+import akinai.minikgurme.resources.emoji_cucumber
+import akinai.minikgurme.resources.food_karnabahar
 import akinai.minikgurme.data.local.closeAll
 import akinai.minikgurme.data.local.getDatabase
 import android.content.Context
@@ -42,6 +45,7 @@ class AppSmokeTest {
 
     @org.junit.Before
     fun reset() {
+        TestResources.init()
         AppDatabase.closeAll()
         listOf("minik_gurme_db").forEach { ctx.deleteDatabase(it) }
         ctx.getSharedPreferences("app_prefs", Context.MODE_PRIVATE).edit().clear().commit()
@@ -383,8 +387,8 @@ class AppSmokeTest {
     fun zucchiniAndCucumberHaveOwnImages() {
         val kabak = akinai.minikgurme.data.guide.FoodDirectoryData.getFoodById("kabak")!!
         val salatalik = akinai.minikgurme.data.guide.FoodDirectoryData.getFoodById("salatalik")!!
-        assertEquals(R.drawable.emoji_1f952, akinai.minikgurme.ui.components.emojiArtFor(kabak.emoji))
-        assertEquals(R.drawable.emoji_cucumber, akinai.minikgurme.ui.components.emojiArtFor(salatalik.emoji))
+        assertEquals(akinai.minikgurme.resources.Res.drawable.emoji_1f952, akinai.minikgurme.ui.components.emojiArtFor(kabak.emoji))
+        assertEquals(akinai.minikgurme.resources.Res.drawable.emoji_cucumber, akinai.minikgurme.ui.components.emojiArtFor(salatalik.emoji))
     }
 
     @Test
@@ -394,7 +398,7 @@ class AppSmokeTest {
         assertTrue("Görseli olmayan: " + art.filterValues { it == null }.keys, art.values.none { it == null })
         val dup = art.entries.groupBy({ it.value }, { it.key }).filterValues { it.size > 1 }.values
         assertTrue("Aynı görseli paylaşanlar: $dup", dup.isEmpty())
-        assertEquals(R.drawable.food_karnabahar, akinai.minikgurme.ui.components.emojiArtFor(akinai.minikgurme.data.guide.FoodDirectoryData.getFoodById("karnabahar")!!.emoji))
+        assertEquals(akinai.minikgurme.resources.Res.drawable.food_karnabahar, akinai.minikgurme.ui.components.emojiArtFor(akinai.minikgurme.data.guide.FoodDirectoryData.getFoodById("karnabahar")!!.emoji))
     }
 
     @Test

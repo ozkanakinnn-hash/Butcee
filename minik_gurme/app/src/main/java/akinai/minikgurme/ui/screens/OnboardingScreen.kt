@@ -1,5 +1,6 @@
 package akinai.minikgurme.ui.screens
 
+import akinai.minikgurme.resources.logo_emblem
 import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.BorderStroke
@@ -111,7 +112,7 @@ fun OnboardingScreen(
                 listOf("tr" to "TR", "en" to "EN").forEach { (code, label) ->
                     val selected = AppLanguage.current == code
                     OutlinedButton(
-                        onClick = { AppLanguage.set(context, code) },
+                        onClick = { AppLanguage.set(code) },
                         modifier = Modifier.padding(start = 6.dp).height(34.dp).testTag("onb_lang_$code"),
                         border = BorderStroke(1.dp, if (selected) CoralPrimary else CardBorder),
                         colors = ButtonDefaults.outlinedButtonColors(
@@ -125,7 +126,7 @@ fun OnboardingScreen(
 
             Spacer(Modifier.height(12.dp))
             androidx.compose.foundation.Image(
-                painter = androidx.compose.ui.res.painterResource(akinai.minikgurme.R.drawable.logo_emblem),
+                painter = org.jetbrains.compose.resources.painterResource(akinai.minikgurme.resources.Res.drawable.logo_emblem),
                 contentDescription = "Minik Gurme",
                 modifier = Modifier
                     .size(132.dp)
