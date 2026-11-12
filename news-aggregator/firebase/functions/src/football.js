@@ -15,7 +15,7 @@
  */
 
 const { Timestamp } = require('firebase-admin/firestore');
-const { createTeamResolver } = require('./teams');
+const { createTeamResolver, teamKeyText } = require('./teams');
 const { isQuietHour } = require('./quiet-hours');
 
 const defaultResolver = createTeamResolver();
@@ -87,13 +87,25 @@ function matchDocFromFixture(f, resolve = defaultResolver) {
   };
   const home = team(f.teams.home);
   const away = team(f.teams.away);
-  const keyForApiTeam = (apiId) => (apiId === home.api_id ? home.id : apiId === away.api_id ? away.id : null);
+  // Olayın takımı: önce sağlayıcı kimliği (sayı/metin farkı gözetmeden), tutmazsa takım adı
+  const keyForApiTeam = (apiId, name) => {
+    if (apiId !== undefined && apiId !== null && apiId !== '') {
+      if (String(apiId) === String(home.api_id)) return home.id;
+      if (String(apiId) === String(away.api_id)) return away.id;
+    }
+    if (name) {
+      const key = resolve(name);
+      if (key === home.id || teamKeyText(name) === teamKeyText(f.teams.home.name)) return home.id;
+      if (key === away.id || teamKeyText(name) === teamKeyText(f.teams.away.name)) return away.id;
+    }
+    return null;
+  };
   const goalsEvents = (f.events || [])
     .filter((e) => e.type === 'Goal' && e.detail !== 'Missed Penalty')
     .map((e) => ({
       minute: (e.time && e.time.elapsed) || 0,
       extra: (e.time && e.time.extra) || 0,
-      team_id: keyForApiTeam(e.team && e.team.id),
+      team_id: keyForApiTeam(e.team && e.team.id, e.team && e.team.name),
       player: (e.player && e.player.name) || '',
       detail: e.detail || '',
     }));
@@ -102,7 +114,7 @@ function matchDocFromFixture(f, resolve = defaultResolver) {
     .map((e) => ({
       minute: (e.time && e.time.elapsed) || 0,
       extra: (e.time && e.time.extra) || 0,
-      team_id: keyForApiTeam(e.team && e.team.id),
+      team_id: keyForApiTeam(e.team && e.team.id, e.team && e.team.name),
       player: (e.player && e.player.name) || '',
       scored: !/missed/i.test(e.detail || ''),
     }));
@@ -111,7 +123,7 @@ function matchDocFromFixture(f, resolve = defaultResolver) {
     .map((e) => ({
       minute: (e.time && e.time.elapsed) || 0,
       extra: (e.time && e.time.extra) || 0,
-      team_id: keyForApiTeam(e.team && e.team.id),
+      team_id: keyForApiTeam(e.team && e.team.id, e.team && e.team.name),
       player: (e.player && e.player.name) || '',
     }));
   const redCards = (f.events || [])
@@ -119,7 +131,7 @@ function matchDocFromFixture(f, resolve = defaultResolver) {
     .map((e) => ({
       minute: (e.time && e.time.elapsed) || 0,
       extra: (e.time && e.time.extra) || 0,
-      team_id: keyForApiTeam(e.team && e.team.id),
+      team_id: keyForApiTeam(e.team && e.team.id, e.team && e.team.name),
       player: (e.player && e.player.name) || '',
       second_yellow: /second yellow/i.test(e.detail || ''),
     }));

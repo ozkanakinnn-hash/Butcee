@@ -84,7 +84,7 @@ function mapEvents(events) {
       const player = e.player && typeof e.player === 'object' ? e.player.name : e.player;
       out.push({
         time: parseMinute(e.time ?? e.minute),
-        team: { id: e.team && typeof e.team === 'object' ? e.team.id : e.teamId },
+        team: { id: e.team && typeof e.team === 'object' ? e.team.id : e.teamId, name: (e.team && typeof e.team === 'object' && (e.team.name || e.team.displayName)) || e.teamName || '' },
         player: { name: player || '' },
         type: 'Card',
         detail: 'Yellow Card',
@@ -96,7 +96,7 @@ function mapEvents(events) {
       const player = e.player && typeof e.player === 'object' ? e.player.name : e.player;
       out.push({
         time: parseMinute(e.time ?? e.minute),
-        team: { id: e.team && typeof e.team === 'object' ? e.team.id : e.teamId },
+        team: { id: e.team && typeof e.team === 'object' ? e.team.id : e.teamId, name: (e.team && typeof e.team === 'object' && (e.team.name || e.team.displayName)) || e.teamName || '' },
         player: { name: player || '' },
         type: 'Card',
         detail: /second|yellow ?red/.test(type) ? 'Second Yellow card' : 'Red Card',
@@ -109,7 +109,7 @@ function mapEvents(events) {
     const player = e.player && typeof e.player === 'object' ? e.player.name : e.player;
     out.push({
       time: parseMinute(e.time ?? e.minute),
-      team: { id: e.team && typeof e.team === 'object' ? e.team.id : e.teamId },
+      team: { id: e.team && typeof e.team === 'object' ? e.team.id : e.teamId, name: (e.team && typeof e.team === 'object' && (e.team.name || e.team.displayName)) || e.teamName || '' },
       player: { name: player || '' },
       type: 'Goal',
       detail,

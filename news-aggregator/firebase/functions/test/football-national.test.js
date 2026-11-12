@@ -56,6 +56,16 @@ test('milli maç: takım kimliğiyle bulunur, sorgu saklanır, tek maç yeniden 
   assert.equal(pd.goal_events[0].team_id, 'turkiye');
   assert.equal(fb.buildTimeline(pd), "H|21'|⚽ K. Yildiz");
   assert.equal(fb.buildTimeline({ ...pd, status: { short: '2H' } }).split('\n')[1], 'S||İLK YARI 1 – 0');
+  // Olaydaki takım kimliği farklı/metin ya da yoksa: takım adından eşlenir
+  const { toFixture } = require('../src/football-highlightly');
+  const raw = match(502, 'Turkey', 'Belgium', { events: [
+    { team: { id: '9' }, time: "20'", type: 'Goal', player: 'Arda Güler' },
+    { team: { id: 777, name: 'Belgium' }, time: "27'", type: 'Goal', player: 'K. De Bruyne' },
+    { team: { name: 'Turkey' }, time: "32'", type: 'Yellow Card', player: 'Ozan Kabak' },
+  ] });
+  const doc2 = fb.nationalizeMatch(fb.matchDocFromFixture(toFixture(raw)));
+  assert.deepEqual(fb.buildTimeline({ ...doc2, status: { short: '2H' } }).split('\n'),
+    ["H|20'|⚽ Arda Güler", "A|27'|K. De Bruyne ⚽", "H|32'|🟨 Ozan Kabak", 'S||İLK YARI 1 – 1']);
   // Ayrıntı alınamazsa liste sorgusuna düşülür
   const api2 = new Highlightly({ key: 'k', base: 'https://h/football', fetchImpl: fake([
     [/\/matches\/501/, 500], [/homeTeamId=9/, { data: [match(501, 'Turkey', 'Belgium')] }],
