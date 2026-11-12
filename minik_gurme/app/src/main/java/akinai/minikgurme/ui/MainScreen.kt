@@ -35,7 +35,7 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.ChildCare
 import androidx.compose.material.icons.filled.HealthAndSafety
 import androidx.compose.material.icons.filled.Lightbulb
-import androidx.compose.material.icons.filled.MenuBook
+import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Restaurant
 import androidx.compose.material.icons.filled.Science
@@ -44,7 +44,7 @@ import androidx.compose.material.icons.outlined.AutoStories
 import androidx.compose.material.icons.outlined.ChildCare
 import androidx.compose.material.icons.outlined.HealthAndSafety
 import androidx.compose.material.icons.outlined.Lightbulb
-import androidx.compose.material.icons.outlined.MenuBook
+import androidx.compose.material.icons.automirrored.outlined.MenuBook
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Restaurant
 import androidx.compose.material.icons.outlined.Science
@@ -192,7 +192,7 @@ fun MainScreen(
         NavigationTabItem("today", "Bugün", Icons.Filled.Restaurant, Icons.Outlined.Restaurant, "nav_today"),
         NavigationTabItem("foods100", "100 Gıda", Icons.Filled.Stars, Icons.Outlined.Stars, "nav_foods100"),
         NavigationTabItem("recipes", "Tarifler", Icons.Filled.AutoStories, Icons.Outlined.AutoStories, "nav_recipes"),
-        NavigationTabItem("guide", "Rehber", Icons.Filled.HealthAndSafety, Icons.Outlined.HealthAndSafety, "nav_guide")
+        NavigationTabItem("guide", "Rehber", Icons.AutoMirrored.Filled.MenuBook, Icons.AutoMirrored.Outlined.MenuBook, "nav_guide")
     )
 
     Scaffold(

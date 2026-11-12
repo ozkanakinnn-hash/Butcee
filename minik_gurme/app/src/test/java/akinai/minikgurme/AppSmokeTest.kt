@@ -42,6 +42,7 @@ class AppSmokeTest {
         AppDatabase.closeAll()
         listOf("minik_gurme_db").forEach { ctx.deleteDatabase(it) }
         ctx.getSharedPreferences("app_prefs", Context.MODE_PRIVATE).edit().clear().commit()
+        org.robolectric.Shadows.shadowOf(ctx as android.app.Application).grantPermissions(android.Manifest.permission.POST_NOTIFICATIONS)
     }
 
     private fun setPlusDebug(on: Boolean) {
@@ -115,6 +116,7 @@ class AppSmokeTest {
                 assertEquals(1, db.growthRecordDao().getRecordCount().first())
                 assertEquals(7.8f, db.growthRecordDao().getLatestGrowthRecord().first()!!.weightKg)
                 assertEquals("girl", db.babyProfileDao().getProfile().first()!!.sex)
+                assertTrue("İlk açılışta bildirimler açık gelmeli", akinai.minikgurme.reminders.Reminders.allergenOn(ctx))
             }
             compose.onNodeWithTag("top_profile_pill").performClick()
             compose.waitForIdle()

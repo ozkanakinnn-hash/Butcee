@@ -76,6 +76,15 @@ fun OnboardingScreen(
     var style by rememberSaveable { mutableStateOf("mixed") }
     var sex by rememberSaveable { mutableStateOf("") }
     var consent by rememberSaveable { mutableStateOf(false) }
+    var notifications by rememberSaveable { mutableStateOf(true) }
+    // Bildirim izni sorulduktan sonra (verilsin ya da verilmesin) kayıt tamamlanır
+    val finish = {
+        if (notifications) akinai.minikgurme.reminders.Reminders.setAllergen(context, true)
+        onComplete(name.trim(), months, parseDecimal(weight)!!, parseDecimal(height)!!, style, sex)
+    }
+    val notifPermission = androidx.activity.compose.rememberLauncherForActivityResult(
+        androidx.activity.result.contract.ActivityResultContracts.RequestPermission()
+    ) { granted -> if (!granted) notifications = false; finish() }
 
     val w = parseDecimal(weight)
     val h = parseDecimal(height)
@@ -259,6 +268,32 @@ fun OnboardingScreen(
                         )
                     }
 
+                    // Bildirimler (isteğe bağlı, varsayılan açık)
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(14.dp))
+                            .background(CoralSoft)
+                            .clickable { notifications = !notifications }
+                            .padding(horizontal = 12.dp, vertical = 10.dp)
+                            .testTag("onb_notifications")
+                    ) {
+                        Column(Modifier.weight(1f)) {
+                            Text("Bildirimleri aç", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = CoralText)
+                            Text(
+                                "Yeni bir besini denerken 3 gün boyunca akşamları belirtileri kontrol etmeniz için hatırlatırız. Ayarlar'dan istediğiniz zaman değiştirebilirsiniz.",
+                                style = MaterialTheme.typography.bodySmall, color = TextSecondary
+                            )
+                        }
+                        Spacer(Modifier.width(8.dp))
+                        androidx.compose.material3.Switch(
+                            checked = notifications,
+                            onCheckedChange = { notifications = it },
+                            colors = androidx.compose.material3.SwitchDefaults.colors(checkedTrackColor = CoralPrimary, checkedThumbColor = OnAccent)
+                        )
+                    }
+
                     // Tıbbi uyarı onayı (zorunlu)
                     Row(
                         verticalAlignment = Alignment.Top,
@@ -299,7 +334,12 @@ fun OnboardingScreen(
             Button(
                 onClick = {
                     tried = true
-                    if (nameOk && weightOk && heightOk && consent) onComplete(name.trim(), months, w!!, h!!, style, sex)
+                    if (nameOk && weightOk && heightOk && consent) {
+                        val needsPermission = notifications && android.os.Build.VERSION.SDK_INT >= 33 &&
+                            androidx.core.content.ContextCompat.checkSelfPermission(context, android.Manifest.permission.POST_NOTIFICATIONS) !=
+                            android.content.pm.PackageManager.PERMISSION_GRANTED
+                        if (needsPermission) notifPermission.launch(android.Manifest.permission.POST_NOTIFICATIONS) else finish()
+                    }
                 },
                 modifier = Modifier.fillMaxWidth().height(54.dp).testTag("onb_start"),
                 shape = RoundedCornerShape(18.dp)
