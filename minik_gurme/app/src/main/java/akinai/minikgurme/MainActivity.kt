@@ -1,5 +1,7 @@
 package akinai.minikgurme
 
+import akinai.minikgurme.data.local.closeAll
+import akinai.minikgurme.data.local.getDatabase
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent

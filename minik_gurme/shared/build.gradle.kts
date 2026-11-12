@@ -4,6 +4,7 @@ plugins {
   alias(libs.plugins.android.kotlin.multiplatform.library)
   alias(libs.plugins.compose.multiplatform)
   alias(libs.plugins.kotlin.compose)
+  alias(libs.plugins.google.devtools.ksp)
 }
 
 kotlin {
@@ -30,8 +31,18 @@ kotlin {
       implementation(compose.components.resources)
       api(libs.androidx.room.runtime) // @Entity modelleri (Room KMP)
     }
+    iosMain.dependencies {
+      implementation(libs.androidx.sqlite.bundled)
+    }
     commonTest.dependencies {
       implementation(kotlin("test"))
     }
   }
+}
+
+// Room: veritabanı kodunu her platform için üret
+dependencies {
+  add("kspAndroid", libs.androidx.room.compiler)
+  add("kspIosArm64", libs.androidx.room.compiler)
+  add("kspIosSimulatorArm64", libs.androidx.room.compiler)
 }

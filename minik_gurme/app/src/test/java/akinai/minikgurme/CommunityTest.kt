@@ -1,5 +1,7 @@
 package akinai.minikgurme
 
+import akinai.minikgurme.data.local.closeAll
+import akinai.minikgurme.data.local.getDatabase
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap

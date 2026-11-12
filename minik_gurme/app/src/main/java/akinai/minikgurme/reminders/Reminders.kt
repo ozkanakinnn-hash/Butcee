@@ -1,5 +1,6 @@
 package akinai.minikgurme.reminders
 
+import akinai.minikgurme.data.local.getDatabase
 import android.app.AlarmManager
 import android.app.NotificationChannel
 import android.app.NotificationManager

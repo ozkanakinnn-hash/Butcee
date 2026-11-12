@@ -1,5 +1,6 @@
 package akinai.minikgurme.util
 
+import akinai.minikgurme.data.local.getDatabase
 import android.content.ContentValues
 import android.content.Context
 import android.database.Cursor
