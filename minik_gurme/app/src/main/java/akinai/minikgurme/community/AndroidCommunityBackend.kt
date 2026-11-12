@@ -129,11 +129,12 @@ private class FirestoreBackend : CommunityBackend {
 
     override suspend fun deletePost(topic: String, postId: String) {
         net {
-            val comments = commentsCol(topic, postId).get().await()
-            comments.documents.chunked(400).forEach { chunk ->
-                val b = db.batch(); chunk.forEach { b.delete(it.reference) }; b.commit().await()
-            }
-            postsCol(topic).document(postId).delete().await()
+            // Tek atomik işlem: gönderi silinemiyorsa (yetki yoksa) yorumlara da dokunulmaz.
+            val comments = commentsCol(topic, postId).limit(499).get().await()
+            val b = db.batch()
+            comments.documents.forEach { b.delete(it.reference) }
+            b.delete(postsCol(topic).document(postId))
+            b.commit().await()
         }
     }
 

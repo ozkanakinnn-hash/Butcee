@@ -33,6 +33,7 @@ kotlin {
       api(compose.components.resources)
       implementation(libs.kotlinx.serialization.json)
       api(libs.kotlinx.datetime)
+      api(libs.ktor.client.core)
       api(libs.jb.lifecycle.viewmodel)
       api(libs.jb.lifecycle.runtime.compose)
       api(libs.jb.lifecycle.viewmodel.compose)
@@ -41,9 +42,11 @@ kotlin {
     androidMain.dependencies {
       implementation(libs.androidx.core.ktx)
       implementation(libs.androidx.activity.compose)
+      api(libs.ktor.client.okhttp)
     }
     iosMain.dependencies {
       implementation(libs.androidx.sqlite.bundled)
+      implementation(libs.ktor.client.darwin)
     }
     commonTest.dependencies {
       implementation(kotlin("test"))

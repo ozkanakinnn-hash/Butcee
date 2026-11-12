@@ -23,6 +23,13 @@ fun MainViewController() = ComposeUIViewController {
         AppLanguage.init()
         ThemePrefs.init()
         Community.init()
+        // Topluluk: Firebase REST (Android ile aynı proje ve kurallar; iOS anahtarı paket kimliğine kısıtlı olabilir)
+        if (Community.backend === Community.Unconfigured) Community.backend = akinai.minikgurme.community.RestCommunityBackend(
+            apiKey = "AIzaSyAJmShvVyEXC1HQgdV-6cnB7q79SeudmCU",
+            projectId = "minik-gurme-f0db0",
+            http = io.ktor.client.HttpClient(io.ktor.client.engine.darwin.Darwin),
+            extraHeaders = mapOf("X-Ios-Bundle-Identifier" to "akinai.minikgurme")
+        )
         Translator.load()
         akinai.minikgurme.reminders.IosReminders.install()
         akinai.minikgurme.reminders.IosReminders.reschedule()
