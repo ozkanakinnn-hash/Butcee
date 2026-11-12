@@ -26,3 +26,7 @@ upload-keystore*
 iosApp/MinikGurme.xcodeproj/
 iosApp/build/
 iosApp/DerivedData/
+
+# Ortak modül derleme çıktıları
+shared/build/
+.kotlin/
