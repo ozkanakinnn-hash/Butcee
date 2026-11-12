@@ -1,5 +1,6 @@
 package akinai.minikgurme.ui.screens
 
+import akinai.minikgurme.shared.forStore
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -31,8 +32,8 @@ import akinai.minikgurme.util.LegalTexts
 fun LegalScreen(kind: String, onBack: () -> Unit) {
     val lang = AppLanguage.current
     val sections = when (kind) {
-        "privacy" -> LegalTexts.privacy(lang)
-        "terms" -> LegalTexts.terms(lang)
+        "privacy" -> LegalTexts.privacy(lang).map { (h, b) -> h.forStore() to b.forStore() }
+        "terms" -> LegalTexts.terms(lang).map { (h, b) -> h.forStore() to b.forStore() }
         else -> LegalTexts.licenses(lang)
     }
     val title = when (kind) { "privacy" -> t("Gizlilik Politikası"); "terms" -> t("Kullanım Koşulları"); else -> t("Açık Kaynak Lisansları") }

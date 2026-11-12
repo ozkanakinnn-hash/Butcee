@@ -49,6 +49,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import akinai.minikgurme.billing.PlusManager
+import akinai.minikgurme.shared.forStore
 import akinai.minikgurme.i18n.t
 import akinai.minikgurme.ui.theme.*
 
@@ -106,7 +107,7 @@ fun PaywallScreen(onBack: () -> Unit, onOpenTerms: () -> Unit, onOpenPrivacy: ()
             if (plans.isEmpty()) {
                 Surface(shape = RoundedCornerShape(16.dp), color = OchreSoft, border = BorderStroke(1.dp, OchreBorder)) {
                     Text(
-                        t("Abonelik seçenekleri yüklenemedi. Uygulama Google Play'den yüklendiğinde ve internet bağlantısı olduğunda fiyatlar burada görünür."),
+                        t("Abonelik seçenekleri yüklenemedi. Uygulama Google Play'den yüklendiğinde ve internet bağlantısı olduğunda fiyatlar burada görünür.").forStore(),
                         style = MaterialTheme.typography.bodySmall, color = OchreText, modifier = Modifier.padding(14.dp)
                     )
                 }
@@ -142,9 +143,9 @@ fun PaywallScreen(onBack: () -> Unit, onOpenTerms: () -> Unit, onOpenPrivacy: ()
             ) { Text(t("Plus'a abone ol"), fontWeight = FontWeight.Bold, color = OnAccent) }
         }
         TextButton(onClick = { PlusManager.restore() }, modifier = Modifier.fillMaxWidth()) { Text(t("Satın alımları geri yükle"), color = CoralDark) }
-        PlusManager.message?.let { Text(t(it), style = MaterialTheme.typography.bodySmall, color = TextSecondary, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth()) }
+        PlusManager.message?.let { Text(t(it).forStore(), style = MaterialTheme.typography.bodySmall, color = TextSecondary, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth()) }
         Text(
-            t("Abonelik Google Play hesabınızdan ücretlendirilir ve dönem bitiminden en az 24 saat önce iptal edilmezse otomatik yenilenir. Google Play › Abonelikler'den istediğiniz zaman iptal edebilirsiniz."),
+            t("Abonelik Google Play hesabınızdan ücretlendirilir ve dönem bitiminden en az 24 saat önce iptal edilmezse otomatik yenilenir. Google Play › Abonelikler'den istediğiniz zaman iptal edebilirsiniz.").forStore(),
             style = MaterialTheme.typography.bodySmall, color = TextTertiary
         )
         Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
