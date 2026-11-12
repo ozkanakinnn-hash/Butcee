@@ -209,4 +209,10 @@ test('panelde skorun altı: gol atanlar ve kırmızı kartlar, yoksa takım adı
   assert.equal(fb.scorerLine(m, 'home'), "⚽ 21' K. Yıldız, 45+2' H. Çalhanoğlu (pen.)");
   assert.equal(fb.scorerLine(m, 'away'), "🟥 70' X");
   assert.equal(fb.scorerLine({ ...m, red_cards: [] }, 'away'), 'Belçika');
+  // Geniş panel: satır satır, dakika sırasıyla
+  assert.equal(fb.eventLines(m, 'home'), "⚽ 21' K. Yıldız\n⚽ 45+2' H. Çalhanoğlu (pen.)");
+  assert.equal(fb.eventLines(m, 'away'), "🟥 70' X");
+  const live = fb.buildLiveMessage({ ...m, fixture_id: 1, status: { short: '2H', elapsed: 71 }, goals: { home: 2, away: 0 }, league: { name: 'L' } }).data;
+  assert.equal(live.home_team, 'Türkiye');
+  assert.equal(live.home_events.split('\n').length, 2);
 });

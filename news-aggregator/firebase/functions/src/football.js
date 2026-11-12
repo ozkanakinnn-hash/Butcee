@@ -348,6 +348,23 @@ function scorerLine(match, side) {
   return parts.length ? parts.join(' · ') : team.name || '';
 }
 
+/** Geniş panel: o takımın golleri ve kırmızı kartları, dakika sırasıyla, her biri ayrı satır. */
+function eventLines(match, side) {
+  const team = match[side] || {};
+  const min = (e) => `${e.minute}${e.extra ? '+' + e.extra : ''}'`;
+  const rows = [
+    ...(match.goal_events || []).filter((g) => g.team_id === team.id).map((g) => ({
+      at: g.minute * 100 + (g.extra || 0),
+      text: `⚽ ${min(g)} ${g.player || ''}${g.detail === 'Own Goal' ? ' (k.k.)' : g.detail === 'Penalty' ? ' (pen.)' : ''}`.trim(),
+    })),
+    ...(match.red_cards || []).filter((c) => c.team_id === team.id).map((c) => ({
+      at: c.minute * 100 + (c.extra || 0),
+      text: `🟥 ${min(c)} ${c.player || ''}${c.second_yellow ? ' (2. sarı)' : ''}`.trim(),
+    })),
+  ];
+  return rows.sort((a, b) => a.at - b.at).map((r) => r.text).join('\n');
+}
+
 /** Son penaltı (atılan/kaçan) olaydan sonraki 3 dakika panelin üst satırında; yoksa lig adı. Ayrı bildirim yok. */
 const PENALTY_SHOW_MIN = 3;
 function panelHeadline(match) {
@@ -390,11 +407,15 @@ function buildLiveMessage(match, now = Date.now()) {
       league: panelHeadline(match),
       home_short: shortOf(match.home),
       // Skorun altındaki satır: gol atanlar (yoksa takım adı) — gol panelin içinde görünür
-      home_name: scorerLine(match, 'home'),
+      home_name: scorerLine(match, 'home'), // eski APK'lar: skorun altında tek satır
+      home_team: match.home.name || '', // yeni APK: küçük görünümde takım adı
+      home_events: eventLines(match, 'home'), // yeni APK: aşağı kaydırınca gol/kart listesi
       home_color: dotColor(match.home),
       home_flag: match.home.flag || '', // milli maçta bayrak emojisi (telefon renk noktası yerine gösterir)
       away_short: shortOf(match.away),
       away_name: scorerLine(match, 'away'),
+      away_team: match.away.name || '',
+      away_events: eventLines(match, 'away'),
       away_color: dotColor(match.away),
       away_flag: match.away.flag || '',
       gh: String(match.goals.home ?? 0),
@@ -440,6 +461,7 @@ module.exports = {
   clockAnchor,
   panelHeadline,
   scorerLine,
+  eventLines,
   DEFAULT_CLOCK_OFFSET_SEC,
   nationalizeMatch,
   flagEmoji,

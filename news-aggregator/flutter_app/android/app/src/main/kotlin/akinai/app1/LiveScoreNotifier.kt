@@ -24,7 +24,8 @@ import java.util.Locale
  */
 object LiveScoreNotifier {
     const val TYPE = "match_live"
-    private const val CHANNEL = "live_score"
+    // v2: kilit ekranında herkese açık (eski "live_score" kanalının görünürlüğü sonradan değiştirilemez)
+    private const val CHANNEL = "live_score_v2"
     private const val GOAL_CHANNEL = "goal_alert" // Flutter oluşturur ("Goller", telefonun bildirim sesi)
     private val LIVE = setOf("1H", "2H", "ET", "LIVE")
 
@@ -44,44 +45,50 @@ object LiveScoreNotifier {
         val ga = d["ga"] ?: "0"
 
         val rv = RemoteViews(context.packageName, R.layout.notification_live_score)
-        rv.setTextViewText(R.id.live_league, d["league"] ?: "Süper Lig")
-        rv.setTextViewText(R.id.live_home_short, homeShort)
-        rv.setTextViewText(R.id.live_away_short, awayShort)
-        rv.setTextViewText(R.id.live_home_name, d["home_name"].orEmpty())
-        rv.setTextViewText(R.id.live_away_name, d["away_name"].orEmpty())
-        rv.setInt(R.id.live_home_dot, "setColorFilter", parseColor(d["home_color"]))
-        rv.setInt(R.id.live_away_dot, "setColorFilter", parseColor(d["away_color"]))
-        // Milli maç: renk noktası yerine bayrak (sunucu bayrak emojisi gönderir)
-        for ((flag, dot, value) in listOf(
-            Triple(R.id.live_home_flag, R.id.live_home_dot, d["home_flag"]),
-            Triple(R.id.live_away_flag, R.id.live_away_dot, d["away_flag"]),
-        )) {
-            val hasFlag = !value.isNullOrEmpty()
-            rv.setTextViewText(flag, value.orEmpty())
-            rv.setViewVisibility(flag, if (hasFlag) View.VISIBLE else View.GONE)
-            rv.setViewVisibility(dot, if (hasFlag) View.GONE else View.VISIBLE)
-        }
+        val big = RemoteViews(context.packageName, R.layout.notification_live_score_big)
+        // Küçük ve geniş görünümün ortak alanları
+        for (v in listOf(rv, big)) {
+            v.setTextViewText(R.id.live_league, d["league"] ?: "Süper Lig")
+            v.setTextViewText(R.id.live_home_short, homeShort)
+            v.setTextViewText(R.id.live_away_short, awayShort)
+            // Yeni sunucu: takım adı ayrı alanda (home_team); eski sunucu: home_name
+            v.setTextViewText(R.id.live_home_name, d["home_team"] ?: d["home_name"].orEmpty())
+            v.setTextViewText(R.id.live_away_name, d["away_team"] ?: d["away_name"].orEmpty())
+            v.setInt(R.id.live_home_dot, "setColorFilter", parseColor(d["home_color"]))
+            v.setInt(R.id.live_away_dot, "setColorFilter", parseColor(d["away_color"]))
+            // Milli maç: renk noktası yerine bayrak (sunucu bayrak emojisi gönderir)
+            for ((flag, dot, value) in listOf(
+                Triple(R.id.live_home_flag, R.id.live_home_dot, d["home_flag"]),
+                Triple(R.id.live_away_flag, R.id.live_away_dot, d["away_flag"]),
+            )) {
+                val hasFlag = !value.isNullOrEmpty()
+                v.setTextViewText(flag, value.orEmpty())
+                v.setViewVisibility(flag, if (hasFlag) View.VISIBLE else View.GONE)
+                v.setViewVisibility(dot, if (hasFlag) View.GONE else View.VISIBLE)
+            }
+            v.setTextViewText(R.id.live_score, if (status == "NS") d["kickoff_text"] ?: "– : –" else "$gh – $ga")
 
-        if (status == "NS") {
-            rv.setTextViewText(R.id.live_score, d["kickoff_text"] ?: "– : –")
-        } else {
-            rv.setTextViewText(R.id.live_score, "$gh – $ga")
+            // Dakika: canlıysa Chronometer, değilse durum yazısı (İY, MS, …)
+            if (status in LIVE) {
+                val elapsedMin = (d["elapsed"] ?: "0").toLongOrNull() ?: 0L
+                val sentMs = (d["sent_ms"] ?: "0").toLongOrNull() ?: System.currentTimeMillis()
+                val lag = (System.currentTimeMillis() - sentMs).coerceIn(0L, 10 * 60_000L)
+                val base = SystemClock.elapsedRealtime() - (elapsedMin * 60_000L + lag)
+                v.setViewVisibility(R.id.live_minute, View.VISIBLE)
+                v.setViewVisibility(R.id.live_status, View.GONE)
+                v.setChronometer(R.id.live_minute, base, null, true)
+            } else {
+                v.setViewVisibility(R.id.live_minute, View.GONE)
+                v.setViewVisibility(R.id.live_status, View.VISIBLE)
+                v.setTextViewText(R.id.live_status, statusLabel(status, en))
+            }
         }
-
-        // Dakika: canlıysa Chronometer, değilse durum yazısı (İY, MS, …)
-        if (status in LIVE) {
-            val elapsedMin = (d["elapsed"] ?: "0").toLongOrNull() ?: 0L
-            val sentMs = (d["sent_ms"] ?: "0").toLongOrNull() ?: System.currentTimeMillis()
-            val lag = (System.currentTimeMillis() - sentMs).coerceIn(0L, 10 * 60_000L)
-            val base = SystemClock.elapsedRealtime() - (elapsedMin * 60_000L + lag)
-            rv.setViewVisibility(R.id.live_minute, View.VISIBLE)
-            rv.setViewVisibility(R.id.live_status, View.GONE)
-            rv.setChronometer(R.id.live_minute, base, null, true)
-        } else {
-            rv.setViewVisibility(R.id.live_minute, View.GONE)
-            rv.setViewVisibility(R.id.live_status, View.VISIBLE)
-            rv.setTextViewText(R.id.live_status, statusLabel(status, en))
-        }
+        // Geniş görünüm: gol atanlar ve kırmızı kartlar (dakikasıyla), her takım kendi tarafında
+        val homeEvents = d["home_events"].orEmpty()
+        val awayEvents = d["away_events"].orEmpty()
+        big.setTextViewText(R.id.live_home_events, homeEvents)
+        big.setTextViewText(R.id.live_away_events, awayEvents)
+        big.setViewVisibility(R.id.live_events, if (homeEvents.isEmpty() && awayEvents.isEmpty()) View.GONE else View.VISIBLE)
 
         val open = context.packageManager.getLaunchIntentForPackage(context.packageName)?.apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP
@@ -105,12 +112,14 @@ object LiveScoreNotifier {
             .setSmallIcon(R.drawable.ic_stat_news)
             .setColor(Color.parseColor("#0B1F3A"))
             .setCustomContentView(rv)
-            .setCustomBigContentView(rv)
+            .setCustomBigContentView(big)
             .setStyle(NotificationCompat.DecoratedCustomViewStyle())
             .setContentTitle("$homeShort $gh – $ga $awayShort")
             .setCategory(NotificationCompat.CATEGORY_EVENT)
             .setOnlyAlertOnce(!goalNow)
-            .setSilent(!goalNow)
+            // Kilit ekranında içeriğiyle görünsün (setSilent kullanılmaz: Samsung "sessiz" bildirimleri kilit
+            // ekranında gizleyebilir; kanalın sesi zaten kapalı)
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setShowWhen(false)
             .setOngoing(!finished)
             .setAutoCancel(finished)
@@ -148,6 +157,7 @@ object LiveScoreNotifier {
     private fun ensureChannel(context: Context, en: Boolean) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
         val nm = context.getSystemService(NotificationManager::class.java) ?: return
+        nm.deleteNotificationChannel("live_score")
         if (nm.getNotificationChannel(CHANNEL) != null) return
         val ch = NotificationChannel(
             CHANNEL,
@@ -158,6 +168,7 @@ object LiveScoreNotifier {
             setSound(null, null)
             enableVibration(false)
             setShowBadge(false)
+            lockscreenVisibility = android.app.Notification.VISIBILITY_PUBLIC
         }
         nm.createNotificationChannel(ch)
     }
