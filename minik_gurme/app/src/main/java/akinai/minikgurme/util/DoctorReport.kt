@@ -9,13 +9,8 @@ import android.graphics.Typeface
 import android.graphics.pdf.PdfDocument
 import androidx.core.content.FileProvider
 import akinai.minikgurme.data.local.AppDatabase
-import akinai.minikgurme.i18n.t
-import akinai.minikgurme.ui.components.WhoStandardsData
-import kotlinx.coroutines.flow.first
 import java.io.File
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+import akinai.minikgurme.i18n.t
 
 /**
  * Doktor raporu (PDF) — Minik Gurme Plus. Profil, büyüme ölçümleri (WHO medyanıyla), alerjen denemeleri,
@@ -25,16 +20,7 @@ object DoctorReport {
     private const val W = 595; private const val H = 842; private const val M = 40f
 
     suspend fun build(context: Context): File {
-        val db = AppDatabase.getDatabase(context)
-        val profile = db.babyProfileDao().getProfile().first()
-        val growth = db.growthRecordDao().getAllGrowthRecords().first()
-        val tests = db.allergenTestDao().getAllTests().first()
-        val tried = db.triedFoodDao().getAllTriedFoods().first().filter { it.isTried }
-        val meals = db.mealDao().getAllMeals().first()
-        val today = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
-        val monthAgo = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date(System.currentTimeMillis() - 30L * 86_400_000))
-        val sex = profile?.sex.orEmpty()
-
+        val report = DoctorReportContent.build(AppDatabase.getDatabase(context))
         val doc = PdfDocument()
         var page = doc.startPage(PdfDocument.PageInfo.Builder(W, H, 1).create())
         var canvas = page.canvas
@@ -60,44 +46,17 @@ object DoctorReport {
             }
             if (cur.isNotEmpty()) { newPageIfNeeded(gap); canvas.drawText(cur, x, y, p); y += gap }
         }
-        fun section(s: String) { y += 8f; newPageIfNeeded(30f); canvas.drawLine(M, y, W - M, y, line); y += 18f; text(t(s), h2) }
-
-        text(t("Minik Gurme · Beslenme ve Gelişim Raporu"), title, gap = 26f)
-        text("${t("Rapor tarihi")}: ${prettyDate(today)}", muted)
-        section("Bebek")
-        text("${t("Ad")}: ${profile?.name.orEmpty()}   ·   ${t("Yaş")}: ${profile?.ageMonths ?: "-"} ${t("ay")}   ·   ${t("Cinsiyet")}: ${t(when (sex) { "girl" -> "Kız"; "boy" -> "Erkek"; else -> "Belirtilmedi" })}", body)
-        if (!profile?.startDate.isNullOrBlank()) text("${t("Ek gıdaya başlama")}: ${prettyDate(profile!!.startDate)}", body)
-
-        section("Büyüme ölçümleri (WHO medyanı ile)")
-        if (growth.isEmpty()) text(t("Kayıt yok."), body)
-        growth.sortedBy { it.date }.forEach { g ->
-            val ww = WhoStandardsData.getWhoWeight(g.ageMonths, sex); val wh = WhoStandardsData.getWhoHeight(g.ageMonths, sex)
-            text("${prettyDate(g.date)} · ${g.ageMonths}. ${t("ay")} · ${(g.weightKg).fmt(2)} kg (WHO ${(ww).fmt(1)}) · ${(g.heightCm).fmt(1)} cm (WHO ${(wh).fmt(1)})" +
-                (g.headCircumferenceCm?.let { " · ${t("baş çevresi")} ${(it).fmt(1)} cm" } ?: ""), body)
+        for (l in report.lines) when (l.style) {
+            DoctorReportContent.Style.TITLE -> text(l.text, title, gap = 26f)
+            DoctorReportContent.Style.SECTION -> { y += 8f; newPageIfNeeded(30f); canvas.drawLine(M, y, W - M, y, line); y += 18f; text(l.text, h2) }
+            DoctorReportContent.Style.BODY -> text(l.text, body)
+            DoctorReportContent.Style.BULLET -> text(l.text, body, x = M + 6f)
+            DoctorReportContent.Style.MUTED -> if (l.text.isEmpty()) y += 14f else text(l.text, muted)
         }
-
-        section("Alerjen denemeleri")
-        if (tests.isEmpty()) text(t("Kayıt yok."), body)
-        tests.forEach { a -> text("${t(a.food)} · ${t(a.status)} · ${a.day}. ${t("gün")} · ${prettyDate(a.startDate)}" + (if (a.notes.isNotBlank()) " · ${t(a.notes)}" else ""), body) }
-
-        section("Denenen besinler ve tepkiler")
-        text("${t("Toplam")}: ${tried.size} / 100", body)
-        val reactions = mapOf("loved" to "Sevdi", "neutral" to "Nötr", "disliked" to "Sevmedi", "allergy" to "Alerji şüphesi")
-        tried.sortedBy { it.triedDate }.forEach { f ->
-            text("• ${t(f.foodName)}" + (reactions[f.reaction]?.let { " — ${t(it)}" } ?: "") +
-                (if (f.symptoms.isNotBlank()) " (${t(f.symptoms)})" else "") + (if (f.triedDate.isNotBlank()) " · ${prettyDate(f.triedDate)}" else ""), body, x = M + 6f)
-        }
-
-        section("Son 30 gün")
-        val recent = meals.filter { it.date >= monthAgo }
-        text("${t("Kaydedilen öğün")}: ${recent.size}   ·   ${t("Alerji sinyali")}: ${recent.count { it.reaction == "Alerji Sinyali" }}", body)
-
-        y += 14f
-        text(t("Bu rapor ebeveyn tarafından girilen kayıtlardan otomatik oluşturulmuştur; tıbbi değerlendirme yerine geçmez."), muted)
         doc.finishPage(page)
 
         val dir = File(context.cacheDir, "reports").apply { mkdirs() }
-        val file = File(dir, "MinikGurme-rapor-$today.pdf")
+        val file = File(dir, report.fileName)
         file.outputStream().use { doc.writeTo(it) }
         doc.close()
         return file
