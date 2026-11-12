@@ -23,6 +23,9 @@ class AppSettings extends ChangeNotifier {
   static const _interestsKey = 'interests';
   static const _newsNotifKey = 'notify_news';
   static const _matchNotifKey = 'notify_matches';
+  /// Yerel (Kotlin) "Daha az bildirim" düğmesi de bu anahtarı yazar: FlutterSharedPreferences → flutter.notif_level
+  static const notifLevelKey = 'notif_level';
+  static const _bulletinKey = 'notify_bulletins';
   static const _weatherKey = 'weather_card';
   static const _teamsKey = 'followed_teams';
   static const _topicsKey = 'subscribed_topics';
@@ -97,6 +100,28 @@ class AppSettings extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Bildirim yoğunluğu (sunucu bu seviyeye göre gönderir). Varsayılan: Dengeli.
+  NotifLevel get notifLevel =>
+      NotifLevel.values.firstWhere((l) => l.name == _prefs.getString(notifLevelKey), orElse: () => NotifLevel.balanced);
+  Future<void> setNotifLevel(NotifLevel v) async {
+    await _prefs.setString(notifLevelKey, v.name);
+    notifyListeners();
+  }
+
+  /// Sabah / öğle / akşam bültenleri.
+  bool get bulletins => _prefs.getBool(_bulletinKey) ?? true;
+  Future<void> setBulletins(bool v) async {
+    await _prefs.setBool(_bulletinKey, v);
+    notifyListeners();
+  }
+
+  /// Bildirim düğmesi gibi uygulama dışından yapılan değişiklikleri okur (uygulama öne gelince).
+  Future<void> reloadFromDisk() async {
+    final before = notifLevel;
+    await _prefs.reload();
+    if (notifLevel != before) notifyListeners();
+  }
+
   /// Takip edilen takımların maç/gol bildirimleri.
   bool get matchNotifications => _prefs.getBool(_matchNotifKey) ?? true;
   Future<void> setMatchNotifications(bool v) async {
@@ -123,10 +148,13 @@ class AppSettings extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Bildirim konuları: ilgi alanları → `news_<id>`, takımlar → `team_<id>` (ilgili ayar açıksa).
+  /// Bildirim konuları: ilgi alanları → `news_<id>`, seviye → `lvl_*` (+ `calm`), bülten, takımlar → `team_<id>`.
   Set<String> get desiredTopics => {
-    if (newsNotifications)
+    if (newsNotifications) ...{
       for (final id in interests) 'news_$id',
+      ...notifLevel.topics,
+      if (bulletins) 'bulletin',
+    },
     if (matchNotifications && followsFootball)
       for (final t in followedTeams) 'team_$t',
   };
@@ -170,4 +198,14 @@ class AppSettings extends ChangeNotifier {
     await _prefs.setBool(_liveScoreKey, v);
     notifyListeners();
   }
+}
+
+/// Bildirim yoğunluğu → abone olunacak seviye konuları (sunucu: src/notify.js).
+enum NotifLevel {
+  important(['lvl_important', 'calm']),
+  balanced(['lvl_balanced', 'calm']),
+  all(['lvl_all']);
+
+  const NotifLevel(this.topics);
+  final List<String> topics;
 }

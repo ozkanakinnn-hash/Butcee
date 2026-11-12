@@ -62,9 +62,17 @@ void main() {
       'followed_teams': ['galatasaray', 'fenerbahce'],
     });
     final s = await AppSettings.load();
-    expect(s.desiredTopics, {'news_gundem', 'news_futbol', 'team_galatasaray', 'team_fenerbahce'});
+    const lvl = {'lvl_balanced', 'calm', 'bulletin'}; // varsayılan: Dengeli + bültenler
+    expect(s.desiredTopics, {'news_gundem', 'news_futbol', ...lvl, 'team_galatasaray', 'team_fenerbahce'});
+    await s.setNotifLevel(NotifLevel.important);
+    await s.setBulletins(false);
+    expect(s.desiredTopics, {'news_gundem', 'news_futbol', 'lvl_important', 'calm', 'team_galatasaray', 'team_fenerbahce'});
+    await s.setNotifLevel(NotifLevel.all);
+    expect(s.desiredTopics.where((t) => t.startsWith('lvl_') || t == 'calm'), {'lvl_all'});
+    await s.setNotifLevel(NotifLevel.balanced);
+    await s.setBulletins(true);
     await s.setMatchNotifications(false);
-    expect(s.desiredTopics, {'news_gundem', 'news_futbol'});
+    expect(s.desiredTopics, {'news_gundem', 'news_futbol', ...lvl});
     await s.setMatchNotifications(true);
     await s.setNewsNotifications(false);
     expect(s.desiredTopics, {'team_galatasaray', 'team_fenerbahce'});

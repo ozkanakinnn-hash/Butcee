@@ -152,6 +152,35 @@ class _SettingsPageState extends State<SettingsPage> with WidgetsBindingObserver
                 if (v && notifGranted != true) await _requestNotifications();
               },
             ),
+            if (settings.newsNotifications) ...[
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                child: Text(s.notifLevel, style: theme.textTheme.titleSmall),
+              ),
+              RadioGroup<NotifLevel>(
+                groupValue: settings.notifLevel,
+                onChanged: (v) {
+                  if (v != null) settings.setNotifLevel(v);
+                },
+                child: Column(
+                  children: [
+                    for (final (level, title, desc) in [
+                      (NotifLevel.important, s.notifLevelImportant, s.notifLevelImportantDesc),
+                      (NotifLevel.balanced, s.notifLevelBalanced, s.notifLevelBalancedDesc),
+                      (NotifLevel.all, s.notifLevelAll, s.notifLevelAllDesc),
+                    ])
+                      RadioListTile<NotifLevel>(value: level, title: Text(title), subtitle: Text(desc), dense: true),
+                  ],
+                ),
+              ),
+              SwitchListTile(
+                secondary: const Icon(Icons.wb_twilight_outlined),
+                title: Text(s.bulletins),
+                subtitle: Text(s.bulletinsDesc),
+                value: settings.bulletins,
+                onChanged: settings.setBulletins,
+              ),
+            ],
             SwitchListTile(
               secondary: const Icon(Icons.sports_soccer_outlined),
               title: Text(s.matchNotifications),

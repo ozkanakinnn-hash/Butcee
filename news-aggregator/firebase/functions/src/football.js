@@ -203,7 +203,7 @@ function buildMatchMessage(event, match, now = new Date(), { ignoreQuiet = false
         channelId,
         tag: `match_${match.fixture_id}_${event.type === 'goal' ? 'goal' : 'status'}`,
         icon: 'ic_stat_news',
-        color: '#0A84FF',
+        color: '#0B1F3A',
       },
     },
   };

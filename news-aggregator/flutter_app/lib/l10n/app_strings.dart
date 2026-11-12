@@ -106,9 +106,22 @@ class S {
   String get permissionBlocked => _t('Kapalı — sistem ayarlarından aç', 'Blocked — enable in system settings');
   String get newsNotifications => _t('İlgi alanı haberleri', 'Interest news');
   String get newsNotificationsDesc => _t(
-    'Her ilgi alanı için en fazla 2 saatte bir özet; Son Dakika hemen.',
-    'A digest per interest at most every 2 hours; breaking news instantly.',
+    'İlgi alanlarınızdaki haberler; yoğunluğu aşağıdan seçin.',
+    'News from your interests; choose the frequency below.',
   );
+  String get notifLevel => _t('Bildirim yoğunluğu', 'Notification frequency');
+  String get notifLevelImportant => _t('Sadece önemli', 'Important only');
+  String get notifLevelImportantDesc =>
+      _t('Birçok kaynağın doğruladığı son dakikalar ve bültenler · günde ~4–6', 'Major breaking news confirmed by several sources and bulletins · ~4–6/day');
+  String get notifLevelBalanced => _t('Dengeli (önerilen)', 'Balanced (recommended)');
+  String get notifLevelBalancedDesc =>
+      _t('Önemli son dakikalar + ilgi alanlarından saatte en fazla 1 özet · günde ~8–12', 'Major breaking + at most one digest per hour · ~8–12/day');
+  String get notifLevelAll => _t('Tümü', 'Everything');
+  String get notifLevelAllDesc =>
+      _t('Her son dakika ve sık kategori özetleri · günde 20+', 'Every breaking story and frequent digests · 20+/day');
+  String get bulletins => _t('Günlük bültenler', 'Daily bulletins');
+  String get bulletinsDesc =>
+      _t('Sabah 08:30, öğle 13:00 ve akşam 19:00 günün öne çıkanları', 'Top stories at 08:30, 13:00 and 19:00');
   String get matchNotifications => _t('Maç ve gol bildirimleri', 'Match & goal alerts');
   String get matchNotificationsDesc => _t(
     'Takımlarının golleri (sesli), maç başlangıcı, devre ve sonuç.',

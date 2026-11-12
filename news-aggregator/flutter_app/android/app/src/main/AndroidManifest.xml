@@ -70,6 +70,10 @@
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
+        <!-- Bildirimdeki "Daha az bildirim" düğmesi -->
+        <receiver
+            android:name=".LessNotificationsReceiver"
+            android:exported="false" />
         <!-- FCM: kanal belirtilmeyen bildirimler için varsayılanlar -->
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_channel_id"

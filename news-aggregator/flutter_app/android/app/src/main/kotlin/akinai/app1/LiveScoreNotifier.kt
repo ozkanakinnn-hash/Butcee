@@ -74,7 +74,7 @@ object LiveScoreNotifier {
 
         val open = context.packageManager.getLaunchIntentForPackage(context.packageName)?.apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP
-            putExtra("fixture_id", fixtureId)
+            putExtra(NewsNotifier.EXTRA_PAYLOAD, org.json.JSONObject(mapOf("type" to "match", "fixture_id" to fixtureId)).toString())
         }
         val pi = open?.let {
             PendingIntent.getActivity(
@@ -85,7 +85,7 @@ object LiveScoreNotifier {
 
         val builder = NotificationCompat.Builder(context, CHANNEL)
             .setSmallIcon(R.drawable.ic_stat_news)
-            .setColor(Color.parseColor("#0A84FF"))
+            .setColor(Color.parseColor("#0B1F3A"))
             .setCustomContentView(rv)
             .setCustomBigContentView(rv)
             .setStyle(NotificationCompat.DecoratedCustomViewStyle())

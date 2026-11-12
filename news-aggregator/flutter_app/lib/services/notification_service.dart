@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show MethodChannel;
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:geolocator/geolocator.dart' show Geolocator;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -142,6 +143,18 @@ class NotificationService {
       // İlk karenin çizilmesini bekle ki Navigator hazır olsun.
       WidgetsBinding.instance.addPostFrameCallback((_) => _emit(initial.data));
     }
+    // Uygulamanın kendi kurduğu bildirimler (haber, canlı skor — Kotlin): dokunma verisi bu kanaldan gelir.
+    const launchChannel = MethodChannel('akinai/launch');
+    launchChannel.setMethodCallHandler((call) async {
+      if (call.method == 'payload') _handlePayload(call.arguments as String?);
+    });
+    try {
+      final native = await launchChannel.invokeMethod<String>('takePayload');
+      if (native != null) WidgetsBinding.instance.addPostFrameCallback((_) => _handlePayload(native));
+    } catch (_) {}
+    // Bildirimdeki "Daha az bildirim" düğmesi ayarı uygulama dışında değiştirir → öne gelince yeniden oku.
+    _lifecycle = AppLifecycleListener(onResume: settings.reloadFromDisk);
+
     final launch = await _local.getNotificationAppLaunchDetails();
     if (launch?.didNotificationLaunchApp ?? false) {
       WidgetsBinding.instance.addPostFrameCallback((_) => _handlePayload(launch!.notificationResponse?.payload));
@@ -160,6 +173,10 @@ class NotificationService {
       }
     }
   }
+
+  // Uygulama boyunca yaşar (dinleyici çöp toplanmasın diye alanda tutulur).
+  // ignore: unused_field
+  AppLifecycleListener? _lifecycle;
 
   void _emit(Map<String, dynamic> data) {
     final target = NotificationTarget.fromData(data);

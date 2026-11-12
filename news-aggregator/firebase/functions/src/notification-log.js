@@ -23,7 +23,9 @@ function logId(ms, seed) {
 function logEntryFromMessage(message, { now = Date.now(), extra = {} } = {}) {
   const topics = message.topic
     ? [message.topic]
-    : [...String(message.condition || '').matchAll(/'([^']+)' in topics/g)].map((m) => m[1]);
+    : [...String(message.condition || '').matchAll(/'([^']+)' in topics/g)].map((m) => m[1])
+      // Seviye konuları (lvl_*, calm) içerik konusu değildir; Bildirimler sekmesi kategori/takım konularıyla süzer.
+      .filter((t) => !/^lvl_|^calm$/.test(t));
   return {
     id: logId(now, `${topics.join(',')}|${message.notification.title}|${message.notification.body}`),
     data: {
