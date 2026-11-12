@@ -16,7 +16,7 @@ Anahtar kaybolursa Play Console'dan "yükleme anahtarı sıfırlama" talep edile
 ## 2. Yayından önce sizin yapmanız gerekenler
 1. **Google Play geliştirici hesabı** (25 $). Bireysel yeni hesaplarda: üretime çıkmadan önce **12 test kullanıcısıyla 14 gün kapalı test**.
 2. **İletişim e-postası**: `util/LegalTexts.kt` → `CONTACT_EMAIL` = ozkan.akinnn@gmail.com (ayrı bir destek adresi açarsanız değiştirin).
-3. **Gizlilik politikası adresi**: Uygulamadaki metni (Ayarlar › Gizlilik Politikası) bir web sayfasında yayımlayın (ör. Google Sites) ve adresi Play Console'a girin.
+3. **Gizlilik politikası adresi**: https://ozkanakinnn-hash.github.io/Butcee/minik-gurme/gizlilik.html (uygulamadaki metinden `tool/build_site.py` ile üretilir, GitHub Pages ile yayınlanır). Hesap silme: …/minik-gurme/hesap-silme.html. Mağaza metinleri ve görseller: `docs/store/`.
 4. **Marka araması**: TÜRKPATENT'te "Minik Gurme" (sınıf 9, 41, 44).
 5. **İçerik onayı (önerilir)**: Rehber ve tarifleri bir çocuk doktoru / diyetisyen gözden geçirsin.
 6. **Abonelik ürünleri** (Play Console › Para kazanma › Abonelikler):

@@ -1,0 +1,40 @@
+# Minik Gurme web sayfaları (gizlilik, koşullar, hesap silme) → GitHub Pages
+# Kaynak: minik_gurme/docs/site (minik_gurme/tool/build_site.py ile uygulamadaki metinden üretilir)
+# Yayın: gh-pages dalının minik-gurme/ klasörü → https://ozkanakinnn-hash.github.io/Butcee/minik-gurme/
+# İlk kurulum (bir kez): GitHub › Settings › Pages › Source: "Deploy from a branch" › gh-pages / (root)
+name: Minik Gurme (web sayfaları)
+
+on:
+  push:
+    paths: [ "minik_gurme/docs/site/**", ".github/workflows/minik-gurme-site.yml" ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: gh-pages dalına yayınla
+        run: |
+          set -e
+          SRC="$GITHUB_WORKSPACE/minik_gurme/docs/site"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git ls-remote --exit-code --heads origin gh-pages >/dev/null; then
+            git fetch origin gh-pages
+            git worktree add /tmp/pages origin/gh-pages
+            cd /tmp/pages && git checkout -B gh-pages
+          else
+            git worktree add --detach /tmp/pages
+            cd /tmp/pages && git checkout --orphan gh-pages && git rm -rf -q . || true
+            echo "<meta http-equiv=refresh content='0;url=minik-gurme/'>" > index.html
+            touch .nojekyll
+          fi
+          rm -rf minik-gurme && mkdir -p minik-gurme && cp -r "$SRC"/. minik-gurme/
+          git add -A
+          git diff --cached --quiet && { echo "Değişiklik yok"; exit 0; }
+          git commit -m "Minik Gurme web sayfaları: ${GITHUB_SHA::7}"
+          git push origin gh-pages
