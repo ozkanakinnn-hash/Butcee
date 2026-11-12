@@ -311,15 +311,20 @@ function dotColor(t) {
  * Çapa, API dakikasının izin verdiği aralığa sıkıştırılır (gerçek saat API'den en fazla 90 sn önde olabilir).
  * @returns {{period: string, anchor_ms: number} | null}
  */
+/** TV yayını gerçek zamandan ~20–30 sn geride; panel TV ile aynı gitsin diye bu kadar geriden sayılır.
+ * Firestore football_meta/state.clock_offset_sec ile yükleme yapmadan değiştirilebilir. */
+const DEFAULT_CLOCK_OFFSET_SEC = 25;
+
 function liveClock(match, now) {
   const c = match.clock;
   if (!c || !c.anchor_ms || !(c.period in PERIOD_BASE_MIN)) return { elapsed: String(match.status.elapsed ?? 0), sent_ms: String(now) };
-  const sec = Math.max(0, Math.floor((now - c.anchor_ms) / 1000)) + PERIOD_BASE_MIN[c.period] * 60;
+  const offset = Number.isFinite(c.offset_sec) ? c.offset_sec : DEFAULT_CLOCK_OFFSET_SEC;
+  const sec = Math.max(0, Math.floor((now - c.anchor_ms) / 1000) - offset) + PERIOD_BASE_MIN[c.period] * 60;
   return { elapsed: String(Math.floor(sec / 60)), sent_ms: String(now - (sec % 60) * 1000) };
 }
 
 const PERIOD_BASE_MIN = { '1H': 0, '2H': 45, ET: 90 };
-function clockAnchor(prev, next, now = Date.now()) {
+function clockAnchor(prev, next, now = Date.now(), offsetSec = DEFAULT_CLOCK_OFFSET_SEC) {
   const period = next.status && next.status.short;
   if (!(period in PERIOD_BASE_MIN) || next.status.elapsed === null || next.status.elapsed === undefined) return null;
   const minIn = Math.max(0, next.status.elapsed - PERIOD_BASE_MIN[period]);
@@ -329,7 +334,7 @@ function clockAnchor(prev, next, now = Date.now()) {
   else anchor = now - (minIn * 60 + 30) * 1000;
   const lo = now - (minIn * 60 + 59 + 90) * 1000; // en fazla bu kadar önde
   const hi = now - minIn * 60 * 1000; // API dakikasından geride olamaz
-  return { period, anchor_ms: Math.min(hi, Math.max(lo, anchor)) };
+  return { period, anchor_ms: Math.min(hi, Math.max(lo, anchor)), offset_sec: offsetSec };
 }
 
 /**
@@ -395,6 +400,7 @@ module.exports = {
   buildMatchMessage,
   buildLiveMessage,
   clockAnchor,
+  DEFAULT_CLOCK_OFFSET_SEC,
   nationalizeMatch,
   flagEmoji,
   NATIONAL_TOPIC,

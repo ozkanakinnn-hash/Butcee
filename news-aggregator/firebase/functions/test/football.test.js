@@ -164,17 +164,22 @@ test('panel dakikası saniye hassasiyetinde: 1. yarı başlama saatine, 2. yarı
   });
   // 1. yarı, şimdi 3:20 geçti, API "3" diyor → çapa başlama saati
   const now = kickoff + 200_000;
-  const c1 = fb.clockAnchor(null, m('1H', 3), now);
+  const c1 = fb.clockAnchor(null, m('1H', 3), now, 0);
   assert.equal(c1.anchor_ms, kickoff);
   const d = fb.buildLiveMessage({ ...m('1H', 3), clock: c1 }, now).data;
   assert.equal(d.elapsed, '3');
   assert.equal(Number(d.sent_ms), now - 20_000, '20 sn telefona aktarılır');
+  // TV gecikmesi: varsayılan 25 sn geriden (3:20 → 2:55)
+  const tv = fb.buildLiveMessage({ ...m('1H', 3), clock: fb.clockAnchor(null, m('1H', 3), now) }, now).data;
+  assert.equal(fb.DEFAULT_CLOCK_OFFSET_SEC, 25);
+  assert.equal(tv.elapsed, '2');
+  assert.equal(Number(tv.sent_ms), now - 55_000);
   // Maç 2 dk geç başladıysa (API "1" diyor) çapa API dakikasına sıkıştırılır (en fazla 90 sn önde)
   const late = fb.clockAnchor(null, m('1H', 1), now);
   assert.ok(now - late.anchor_ms <= (60 + 59 + 90) * 1000);
   // 2. yarı: ilk görüldüğünde API "46" → 1 dk 30 sn varsayılır; sonraki turda aynı çapa korunur
   const t2 = kickoff + 3_600_000;
-  const c2 = fb.clockAnchor(m('HT', 45), m('2H', 46), t2);
+  const c2 = fb.clockAnchor(m('HT', 45), m('2H', 46), t2, 0);
   assert.equal(c2.anchor_ms, t2 - 90_000);
   assert.equal(fb.clockAnchor({ clock: c2 }, m('2H', 47), t2 + 60_000).anchor_ms, c2.anchor_ms);
   const d2 = fb.buildLiveMessage({ ...m('2H', 47), clock: c2 }, t2 + 60_000).data;

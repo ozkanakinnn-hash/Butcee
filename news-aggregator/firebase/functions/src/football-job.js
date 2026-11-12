@@ -251,6 +251,9 @@ async function prepare(db, api, meta) {
 }
 
 /** Bir tur skor güncellemesi: değişiklikleri yazar, bildirimleri gönderir. @returns {Promise<object[]>} güncel aktif maçlar */
+/** Panel dakikasının TV yayınına göre geri kaydırılması (sn); tick her turda meta'dan günceller. */
+let clockOffsetSec = fb.DEFAULT_CLOCK_OFFSET_SEC;
+
 async function pollOnce(db, api, messaging, active) {
   const league = active.filter((m) => !m.national);
   const national = active.filter((m) => m.national);
@@ -284,7 +287,7 @@ async function pollOnce(db, api, messaging, active) {
       ? fb.nationalizeMatch(fb.matchDocFromFixture(f), nq ? JSON.parse(nq) : null)
       : fb.matchDocFromFixture(f);
     const prev = active.find((m) => m.fixture_id === next.fixture_id);
-    next.clock = fb.clockAnchor(prev, next, Date.now()); // paneldeki dakika saniye hassasiyetinde
+    next.clock = fb.clockAnchor(prev, next, Date.now(), clockOffsetSec); // paneldeki dakika saniye hassasiyetinde (TV'ye göre)
     // Devre arası başlangıcı (istek harcamadan beklemek için)
     next.ht_since = next.status.short === 'HT'
       ? (prev && prev.status.short === 'HT' && prev.ht_since ? prev.ht_since : Timestamp.now())
@@ -356,6 +359,7 @@ function nextWaitMs(api, active, later = [], minMs = 60_000) {
 async function tick(db, makeApi, messaging, now = Date.now(), { fast = false, sleep = (ms) => new Promise((r) => setTimeout(r, ms)) } = {}) {
   const metaRef = db.doc('football_meta/state');
   const meta = (await metaRef.get()).data() || {};
+  clockOffsetSec = Number.isFinite(meta.clock_offset_sec) ? meta.clock_offset_sec : fb.DEFAULT_CLOCK_OFFSET_SEC;
   const today = fb.istanbulDate(new Date(now));
   const needsPrepare = meta.fixtures_date !== today || meta.national_date !== today ||
     !meta.season || !meta.teams_synced_at || now - meta.teams_synced_at.toMillis() > TEAMS_TTL_MS;
