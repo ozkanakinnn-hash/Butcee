@@ -76,11 +76,12 @@ void main() {
     expect(s.desiredTopics, {'news_gundem', 'news_futbol', ...lvl, tr});
     await s.setMatchNotifications(true);
     await s.setNewsNotifications(false);
-    expect(s.desiredTopics, {'team_galatasaray', 'team_fenerbahce', tr});
+    expect(s.desiredTopics, {'team_galatasaray', 'team_fenerbahce', tr}, reason: 'futbol seçili → milli maç paneli');
     await s.setInterests(['gundem']); // futbol bırakılınca takım bildirimleri de durur
-    expect(s.desiredTopics, {tr}, reason: 'milli maç paneli futbol ilgisinden bağımsız');
+    expect(s.desiredTopics, isEmpty, reason: 'futbol seçili değilse milli maç paneli de yok');
+    await s.setInterests(['futbol']);
     await s.setLiveScorePanel(false);
-    expect(s.desiredTopics, isEmpty);
+    expect(s.desiredTopics.contains(tr), isFalse, reason: 'panel kapalıysa yok');
   });
 
   test('takım kısaltması: tanımlıysa o, yoksa adın ilk 3 harfi', () {

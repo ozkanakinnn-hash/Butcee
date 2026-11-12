@@ -310,6 +310,6 @@ description: Flutter/FlutterFlow + Firebase (Firestore, Cloud Functions) uygulam
 - SVG'leri tek sayfada gösterirken degrade kimlikleri benzersiz olmalı (aynı id → ilk tanım kazanır, renkler karışır). setContent içinde file:// görsel yüklenmez → base64 göm. `dart format` projede satır genişliği ayarı yoksa dosyaları gereksiz yeniden sarar → kullanma, yalnızca analyze.
 
 ## 23. Milli maç canlı skor paneli herkese (kullanıcı isteği 2026-11-12)
-- Konu `national_tr`: uygulama, canlı skor paneli açık HER kullanıcıyı abone eder (futbol ilgisi şart değil); panel ayarı Ayarlar'da herkese görünür.
+- Konu `national_tr`: uygulama, FUTBOL ilgisi seçili VE canlı skor paneli açık kullanıcıları abone eder (kullanıcı kararı: "sadece futbol seçili olanlarda").
 - Sunucu: milli arada lig maçı olmayan gün (`league_count_today == 0`) Highlightly'de Türkiye A takımı aranır: `/teams?name=Turkey|Türkiye` → `homeTeamId/awayTeamId + date` (2 istek); desteklenmezse günün maçları sayfa sayfa (≤8). Bulunan sorgu maç belgesine `national_q` olarak yazılır, canlıda maç başına 1 istekle yeniden sorgulanır. `national: true` maçlar takip filtresinden muaf; yalnızca panel (veri mesajı) gider, gol/başlama bildirimi gitmez. Rakip adları Türkçe + renk (NATIONS tablosu).
 - Yeni günlük işaret ekleyince (`national_date`) eski testlerin meta kurulumuna da ekle; destek yoksa da işareti yaz (yoksa her dakika hazırlık döngüsü).
