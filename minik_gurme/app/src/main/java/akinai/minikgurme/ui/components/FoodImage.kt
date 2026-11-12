@@ -14,7 +14,7 @@ import akinai.minikgurme.R
 
 /**
  * Emoji → 3D çizim (Microsoft Fluent Emoji, MIT lisansı; drawable-nodpi/emoji_*.webp).
- * İstisna: 🥒 (emoji_1f952) uygulamaya özel çizilmiş sakız kabağıdır (tool/zucchini.svg).
+ * İstisnalar: 🥒 (emoji_1f952) sakız kabağı ve emoji_cucumber salatalık görselleri kullanıcı tarafından sağlandı.
  * Telefonun emoji yazı tipi yerine her cihazda aynı görünen görseller kullanılır.
  * Bu dosyadaki eşleme tool ile üretilir (README'ye bakın).
  */
