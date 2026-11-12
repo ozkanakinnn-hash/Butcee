@@ -131,7 +131,7 @@ fun PremiumScreen(onNavigateBack: () -> Unit) {
       Text("⭐", fontSize = 38.sp)
     }
     Text(
-      pt("Ramazan Rehberi Premium", "Ramazan Rehberi Premium"),
+      pt("Ezan & Vakit Premium", "Ezan & Vakit Premium"),
       fontFamily = FontFamily.Serif, fontWeight = FontWeight.Bold, fontSize = 26.sp, color = cs.onBackground,
       textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth().padding(top = 10.dp)
     )

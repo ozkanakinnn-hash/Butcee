@@ -186,3 +186,9 @@ gradle/actions/setup-gradle@v5 → `./gradlew assembleDebug` → upload-artifact
 - **Cuma hatırlatıcısı:** sonraki Cuma'nın öğle vakti (Diyanet tablosundan) − N dk, `setWindow`.
 - **Yedekleme:** SharedPreferences dosyalarını tipli JSON'a dök (b/i/l/f/s/ss), SAF `CreateDocument`/`OpenDocument`; satın alma (Premium) durumunu ASLA yedeğe koyma (yedekle Premium açılmasın); geri yüklemeden sonra alarmları kur + `activity.recreate()`; dosya boyut sınırı.
 - Yeni ekranları `Surface` ya da `CompositionLocalProvider(LocalContentColor provides onBackground)` içine al; yoksa renksiz `Text` koyu temada siyah kalır.
+
+## Yayın paketi ve reklam kimlikleri
+- Yükleme anahtarı: `keytool -genkeypair -alias upload -keyalg RSA -keysize 4096 -validity 10000` → `my-upload-key.jks` (gitignore), şifreyi kullanıcıya ayrı dosyada ver, yedeklet; `KEYSTORE_PATH/STORE_PASSWORD/KEY_PASSWORD` ile `bundleRelease`, `jarsigner -verify` ile doğrula. Play App Signing'i açtır.
+- AdMob kimlikleri gizli değil → `gradle.properties` (`ADMOB_PROD_*`); gerçek reklam YALNIZCA `-PprodAds=true` üretim paketinde. Kapalı test (tanıdık test kullanıcıları) test reklamıyla: geçersiz tıklama hesap kapatır. AAB manifestinde `strings | grep ca-app-pub` ile hangisinin girdiğini doğrula.
+- `app-ads.txt`: `google.com, pub-XXXX, DIRECT, f08c47fec0942fa0` → geliştirici web sitesinin köküne.
+- Play başlığı ≤30, kısa açıklama ≤80, tam açıklama ≤4000 karakter; simge adı kısa tut (kesilir). Satıcı (trader) beyanı: reklam/satın alma varsa trader → AB'de iletişim bilgileri görünür.

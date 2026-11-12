@@ -18,7 +18,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
 
     val title = remoteMessage.notification?.title
       ?: remoteMessage.data["title"]
-      ?: "🌙 Ramazan Rehberi"
+      ?: "🌙 Ezan & Vakit"
 
     val body = remoteMessage.notification?.body
       ?: remoteMessage.data["body"]

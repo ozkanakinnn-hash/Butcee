@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Ramazan Rehberi</string>
+    <string name="app_name">Ezan &amp; Vakit</string>
     <!-- Instagram Hikâyesine doğrudan paylaşım için Meta (Facebook) Uygulama Kimliği. Boşsa Instagram genel paylaşımı kullanılır. -->
     <string name="facebook_app_id" translatable="false"></string>
     <!-- Ana ekran widget'ları -->

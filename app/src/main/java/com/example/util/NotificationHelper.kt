@@ -18,7 +18,7 @@ object NotificationHelper {
   private const val BASE_CHANNEL_ID = "ramazan_rehberi_channel"
   /** Genel bildirimler: ney sesi (res/raw/bildirim_ney.mp3). Kanal sesi sonradan değişmez; ses değişirse ID değiştirilmeli. */
   private const val CHANNEL_ID = "ramazan_rehberi_ney_v1"
-  private const val CHANNEL_NAME = "Ramazan Rehberi (Ney)"
+  private const val CHANNEL_NAME = "Ezan & Vakit (Ney)"
   /** Sahur hatırlatıcısı: davul sesi + güçlü titreşim (res/raw/sahur_davul.mp3). */
   private const val DAVUL_CHANNEL_ID = "ramazan_rehberi_davul_v1"
   /** Davul ritmine uygun titreşim deseni. */

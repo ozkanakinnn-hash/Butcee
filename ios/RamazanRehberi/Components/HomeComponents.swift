@@ -272,7 +272,7 @@ struct DailySpiritualCard: View {
     }
   }
 
-  var shareText: String { "“\(text.0)”\n— \(text.1)\n\n" + t("Ramazan Rehberi") }
+  var shareText: String { "“\(text.0)”\n— \(text.1)\n\n" + "Ezan & Vakit" }
 }
 
 // MARK: - Sevdiklerinizle paylaşın

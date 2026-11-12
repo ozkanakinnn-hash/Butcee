@@ -40,6 +40,6 @@ object CrashReporter {
 
   fun copyToClipboard(context: Context, text: String) {
     val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-    cm.setPrimaryClip(ClipData.newPlainText("Ramazan Rehberi hata raporu", text))
+    cm.setPrimaryClip(ClipData.newPlainText("Ezan & Vakit hata raporu", text))
   }
 }

@@ -130,7 +130,7 @@ fun OnboardingScreen(
       )
       Spacer(modifier = Modifier.height(8.dp))
       Text(
-        text = "Ramazan Rehberi'ne Hoş Geldiniz",
+        text = t("Ezan & Vakit'e Hoş Geldiniz"),
         style = MaterialTheme.typography.titleLarge,
         fontWeight = FontWeight.Bold,
         color = MaterialTheme.colorScheme.onBackground,

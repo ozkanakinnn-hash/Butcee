@@ -279,8 +279,8 @@ object WidgetUpdater {
     if (!ok) {
       Toast.makeText(
         context,
-        if (en) "Long-press an empty spot on your home screen → Widgets → Ramazan Rehberi"
-        else "Ana ekranda boş bir yere basılı tutun → Widget'lar → Ramazan Rehberi",
+        if (en) "Long-press an empty spot on your home screen → Widgets → Ezan & Vakit"
+        else "Ana ekranda boş bir yere basılı tutun → Widget'lar → Ezan & Vakit",
         Toast.LENGTH_LONG
       ).show()
     }

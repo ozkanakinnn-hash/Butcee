@@ -149,8 +149,8 @@ fun NotificationWizardScreen(onNavigateBack: () -> Unit) {
     WizardStep(
       3, batteryOk,
       tx("Pil optimizasyonunu kapat", "Turn off battery optimization"),
-      tx("Açılan listede \"Ramazan Rehberi\"ni bulup \"Optimize etme\" / \"Kısıtlama yok\" seçin. Aksi hâlde telefon uyurken bildirim gecikebilir.",
-        "In the list, find \"Ramazan Rehberi\" and choose \"Don't optimize\" / \"Unrestricted\". Otherwise notifications may be delayed while the phone sleeps."),
+      tx("Açılan listede \"Ezan & Vakit\" uygulamasını bulup \"Optimize etme\" / \"Kısıtlama yok\" seçin. Aksi hâlde telefon uyurken bildirim gecikebilir.",
+        "In the list, find \"Ezan & Vakit\" and choose \"Don't optimize\" / \"Unrestricted\". Otherwise notifications may be delayed while the phone sleeps."),
       tx("Pil ayarlarını aç", "Open battery settings")
     ) {
       launch(context, Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))

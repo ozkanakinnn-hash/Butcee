@@ -136,7 +136,7 @@ fun SurahDetailScreen(
                 [DİYANET TÜRKÇE MEALİ]
                 ${surahDetail.fullTranslation.withoutVerseNumbers()}
                 
-                🏷️ Ramazan Rehberi Uygulaması
+                🏷️ Ezan & Vakit Uygulaması
               """.trimIndent()
               val sendIntent = Intent().apply {
                 action = Intent.ACTION_SEND

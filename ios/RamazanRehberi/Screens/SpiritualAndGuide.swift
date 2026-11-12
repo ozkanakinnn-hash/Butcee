@@ -60,7 +60,7 @@ struct SpiritualView: View {
   }
 
   var shareText: String {
-    "📖 \(item.verseTurkish)\n— \(item.verseSource)\n\n💬 \(item.hadithTurkish)\n— \(item.hadithSource)\n\n🤲 \(item.prayerTurkish)\n— \(item.prayerSource)\n\n" + t("Ramazan Rehberi")
+    "📖 \(item.verseTurkish)\n— \(item.verseSource)\n\n💬 \(item.hadithTurkish)\n— \(item.hadithSource)\n\n🤲 \(item.prayerTurkish)\n— \(item.prayerSource)\n\n" + "Ezan & Vakit"
   }
 }
 

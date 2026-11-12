@@ -84,7 +84,7 @@ def phone(inner, top, screen_h=None):
 def page(title, sub, body, sub_top):
     return f"""<html><head><meta charset='utf-8'><style>{CSS}</style></head><body>
 <div class='glow'></div>{PATTERN_SVG}
-<div class='brand'><img src='{LOGO}'><span>Ramazan Rehberi</span></div>
+<div class='brand'><img src='{LOGO}'><span>Ezan &amp; Vakit</span></div>
 <h1>{title}</h1><p class='sub' style='top:{sub_top}px'>{sub}</p>
 {body}</body></html>"""
 

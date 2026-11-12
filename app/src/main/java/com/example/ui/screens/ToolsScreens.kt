@@ -290,7 +290,7 @@ fun drawImsakiyePage(c: android.graphics.Canvas, province: String, district: Str
   val ram = Paint().apply { color = 0xFFEFE0B5.toInt() }
   c.drawText(L("İmsakiye • $province / $district", "Prayer Timetable • $province / $district"), 40f, 52f, title)
   val sub = Paint(cell).apply { textSize = 9f; color = 0xFF777777.toInt() }
-  c.drawText(L("Ramazan Rehberi • Vakitler resmî ilçe takviminden alınmıştır.", "Ramazan Rehberi • Times from the official district calendar."), 40f, 68f, sub)
+  c.drawText(L("Ezan & Vakit • Vakitler resmî ilçe takviminden alınmıştır.", "Ezan & Vakit • Times from the official district calendar."), 40f, 68f, sub)
   val cols = listOf(L("Tarih", "Date"), L("İmsak", "Fajr"), L("Güneş", "Sunrise"), L("Öğle", "Dhuhr"), L("İkindi", "Asr"), L("Akşam", "Maghrib"), L("Yatsı", "Isha"))
   val x0 = 40f; val w = 515f; val colW = w / cols.size; var y = 84f; val rh = 22f
   c.drawRect(x0, y, x0 + w, y + rh, gold)
@@ -331,7 +331,7 @@ fun BackupScreen(onNavigateBack: () -> Unit, onRestored: () -> Unit) {
   val openLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri: Uri? ->
     if (uri != null) {
       val n = BackupManager.readFrom(context, uri)
-      status = if (n >= 0) L("✅ $n kayıt geri yüklendi. Uygulama yenileniyor…", "✅ Restored $n entries. Reloading…") else L("❌ Geçerli bir Ramazan Rehberi yedeği değil.", "❌ Not a valid backup file.")
+      status = if (n >= 0) L("✅ $n kayıt geri yüklendi. Uygulama yenileniyor…", "✅ Restored $n entries. Reloading…") else L("❌ Geçerli bir Ezan & Vakit yedeği değil.", "❌ Not a valid backup file.")
       if (n >= 0) onRestored()
     }
   }

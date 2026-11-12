@@ -10,6 +10,7 @@ object AppLanguage {
 }
 
 private val dictionary: Map<String, String> = mapOf(
+    "Ezan & Vakit'e Hoş Geldiniz" to "Welcome to Ezan & Vakit",
     "İmsakiye" to "Timetable",
     "30 günlük vakitler\nPDF olarak paylaş" to "30-day prayer times\nShare as PDF",
     "Fitre • Zekât" to "Fitrah • Zakat",

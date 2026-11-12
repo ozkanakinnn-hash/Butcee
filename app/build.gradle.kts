@@ -48,8 +48,12 @@ android {
 
   buildTypes {
     release {
+      // Gerçek reklam kimlikleri yalnızca üretim paketinde (-PprodAds=true); aksi halde test reklamları
+      val prodAds = (project.findProperty("prodAds") as String?) == "true"
       val appId = (project.findProperty("ADMOB_APP_ID") as String?) ?: System.getenv("ADMOB_APP_ID")
+        ?: if (prodAds) project.findProperty("ADMOB_PROD_APP_ID") as String? else null
       val bannerId = (project.findProperty("ADMOB_BANNER_ID") as String?) ?: System.getenv("ADMOB_BANNER_ID")
+        ?: if (prodAds) project.findProperty("ADMOB_PROD_BANNER_ID") as String? else null
       if (!appId.isNullOrBlank()) manifestPlaceholders["admobAppId"] = appId
       if (!bannerId.isNullOrBlank()) buildConfigField("String", "ADMOB_BANNER_ID", "\"$bannerId\"")
       isCrunchPngs = false

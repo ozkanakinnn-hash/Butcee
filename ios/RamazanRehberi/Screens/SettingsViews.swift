@@ -208,7 +208,7 @@ struct OnboardingView: View {
       } else {
         BundleImage.image("mosque_camlica").resizable().scaledToFill().frame(width: 110, height: 110).clipShape(RoundedRectangle(cornerRadius: 26))
       }
-      Text(t("Ramazan Rehberi")).font(AppFont.playfair(32))
+      Text("Ezan & Vakit").font(AppFont.playfair(32))
       switch step {
       case 0:
         Text(t("Namaz vakitleri, iftar & sahur sayacı, Kur'an-ı Kerim, kıble ve daha fazlası.")).multilineTextAlignment(.center).foregroundStyle(p.onSurfaceVariant)
