@@ -4,6 +4,10 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 
+/** Maç olayları artık panel mesajının uyarı alanında gider (ayrı bildirim yok): testlerde bildirim gibi oku. */
+const asAlert = (x) => ({ condition: x.condition, notification: { title: x.data.alert_title, body: x.data.alert_body }, data: x.data, android: { notification: { channelId: x.data.alert_quiet === '1' ? 'quiet' : x.data.alert === 'goal' || x.data.alert === 'goal_cancelled' ? 'goal_alert' : 'match' } } });
+const alertsOf = (m) => m.filter((x) => x.data && x.data.alert).map(asAlert);
+
 const skip = !process.env.FIRESTORE_EMULATOR_HOST && 'FIRESTORE_EMULATOR_HOST tanımlı değil';
 
 test('tick: maç yokken API çağrılmaz; canlı maçta tur atar, aralığı korur, gol bildirir', { skip }, async () => {
@@ -23,7 +27,7 @@ test('tick: maç yokken API çağrılmaz; canlı maçta tur atar, aralığı kor
   const makeApi = () => { made++; return api; };
   const sent = [];
   const panels = [];
-  const messaging = { sendEach: async (m) => { sent.push(...m.filter((x) => x.notification)); panels.push(...m.filter((x) => !x.notification)); return { successCount: m.length, failureCount: 0, responses: m.map(() => ({ success: true })) }; } };
+  const messaging = { sendEach: async (m) => { sent.push(...m.filter((x) => x.notification), ...alertsOf(m)); panels.push(...m.filter((x) => !x.notification)); return { successCount: m.length, failureCount: 0, responses: m.map(() => ({ success: true })) }; } };
 
   // 1) Maç yok → boşta, API istemcisi bile oluşturulmaz
   assert.equal(await tick(db, makeApi, messaging), 'idle');
@@ -96,7 +100,7 @@ test('tick + Highlightly: günlük bütçe sayılır, lig kimliği saklanır, go
   await db.doc('football_meta/state').set({ teams_source: 'local' }, { merge: true });
   const sent = [];
   const panels = [];
-  const messaging = { sendEach: async (m) => { sent.push(...m.filter((x) => x.notification)); panels.push(...m.filter((x) => !x.notification)); return { successCount: m.length, failureCount: 0, responses: m.map(() => ({ success: true })) }; } };
+  const messaging = { sendEach: async (m) => { sent.push(...m.filter((x) => x.notification), ...alertsOf(m)); panels.push(...m.filter((x) => !x.notification)); return { successCount: m.length, failureCount: 0, responses: m.map(() => ({ success: true })) }; } };
 
   // Maç kaydı (günlük fikstür senkronunun yazdığı hali)
   const { toFixture } = require('../src/football-highlightly');
@@ -168,7 +172,7 @@ test('hızlı mod: istek hakkı bolsa görev içinde 15 sn arayla birden çok ko
     const api = { remaining, used: 0, get: async () => { calls++; api.used++; api.remaining--; return [mk(calls >= 3 ? 1 : 0)]; } };
     const sleeps = [];
     const sent = [];
-    const messaging = { sendEach: async (m) => { sent.push(...m.filter((x) => x.notification)); return { successCount: m.length, failureCount: 0, responses: m.map(() => ({ success: true })) }; } };
+    const messaging = { sendEach: async (m) => { sent.push(...m.filter((x) => x.notification), ...alertsOf(m)); return { successCount: m.length, failureCount: 0, responses: m.map(() => ({ success: true })) }; } };
     const r = await tick(db, () => api, messaging, Date.now(), { fast: true, sleep: async (ms) => { sleeps.push(ms); } });
     return { r, calls, sleeps, sent };
   };
@@ -282,7 +286,7 @@ test('test maçı: başlangıçta panel + "başladı", 15. dk gol, 20. dk sonuç
   assert.equal(new Date(t).toISOString(), '2026-11-08T21:45:00.000Z');
 });
 
-test('milli maç: lig maçı olmayan gün Türkiye maçı bulunur; panel national_tr; goller panelde, diğer olaylar bildirim', { skip }, async () => {
+test('milli maç: lig maçı olmayan gün Türkiye maçı bulunur; panel national_tr; olaylar panelde sesli uyarı, ayrı bildirim yok', { skip }, async () => {
   const { getFirestore, Timestamp } = require('firebase-admin/firestore');
   const fb = require('../src/football');
   const { tick } = require('../src/football-job');
@@ -308,7 +312,7 @@ test('milli maç: lig maçı olmayan gün Türkiye maçı bulunur; panel nationa
   makeApi.provider = 'highlightly';
   const panels = [];
   const sent = [];
-  const messaging = { sendEach: async (m) => { sent.push(...m.filter((x) => x.notification)); panels.push(...m.filter((x) => !x.notification)); return { successCount: m.length, failureCount: 0, responses: m.map(() => ({ success: true })) }; } };
+  const messaging = { sendEach: async (m) => { sent.push(...m.filter((x) => x.notification), ...alertsOf(m)); panels.push(...m.filter((x) => !x.notification)); return { successCount: m.length, failureCount: 0, responses: m.map(() => ({ success: true })) }; } };
 
   await tick(db, makeApi, messaging);
   const doc = (await db.doc('matches/501').get()).data();
@@ -333,22 +337,34 @@ test('milli maç: lig maçı olmayan gün Türkiye maçı bulunur; panel nationa
   assert.equal(last.data.gh, '1');
   assert.equal(last.data.home_short, 'TÜR');
   assert.equal(last.data.league, 'UEFA Nations League');
-  // Başlama bildirilir; gol ayrı bildirim değil, panelde (national_tr)
-  assert.deepEqual(sent.map((m) => m.notification.title), ['🟢 Maç başladı']);
-  assert.ok(sent.every((m) => m.condition === "'national_tr' in topics"));
-  assert.equal(panels[panels.length - 1].data.gh, '1');
+  // Ayrı bildirim yok; olaylar panel uyarısı. Aynı turda başlama + gol → tek uyarı: gol (daha önemli)
+  const real = (list) => list.filter((x) => x.data && x.data.type !== 'match_live');
+  assert.equal(real(sent).length, 0, 'ayrı bildirim kartı gönderilmez');
+  let p = panels[panels.length - 1];
+  assert.equal(p.condition, "'national_tr' in topics");
+  assert.equal(p.data.alert, 'goal');
+  assert.equal(p.data.alert_title, '⚽ GOL! Türkiye 1-0 Belçika');
+  assert.equal(p.data.gh, '1');
 
-  // Rakibin golü: yine yalnızca panel
+  // Rakibin golü: panel sesli uyarır
   score = '1 - 1';
   await db.doc('football_meta/state').update({ next_poll_at: null });
   assert.equal(await tick(db, makeApi, messaging, Date.now() + 180_000), 'polled');
-  assert.equal(sent.length, 1, 'gol bildirimi gönderilmez');
-  assert.equal(panels[panels.length - 1].data.ga, '1');
+  p = panels[panels.length - 1];
+  assert.equal(p.data.alert, 'goal');
+  assert.equal(p.data.ga, '1');
 
-  // Maç sonu bildirilir, panel "bitti"
+  // Değişiklik yoksa uyarı yok (panel sessiz güncellenir)
+  await db.doc('football_meta/state').update({ next_poll_at: null });
+  await tick(db, makeApi, messaging, Date.now() + 240_000);
+  assert.equal(panels[panels.length - 1].data.alert, '');
+
+  // Maç sonu: sesli uyarı
   desc = 'Finished';
   await db.doc('football_meta/state').update({ next_poll_at: null });
   await tick(db, makeApi, messaging, Date.now() + 300_000);
-  assert.equal(sent[sent.length - 1].notification.title, '🏁 Maç sonucu');
+  assert.equal(panels[panels.length - 1].data.alert, 'fulltime');
+  assert.equal(panels[panels.length - 1].data.alert_title, '🏁 Maç sonucu');
+  assert.equal(real(sent).length, 0);
   assert.equal(panels[panels.length - 1].data.finished, '1');
 });

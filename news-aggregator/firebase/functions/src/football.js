@@ -106,6 +106,14 @@ function matchDocFromFixture(f, resolve = defaultResolver) {
       player: (e.player && e.player.name) || '',
       scored: !/missed/i.test(e.detail || ''),
     }));
+  const yellowCards = (f.events || [])
+    .filter((e) => e.type === 'Card' && /^yellow card$/i.test(e.detail || ''))
+    .map((e) => ({
+      minute: (e.time && e.time.elapsed) || 0,
+      extra: (e.time && e.time.extra) || 0,
+      team_id: keyForApiTeam(e.team && e.team.id),
+      player: (e.player && e.player.name) || '',
+    }));
   const redCards = (f.events || [])
     .filter((e) => e.type === 'Card' && /red|second yellow/i.test(e.detail || ''))
     .map((e) => ({
@@ -129,6 +137,7 @@ function matchDocFromFixture(f, resolve = defaultResolver) {
     goals: { home: f.goals.home ?? 0, away: f.goals.away ?? 0 },
     goal_events: goalsEvents,
     red_cards: redCards,
+    yellow_cards: yellowCards,
     penalties,
     team_ids: [home.id, away.id],
     is_live: LIVE.has(f.fixture.status.short),
@@ -167,6 +176,16 @@ function diffMatch(prev, next) {
       const before = prev.red_cards.filter((c) => c.team_id === teamId).length;
       const cards = (next.red_cards || []).filter((c) => c.team_id === teamId);
       for (let i = before; i < cards.length; i++) events.push({ type: 'red_card', side, card: cards[i] });
+    }
+  }
+
+  // Sarı kartlar (panelde sessiz)
+  if (prev && Array.isArray(prev.yellow_cards)) {
+    for (const side of ['home', 'away']) {
+      const teamId = next[side].id;
+      const before = prev.yellow_cards.filter((c) => c.team_id === teamId).length;
+      const cards = (next.yellow_cards || []).filter((c) => c.team_id === teamId);
+      for (let i = before; i < cards.length; i++) events.push({ type: 'yellow_card', side, card: cards[i] });
     }
   }
 
@@ -365,6 +384,59 @@ function eventLines(match, side) {
   return rows.sort((a, b) => a.at - b.at).map((r) => r.text).join('\n');
 }
 
+/**
+ * Geniş panelin zaman çizelgesi (telefon satır satır çizer). Her satır "taraf|dakika|metin":
+ *   H = ev sahibi (solda), A = deplasman (sağda), S = ayırıcı ("İLK YARI 1 – 0")
+ * Goller, sarı ve kırmızı kartlar dakika sırasıyla; ilk yarı bitmişse araya ayırıcı girer. En fazla son 9 satır.
+ */
+function buildTimeline(match) {
+  const min = (e) => `${e.minute}${e.extra ? '+' + e.extra : ''}'`;
+  const sideOf = (teamId) => (teamId === (match.home && match.home.id) ? 'H' : 'A');
+  const at = (e) => e.minute * 100 + (e.extra || 0);
+  const rows = [
+    ...(match.goal_events || []).map((g) => ({
+      at: at(g), side: sideOf(g.team_id), min: min(g),
+      text: `⚽ ${g.player || ''}${g.detail === 'Own Goal' ? ' (k.k.)' : g.detail === 'Penalty' ? ' (pen.)' : ''}`.trim(),
+    })),
+    ...(match.yellow_cards || []).map((c) => ({ at: at(c), side: sideOf(c.team_id), min: min(c), text: `🟨 ${c.player || ''}`.trim() })),
+    ...(match.red_cards || []).map((c) => ({
+      at: at(c), side: sideOf(c.team_id), min: min(c), text: `🟥 ${c.player || ''}${c.second_yellow ? ' (2. sarı)' : ''}`.trim(),
+    })),
+  ].sort((a, b) => a.at - b.at);
+  const short = match.status && match.status.short;
+  const pastFirstHalf = short && !['NS', '1H'].includes(short);
+  if (pastFirstHalf) {
+    const ht = match.ht_goals || {
+      home: (match.goal_events || []).filter((g) => g.minute <= 45 && sideOf(g.team_id) === 'H').length,
+      away: (match.goal_events || []).filter((g) => g.minute <= 45 && sideOf(g.team_id) === 'A').length,
+    };
+    rows.push({ at: 4599, side: 'S', min: '', text: `İLK YARI ${ht.home} – ${ht.away}` });
+    rows.sort((a, b) => a.at - b.at);
+  }
+  // Ev sahibi olayında metin solda, deplasmanda sağda; emoji deplasmanda sona alınır (taslaktaki gibi)
+  const lines = rows.map((r) => {
+    if (r.side !== 'A') return `${r.side}|${r.min}|${r.text}`;
+    const m = /^(\S+)\s(.*)$/u.exec(r.text);
+    return `A|${r.min}|${m ? `${m[2]} ${m[1]}` : r.text}`;
+  });
+  return lines.slice(-9).join('\n');
+}
+
+/** Bir turda birden çok olay olursa panelde tek uyarı: en önemlisi. Sarı kart ve 2. yarı başlangıcı sessiz. */
+const ALERT_ORDER = ['goal', 'goal_cancelled', 'red_card', 'fulltime', 'halftime', 'kickoff'];
+function pickAlert(events, match, now = new Date()) {
+  const ev = ALERT_ORDER.map((t) => events.find((e) => e.type === t)).find(Boolean);
+  if (!ev) return null;
+  const msg = buildMatchMessage(ev, match, now);
+  if (!msg) return null;
+  return {
+    alert: ev.type,
+    alert_title: msg.notification.title,
+    alert_body: msg.notification.body || '',
+    alert_quiet: msg.android.notification.channelId === 'quiet' ? '1' : '0',
+  };
+}
+
 /** Son penaltı (atılan/kaçan) olaydan sonraki 3 dakika panelin üst satırında; yoksa lig adı. Ayrı bildirim yok. */
 const PENALTY_SHOW_MIN = 3;
 function panelHeadline(match) {
@@ -395,7 +467,7 @@ function liveClock(match, now) {
  * Canlı skor paneli verisi (yalnızca VERİ mesajı; bildirimi telefondaki LiveScoreNotifier.kt çizer ve yerinde günceller).
  * Her skor turunda canlı maçlar için gönderilir; maç bitince bir kez `finished: '1'`. Bildirim geçmişine yazılmaz.
  */
-function buildLiveMessage(match, now = Date.now()) {
+function buildLiveMessage(match, now = Date.now(), alert = null) {
   const condition = match.national
     ? `'${NATIONAL_TOPIC}' in topics`
     : `'${teamTopic(match.home.id)}' in topics || '${teamTopic(match.away.id)}' in topics`;
@@ -426,6 +498,14 @@ function buildLiveMessage(match, now = Date.now()) {
       ...liveClock(match, now),
       finished: match.is_finished ? '1' : '0',
       // Başlamadıysa panelin ortasında başlama saati (ör. "20:00")
+      // Yeni APK: aşağı kaydırınca zaman çizelgesi (taraf|dakika|metin satırları)
+      timeline: buildTimeline(match),
+      // Olay uyarısı: panelin kendisi sesli uyarır (ayrı bildirim kartı yok). Panel kapalıysa telefon bunu
+      // normal bildirim olarak gösterir. Türler: goal, goal_cancelled, red_card, halftime, fulltime, kickoff.
+      alert: alert ? alert.alert : '',
+      alert_title: alert ? alert.alert_title : '',
+      alert_body: alert ? alert.alert_body : '',
+      alert_quiet: alert ? alert.alert_quiet : '0',
       kickoff_text: match.kickoff && match.kickoff.toDate
         ? new Intl.DateTimeFormat('tr-TR', { timeZone: TIMEZONE, hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(match.kickoff.toDate())
         : '',
@@ -462,6 +542,8 @@ module.exports = {
   panelHeadline,
   scorerLine,
   eventLines,
+  buildTimeline,
+  pickAlert,
   DEFAULT_CLOCK_OFFSET_SEC,
   nationalizeMatch,
   flagEmoji,

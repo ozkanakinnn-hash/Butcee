@@ -4,6 +4,10 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 
+/** Maç olayları artık panel mesajının uyarı alanında gider (ayrı bildirim yok): testlerde bildirim gibi oku. */
+const asAlert = (x) => ({ condition: x.condition, notification: { title: x.data.alert_title, body: x.data.alert_body }, data: x.data, android: { notification: { channelId: x.data.alert_quiet === '1' ? 'quiet' : x.data.alert === 'goal' || x.data.alert === 'goal_cancelled' ? 'goal_alert' : 'match' } } });
+const alertsOf = (m) => m.filter((x) => x.data && x.data.alert).map(asAlert);
+
 const skip = !process.env.FIRESTORE_EMULATOR_HOST && 'FIRESTORE_EMULATOR_HOST tanımlı değil';
 
 test('canlı maç izlenir, goller bildirilir, maç bitince döngü sona erer', { skip, timeout: 60_000 }, async () => {
@@ -36,7 +40,7 @@ test('canlı maç izlenir, goller bildirilir, maç bitince döngü sona erer', {
   const api = { remaining: 1000, used: 0, get: async () => { api.used++; return [frames.shift() || frames[frames.length - 1]]; } };
   const sent = [];
   const panels = [];
-  const messaging = { sendEach: async (m) => { sent.push(...m.filter((x) => x.notification)); panels.push(...m.filter((x) => !x.notification)); return { successCount: m.length, failureCount: 0 }; } };
+  const messaging = { sendEach: async (m) => { sent.push(...m.filter((x) => x.notification), ...alertsOf(m)); panels.push(...m.filter((x) => !x.notification)); return { successCount: m.length, failureCount: 0 }; } };
 
   const waits = [];
   await watch(db, api, messaging, { sleep: async (ms) => { waits.push(ms); } });

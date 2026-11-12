@@ -292,24 +292,28 @@ async function pollOnce(db, api, messaging, active) {
     next.ht_since = next.status.short === 'HT'
       ? (prev && prev.status.short === 'HT' && prev.ht_since ? prev.ht_since : Timestamp.now())
       : null;
-    // Milli maç: gol AYRI BİLDİRİM olarak gitmez — panelin içinde (skorun altında) görünür (national_tr aboneleri
-    // zaten paneli açık olanlardır). Kırmızı kart, başlama, devre ve sonuç bildirilir.
+    // Maç olayları AYRI BİLDİRİM olarak gönderilmez: panelin kendisi sesli uyarır (gol, kırmızı kart, devre, sonuç,
+    // başlama düdüğü); sarı kart sessiz. Panel kapalı kullanıcıya telefon aynı olayı normal bildirim olarak gösterir.
+    // Olaylar yalnızca "Bildirimler" sekmesi için kaydedilir.
     const events = fb.diffMatch(prev, next);
-    for (const ev of next.national ? events.filter((e) => e.type !== 'goal' && e.type !== 'goal_cancelled') : events) {
+    if (next.status.short === 'HT' && (!prev || prev.status.short !== 'HT')) next.ht_goals = { ...next.goals };
+    else if (prev && prev.ht_goals) next.ht_goals = prev.ht_goals;
+    const alert = fb.pickAlert(events, next);
+    for (const ev of events.filter((e) => e.type !== 'yellow_card')) {
       const msg = fb.buildMatchMessage(ev, next);
       if (msg && next.national) msg.condition = `'${fb.NATIONAL_TOPIC}' in topics`;
       if (msg) messages.push(msg);
       log(`Olay: ${ev.type} ${next.home.name} ${next.goals.home}-${next.goals.away} ${next.away.name}`);
     }
     const justFinished = next.is_finished && prev && !prev.is_finished;
-    if (next.is_live || justFinished || ['HT', 'BT', 'P'].includes(next.status.short)) panels.push(fb.buildLiveMessage(next));
+    if (next.is_live || justFinished || ['HT', 'BT', 'P'].includes(next.status.short)) panels.push(fb.buildLiveMessage(next, Date.now(), alert));
     batch.set(db.doc(`matches/${next.fixture_id}`), { ...next, updated_at: Timestamp.now() }, { merge: true });
   }
   if (fixtures.length) await batch.commit();
   if (messages.length) {
-    const res = await messaging.sendEach(messages);
-    log(`Bildirim: ${res.successCount} gönderildi, ${res.failureCount} hata`);
-    await logSentMessages(db, messages, res.responses);
+    // Gönderilmez (uyarı panelin içinde); yalnızca Bildirimler sekmesi için kayıt
+    await logSentMessages(db, messages, null);
+    log(`Maç olayı (panel uyarısı): ${messages.map((m) => m.notification.title).join(' | ')}`);
   }
   if (panels.length) {
     try {

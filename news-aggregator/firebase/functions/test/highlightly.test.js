@@ -55,7 +55,7 @@ test('Highlightly maçı → uygulamanın maç belgesi (takımlar bizim kimlikle
   assert.equal(goals.length, 3, 'kaçan penaltı gol sayılmaz');
   assert.equal(f.events.filter((e) => e.detail === 'Missed Penalty').length, 1, 'kaçan penaltı panel için alınır');
   assert.deepEqual(goals.map((e) => e.detail), ['Normal Goal', 'Penalty', 'Own Goal']);
-  assert.deepEqual(f.events.filter((e) => e.type === 'Card').map((e) => e.detail), ['Red Card'], 'sarı kart alınmaz, kırmızı alınır');
+  assert.deepEqual(f.events.filter((e) => e.type === 'Card').map((e) => e.detail), ['Yellow Card', 'Red Card'], 'sarı (panelde sessiz) ve kırmızı kart alınır');
   const doc = fb.matchDocFromFixture(f);
   assert.equal(doc.home.id, 'galatasaray');
   assert.equal(doc.away.id, 'fenerbahce');

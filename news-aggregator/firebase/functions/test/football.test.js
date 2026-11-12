@@ -216,3 +216,38 @@ test('panelde skorun altı: gol atanlar ve kırmızı kartlar, yoksa takım adı
   assert.equal(live.home_team, 'Türkiye');
   assert.equal(live.home_events.split('\n').length, 2);
 });
+
+test('zaman çizelgesi ve panel uyarısı: sarı kart sessiz, gol/kırmızı/devre/sonuç/başlama sesli; tek uyarı (en önemlisi)', () => {
+  const m = {
+    fixture_id: 9, status: { short: '2H', elapsed: 72 }, goals: { home: 2, away: 1 }, is_live: true, league: { name: 'L' },
+    home: { id: 'turkiye', name: 'Türkiye' }, away: { id: 'belgium', name: 'Belçika' },
+    goal_events: [
+      { minute: 21, team_id: 'turkiye', player: 'K. Yıldız', detail: 'Normal Goal' },
+      { minute: 58, team_id: 'belgium', player: 'R. Lukaku', detail: 'Normal Goal' },
+      { minute: 67, team_id: 'turkiye', player: 'H. Çalhanoğlu', detail: 'Penalty' },
+    ],
+    yellow_cards: [{ minute: 34, team_id: 'belgium', player: 'A. Onana' }, { minute: 40, team_id: 'turkiye', player: 'O. Kökçü' }],
+    red_cards: [{ minute: 70, team_id: 'belgium', player: 'A. Theate' }],
+    ht_goals: { home: 1, away: 0 },
+  };
+  assert.deepEqual(fb.buildTimeline(m).split('\n'), [
+    "H|21'|⚽ K. Yıldız", "A|34'|A. Onana 🟨", "H|40'|🟨 O. Kökçü", 'S||İLK YARI 1 – 0',
+    "A|58'|R. Lukaku ⚽", "H|67'|⚽ H. Çalhanoğlu (pen.)", "A|70'|A. Theate 🟥",
+  ]);
+  const day = new Date('2026-11-12T18:00:00Z');
+  assert.equal(fb.pickAlert([{ type: 'yellow_card', side: 'away' }], m, day), null, 'sarı kart sessiz');
+  assert.equal(fb.pickAlert([{ type: 'second_half' }], m, day), null, '2. yarı başlangıcı sessiz');
+  for (const t of ['red_card', 'halftime', 'fulltime', 'kickoff']) {
+    const ev = t === 'red_card' ? { type: t, side: 'away', card: m.red_cards[0] } : { type: t };
+    assert.equal(fb.pickAlert([ev], m, day).alert, t);
+  }
+  const both = fb.pickAlert([{ type: 'kickoff' }, { type: 'goal', side: 'home', scorer: m.goal_events[0] }], m, day);
+  assert.equal(both.alert, 'goal', 'aynı turda birden çok olay → en önemlisi');
+  assert.equal(fb.pickAlert([{ type: 'goal', side: 'home' }], m, new Date('2026-11-12T23:30:00Z')).alert_quiet, '1', 'gece sessiz');
+  const live = fb.buildLiveMessage(m, Date.now(), both).data;
+  assert.equal(live.alert, 'goal');
+  assert.ok(live.timeline.includes('İLK YARI'));
+  // Yeni sarı kart olayı diffMatch'te üretilir (bildirimsiz)
+  const prev = { ...m, yellow_cards: [m.yellow_cards[0]] };
+  assert.deepEqual(fb.diffMatch(prev, m).map((e) => e.type), ['yellow_card']);
+});
