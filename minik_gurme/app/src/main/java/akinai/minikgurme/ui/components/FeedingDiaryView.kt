@@ -1,5 +1,6 @@
 package akinai.minikgurme.ui.components
 
+import akinai.minikgurme.util.DateKit
 import akinai.minikgurme.ui.theme.*
 import androidx.compose.animation.AnimatedVisibility
 import akinai.minikgurme.i18n.t
@@ -88,10 +89,7 @@ import akinai.minikgurme.ui.theme.SlateBlueSoft
 import akinai.minikgurme.ui.theme.TextPrimary
 import akinai.minikgurme.ui.theme.TextSecondary
 import akinai.minikgurme.ui.theme.TextTertiary
-import java.text.SimpleDateFormat
-import java.util.Calendar
 import java.util.Date
-import java.util.Locale
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -109,12 +107,8 @@ fun FeedingDiaryView(
     var entryToDelete by remember { mutableStateOf<FeedingDiaryEntry?>(null) }
     var selectedFilterChip by remember { mutableStateOf("Tümü") } // "Tümü", "Bugün", "Dün", "Tepki Verenler"
 
-    val todayStr = remember { SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date()) }
-    val yesterdayStr = remember {
-        val cal = Calendar.getInstance()
-        cal.add(Calendar.DAY_OF_YEAR, -1)
-        SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(cal.time)
-    }
+    val todayStr = remember { DateKit.todayIso() }
+    val yesterdayStr = remember { DateKit.isoPlusDays(DateKit.todayIso(), -1) }
 
     val filteredList = remember(diaryEntries, searchQuery, selectedFilterChip) {
         diaryEntries.filter { entry ->
@@ -504,9 +498,8 @@ fun FeedingDiaryView(
                 // Date Header Pill
                 val displayDateTitle = remember(dateStr) {
                     try {
-                        val parsed = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(dateStr)
-                        if (parsed != null) {
-                            val formatted = SimpleDateFormat("d MMMM EEEE", Locale(akinai.minikgurme.i18n.AppLanguage.current)).format(parsed)
+                        val formatted = DateKit.format(dateStr, "d MMMM EEEE")
+                        if (formatted != null) {
                             when (dateStr) {
                                 todayStr -> "Bugün • $formatted"
                                 yesterdayStr -> "Dün • $formatted"

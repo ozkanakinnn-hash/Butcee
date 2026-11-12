@@ -1,5 +1,7 @@
 package akinai.minikgurme.ui.components
 
+import akinai.minikgurme.util.DateKit
+import akinai.minikgurme.util.pad
 import akinai.minikgurme.ui.theme.*
 import androidx.compose.foundation.BorderStroke
 import akinai.minikgurme.i18n.t
@@ -66,10 +68,8 @@ import akinai.minikgurme.ui.theme.SlateBlueSoft
 import akinai.minikgurme.ui.theme.TextPrimary
 import akinai.minikgurme.ui.theme.TextSecondary
 import akinai.minikgurme.ui.theme.TextTertiary
-import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
-import java.util.Locale
 
 @Composable
 fun FeedingCalendarView(
@@ -79,31 +79,19 @@ fun FeedingCalendarView(
     onAddMealForDate: (String) -> Unit,
     onDeleteMeal: (Long) -> Unit
 ) {
-    val todayCal = remember { Calendar.getInstance() }
-    val todayStr = remember { SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date()) }
+    val todayDate = remember { DateKit.today() }
+    val todayStr = remember { DateKit.todayIso() }
 
     // Parse initial year and month from selectedDate
     var displayedYear by remember {
         mutableIntStateOf(
-            try {
-                val cal = Calendar.getInstance()
-                cal.time = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(selectedDate) ?: Date()
-                cal.get(Calendar.YEAR)
-            } catch (_: Exception) {
-                todayCal.get(Calendar.YEAR)
-            }
+            (DateKit.parseIso(selectedDate) ?: todayDate).year
         )
     }
 
     var displayedMonth by remember {
         mutableIntStateOf(
-            try {
-                val cal = Calendar.getInstance()
-                cal.time = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(selectedDate) ?: Date()
-                cal.get(Calendar.MONTH)
-            } catch (_: Exception) {
-                todayCal.get(Calendar.MONTH)
-            }
+            (DateKit.parseIso(selectedDate) ?: todayDate).month.ordinal
         )
     }
 
@@ -118,42 +106,26 @@ fun FeedingCalendarView(
 
     // Month & Year title formatted in Turkish (e.g., "Kasım 2026")
     val monthTitle = remember(displayedYear, displayedMonth) {
-        val cal = Calendar.getInstance()
-        cal.set(Calendar.YEAR, displayedYear)
-        cal.set(Calendar.MONTH, displayedMonth)
-        cal.set(Calendar.DAY_OF_MONTH, 1)
-        SimpleDateFormat("MMMM yyyy", Locale(akinai.minikgurme.i18n.AppLanguage.current)).format(cal.time).replaceFirstChar { it.uppercase() }
+        DateKit.format(DateKit.of(displayedYear, displayedMonth + 1, 1), "MMMM yyyy").replaceFirstChar { it.uppercase() }
     }
 
     // Selected date formatted in Turkish (e.g., "7 Kasım 2026, Cumartesi")
     val formattedSelectedDate = remember(selectedDate) {
-        try {
-            val d = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(selectedDate)
-            if (d != null) {
-                SimpleDateFormat("d MMMM yyyy, EEEE", Locale(akinai.minikgurme.i18n.AppLanguage.current)).format(d)
-            } else selectedDate
-        } catch (_: Exception) {
-            selectedDate
-        }
+        DateKit.format(selectedDate, "d MMMM yyyy, EEEE") ?: selectedDate
     }
 
     // Calculate grid items: offset of first day (Monday = 0) and total days in month
     val calendarDays = remember(displayedYear, displayedMonth) {
-        val cal = Calendar.getInstance()
-        cal.set(Calendar.YEAR, displayedYear)
-        cal.set(Calendar.MONTH, displayedMonth)
-        cal.set(Calendar.DAY_OF_MONTH, 1)
-
         // Monday = 0, Sunday = 6
-        val firstDayOfWeek = (cal.get(Calendar.DAY_OF_WEEK) + 5) % 7
-        val daysInMonth = cal.getActualMaximum(Calendar.DAY_OF_MONTH)
+        val firstDayOfWeek = DateKit.mondayIndex(DateKit.of(displayedYear, displayedMonth + 1, 1))
+        val daysInMonth = DateKit.daysInMonth(displayedYear, displayedMonth + 1)
 
         buildList {
             // Empty slots for previous month
             repeat(firstDayOfWeek) { add(null) }
             // Days of current month
             for (day in 1..daysInMonth) {
-                val dateStr = String.format(Locale.getDefault(), "%04d-%02d-%02d", displayedYear, displayedMonth + 1, day)
+                val dateStr = "${displayedYear.pad(4)}-${(displayedMonth + 1).pad(2)}-${day.pad(2)}"
                 add(Pair(day, dateStr))
             }
         }
@@ -163,12 +135,12 @@ fun FeedingCalendarView(
 
     // Monthly stats
     val monthlyMealsCount = remember(displayedYear, displayedMonth, allMeals) {
-        val prefix = String.format(Locale.getDefault(), "%04d-%02d", displayedYear, displayedMonth + 1)
+        val prefix = "${displayedYear.pad(4)}-${(displayedMonth + 1).pad(2)}"
         allMeals.count { it.date.startsWith(prefix) }
     }
 
     val monthlyDistinctFoods = remember(displayedYear, displayedMonth, allMeals) {
-        val prefix = String.format(Locale.getDefault(), "%04d-%02d", displayedYear, displayedMonth + 1)
+        val prefix = "${displayedYear.pad(4)}-${(displayedMonth + 1).pad(2)}"
         allMeals.filter { it.date.startsWith(prefix) }
             .flatMap { it.foodItems.split(",", "+").map { item -> item.trim().lowercase() } }
             .filter { it.isNotBlank() }
@@ -250,8 +222,8 @@ fun FeedingCalendarView(
                         // Quick "Bugün" button
                         Surface(
                             onClick = {
-                                displayedYear = todayCal.get(Calendar.YEAR)
-                                displayedMonth = todayCal.get(Calendar.MONTH)
+                                displayedYear = todayDate.year
+                                displayedMonth = todayDate.month.ordinal
                                 onDateSelect(todayStr)
                             },
                             shape = RoundedCornerShape(8.dp),

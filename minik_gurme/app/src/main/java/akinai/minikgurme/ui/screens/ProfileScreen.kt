@@ -1,5 +1,6 @@
 package akinai.minikgurme.ui.screens
 
+import akinai.minikgurme.util.uppercaseTr
 import akinai.minikgurme.ui.theme.*
 import androidx.compose.foundation.BorderStroke
 import akinai.minikgurme.i18n.t
@@ -214,7 +215,7 @@ fun ProfileScreen(
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = profile.name.trim().take(1).uppercase(java.util.Locale("tr")).ifEmpty { "?" },
+                                text = profile.name.trim().take(1).uppercaseTr().ifEmpty { "?" },
                                 style = MaterialTheme.typography.headlineMedium,
                                 fontWeight = FontWeight.ExtraBold,
                                 color = OnHero

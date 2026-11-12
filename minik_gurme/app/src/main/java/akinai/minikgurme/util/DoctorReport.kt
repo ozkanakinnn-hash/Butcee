@@ -72,8 +72,8 @@ object DoctorReport {
         if (growth.isEmpty()) text(t("Kayıt yok."), body)
         growth.sortedBy { it.date }.forEach { g ->
             val ww = WhoStandardsData.getWhoWeight(g.ageMonths, sex); val wh = WhoStandardsData.getWhoHeight(g.ageMonths, sex)
-            text("${prettyDate(g.date)} · ${g.ageMonths}. ${t("ay")} · ${String.format(Locale.US, "%.2f", g.weightKg)} kg (WHO ${String.format(Locale.US, "%.1f", ww)}) · ${String.format(Locale.US, "%.1f", g.heightCm)} cm (WHO ${String.format(Locale.US, "%.1f", wh)})" +
-                (g.headCircumferenceCm?.let { " · ${t("baş çevresi")} ${String.format(Locale.US, "%.1f", it)} cm" } ?: ""), body)
+            text("${prettyDate(g.date)} · ${g.ageMonths}. ${t("ay")} · ${(g.weightKg).fmt(2)} kg (WHO ${(ww).fmt(1)}) · ${(g.heightCm).fmt(1)} cm (WHO ${(wh).fmt(1)})" +
+                (g.headCircumferenceCm?.let { " · ${t("baş çevresi")} ${(it).fmt(1)} cm" } ?: ""), body)
         }
 
         section("Alerjen denemeleri")

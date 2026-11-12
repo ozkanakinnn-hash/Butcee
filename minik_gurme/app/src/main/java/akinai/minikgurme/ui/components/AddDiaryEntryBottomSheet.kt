@@ -1,5 +1,6 @@
 package akinai.minikgurme.ui.components
 
+import akinai.minikgurme.util.DateKit
 import akinai.minikgurme.ui.theme.*
 import androidx.compose.foundation.BorderStroke
 import akinai.minikgurme.i18n.t
@@ -77,10 +78,6 @@ import akinai.minikgurme.ui.theme.SlateBlueSoft
 import akinai.minikgurme.ui.theme.TextPrimary
 import akinai.minikgurme.ui.theme.TextSecondary
 import akinai.minikgurme.ui.theme.TextTertiary
-import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Date
-import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
@@ -101,13 +98,9 @@ fun AddDiaryEntryBottomSheet(
         notes: String
     ) -> Unit
 ) {
-    val todayStr = remember { SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date()) }
-    val yesterdayStr = remember {
-        val cal = Calendar.getInstance()
-        cal.add(Calendar.DAY_OF_YEAR, -1)
-        SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(cal.time)
-    }
-    val currentTimeStr = remember { SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date()) }
+    val todayStr = remember { DateKit.todayIso() }
+    val yesterdayStr = remember { DateKit.isoPlusDays(DateKit.todayIso(), -1) }
+    val currentTimeStr = remember { DateKit.nowHm() }
 
     var selectedDate by remember { mutableStateOf(initialDate.ifBlank { todayStr }) }
     var entryTime by remember { mutableStateOf(currentTimeStr) }

@@ -1,5 +1,6 @@
 package akinai.minikgurme.ui.components
 
+import akinai.minikgurme.util.fmt
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -85,7 +86,6 @@ import akinai.minikgurme.ui.theme.SlateBlueSoft
 import akinai.minikgurme.ui.theme.TextPrimary
 import akinai.minikgurme.ui.theme.TextSecondary
 import akinai.minikgurme.ui.theme.TextTertiary
-import java.util.Locale
 import kotlin.math.max
 import kotlin.math.min
 
@@ -285,8 +285,8 @@ fun GrowthChartCard(
             ) {
                 MetricBox(
                     label = "KİLO (KG)",
-                    value = if (latestRecord != null) "${String.format(Locale.US, "%.2f", latestRecord.weightKg)} kg" else "-",
-                    sub = if (totalWeightGain > 0) "+${String.format(Locale.US, "%.1f", totalWeightGain)} kg" else null,
+                    value = if (latestRecord != null) "${(latestRecord.weightKg).fmt(2)} kg" else "-",
+                    sub = if (totalWeightGain > 0) "+${(totalWeightGain).fmt(1)} kg" else null,
                     selected = selectedMetric == GrowthMetricType.WEIGHT,
                     soft = CoralSoft, border = CoralBorder, accent = CoralDark,
                     onClick = { selectedMetric = GrowthMetricType.WEIGHT },
@@ -296,8 +296,8 @@ fun GrowthChartCard(
                 )
                 MetricBox(
                     label = "BOY (CM)",
-                    value = if (latestRecord != null) "${String.format(Locale.US, "%.1f", latestRecord.heightCm)} cm" else "-",
-                    sub = if (totalHeightGain > 0) "+${String.format(Locale.US, "%.1f", totalHeightGain)} cm" else null,
+                    value = if (latestRecord != null) "${(latestRecord.heightCm).fmt(1)} cm" else "-",
+                    sub = if (totalHeightGain > 0) "+${(totalHeightGain).fmt(1)} cm" else null,
                     selected = selectedMetric == GrowthMetricType.HEIGHT,
                     soft = SageSoft, border = SageBorder, accent = SageDark,
                     onClick = { selectedMetric = GrowthMetricType.HEIGHT },
@@ -437,7 +437,7 @@ fun GrowthChartCard(
                             }
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
-                                text = "Kilo: ${record.weightKg} kg (WHO: ${String.format(Locale.US, "%.1f", whoWeight)}kg) • Boy: ${record.heightCm} cm (WHO: ${String.format(Locale.US, "%.1f", whoHeight)}cm)",
+                                text = "Kilo: ${record.weightKg} kg (WHO: ${(whoWeight).fmt(1)}kg) • Boy: ${record.heightCm} cm (WHO: ${(whoHeight).fmt(1)}cm)",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = TextSecondary,
                                 fontSize = 11.sp
@@ -773,9 +773,9 @@ private fun InteractiveGrowthCanvas(
                 if (n <= 5 || isLatest || isSelected || i == 0) {
                     val unit = if (metricType == GrowthMetricType.HEIGHT) "cm" else "kg"
                     val vText = if (metricType == GrowthMetricType.HEIGHT) {
-                        String.format(Locale.US, "%.0f", values[i])
+                        (values[i]).fmt(0)
                     } else {
-                        String.format(Locale.US, "%.1f", values[i])
+                        (values[i]).fmt(1)
                     }
                     drawContext.canvas.nativeCanvas.drawText(
                         "$vText$unit",

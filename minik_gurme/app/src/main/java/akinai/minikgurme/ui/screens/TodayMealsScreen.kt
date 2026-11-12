@@ -1,5 +1,7 @@
 package akinai.minikgurme.ui.screens
 
+import akinai.minikgurme.util.DateKit
+import akinai.minikgurme.util.fmt
 import akinai.minikgurme.ui.theme.*
 import androidx.compose.foundation.BorderStroke
 import akinai.minikgurme.i18n.t
@@ -92,9 +94,7 @@ import akinai.minikgurme.ui.theme.SlateBlueSoft
 import akinai.minikgurme.ui.theme.TextPrimary
 import akinai.minikgurme.ui.theme.TextSecondary
 import akinai.minikgurme.ui.theme.TextTertiary
-import java.text.SimpleDateFormat
 import java.util.Date
-import java.util.Locale
 
 @Composable
 fun TodayMealsScreen(
@@ -123,15 +123,15 @@ fun TodayMealsScreen(
     var mealToDelete by remember { mutableStateOf<Meal?>(null) }
 
     val isToday = remember(selectedDate) {
-        val todayStr = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+        val todayStr = DateKit.todayIso()
         selectedDate == todayStr
     }
 
     val formattedDisplayDate = remember(selectedDate) {
         try {
-            val date = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(selectedDate)
-            if (date != null) {
-                SimpleDateFormat("d MMMM EEEE", Locale(akinai.minikgurme.i18n.AppLanguage.current)).format(date)
+            val formatted = DateKit.format(selectedDate, "d MMMM EEEE")
+            if (formatted != null) {
+                formatted
             } else {
                 selectedDate
             }
@@ -176,8 +176,8 @@ fun TodayMealsScreen(
                     Spacer(modifier = Modifier.height(14.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                         GreetingStat("Bugün", "${meals.size} öğün", Modifier.weight(1f))
-                        GreetingStat("Kilo", latest?.let { String.format(Locale.US, "%.2f kg", it.weightKg) } ?: "–", Modifier.weight(1f).clickable { onOpenGrowthTracking() })
-                        GreetingStat("Boy", latest?.let { String.format(Locale.US, "%.1f cm", it.heightCm) } ?: "–", Modifier.weight(1f).clickable { onOpenGrowthTracking() })
+                        GreetingStat("Kilo", latest?.let { "${(it.weightKg).fmt(2)} kg" } ?: "–", Modifier.weight(1f).clickable { onOpenGrowthTracking() })
+                        GreetingStat("Boy", latest?.let { "${(it.heightCm).fmt(1)} cm" } ?: "–", Modifier.weight(1f).clickable { onOpenGrowthTracking() })
                     }
                 }
             }

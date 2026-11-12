@@ -1,5 +1,6 @@
 package akinai.minikgurme.ui.screens
 
+import akinai.minikgurme.util.fmt
 import akinai.minikgurme.ui.theme.*
 import androidx.activity.compose.BackHandler
 import akinai.minikgurme.i18n.t
@@ -85,7 +86,6 @@ import akinai.minikgurme.ui.theme.SlateBlueSoft
 import akinai.minikgurme.ui.theme.TextPrimary
 import akinai.minikgurme.ui.theme.TextSecondary
 import akinai.minikgurme.ui.theme.TextTertiary
-import java.util.Locale
 
 @Composable
 fun GrowthTrackingScreen(
@@ -377,7 +377,7 @@ fun GrowthTrackingScreen(
                                     )
                                     Spacer(modifier = Modifier.height(2.dp))
                                     Text(
-                                        text = if (monthlyGainRate > 0) "+${String.format(Locale.US, "%.2f", monthlyGainRate)} kg" else "~0.50 kg",
+                                        text = if (monthlyGainRate > 0) "+${(monthlyGainRate).fmt(2)} kg" else "~0.50 kg",
                                         style = MaterialTheme.typography.titleSmall,
                                         fontWeight = FontWeight.ExtraBold,
                                         color = TextPrimary
@@ -771,7 +771,7 @@ private fun GrowthRecordRowCard(
                             if (weightDiff != null && weightDiff != 0f) {
                                 val sign = if (weightDiff > 0) "+" else ""
                                 Text(
-                                    text = "$sign${String.format(Locale.US, "%.2f", weightDiff)} kg",
+                                    text = "$sign${(weightDiff).fmt(2)} kg",
                                     style = MaterialTheme.typography.labelSmall,
                                     fontWeight = FontWeight.Bold,
                                     color = if (weightDiff > 0) CoralPrimary else TextTertiary,
@@ -812,7 +812,7 @@ private fun GrowthRecordRowCard(
                             if (heightDiff != null && heightDiff != 0f) {
                                 val sign = if (heightDiff > 0) "+" else ""
                                 Text(
-                                    text = "$sign${String.format(Locale.US, "%.1f", heightDiff)} cm",
+                                    text = "$sign${(heightDiff).fmt(1)} cm",
                                     style = MaterialTheme.typography.labelSmall,
                                     fontWeight = FontWeight.Bold,
                                     color = if (heightDiff > 0) SageDark else TextTertiary,

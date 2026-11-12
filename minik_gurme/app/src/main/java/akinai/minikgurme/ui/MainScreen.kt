@@ -226,7 +226,7 @@ fun MainScreen(
                                 softWrap = false
                             )
                             Text(
-                                text = java.text.SimpleDateFormat("d MMMM, EEE", java.util.Locale(akinai.minikgurme.i18n.AppLanguage.current)).format(java.util.Date()),
+                                text = akinai.minikgurme.util.DateKit.formatToday("d MMMM, EEE"),
                                 style = MaterialTheme.typography.labelSmall,
                                 color = TextSecondary,
                                 maxLines = 1,

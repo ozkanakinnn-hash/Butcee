@@ -1,5 +1,7 @@
 package akinai.minikgurme.ui.components
 
+import akinai.minikgurme.util.DateKit
+import akinai.minikgurme.util.fmt
 import akinai.minikgurme.ui.theme.*
 import androidx.compose.foundation.BorderStroke
 import akinai.minikgurme.i18n.t
@@ -65,9 +67,7 @@ import akinai.minikgurme.ui.theme.SageSoft
 import akinai.minikgurme.ui.theme.TextPrimary
 import akinai.minikgurme.ui.theme.TextSecondary
 import akinai.minikgurme.ui.theme.TextTertiary
-import java.text.SimpleDateFormat
 import java.util.Date
-import java.util.Locale
 
 @Composable
 fun AddGrowthRecordDialog(
@@ -79,18 +79,18 @@ fun AddGrowthRecordDialog(
     onSave: (date: String, weightKg: Float, heightCm: Float, headCircumferenceCm: Float?, ageMonths: Int, notes: String) -> Unit
 ) {
     val todayDate = remember {
-        SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+        DateKit.todayIso()
     }
 
     var dateText by remember { mutableStateOf(editing?.date ?: todayDate) }
     var ageMonths by remember { mutableStateOf((editing?.ageMonths ?: currentBabyAgeMonths).coerceAtLeast(0)) }
     var weightText by remember {
-        mutableStateOf(editing?.let { String.format(Locale.US, "%.2f", it.weightKg) } ?: if (latestWeightKg != null && latestWeightKg > 0) String.format(Locale.US, "%.2f", latestWeightKg) else "")
+        mutableStateOf(editing?.let { (it.weightKg).fmt(2) } ?: if (latestWeightKg != null && latestWeightKg > 0) (latestWeightKg).fmt(2) else "")
     }
     var heightText by remember {
-        mutableStateOf(editing?.let { String.format(Locale.US, "%.1f", it.heightCm) } ?: if (latestHeightCm != null && latestHeightCm > 0) String.format(Locale.US, "%.1f", latestHeightCm) else "")
+        mutableStateOf(editing?.let { (it.heightCm).fmt(1) } ?: if (latestHeightCm != null && latestHeightCm > 0) (latestHeightCm).fmt(1) else "")
     }
-    var headCircumferenceText by remember { mutableStateOf(editing?.headCircumferenceCm?.let { String.format(Locale.US, "%.1f", it) } ?: "") }
+    var headCircumferenceText by remember { mutableStateOf(editing?.headCircumferenceCm?.let { (it).fmt(1) } ?: "") }
     var notesText by remember { mutableStateOf(editing?.notes ?: "") }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 

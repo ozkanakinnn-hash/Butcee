@@ -1,5 +1,6 @@
 package akinai.minikgurme.ui.components
 
+import akinai.minikgurme.util.lowercaseTr
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -25,7 +26,6 @@ import androidx.compose.ui.unit.dp
 import akinai.minikgurme.data.model.AllergenTest
 import akinai.minikgurme.i18n.Text
 import akinai.minikgurme.ui.theme.*
-import java.util.Locale
 
 /** Sık görülen 9 alerjen; önerilen tanıtım sırasıyla. Eşleşme deneme adındaki anahtar kelimelerle yapılır. */
 data class MajorAllergen(val name: String, val emoji: String, val keywords: List<String>, val tip: String)
@@ -43,7 +43,7 @@ val MAJOR_ALLERGENS = listOf(
 )
 
 private fun statusOf(a: MajorAllergen, tests: List<AllergenTest>): AllergenTest? {
-    val matches = tests.filter { t -> val f = t.food.lowercase(Locale("tr")); a.keywords.any { f.contains(it) } }
+    val matches = tests.filter { t -> val f = t.food.lowercaseTr(); a.keywords.any { f.contains(it) } }
     return matches.firstOrNull { it.status == "Reaksiyon" } ?: matches.firstOrNull { it.status == "Devam Ediyor" } ?: matches.firstOrNull { it.status == "Güvenli" } ?: matches.firstOrNull()
 }
 

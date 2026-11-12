@@ -1,7 +1,7 @@
 package akinai.minikgurme.ui.viewmodel
 
+import akinai.minikgurme.util.DateKit
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import akinai.minikgurme.data.guide.PediatricRecipesData
 import akinai.minikgurme.data.model.AllergenTest
@@ -19,18 +19,12 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Date
-import java.util.Locale
 
 class FeedingViewModel(
     private val repository: FeedingRepository
 ) : ViewModel() {
 
-    private val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-
-    private val _selectedDate = MutableStateFlow(dateFormat.format(Date()))
+    private val _selectedDate = MutableStateFlow(DateKit.todayIso())
     val selectedDate: StateFlow<String> = _selectedDate.asStateFlow()
 
     private val _selectedGuideMonth = MutableStateFlow(7)
@@ -189,18 +183,11 @@ class FeedingViewModel(
     }
 
     fun shiftDate(days: Int) {
-        try {
-            val cal = Calendar.getInstance()
-            cal.time = dateFormat.parse(_selectedDate.value) ?: Date()
-            cal.add(Calendar.DAY_OF_YEAR, days)
-            _selectedDate.value = dateFormat.format(cal.time)
-        } catch (_: Exception) {
-            _selectedDate.value = dateFormat.format(Date())
-        }
+        _selectedDate.value = DateKit.isoPlusDays(_selectedDate.value, days)
     }
 
     fun setToday() {
-        _selectedDate.value = dateFormat.format(Date())
+        _selectedDate.value = DateKit.todayIso()
     }
 
     fun setAllergenFilter(filter: String) {
@@ -244,7 +231,7 @@ class FeedingViewModel(
             if (isCurrentlyTried) {
                 repository.deleteTriedFood(foodId)
             } else {
-                val todayStr = dateFormat.format(Date())
+                val todayStr = DateKit.todayIso()
                 repository.saveTriedFood(
                     TriedFood(
                         foodId = foodId,
@@ -267,7 +254,7 @@ class FeedingViewModel(
         notes: String
     ) {
         viewModelScope.launch {
-            val todayStr = dateFormat.format(Date())
+            val todayStr = DateKit.todayIso()
             repository.saveTriedFood(
                 TriedFood(
                     foodId = foodId,
@@ -326,7 +313,7 @@ class FeedingViewModel(
                 texture = recipe.textureStyle,
                 reaction = "Sevdi",
                 notes = "Tariflerden hazırlandı: ${recipe.ingredients.take(3).joinToString { it.name }}.",
-                timestamp = System.currentTimeMillis()
+                timestamp = akinai.minikgurme.shared.currentTimeMillis()
             )
             repository.insertMeal(meal)
         }
@@ -358,7 +345,7 @@ class FeedingViewModel(
 
         addDiaryEntry(
             date = date,
-            time = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date()),
+            time = DateKit.nowHm(),
             mealType = diaryMealType,
             foodItems = foodSummary,
             portionAmount = portionAmount,
@@ -386,7 +373,7 @@ class FeedingViewModel(
                 texture = texture,
                 reaction = reaction,
                 notes = notes,
-                timestamp = System.currentTimeMillis()
+                timestamp = akinai.minikgurme.shared.currentTimeMillis()
             )
             repository.insertMeal(meal)
         }
@@ -405,7 +392,7 @@ class FeedingViewModel(
 
     fun addDiaryEntry(
         date: String = _selectedDate.value,
-        time: String = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date()),
+        time: String = DateKit.nowHm(),
         mealType: String,
         foodItems: String,
         portionAmount: String = "1 Porsiyon",
@@ -418,7 +405,7 @@ class FeedingViewModel(
         viewModelScope.launch {
             val entry = FeedingDiaryEntry(
                 date = date,
-                time = time.ifBlank { SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date()) },
+                time = time.ifBlank { DateKit.nowHm() },
                 mealType = mealType,
                 foodItems = foodItems,
                 portionAmount = portionAmount,
@@ -427,7 +414,7 @@ class FeedingViewModel(
                 reaction = reaction,
                 reactionNotes = reactionNotes,
                 notes = notes,
-                timestamp = System.currentTimeMillis()
+                timestamp = akinai.minikgurme.shared.currentTimeMillis()
             )
             repository.insertDiaryEntry(entry)
 
@@ -453,7 +440,7 @@ class FeedingViewModel(
                     texture = texture,
                     reaction = mappedReaction,
                     notes = if (notes.isNotBlank()) "$portionAmount • $notes" else portionAmount,
-                    timestamp = System.currentTimeMillis()
+                    timestamp = akinai.minikgurme.shared.currentTimeMillis()
                 )
             )
         }
@@ -473,7 +460,7 @@ class FeedingViewModel(
 
     fun addAllergenTest(food: String, notes: String) {
         viewModelScope.launch {
-            val todayStr = dateFormat.format(Date())
+            val todayStr = DateKit.todayIso()
             val test = AllergenTest(
                 food = food,
                 startDate = todayStr,
@@ -569,7 +556,7 @@ class FeedingViewModel(
     /** İlk açılış: bebek profilini ve ilk boy/kilo ölçümünü kaydeder. */
     fun completeOnboarding(name: String, ageMonths: Int, weightKg: Float, heightCm: Float, sex: String = "") {
         viewModelScope.launch {
-            val today = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US).format(java.util.Date())
+            val today = DateKit.todayIso()
             repository.updateProfile(BabyProfile(id = 1, name = name.trim(), ageMonths = ageMonths, startDate = today, sex = sex))
             repository.insertGrowthRecord(
                 GrowthRecord(date = today, weightKg = weightKg, heightCm = heightCm, ageMonths = ageMonths)
@@ -609,17 +596,5 @@ class FeedingViewModel(
         viewModelScope.launch {
             repository.deleteGrowthRecordById(id)
         }
-    }
-}
-
-class FeedingViewModelFactory(
-    private val repository: FeedingRepository
-) : ViewModelProvider.Factory {
-    @Suppress("UNCHECKED_CAST")
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(FeedingViewModel::class.java)) {
-            return FeedingViewModel(repository) as T
-        }
-        throw IllegalArgumentException("Unknown ViewModel class")
     }
 }

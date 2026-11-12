@@ -32,6 +32,10 @@ kotlin {
       api(compose.materialIconsExtended)
       api(compose.components.resources)
       implementation(libs.kotlinx.serialization.json)
+      api(libs.kotlinx.datetime)
+      api(libs.jb.lifecycle.viewmodel)
+      api(libs.jb.lifecycle.runtime.compose)
+      api(libs.jb.lifecycle.viewmodel.compose)
       api(libs.androidx.room.runtime) // @Entity modelleri (Room KMP)
     }
     androidMain.dependencies {
