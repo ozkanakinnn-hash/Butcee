@@ -8,6 +8,7 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTextInput
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
@@ -392,5 +393,20 @@ class AppSmokeTest {
         val dup = art.entries.groupBy({ it.value }, { it.key }).filterValues { it.size > 1 }.values
         assertTrue("Aynı görseli paylaşanlar: $dup", dup.isEmpty())
         assertEquals(R.drawable.food_karnabahar, akinai.minikgurme.ui.components.emojiArtFor(akinai.minikgurme.data.guide.FoodDirectoryData.getFoodById("karnabahar")!!.emoji))
+    }
+
+    @Test
+    fun foodImagesInFoods100List() {
+        setOnboarded(true)
+        launch("tr").use {
+            compose.waitForIdle()
+            compose.onNodeWithTag("nav_foods100").performClick(); compose.waitForIdle()
+            // Her ekran görüntüsü listenin farklı bir bölümünü gösterir
+            for (id in listOf("pirasa", "bamya", "ayva", "yesil_mercimek", "sardalya", "badem")) {
+                compose.onNodeWithTag("foods_100_screen").performScrollToNode(androidx.compose.ui.test.hasTestTag("food_item_$id"))
+                compose.waitForIdle()
+                shot("tr_light_foods_$id")
+            }
+        }
     }
 }
