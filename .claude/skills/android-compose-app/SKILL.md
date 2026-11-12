@@ -190,5 +190,6 @@ gradle/actions/setup-gradle@v5 → `./gradlew assembleDebug` → upload-artifact
 ## Yayın paketi ve reklam kimlikleri
 - Yükleme anahtarı: `keytool -genkeypair -alias upload -keyalg RSA -keysize 4096 -validity 10000` → `my-upload-key.jks` (gitignore), şifreyi kullanıcıya ayrı dosyada ver, yedeklet; `KEYSTORE_PATH/STORE_PASSWORD/KEY_PASSWORD` ile `bundleRelease`, `jarsigner -verify` ile doğrula. Play App Signing'i açtır.
 - AdMob kimlikleri gizli değil → `gradle.properties` (`ADMOB_PROD_*`); gerçek reklam YALNIZCA `-PprodAds=true` üretim paketinde. Kapalı test (tanıdık test kullanıcıları) test reklamıyla: geçersiz tıklama hesap kapatır. AAB manifestinde `strings | grep ca-app-pub` ile hangisinin girdiğini doğrula.
-- `app-ads.txt`: `google.com, pub-XXXX, DIRECT, f08c47fec0942fa0` → geliştirici web sitesinin köküne.
+- `app-ads.txt`: `google.com, pub-XXXX, DIRECT, f08c47fec0942fa0` → geliştirici web sitesinin KÖKÜNE (proje sayfası alt yolu sayılmaz; kullanıcı sitesi `<kullanıcı>.github.io` deposu gerekir).
+- Gizlilik politikası barındırma: Bitbucket `<workspace>.bitbucket.io` 2026'da DNS çözmedi (NXDOMAIN). Güvenilir yol: herkese açık GitHub deposunda `docs/` + `.nojekyll`, Settings → Pages → Deploy from a branch → `/docs` → `https://<kullanıcı>.github.io/<depo>/privacy-policy.html`. Pages'i GITHUB_TOKEN açamaz; kullanıcı ayarlardan bir kez açar.
 - Play başlığı ≤30, kısa açıklama ≤80, tam açıklama ≤4000 karakter; simge adı kısa tut (kesilir). Satıcı (trader) beyanı: reklam/satın alma varsa trader → AB'de iletişim bilgileri görünür.
