@@ -25,3 +25,4 @@ dependencyResolutionManagement {
 rootProject.name = "Minik Gurme"
 
 include(":app")
+include(":shared")

@@ -99,6 +99,7 @@ dependencies {
   implementation(libs.androidx.lifecycle.viewmodel.compose)
   // implementation(libs.androidx.navigation.compose)
   implementation(libs.androidx.room.ktx)
+  implementation(project(":shared"))
   implementation(libs.android.billing.ktx)
   // Topluluk (forum): Firebase anonim giriş + Firestore
   implementation(platform(libs.firebase.bom))
