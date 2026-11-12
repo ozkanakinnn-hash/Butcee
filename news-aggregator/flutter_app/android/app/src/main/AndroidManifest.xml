@@ -70,6 +70,10 @@
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
+        <!-- Canlı skor paneli: dakikayı her dakika ilerletir -->
+        <receiver
+            android:name=".LiveTickReceiver"
+            android:exported="false" />
         <!-- Bildirimdeki "Daha az bildirim" düğmesi -->
         <receiver
             android:name=".LessNotificationsReceiver"

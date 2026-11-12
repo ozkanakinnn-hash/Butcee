@@ -23,7 +23,8 @@
             android:maxLines="1"
             android:textAppearance="@style/TextAppearance.Compat.Notification.Info" />
 
-        <Chronometer
+        <!-- Maç dakikası ("62'", "45+2'"): telefon her dakika kendisi günceller (LiveTickReceiver) -->
+        <TextView
             android:id="@+id/live_minute"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

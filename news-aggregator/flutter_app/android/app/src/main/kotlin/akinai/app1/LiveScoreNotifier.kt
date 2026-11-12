@@ -17,7 +17,7 @@ import java.util.Locale
 /**
  * Canlı skor paneli: maç boyunca bildirim alanında SABİT duran, yerinde güncellenen bildirim.
  *  - Aynı maç için tek bildirim (kimlik = fixture_id); skor değişince yeni bildirim açılmaz, güncellenir.
- *  - Dakika telefonda kendi sayar (Chronometer) → sunucu her dakika veri göndermek zorunda değil.
+ *  - Dakika futbol biçiminde ("62'", "45+2'") ve telefonda her dakika ilerler (LiveTickReceiver) → sunucu her dakika veri göndermez.
  *  - Sessiz kanal (`live_score`); skor artınca panel bir kez "goal_alert" kanalından SESLİ uyarır (ayrı bildirim yok).
  *  - Maç bitince "MS" gösterir, kaydırılıp kapatılabilir ve 2 saat sonra kendiliğinden kalkar.
  *  - Ayarlar'daki "Canlı skor paneli" kapalıysa gösterilmez (Flutter SharedPreferences: flutter.liveScorePanel).
@@ -30,14 +30,14 @@ object LiveScoreNotifier {
     private const val KICKOFF_CHANNEL = "kickoff_whistle" // "Maç düdüğü" — hakem düdüğü sesi (res/raw/whistle_kickoff)
     private val LIVE = setOf("1H", "2H", "ET", "LIVE")
 
-    fun show(context: Context, d: Map<String, String>) {
+    fun show(context: Context, d: Map<String, String>, fromTick: Boolean = false) {
         val prefs = context.getSharedPreferences("FlutterSharedPreferences", Context.MODE_PRIVATE)
         val fixtureId = d["fixture_id"] ?: return
         val lang = prefs.getString("flutter.language", null)
         val en = (if (lang == null || lang == "system") Locale.getDefault().language else lang).startsWith("en")
         ensureChannel(context, en)
         ensureKickoffChannel(context, en)
-        val alert = d["alert"].orEmpty()
+        val alert = if (fromTick) "" else d["alert"].orEmpty()
         val alertChannel = alertChannel(alert, d["alert_quiet"] == "1")
         // Panel kapalıysa: maç olayı (gol, kırmızı kart, devre, sonuç, başlama) normal bildirim olarak gösterilir.
         if (!prefs.getBoolean("flutter.liveScorePanel", true)) {
@@ -76,15 +76,11 @@ object LiveScoreNotifier {
             }
             v.setTextViewText(R.id.live_score, if (status == "NS") d["kickoff_text"] ?: "– : –" else "$gh – $ga")
 
-            // Dakika: canlıysa Chronometer, değilse durum yazısı (İY, MS, …)
+            // Dakika: canlıysa futbol biçiminde ("62'", uzatmada "45+2'"); değilse durum yazısı (İY, MS, …)
             if (status in LIVE) {
-                val elapsedMin = (d["elapsed"] ?: "0").toLongOrNull() ?: 0L
-                val sentMs = (d["sent_ms"] ?: "0").toLongOrNull() ?: System.currentTimeMillis()
-                val lag = (System.currentTimeMillis() - sentMs).coerceIn(0L, 10 * 60_000L)
-                val base = SystemClock.elapsedRealtime() - (elapsedMin * 60_000L + lag)
                 v.setViewVisibility(R.id.live_minute, View.VISIBLE)
                 v.setViewVisibility(R.id.live_status, View.GONE)
-                v.setChronometer(R.id.live_minute, base, null, true)
+                v.setTextViewText(R.id.live_minute, minuteText(status, d))
             } else {
                 v.setViewVisibility(R.id.live_minute, View.GONE)
                 v.setViewVisibility(R.id.live_status, View.VISIBLE)
@@ -158,6 +154,61 @@ object LiveScoreNotifier {
         } catch (_: SecurityException) {
             // Bildirim izni yok → sessizce geç
         }
+        // Dakika her dakika telefonda ilerlesin: son veriyi sakla, bir sonraki dakika başında yeniden çiz
+        if (!fromTick) saveLast(context, fixtureId, d)
+        if (status in LIVE && !finished) scheduleTick(context, fixtureId, d) else cancelTick(context, fixtureId)
+    }
+
+    /** Maçın şu anki saniyesi (sunucu: elapsed dakika + sent_ms'den geçen süre). */
+    private fun matchSeconds(d: Map<String, String>): Long {
+        val elapsedMin = (d["elapsed"] ?: "0").toLongOrNull() ?: 0L
+        val sentMs = (d["sent_ms"] ?: "0").toLongOrNull() ?: System.currentTimeMillis()
+        val lagSec = ((System.currentTimeMillis() - sentMs) / 1000).coerceIn(0L, 20 * 60L)
+        return elapsedMin * 60 + lagSec
+    }
+
+    /** Futbol dakikası: 0:00–0:59 → 1'; devre sınırını aşınca uzatma ("45+2'", "90+4'"). */
+    private fun minuteText(status: String, d: Map<String, String>): String {
+        val minute = matchSeconds(d) / 60 + 1
+        val cap = when (status) { "1H" -> 45L; "2H" -> 90L; "ET" -> 120L; else -> Long.MAX_VALUE }
+        return if (minute > cap) "$cap+${minute - cap}'" else "$minute'"
+    }
+
+    private fun saveLast(context: Context, fixtureId: String, d: Map<String, String>) {
+        val json = org.json.JSONObject(d.filterKeys { !it.startsWith("alert") }).toString()
+        context.getSharedPreferences("live_score_state", Context.MODE_PRIVATE).edit().putString("last_$fixtureId", json).apply()
+    }
+
+    /** Zamanlayıcıdan: son veriyle paneli yeniden çiz (uyarısız). Veri 20 dk'dan eskiyse dur. */
+    fun tick(context: Context, fixtureId: String) {
+        val raw = context.getSharedPreferences("live_score_state", Context.MODE_PRIVATE).getString("last_$fixtureId", null) ?: return
+        val o = org.json.JSONObject(raw)
+        val d = o.keys().asSequence().associateWith { o.optString(it) }
+        val sentMs = d["sent_ms"]?.toLongOrNull() ?: return
+        if (System.currentTimeMillis() - sentMs > 20 * 60_000L) return
+        show(context, d, fromTick = true)
+    }
+
+    private fun tickIntent(context: Context, fixtureId: String): PendingIntent =
+        PendingIntent.getBroadcast(
+            context, ("tick_$fixtureId").hashCode(),
+            Intent(context, LiveTickReceiver::class.java).putExtra(LiveTickReceiver.EXTRA_FIXTURE, fixtureId),
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+        )
+
+    /** Bir sonraki dakika başına (≥ 5 sn sonra) zamanlayıcı. Kesin alarm izni gerekmez (yaklaşık zamanlama). */
+    private fun scheduleTick(context: Context, fixtureId: String, d: Map<String, String>) {
+        val am = context.getSystemService(android.app.AlarmManager::class.java) ?: return
+        val toNext = (60 - matchSeconds(d) % 60).coerceAtLeast(5)
+        am.setAndAllowWhileIdle(
+            android.app.AlarmManager.ELAPSED_REALTIME,
+            SystemClock.elapsedRealtime() + toNext * 1000,
+            tickIntent(context, fixtureId),
+        )
+    }
+
+    private fun cancelTick(context: Context, fixtureId: String) {
+        context.getSystemService(android.app.AlarmManager::class.java)?.cancel(tickIntent(context, fixtureId))
     }
 
     /** Olay → ses kanalı. null = sessiz (sarı kart, 2. yarı, güncelleme). Gece (quiet) tüm olaylar sessiz. */

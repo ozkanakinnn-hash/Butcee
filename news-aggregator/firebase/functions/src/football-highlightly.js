@@ -263,12 +263,21 @@ class Highlightly {
     return [...found.values()];
   }
 
-  /** Tek milli maçın güncel hâli: kayıtlı sorguyla (1 istek); sorgu yoksa /matches/{id}. */
+  /**
+   * Tek milli maçın güncel hâli (1 istek). Maç AYRINTISI (/matches/{id}) kullanılır: liste sorgusu olayları (gol atan,
+   * kartlar) içermez, ayrıntı içerir. Ayrıntı alınamazsa kayıtlı liste sorgusuna düşülür (skor yine güncellenir).
+   */
   async nationalPoll(id, q, date) {
     if (!this.base) await this.findLeague();
-    const list = q
-      ? listOf(await this.raw('/matches', { ...q, date, timezone: TIMEZONE, limit: 100 }))
-      : listOf(await this.raw(`/matches/${id}`, { timezone: TIMEZONE }));
+    let list = [];
+    try {
+      list = listOf(await this.raw(`/matches/${id}`, { timezone: TIMEZONE }));
+    } catch (err) {
+      if (!q) throw err;
+    }
+    if (!list.some((m) => String(m.id) === String(id)) && q) {
+      list = listOf(await this.raw('/matches', { ...q, date, timezone: TIMEZONE, limit: 100 }));
+    }
     return list.map(toFixture).filter((f) => String(f.fixture.id) === String(id));
   }
 

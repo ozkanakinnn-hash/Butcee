@@ -29,6 +29,7 @@ test('milli maç: takım kimliğiyle bulunur, sorgu saklanır, tek maç yeniden 
   const calls = [];
   const api = new Highlightly({ key: 'k', base: 'https://h/football', fetchImpl: fake([
     [/\/teams\?name=Turkey/, { data: [{ id: 9, name: 'Turkey' }, { id: 99, name: 'Turkey U21' }] }],
+    [/\/matches\/501/, [match(501, 'Turkey', 'Belgium', { events: [{ team: { id: 9 }, time: "21'", type: 'Goal', player: 'K. Yildiz' }] })]],
     [/homeTeamId=9/, { data: [match(501, 'Turkey', 'Belgium')] }],
     [/awayTeamId=9/, { data: [] }],
   ], calls) });
@@ -48,6 +49,14 @@ test('milli maç: takım kimliğiyle bulunur, sorgu saklanır, tek maç yeniden 
   assert.equal(fb.flagEmoji('gbeng'), '🏴󠁧󠁢󠁥󠁮󠁧󠁿');
   const polled = await api.nationalPoll(501, { homeTeamId: 9 }, '2026-11-12');
   assert.equal(polled.length, 1);
+  assert.equal(calls.filter((c) => c.startsWith('/football/matches/501')).length, 1, 'maç ayrıntısı sorgulanır');
+  assert.equal(polled[0].events[0].player.name, 'K. Yildiz', 'olaylar (gol atan) ayrıntıdan gelir');
+  // Ayrıntı alınamazsa liste sorgusuna düşülür
+  const api2 = new Highlightly({ key: 'k', base: 'https://h/football', fetchImpl: fake([
+    [/\/matches\/501/, 500], [/homeTeamId=9/, { data: [match(501, 'Turkey', 'Belgium')] }],
+  ]) });
+  api2.leagueId = 1;
+  assert.equal((await api2.nationalPoll(501, { homeTeamId: 9 }, '2026-11-12')).length, 1);
 });
 
 test('milli maç: takım sorgusu desteklenmezse günün maçları taranır', async () => {
