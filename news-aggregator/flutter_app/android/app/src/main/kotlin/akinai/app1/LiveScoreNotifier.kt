@@ -27,8 +27,7 @@ object LiveScoreNotifier {
     // v2: kilit ekranında herkese açık (eski "live_score" kanalının görünürlüğü sonradan değiştirilemez)
     private const val CHANNEL = "live_score_v2"
     private const val GOAL_CHANNEL = "goal_alert" // Flutter oluşturur ("Goller", telefonun bildirim sesi)
-    private const val MATCH_CHANNEL = "match" // Flutter oluşturur ("Maç durumu": kırmızı kart, devre arası, maç sonu)
-    private const val KICKOFF_CHANNEL = "kickoff_whistle" // "Maç başladı" — düdük sesi (res/raw/whistle_kickoff)
+    private const val KICKOFF_CHANNEL = "kickoff_whistle" // "Maç düdüğü" — hakem düdüğü sesi (res/raw/whistle_kickoff)
     private val LIVE = setOf("1H", "2H", "ET", "LIVE")
 
     fun show(context: Context, d: Map<String, String>) {
@@ -163,9 +162,9 @@ object LiveScoreNotifier {
 
     /** Olay → ses kanalı. null = sessiz (sarı kart, 2. yarı, güncelleme). Gece (quiet) tüm olaylar sessiz. */
     private fun alertChannel(alert: String, quiet: Boolean): String? = if (quiet) null else when (alert) {
-        "goal", "goal_cancelled" -> GOAL_CHANNEL
-        "red_card", "halftime", "fulltime" -> MATCH_CHANNEL
-        "kickoff" -> KICKOFF_CHANNEL
+        "goal", "goal_cancelled" -> GOAL_CHANNEL // telefonun bildirim sesi
+        // Hakem düdüğü (kullanıcı kararı): başlama, devre arası, maç sonu, kırmızı kart. Sarı kart sessiz.
+        "kickoff", "halftime", "fulltime", "red_card" -> KICKOFF_CHANNEL
         else -> null
     }
 
@@ -231,18 +230,18 @@ object LiveScoreNotifier {
         nm.createNotificationChannel(ch)
     }
 
-    /** Maç başladı kanalı: uygulamanın düdük sesi (kanal sesi sonradan değiştirilemez; yeni ses = yeni kanal kimliği). */
+    /** Maç düdüğü kanalı (başlama, devre, sonuç, kırmızı kart): uygulamanın düdük sesi (kanal sesi sonradan değiştirilemez; yeni ses = yeni kanal kimliği). */
     private fun ensureKickoffChannel(context: Context, en: Boolean) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
         val nm = context.getSystemService(NotificationManager::class.java) ?: return
-        if (nm.getNotificationChannel(KICKOFF_CHANNEL) != null) return
+        // Kanal varsa yalnızca ad/açıklama güncellenir (ses sonradan değişmez)
         val sound = android.net.Uri.parse("android.resource://${context.packageName}/${R.raw.whistle_kickoff}")
         val attrs = android.media.AudioAttributes.Builder()
             .setUsage(android.media.AudioAttributes.USAGE_NOTIFICATION)
             .setContentType(android.media.AudioAttributes.CONTENT_TYPE_SONIFICATION)
             .build()
-        val ch = NotificationChannel(KICKOFF_CHANNEL, if (en) "Kick-off whistle" else "Maç başladı (düdük)", NotificationManager.IMPORTANCE_HIGH).apply {
-            description = if (en) "Whistle when a match kicks off" else "Maç başlayınca hakem düdüğü"
+        val ch = NotificationChannel(KICKOFF_CHANNEL, if (en) "Match whistle" else "Maç düdüğü", NotificationManager.IMPORTANCE_HIGH).apply {
+            description = if (en) "Referee whistle: kick-off, half-time, full-time, red card" else "Hakem düdüğü: maç başladı, devre arası, maç sonu, kırmızı kart"
             setSound(sound, attrs)
             lockscreenVisibility = android.app.Notification.VISIBILITY_PUBLIC
         }
