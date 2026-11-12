@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>242724410601-jjaa0rvr2ckj1p2hjpv70ms0og4n92mm.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.242724410601-jjaa0rvr2ckj1p2hjpv70ms0og4n92mm</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>242724410601-9sahtcqbjhcfnbdnq8kt41b9c397vg08.apps.googleusercontent.com</string>
+	<key>API_KEY</key>
+	<string>AIzaSyAJmShvVyEXC1HQgdV-6cnB7q79SeudmCU</string>
+	<key>GCM_SENDER_ID</key>
+	<string>242724410601</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>akinai.minikgurme</string>
+	<key>PROJECT_ID</key>
+	<string>minik-gurme-f0db0</string>
+	<key>STORAGE_BUCKET</key>
+	<string>minik-gurme-f0db0.firebasestorage.app</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:242724410601:ios:43ce4c1625c8e252930c78</string>
+</dict>
+</plist>
