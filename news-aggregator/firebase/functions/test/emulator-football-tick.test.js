@@ -282,7 +282,7 @@ test('test maçı: başlangıçta panel + "başladı", 15. dk gol, 20. dk sonuç
   assert.equal(new Date(t).toISOString(), '2026-11-08T21:45:00.000Z');
 });
 
-test('milli maç: lig maçı olmayan gün Türkiye maçı bulunur; panel ve tüm maç bildirimleri national_tr konusuna', { skip }, async () => {
+test('milli maç: lig maçı olmayan gün Türkiye maçı bulunur; panel national_tr; goller panelde, diğer olaylar bildirim', { skip }, async () => {
   const { getFirestore, Timestamp } = require('firebase-admin/firestore');
   const fb = require('../src/football');
   const { tick } = require('../src/football-job');
@@ -333,15 +333,16 @@ test('milli maç: lig maçı olmayan gün Türkiye maçı bulunur; panel ve tüm
   assert.equal(last.data.gh, '1');
   assert.equal(last.data.home_short, 'TÜR');
   assert.equal(last.data.league, 'UEFA Nations League');
-  // Başlama + Türkiye golü bildirilir (national_tr)
-  assert.deepEqual(sent.map((m) => m.notification.title), ['🟢 Maç başladı', '⚽ GOL! Türkiye 1-0 Belçika']);
+  // Başlama bildirilir; gol ayrı bildirim değil, panelde (national_tr)
+  assert.deepEqual(sent.map((m) => m.notification.title), ['🟢 Maç başladı']);
   assert.ok(sent.every((m) => m.condition === "'national_tr' in topics"));
+  assert.equal(panels[panels.length - 1].data.gh, '1');
 
-  // Rakibin golü de bildirilir, panel güncellenir
+  // Rakibin golü: yine yalnızca panel
   score = '1 - 1';
   await db.doc('football_meta/state').update({ next_poll_at: null });
   assert.equal(await tick(db, makeApi, messaging, Date.now() + 180_000), 'polled');
-  assert.equal(sent[sent.length - 1].notification.title, '⚽ GOL! Türkiye 1-1 Belçika');
+  assert.equal(sent.length, 1, 'gol bildirimi gönderilmez');
   assert.equal(panels[panels.length - 1].data.ga, '1');
 
   // Maç sonu bildirilir, panel "bitti"

@@ -18,13 +18,14 @@ import java.util.Locale
  * Canlı skor paneli: maç boyunca bildirim alanında SABİT duran, yerinde güncellenen bildirim.
  *  - Aynı maç için tek bildirim (kimlik = fixture_id); skor değişince yeni bildirim açılmaz, güncellenir.
  *  - Dakika telefonda kendi sayar (Chronometer) → sunucu her dakika veri göndermek zorunda değil.
- *  - Sessiz kanal (`live_score`); gol uyarısı ayrı "goals" kanalından sesli gelir.
+ *  - Sessiz kanal (`live_score`); skor artınca panel bir kez "goal_alert" kanalından SESLİ uyarır (ayrı bildirim yok).
  *  - Maç bitince "MS" gösterir, kaydırılıp kapatılabilir ve 2 saat sonra kendiliğinden kalkar.
  *  - Ayarlar'daki "Canlı skor paneli" kapalıysa gösterilmez (Flutter SharedPreferences: flutter.liveScorePanel).
  */
 object LiveScoreNotifier {
     const val TYPE = "match_live"
     private const val CHANNEL = "live_score"
+    private const val GOAL_CHANNEL = "goal_alert" // Flutter oluşturur ("Goller", telefonun bildirim sesi)
     private val LIVE = setOf("1H", "2H", "ET", "LIVE")
 
     fun show(context: Context, d: Map<String, String>) {
@@ -93,7 +94,14 @@ object LiveScoreNotifier {
             )
         }
 
-        val builder = NotificationCompat.Builder(context, CHANNEL)
+        // Gol anı: skor arttıysa panel bir kez SESLİ uyarır (gol kanalı, telefonun bildirim sesi); sonra yine sessiz.
+        val state = context.getSharedPreferences("live_score_state", Context.MODE_PRIVATE)
+        val total = (gh.toIntOrNull() ?: 0) + (ga.toIntOrNull() ?: 0)
+        val lastTotal = state.getInt("goals_$fixtureId", -1)
+        val goalNow = lastTotal >= 0 && total > lastTotal && status != "NS"
+        state.edit().putInt("goals_$fixtureId", total).apply()
+
+        val builder = NotificationCompat.Builder(context, if (goalNow) GOAL_CHANNEL else CHANNEL)
             .setSmallIcon(R.drawable.ic_stat_news)
             .setColor(Color.parseColor("#0B1F3A"))
             .setCustomContentView(rv)
@@ -101,12 +109,12 @@ object LiveScoreNotifier {
             .setStyle(NotificationCompat.DecoratedCustomViewStyle())
             .setContentTitle("$homeShort $gh – $ga $awayShort")
             .setCategory(NotificationCompat.CATEGORY_EVENT)
-            .setOnlyAlertOnce(true)
-            .setSilent(true)
+            .setOnlyAlertOnce(!goalNow)
+            .setSilent(!goalNow)
             .setShowWhen(false)
             .setOngoing(!finished)
             .setAutoCancel(finished)
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setPriority(if (goalNow) NotificationCompat.PRIORITY_HIGH else NotificationCompat.PRIORITY_DEFAULT)
         if (pi != null) builder.setContentIntent(pi)
         if (finished) builder.setTimeoutAfter(2 * 60 * 60 * 1000L)
 

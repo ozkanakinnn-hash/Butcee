@@ -334,6 +334,20 @@ function clockAnchor(prev, next, now = Date.now(), offsetSec = DEFAULT_CLOCK_OFF
   return { period, anchor_ms: anchor, v: CLOCK_VERSION, offset_sec: offsetSec };
 }
 
+/** Panelde skorun altı: o takımın golleri ("⚽ 21' K. Yıldız, 55' Arda") ve kırmızı kartları; yoksa takım adı. */
+function scorerLine(match, side) {
+  const team = match[side] || {};
+  const min = (e) => `${e.minute}${e.extra ? '+' + e.extra : ''}'`;
+  const goals = (match.goal_events || []).filter((g) => g.team_id === team.id);
+  const reds = (match.red_cards || []).filter((c) => c.team_id === team.id);
+  const parts = [];
+  if (goals.length) {
+    parts.push('⚽ ' + goals.map((g) => `${min(g)} ${g.player || ''}${g.detail === 'Own Goal' ? ' (k.k.)' : g.detail === 'Penalty' ? ' (pen.)' : ''}`.trim()).join(', '));
+  }
+  if (reds.length) parts.push('🟥 ' + reds.map((c) => `${min(c)} ${c.player || ''}`.trim()).join(', '));
+  return parts.length ? parts.join(' · ') : team.name || '';
+}
+
 /** Son penaltı (atılan/kaçan) olaydan sonraki 3 dakika panelin üst satırında; yoksa lig adı. Ayrı bildirim yok. */
 const PENALTY_SHOW_MIN = 3;
 function panelHeadline(match) {
@@ -375,11 +389,12 @@ function buildLiveMessage(match, now = Date.now()) {
       fixture_id: String(match.fixture_id),
       league: panelHeadline(match),
       home_short: shortOf(match.home),
-      home_name: match.home.name || '',
+      // Skorun altındaki satır: gol atanlar (yoksa takım adı) — gol panelin içinde görünür
+      home_name: scorerLine(match, 'home'),
       home_color: dotColor(match.home),
       home_flag: match.home.flag || '', // milli maçta bayrak emojisi (telefon renk noktası yerine gösterir)
       away_short: shortOf(match.away),
-      away_name: match.away.name || '',
+      away_name: scorerLine(match, 'away'),
       away_color: dotColor(match.away),
       away_flag: match.away.flag || '',
       gh: String(match.goals.home ?? 0),
@@ -424,6 +439,7 @@ module.exports = {
   buildLiveMessage,
   clockAnchor,
   panelHeadline,
+  scorerLine,
   DEFAULT_CLOCK_OFFSET_SEC,
   nationalizeMatch,
   flagEmoji,

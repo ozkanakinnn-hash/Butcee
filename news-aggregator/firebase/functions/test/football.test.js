@@ -199,3 +199,14 @@ test('penaltı yalnızca panelde: olaydan sonra 3 dk üst satırda, sonra lig ad
   // Penaltı için ayrı olay/bildirim üretilmez (gol zaten gol olarak bildirilir)
   assert.deepEqual(fb.diffMatch({ ...missed, status: { short: '2H' }, penalties: [] }, missed).map((e) => e.type), []);
 });
+
+test('panelde skorun altı: gol atanlar ve kırmızı kartlar, yoksa takım adı', () => {
+  const m = {
+    home: { id: 'turkiye', name: 'Türkiye' }, away: { id: 'belgium', name: 'Belçika' },
+    goal_events: [{ minute: 21, extra: 0, team_id: 'turkiye', player: 'K. Yıldız', detail: 'Normal Goal' }, { minute: 45, extra: 2, team_id: 'turkiye', player: 'H. Çalhanoğlu', detail: 'Penalty' }],
+    red_cards: [{ minute: 70, extra: 0, team_id: 'belgium', player: 'X' }],
+  };
+  assert.equal(fb.scorerLine(m, 'home'), "⚽ 21' K. Yıldız, 45+2' H. Çalhanoğlu (pen.)");
+  assert.equal(fb.scorerLine(m, 'away'), "🟥 70' X");
+  assert.equal(fb.scorerLine({ ...m, red_cards: [] }, 'away'), 'Belçika');
+});

@@ -292,8 +292,10 @@ async function pollOnce(db, api, messaging, active) {
     next.ht_since = next.status.short === 'HT'
       ? (prev && prev.status.short === 'HT' && prev.ht_since ? prev.ht_since : Timestamp.now())
       : null;
-    // Milli maç: tüm olaylar (goller, kırmızı kartlar, başlama, devre, sonuç) futbol seçili + panel açık herkese.
-    for (const ev of fb.diffMatch(prev, next)) {
+    // Milli maç: gol AYRI BİLDİRİM olarak gitmez — panelin içinde (skorun altında) görünür (national_tr aboneleri
+    // zaten paneli açık olanlardır). Kırmızı kart, başlama, devre ve sonuç bildirilir.
+    const events = fb.diffMatch(prev, next);
+    for (const ev of next.national ? events.filter((e) => e.type !== 'goal' && e.type !== 'goal_cancelled') : events) {
       const msg = fb.buildMatchMessage(ev, next);
       if (msg && next.national) msg.condition = `'${fb.NATIONAL_TOPIC}' in topics`;
       if (msg) messages.push(msg);
