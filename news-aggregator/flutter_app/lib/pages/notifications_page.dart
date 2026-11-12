@@ -6,6 +6,7 @@ import '../backend/schema/categories_record.dart';
 import '../backend/schema/extra_records.dart';
 import '../l10n/app_strings.dart';
 import '../utils/time_ago.dart';
+import '../theme.dart';
 import 'article_webview_page.dart';
 import 'match_detail_page.dart';
 import 'settings_page.dart';
@@ -145,7 +146,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                               Text(
                                 label,
                                 style: theme.textTheme.labelMedium?.copyWith(
-                                  color: n.isBreaking ? Colors.red.shade400 : muted,
+                                  color: n.isBreaking ? AppTheme.breaking : muted,
                                   fontWeight: FontWeight.w700,
                                 ),
                               ),
@@ -154,7 +155,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                                 child: Container(
                                   width: 5,
                                   height: 5,
-                                  decoration: BoxDecoration(color: Colors.red.shade400, shape: BoxShape.circle),
+                                  decoration: BoxDecoration(color: AppTheme.breaking, shape: BoxShape.circle),
                                 ),
                               ),
                               Text(timeAgo(n.sentAt, s), style: theme.textTheme.labelMedium?.copyWith(color: muted)),

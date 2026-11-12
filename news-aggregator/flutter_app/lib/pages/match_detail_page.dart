@@ -4,6 +4,7 @@ import '../backend/news_repository.dart';
 import '../backend/schema/football_records.dart';
 import '../l10n/app_strings.dart';
 import '../widgets/live_matches.dart';
+import '../theme.dart';
 
 /// Maç detayı: büyük skor, durum ve goller — Firestore'dan canlı güncellenir.
 class MatchDetailPage extends StatelessWidget {
@@ -67,7 +68,7 @@ class MatchDetailPage extends StatelessWidget {
                           Text(
                             matchStatusLabel(m, s),
                             style: theme.textTheme.labelLarge?.copyWith(
-                              color: m.isLive ? Colors.red : theme.colorScheme.onSurfaceVariant,
+                              color: m.isLive ? AppTheme.breaking : theme.colorScheme.onSurfaceVariant,
                               fontWeight: FontWeight.w700,
                             ),
                           ),

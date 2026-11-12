@@ -4,16 +4,24 @@ import 'package:flutter/material.dart';
 class AppTheme {
   AppTheme._();
 
-  /// Vurgu rengi (seçili sekme, "+" düğmeleri, bağlantılar).
-  static const accent = Color(0xFF0A84FF);
+  /// Marka paleti (logo ile aynı): lacivert = güven/ciddiyet, kırmızı YALNIZCA son dakika ve canlı için.
+  static const navy = Color(0xFF0B1F3A);
+
+  /// Vurgu rengi (seçili sekme, düğmeler, bağlantılar): açık modda lacivert, koyu modda okunur açık lacivert.
+  static const accent = Color(0xFF16345F);
+  static const accentDark = Color(0xFF7FA6E3);
+
+  /// Son dakika, canlı maç ve "yeni" göstergeleri.
+  static const breaking = Color(0xFFD62828);
 
   static ThemeData light() => _build(
     brightness: Brightness.light,
     background: Colors.white,
     surfaceHigh: const Color(0xFFF2F2F7),
     onSurface: const Color(0xFF0B0B0C),
-    muted: const Color(0xFF6E6E73),
+    muted: const Color(0xFF6B7280),
     divider: const Color(0xFFE5E5EA),
+    accentColor: accent,
   );
 
   static ThemeData dark() => _build(
@@ -23,6 +31,7 @@ class AppTheme {
     onSurface: const Color(0xFFF5F5F7),
     muted: const Color(0xFF8E8E93),
     divider: const Color(0xFF1F1F22),
+    accentColor: accentDark,
   );
 
   static ThemeData _build({
@@ -32,10 +41,13 @@ class AppTheme {
     required Color onSurface,
     required Color muted,
     required Color divider,
+    required Color accentColor,
   }) {
-    final scheme = ColorScheme.fromSeed(seedColor: accent, brightness: brightness).copyWith(
-      primary: accent,
-      onPrimary: Colors.white,
+    final dark = brightness == Brightness.dark;
+    final scheme = ColorScheme.fromSeed(seedColor: navy, brightness: brightness).copyWith(
+      primary: accentColor,
+      onPrimary: dark ? navy : Colors.white,
+      error: breaking,
       surface: background,
       onSurface: onSurface,
       onSurfaceVariant: muted,
@@ -71,7 +83,7 @@ class AppTheme {
         labelStyle: text.labelLarge?.copyWith(fontWeight: FontWeight.w700),
         unselectedLabelStyle: text.labelLarge?.copyWith(fontWeight: FontWeight.w600),
         indicatorSize: TabBarIndicatorSize.tab,
-        indicator: BoxDecoration(color: accent, borderRadius: BorderRadius.circular(20)),
+        indicator: BoxDecoration(color: dark ? const Color(0xFF1E3A66) : accent, borderRadius: BorderRadius.circular(20)),
         dividerHeight: 0,
         labelPadding: const EdgeInsets.symmetric(horizontal: 14),
         overlayColor: WidgetStateProperty.all(Colors.transparent),
@@ -80,7 +92,7 @@ class AppTheme {
       dividerTheme: DividerThemeData(color: divider, thickness: 1, space: 1),
       listTileTheme: ListTileThemeData(iconColor: muted, textColor: onSurface),
       iconTheme: IconThemeData(color: onSurface),
-      progressIndicatorTheme: const ProgressIndicatorThemeData(color: accent),
+      progressIndicatorTheme: ProgressIndicatorThemeData(color: accentColor),
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
         backgroundColor: surfaceHigh,
@@ -90,9 +102,9 @@ class AppTheme {
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: background,
         surfaceTintColor: Colors.transparent,
-        indicatorColor: accent.withValues(alpha: 0.16),
+        indicatorColor: accentColor.withValues(alpha: 0.16),
         iconTheme: WidgetStateProperty.resolveWith(
-          (states) => IconThemeData(size: 28, color: states.contains(WidgetState.selected) ? accent : onSurface),
+          (states) => IconThemeData(size: 28, color: states.contains(WidgetState.selected) ? accentColor : onSurface),
         ),
       ),
       drawerTheme: DrawerThemeData(backgroundColor: background, surfaceTintColor: Colors.transparent, width: 320),

@@ -12,6 +12,7 @@ import 'package:timezone/timezone.dart' as tz;
 
 import '../app_settings.dart';
 import '../data/observances.dart';
+import '../theme.dart';
 
 /// Arka planda gelen "notification" mesajlarını sistem kendisi gösterir; burada iş yok.
 /// (Top-level ve vm:entry-point olmalı.)
@@ -208,7 +209,7 @@ class NotificationService {
           importance: channel.importance,
           priority: channel.importance.value >= Importance.high.value ? Priority.high : Priority.defaultPriority,
           icon: 'ic_stat_news',
-          color: const Color(0xFF0A84FF),
+          color: AppTheme.navy,
           sound: channel.sound,
           tag: n.android?.tag,
           styleInformation: BigTextStyleInformation(n.body ?? ''),

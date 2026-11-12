@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../backend/schema/football_records.dart';
 import '../l10n/app_strings.dart';
 import '../pages/team_picker_page.dart';
+import '../theme.dart';
 
 /// Maç durumu etiketi: "CANLI 67'", "Devre", "MS", "Bugün 20:00".
 String matchStatusLabel(MatchRecord m, S s, {DateTime? now}) {
@@ -86,7 +87,7 @@ class MatchCard extends StatelessWidget {
           decoration: m.isLive
               ? BoxDecoration(
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.red.withValues(alpha: 0.6)),
+                  border: Border.all(color: AppTheme.breaking.withValues(alpha: 0.6)),
                 )
               : null,
           child: Column(
@@ -99,7 +100,7 @@ class MatchCard extends StatelessWidget {
                   Text(
                     matchStatusLabel(m, s),
                     style: theme.textTheme.labelMedium?.copyWith(
-                      color: m.isLive ? Colors.red : theme.colorScheme.onSurfaceVariant,
+                      color: m.isLive ? AppTheme.breaking : theme.colorScheme.onSurfaceVariant,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -140,7 +141,7 @@ class _LiveDotState extends State<LiveDot> with SingleTickerProviderStateMixin {
     child: Container(
       width: widget.size,
       height: widget.size,
-      decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle),
+      decoration: const BoxDecoration(color: AppTheme.breaking, shape: BoxShape.circle),
     ),
   );
 }
