@@ -13,6 +13,7 @@ import '../backend/schema/categories_record.dart';
 import '../backend/schema/football_records.dart';
 import '../services/weather_service.dart';
 import '../widgets/live_matches.dart';
+import '../widgets/observance_banner.dart';
 import '../widgets/market_panel.dart';
 import '../widgets/weather_card.dart';
 import '../l10n/app_strings.dart';
@@ -134,6 +135,7 @@ class _AllHeader extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
+        const ObservanceBanner(),
         if (settings.weatherEnabled) WeatherCard(service: WeatherService.shared),
         if (settings.followsFootball && settings.followedTeams.isNotEmpty)
           _MatchesStream(
@@ -276,23 +278,37 @@ class _ArticleFeedState extends State<ArticleFeed> with AutomaticKeepAliveClient
 
   Future<void> _loadMore() async {
     if (_loading || !_hasMore) return;
+    final first = _cursor == null && _items.isEmpty;
     setState(() {
       _loading = true;
       _error = null;
     });
+    if (first) unawaited(_showCachedFirstPage());
     try {
-      final page = await widget.repository.fetchArticles(category: widget.category, startAfter: _cursor);
+      final page = await widget.repository.fetchArticles(category: widget.category, startAfter: first ? null : _cursor);
       if (!mounted) return;
       setState(() {
+        if (first) _items.clear(); // önbellekten gösterilen sayfa güncel sayfayla değişir
         _items.addAll(page.items);
         _cursor = page.lastDocument;
         _hasMore = page.hasMore;
       });
+      prefetchArticleImages(context, page.items);
     } catch (e) {
       if (mounted) setState(() => _error = e);
     } finally {
       if (mounted) setState(() => _loading = false);
     }
+  }
+
+  /// Açılışta ağ cevabını beklemeden, cihazdaki önbellekte kalan son haberleri hemen gösterir.
+  Future<void> _showCachedFirstPage() async {
+    try {
+      final page = await widget.repository.fetchArticles(category: widget.category, fromCache: true);
+      if (!mounted || _cursor != null || _items.isNotEmpty || page.items.isEmpty) return;
+      setState(() => _items.addAll(page.items));
+      prefetchArticleImages(context, page.items);
+    } catch (_) {} // önbellek boşsa sorun değil
   }
 
   /// Aşağı çekip yenileme: listeyi sıfırlayıp ilk sayfayı yeniden çeker.

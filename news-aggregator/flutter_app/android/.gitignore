@@ -12,3 +12,6 @@ GeneratedPluginRegistrant.java
 key.properties
 **/*.keystore
 **/*.jks
+
+# Yalnızca test dağıtımı için sabit imza anahtarı (Play Store anahtarı DEĞİL; gizli değil)
+!app/test-signing.keystore

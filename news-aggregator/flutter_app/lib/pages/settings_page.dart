@@ -162,6 +162,16 @@ class _SettingsPageState extends State<SettingsPage> with WidgetsBindingObserver
                 if (v && notifGranted != true) await _requestNotifications();
               },
             ),
+            SwitchListTile(
+              secondary: const Icon(Icons.flag_outlined),
+              title: Text(s.observanceNotifications),
+              subtitle: Text(s.observanceNotificationsDesc),
+              value: settings.observanceNotifications,
+              onChanged: (v) async {
+                await settings.setObservanceNotifications(v);
+                if (v && notifGranted != true) await _requestNotifications();
+              },
+            ),
             if (settings.followsFootball)
               ListTile(
                 leading: const Icon(Icons.shield_outlined),
