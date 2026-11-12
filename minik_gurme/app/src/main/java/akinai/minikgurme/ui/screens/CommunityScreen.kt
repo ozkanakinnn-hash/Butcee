@@ -113,33 +113,50 @@ fun CommunityScreen(
     onOpenTerms: () -> Unit,
     onOpenPrivacy: () -> Unit = {}
 ) {
-    if (!Community.joined) {
-        JoinCommunity(onOpenTerms, onOpenPrivacy)
-        return
-    }
     val backend = Community.backend
-    // "feed" | "compose" | "post:<topic>/<id>"
+    // "feed" | "compose" | "join" | "post:<topic>/<id>"
     var view by rememberSaveable { mutableStateOf("feed") }
+    // Katıldıktan sonra dönülecek görünüm
+    var afterJoin by rememberSaveable { mutableStateOf("feed") }
     var topic by rememberSaveable { mutableStateOf(defaultTopicFor(ageMonths)) }
     var isMod by remember { mutableStateOf(false) }
-    LaunchedEffect(backend) { isMod = runCatching { backend.signIn(); backend.isModerator() }.getOrDefault(false) }
-    BackHandler(enabled = view != "feed") { view = "feed" }
+    val joined = Community.joined
+    LaunchedEffect(backend, joined) {
+        isMod = joined && runCatching { backend.signIn(); backend.isModerator() }.getOrDefault(false)
+    }
+    BackHandler(enabled = view != "feed") { view = if (view == "join") afterJoin.takeIf { it.startsWith("post:") } ?: "feed" else "feed" }
 
+    // Okumak herkese açık; yazmak (gönderi/yorum) Plus'a özel olabilir. Beğeni ve şikâyet için katılmak yeterli.
     val canWrite = !CommunityConfig.WRITE_PLUS_ONLY || isPlus
-    val openCompose = { if (canWrite) view = "compose" else onOpenPaywall() }
+    val requireJoin: (String) -> Unit = { back -> afterJoin = back; view = "join" }
+    val openCompose = {
+        when {
+            !canWrite -> onOpenPaywall()
+            !joined -> requireJoin("compose")
+            else -> view = "compose"
+        }
+    }
 
     when {
+        view == "join" -> JoinCommunity(
+            onOpenTerms, onOpenPrivacy,
+            onBack = { view = afterJoin.takeIf { it.startsWith("post:") } ?: "feed" },
+            onJoined = { view = afterJoin }
+        )
         view == "compose" -> ComposePost(topic, onBack = { view = "feed" }, onPosted = { newTopic -> topic = newTopic; view = "feed" })
         view.startsWith("post:") -> {
             val (tp, id) = view.removePrefix("post:").split('/', limit = 2).let { it[0] to it[1] }
-            PostDetail(tp, id, isMod, canWrite, onOpenPaywall, onBack = { view = "feed" })
+            PostDetail(tp, id, isMod, canWrite, onOpenPaywall, onBack = { view = "feed" }, onNeedJoin = { requireJoin(view) })
         }
-        else -> Feed(topic, isMod, onTopic = { topic = it }, onOpenPost = { view = "post:${it.topic}/${it.id}" }, onCompose = openCompose, canWrite = canWrite)
+        else -> Feed(
+            topic, isMod, onTopic = { topic = it }, onOpenPost = { view = "post:${it.topic}/${it.id}" },
+            onCompose = openCompose, canWrite = canWrite, onOpenPaywall = onOpenPaywall, onNeedJoin = { requireJoin("feed") }
+        )
     }
 }
 
 @Composable
-private fun JoinCommunity(onOpenTerms: () -> Unit, onOpenPrivacy: () -> Unit) {
+private fun JoinCommunity(onOpenTerms: () -> Unit, onOpenPrivacy: () -> Unit, onBack: () -> Unit, onJoined: () -> Unit) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var nick by rememberSaveable { mutableStateOf("") }
@@ -148,8 +165,10 @@ private fun JoinCommunity(onOpenTerms: () -> Unit, onOpenPrivacy: () -> Unit) {
     var error by remember { mutableStateOf<String?>(null) }
     val nickError = if (nick.isBlank()) null else ContentFilter.checkNick(nick)
 
+    Column(Modifier.fillMaxSize()) {
+    BackBar("Topluluğa katıl", onBack)
     Column(
-        Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp).imePadding(),
+        Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp).padding(bottom = 16.dp).imePadding(),
         verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
         Card(shape = RoundedCornerShape(24.dp), colors = CardDefaults.cardColors(containerColor = Color.Transparent), modifier = Modifier.fillMaxWidth()) {
@@ -215,7 +234,7 @@ private fun JoinCommunity(onOpenTerms: () -> Unit, onOpenPrivacy: () -> Unit) {
                 scope.launch {
                     val r = runCatching { Community.backend.signIn() }
                     busy = false
-                    if (r.isSuccess) Community.join(context, nick) else error = t("Bağlantı kurulamadı. İnternet bağlantınızı kontrol edip tekrar deneyin.")
+                    if (r.isSuccess) { Community.join(context, nick); onJoined() } else error = t("Bağlantı kurulamadı. İnternet bağlantınızı kontrol edip tekrar deneyin.")
                 }
             },
             enabled = !busy && accepted && nick.isNotBlank() && nickError == null,
@@ -232,6 +251,30 @@ private fun JoinCommunity(onOpenTerms: () -> Unit, onOpenPrivacy: () -> Unit) {
         )
         Spacer(Modifier.height(12.dp))
     }
+    }
+}
+
+/** Katılmamış veya Plus olmayan kullanıcıya ne yapabileceğini anlatan şerit. */
+@Composable
+private fun AccessBanner(canWrite: Boolean, onOpenPaywall: () -> Unit, onNeedJoin: () -> Unit) {
+    if (canWrite && Community.joined) return
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.padding(horizontal = 16.dp).padding(bottom = 8.dp).fillMaxWidth()
+            .clip(RoundedCornerShape(14.dp)).background(CoralSoft).padding(start = 12.dp, end = 4.dp, top = 4.dp, bottom = 4.dp)
+            .testTag("community_access_banner")
+    ) {
+        Icon(if (canWrite) Icons.Filled.Forum else Icons.Filled.Lock, contentDescription = null, tint = CoralDark, modifier = Modifier.size(18.dp))
+        Spacer(Modifier.width(8.dp))
+        Text(
+            if (canWrite) "Soru sormak ve yorum yazmak için takma adınızla katılın." else "Okumak herkese açık. Gönderi ve yorum yazmak Plus üyelerine özel.",
+            style = MaterialTheme.typography.labelMedium, color = CoralDark, modifier = Modifier.weight(1f)
+        )
+        TextButton(
+            onClick = if (canWrite) onNeedJoin else onOpenPaywall,
+            modifier = Modifier.testTag(if (canWrite) "community_open_join" else "community_go_plus")
+        ) { Text(if (canWrite) "Katıl" else "Plus'a geç", fontWeight = FontWeight.Bold, color = CoralPrimary) }
+    }
 }
 
 @Composable
@@ -241,7 +284,9 @@ private fun Feed(
     onTopic: (String) -> Unit,
     onOpenPost: (CommunityPost) -> Unit,
     onCompose: () -> Unit,
-    canWrite: Boolean
+    canWrite: Boolean,
+    onOpenPaywall: () -> Unit,
+    onNeedJoin: () -> Unit
 ) {
     val backend = Community.backend
     val state by produceState<Load<List<CommunityPost>>>(Load.Loading, topic, backend) {
@@ -258,6 +303,7 @@ private fun Feed(
                     TopicChip(label, key == topic, Modifier.testTag("community_topic_$key")) { onTopic(key) }
                 }
             }
+            AccessBanner(canWrite, onOpenPaywall, onNeedJoin)
             Disclaimer()
             when (val s = state) {
                 Load.Loading -> CenterBox { CircularProgressIndicator(color = CoralPrimary) }
@@ -277,7 +323,7 @@ private fun Feed(
                         modifier = Modifier.testTag("community_feed")
                     ) {
                         items(visible, key = { it.id }) { post ->
-                            PostCard(post, isMod, full = false, onOpen = { onOpenPost(post) }, onDeleted = {})
+                            PostCard(post, isMod, full = false, onOpen = { onOpenPost(post) }, onDeleted = {}, onNeedJoin = onNeedJoin)
                         }
                     }
                 }
@@ -294,7 +340,7 @@ private fun Feed(
 }
 
 @Composable
-private fun PostCard(post: CommunityPost, isMod: Boolean, full: Boolean, onOpen: () -> Unit, onDeleted: () -> Unit) {
+private fun PostCard(post: CommunityPost, isMod: Boolean, full: Boolean, onOpen: () -> Unit, onDeleted: () -> Unit, onNeedJoin: () -> Unit) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val backend = Community.backend
@@ -313,7 +359,7 @@ private fun PostCard(post: CommunityPost, isMod: Boolean, full: Boolean, onOpen:
             AuthorRow(post.uid, post.nick, post.createdAt, extra = if (full) null else topicLabel(post.topic)) {
                 ItemMenu(
                     own = post.uid == me, isMod = isMod, tagPrefix = "post_${post.id}",
-                    onReport = { dialog = "report" }, onBlock = { dialog = "block" }, onDelete = { dialog = "delete" }
+                    onReport = { if (Community.joined) dialog = "report" else onNeedJoin() }, onBlock = { dialog = "block" }, onDelete = { dialog = "delete" }
                 )
             }
             if (hidden) ModBanner(post.reportedBy.size) {
@@ -326,7 +372,10 @@ private fun PostCard(post: CommunityPost, isMod: Boolean, full: Boolean, onOpen:
             )
             Row(verticalAlignment = Alignment.CenterVertically) {
                 IconButton(
-                    onClick = { scope.launch { runCatching { backend.setLiked(post.topic, post.id, !liked) } } },
+                    onClick = {
+                        if (!Community.joined) onNeedJoin()
+                        else scope.launch { runCatching { backend.setLiked(post.topic, post.id, !liked) } }
+                    },
                     modifier = Modifier.testTag("like_${post.id}")
                 ) {
                     Icon(if (liked) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder, contentDescription = t("Beğen"), tint = if (liked) ReactionAllergy else TextSecondary)
@@ -354,7 +403,7 @@ private fun PostCard(post: CommunityPost, isMod: Boolean, full: Boolean, onOpen:
 }
 
 @Composable
-private fun PostDetail(topic: String, postId: String, isMod: Boolean, canWrite: Boolean, onOpenPaywall: () -> Unit, onBack: () -> Unit) {
+private fun PostDetail(topic: String, postId: String, isMod: Boolean, canWrite: Boolean, onOpenPaywall: () -> Unit, onBack: () -> Unit, onNeedJoin: () -> Unit) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val backend = Community.backend
@@ -382,18 +431,28 @@ private fun PostDetail(topic: String, postId: String, isMod: Boolean, canWrite: 
                     val value = p.value
                     if (value == null) item { Text("Bu gönderi silinmiş.", color = TextSecondary, modifier = Modifier.padding(vertical = 24.dp)) }
                     else {
-                        item { PostCard(value, isMod, full = true, onOpen = {}, onDeleted = onBack) }
+                        item { PostCard(value, isMod, full = true, onOpen = {}, onDeleted = onBack, onNeedJoin = onNeedJoin) }
                         item {
                             Text("Yorumlar", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = TextPrimary, modifier = Modifier.padding(top = 6.dp))
                         }
                         val visible = comments.filter { Community.isVisible(it.uid, it.reportedBy, it.modApproved, Community.commentKey(topic, postId, it.id), isMod) }
                         if (visible.isEmpty()) item { Text("Henüz yorum yok. İlk yorumu siz yazın.", color = TextSecondary, style = MaterialTheme.typography.bodyMedium) }
-                        items(visible, key = { it.id }) { c -> CommentCard(topic, postId, c, isMod) }
+                        items(visible, key = { it.id }) { c -> CommentCard(topic, postId, c, isMod, onNeedJoin) }
                     }
                 }
             }
         }
-        if ((post as? Load.Ready)?.value != null) {
+        if ((post as? Load.Ready)?.value != null && (!canWrite || !Community.joined)) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth().background(CardSurface).padding(horizontal = 16.dp, vertical = 6.dp).testTag("community_comment_locked")
+            ) {
+                Icon(if (canWrite) Icons.Filled.Forum else Icons.Filled.Lock, contentDescription = null, tint = if (canWrite) CoralPrimary else OchreWarm, modifier = Modifier.size(18.dp))
+                Spacer(Modifier.width(8.dp))
+                Text(if (canWrite) "Yorum yazmak için topluluğa katılın." else "Yorum yazmak Plus üyelerine özel.", color = TextSecondary, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+                TextButton(onClick = if (canWrite) onNeedJoin else onOpenPaywall) { Text(if (canWrite) "Katıl" else "Plus'a geç", fontWeight = FontWeight.Bold, color = CoralPrimary) }
+            }
+        } else if ((post as? Load.Ready)?.value != null) {
             error?.let { Text(it, color = ReactionAllergy, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(horizontal = 16.dp)) }
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -438,7 +497,7 @@ private fun PostDetail(topic: String, postId: String, isMod: Boolean, canWrite: 
 }
 
 @Composable
-private fun CommentCard(topic: String, postId: String, c: CommunityComment, isMod: Boolean) {
+private fun CommentCard(topic: String, postId: String, c: CommunityComment, isMod: Boolean, onNeedJoin: () -> Unit) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val backend = Community.backend
@@ -454,7 +513,7 @@ private fun CommentCard(topic: String, postId: String, c: CommunityComment, isMo
             AuthorRow(c.uid, c.nick, c.createdAt, extra = null, small = true) {
                 ItemMenu(
                     own = c.uid == backend.currentUid(), isMod = isMod, tagPrefix = "comment_${c.id}",
-                    onReport = { dialog = "report" }, onBlock = { dialog = "block" }, onDelete = { dialog = "delete" }
+                    onReport = { if (Community.joined) dialog = "report" else onNeedJoin() }, onBlock = { dialog = "block" }, onDelete = { dialog = "delete" }
                 )
             }
             if (hidden) ModBanner(c.reportedBy.size) { scope.launch { runCatching { backend.approve(topic, postId, c.id) } } }

@@ -36,7 +36,8 @@ service cloud.firestore {
     }
 
     match /topics/{topic}/posts/{postId} {
-      allow read: if signedIn();
+      // Okumak herkese açık (hesap gerekmez); yazmak için anonim giriş gerekir
+      allow read: if true;
 
       allow create: if signedIn()
         && topic in topics()
@@ -63,7 +64,7 @@ service cloud.firestore {
       allow delete: if signedIn() && (resource.data.uid == me() || isMod());
 
       match /comments/{commentId} {
-        allow read: if signedIn();
+        allow read: if true;
 
         allow create: if signedIn()
           && exists(/databases/$(database)/documents/topics/$(topic)/posts/$(postId))

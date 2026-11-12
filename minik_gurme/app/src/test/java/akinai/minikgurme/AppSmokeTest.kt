@@ -43,6 +43,7 @@ class AppSmokeTest {
         listOf("minik_gurme_db").forEach { ctx.deleteDatabase(it) }
         ctx.getSharedPreferences("app_prefs", Context.MODE_PRIVATE).edit().clear().commit()
         ctx.getSharedPreferences("community", Context.MODE_PRIVATE).edit().clear().commit()
+        akinai.minikgurme.community.Community.backend = FakeCommunityBackend() // Firebase'e bağlanma
         org.robolectric.Shadows.shadowOf(ctx as android.app.Application).grantPermissions(android.Manifest.permission.POST_NOTIFICATIONS)
     }
 

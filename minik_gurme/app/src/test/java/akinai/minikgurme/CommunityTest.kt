@@ -46,7 +46,8 @@ class CommunityTest {
     fun setUp() {
         AppDatabase.closeAll()
         ctx.deleteDatabase("minik_gurme_db")
-        ctx.getSharedPreferences("app_prefs", Context.MODE_PRIVATE).edit().clear().putBoolean(MainActivity.KEY_ONBOARDED, true).commit()
+        ctx.getSharedPreferences("app_prefs", Context.MODE_PRIVATE).edit().clear().putBoolean(MainActivity.KEY_ONBOARDED, true)
+            .putBoolean("plus_debug_override", true).commit() // yazmak Plus'a özel
         ctx.getSharedPreferences("community", Context.MODE_PRIVATE).edit().clear().commit()
         fake = FakeCommunityBackend()
         Community.backend = fake
@@ -72,8 +73,12 @@ class CommunityTest {
         }
     }
 
+    private fun setPlus(on: Boolean) =
+        ctx.getSharedPreferences("app_prefs", Context.MODE_PRIVATE).edit().putBoolean("plus_debug_override", on).commit()
+
     private fun joinAs(nick: String) {
         compose.onNodeWithTag("nav_community").performClick(); compose.waitForIdle()
+        compose.onNodeWithTag("community_open_join").performClick(); compose.waitForIdle()
         compose.onNodeWithTag("community_nick").performTextInput(nick)
         compose.onNodeWithTag("community_accept").performScrollTo().performClick()
         compose.onNodeWithTag("community_join").performScrollTo().performClick()
@@ -92,6 +97,9 @@ class CommunityTest {
         launch().use {
             compose.waitForIdle()
             compose.onNodeWithTag("nav_community").performClick(); compose.waitForIdle()
+            // Okumak için katılmak gerekmez
+            assertTrue(has("Brokoliyi buharda")); assertFalse(fake.signedIn)
+            compose.onNodeWithTag("community_open_join").performClick(); compose.waitForIdle()
             assertTrue(has("Ebeveyn Topluluğu"))
             shot("tr_light_community_join")
             // Kurallar kabul edilmeden katılınamaz
@@ -218,12 +226,57 @@ class CommunityTest {
     }
 
     @Test
+    fun readingIsFreeWritingNeedsPlus() {
+        setPlus(false)
+        seedSample()
+        launch().use {
+            compose.waitForIdle()
+            compose.onNodeWithTag("nav_community").performClick(); compose.waitForIdle()
+            assertTrue("Plus olmadan okunabilmeli", has("Brokoliyi buharda"))
+            assertFalse("Okumak hesap açmamalı", fake.signedIn)
+            assertTrue(has("Plus üyelerine özel"))
+            shot("tr_light_community_free_feed")
+            // Gönderi detayı açılır, yorum alanı kilitli
+            val elif = fake.posts.value.first { it.uid == "u1" }
+            compose.onNodeWithTag("community_post_${elif.id}").performClick(); compose.waitForIdle()
+            assertTrue(hasTag("community_comment_locked")); assertFalse(hasTag("community_comment_input"))
+            shot("tr_light_community_free_detail")
+            compose.onNodeWithTag("community_back").performClick(); compose.waitForIdle()
+            // Gönderi yaz → Plus sayfası
+            compose.onNodeWithTag("community_new_post").performClick(); compose.waitForIdle()
+            assertTrue(has("Minik Gurme Plus")); assertTrue(has("Toplulukta soru sor"))
+            assertTrue(fake.posts.value.none { it.uid == "me" })
+        }
+    }
+
+    @Test
+    fun freeUserCanJoinToLikeAndReport() {
+        setPlus(false)
+        seedSample()
+        launch().use {
+            compose.waitForIdle()
+            compose.onNodeWithTag("nav_community").performClick(); compose.waitForIdle()
+            val elif = fake.posts.value.first { it.uid == "u1" }
+            // Beğenmek için katılım istenir, sonra beğeni çalışır
+            compose.onNodeWithTag("like_${elif.id}").performClick(); compose.waitForIdle()
+            assertTrue(hasTag("community_nick"))
+            compose.onNodeWithTag("community_nick").performTextInput("Ücretsiz")
+            compose.onNodeWithTag("community_accept").performScrollTo().performClick()
+            compose.onNodeWithTag("community_join").performScrollTo().performClick()
+            compose.waitUntil(5000) { hasTag("like_${elif.id}") }
+            compose.onNodeWithTag("like_${elif.id}").performClick(); compose.waitForIdle()
+            assertTrue("me" in fake.posts.value.first { it.id == elif.id }.likedBy)
+        }
+    }
+
+    @Test
     @Config(qualifiers = "w411dp-h891dp-night-xxhdpi")
     fun darkAndEnglishFeed() {
         seedSample()
         launch("en").use {
             compose.waitForIdle()
             compose.onNodeWithTag("nav_community").performClick(); compose.waitForIdle()
+            compose.onNodeWithTag("community_open_join").performClick(); compose.waitForIdle()
             assertTrue(has("Parent Community"))
             shot("en_dark_community_join")
             compose.onNodeWithTag("community_nick").performTextInput("Ada's mum")

@@ -15,7 +15,7 @@ Anahtar kaybolursa Play Console'dan "yükleme anahtarı sıfırlama" talep edile
 
 ## 2. Yayından önce sizin yapmanız gerekenler
 1. **Google Play geliştirici hesabı** (25 $). Bireysel yeni hesaplarda: üretime çıkmadan önce **12 test kullanıcısıyla 14 gün kapalı test**.
-2. **İletişim e-postası**: `util/LegalTexts.kt` → `CONTACT_EMAIL` doldurulmalı.
+2. **İletişim e-postası**: `util/LegalTexts.kt` → `CONTACT_EMAIL` = ozkan.akinnn@gmail.com (ayrı bir destek adresi açarsanız değiştirin).
 3. **Gizlilik politikası adresi**: Uygulamadaki metni (Ayarlar › Gizlilik Politikası) bir web sayfasında yayımlayın (ör. Google Sites) ve adresi Play Console'a girin.
 4. **Marka araması**: TÜRKPATENT'te "Minik Gurme" (sınıf 9, 41, 44).
 5. **İçerik onayı (önerilir)**: Rehber ve tarifleri bir çocuk doktoru / diyetisyen gözden geçirsin.
@@ -104,5 +104,5 @@ Proje: `minik-gurme-f0db0` · Uygulama yapılandırması: `minik_gurme/app/googl
    Uygulamayı yeniden açınca gizlenen içeriklerde **Onayla** ve her içerikte **Sil (moderatör)** görünür.
 5. **Şikâyetler**: Firestore › `reports` koleksiyonunda kimin, hangi içeriği (`path` = başlık/gönderi[/yorum]), hangi nedenle şikâyet ettiği görülür.
 6. **Bütçe**: Ücretsiz Spark planında kalındığı sürece ücret çıkmaz; kota aşılırsa topluluk o gün durur. Blaze'e geçerseniz bütçe uyarısı (ör. 5 $) kurun.
-7. **Yazmayı Plus'a özel yapmak**: `community/Community.kt` → `CommunityConfig.WRITE_PLUS_ONLY = true`.
+7. **Yazma Plus'a özel** (şu an açık): okumak herkese açık ve hesapsız; beğeni/şikâyet için takma adla katılmak yeterli. Kapatmak için `community/Community.kt` → `CommunityConfig.WRITE_PLUS_ONLY = false`. Not: Plus kontrolü uygulamada yapılır; değiştirilmiş bir uygulamayla aşılabilir. Tam koruma için sunucu taraflı satın alma doğrulaması (Cloud Functions, Blaze planı) gerekir.
 8. Kurallar, Firestore emülatöründe 34 senaryoyla test edildi (başkası adına yazma, sahte beğeni, şikâyet temizleme, kendini moderatör yapma vb. engelleniyor).

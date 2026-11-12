@@ -24,6 +24,7 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.ChildCare
 import androidx.compose.material.icons.filled.NotificationsActive
+import androidx.compose.material.icons.filled.Forum
 import androidx.compose.material.icons.filled.PictureAsPdf
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.Button
@@ -61,6 +62,7 @@ val PLUS_FEATURES = listOf(
     PlusFeature("report", Icons.Filled.PictureAsPdf, "Doktor raporu (PDF)", "Büyüme ölçümleri, alerjen denemeleri ve tepkiler tek sayfada; kontrolde doktorunuza gösterin."),
     PlusFeature("babies", Icons.Filled.ChildCare, "Birden fazla bebek", "İkizler ve kardeşler için ayrı profiller; her birinin verisi ayrı tutulur."),
     PlusFeature("reminders", Icons.Filled.NotificationsActive, "Öğün hatırlatıcıları", "Kahvaltı, öğle ve akşam için günlük hatırlatma."),
+    PlusFeature("community", Icons.Filled.Forum, "Toplulukta soru sor", "Ebeveyn Topluluğu'nda gönderi ve yorum yazın; okumak herkese açık."),
 )
 
 /** Minik Gurme Plus abonelik sayfası. Fiyatlar Google Play'den gelir. */

@@ -58,7 +58,7 @@ data class CommunityComment(
 
 object CommunityConfig {
     /** true: okumak herkese açık, yazmak yalnızca Plus üyelerine. */
-    const val WRITE_PLUS_ONLY = false
+    const val WRITE_PLUS_ONLY = true
     /** Bu kadar farklı kişi şikâyet edince içerik otomatik gizlenir (moderatör onaylayana kadar). */
     const val HIDE_AFTER_REPORTS = 3
     const val POST_MAX = 2000
