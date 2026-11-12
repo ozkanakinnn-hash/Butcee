@@ -304,6 +304,35 @@ function dotColor(t) {
 }
 
 /**
+ * Maç saatinin saniye hassasiyetinde çapası. API dakikayı yalnızca tam sayı verir (ve birkaç sn gecikir); telefon
+ * buna göre sayarsa 0–59 sn geride kalır. Çapa = içinde bulunulan devrenin "0. saniyesi" (ms):
+ *  - 1. yarı: planlanan başlama saati (maçlar genelde tam saatinde başlar)
+ *  - 2. yarı / uzatma: devrenin ilk görüldüğü an − (API dakikası × 60 + 30 sn)
+ * Çapa, API dakikasının izin verdiği aralığa sıkıştırılır (gerçek saat API'den en fazla 90 sn önde olabilir).
+ * @returns {{period: string, anchor_ms: number} | null}
+ */
+function liveClock(match, now) {
+  const c = match.clock;
+  if (!c || !c.anchor_ms || !(c.period in PERIOD_BASE_MIN)) return { elapsed: String(match.status.elapsed ?? 0), sent_ms: String(now) };
+  const sec = Math.max(0, Math.floor((now - c.anchor_ms) / 1000)) + PERIOD_BASE_MIN[c.period] * 60;
+  return { elapsed: String(Math.floor(sec / 60)), sent_ms: String(now - (sec % 60) * 1000) };
+}
+
+const PERIOD_BASE_MIN = { '1H': 0, '2H': 45, ET: 90 };
+function clockAnchor(prev, next, now = Date.now()) {
+  const period = next.status && next.status.short;
+  if (!(period in PERIOD_BASE_MIN) || next.status.elapsed === null || next.status.elapsed === undefined) return null;
+  const minIn = Math.max(0, next.status.elapsed - PERIOD_BASE_MIN[period]);
+  let anchor;
+  if (prev && prev.clock && prev.clock.period === period) anchor = prev.clock.anchor_ms;
+  else if (period === '1H' && next.kickoff && next.kickoff.toMillis) anchor = next.kickoff.toMillis();
+  else anchor = now - (minIn * 60 + 30) * 1000;
+  const lo = now - (minIn * 60 + 59 + 90) * 1000; // en fazla bu kadar önde
+  const hi = now - minIn * 60 * 1000; // API dakikasından geride olamaz
+  return { period, anchor_ms: Math.min(hi, Math.max(lo, anchor)) };
+}
+
+/**
  * Canlı skor paneli verisi (yalnızca VERİ mesajı; bildirimi telefondaki LiveScoreNotifier.kt çizer ve yerinde günceller).
  * Her skor turunda canlı maçlar için gönderilir; maç bitince bir kez `finished: '1'`. Bildirim geçmişine yazılmaz.
  */
@@ -328,8 +357,9 @@ function buildLiveMessage(match, now = Date.now()) {
       gh: String(match.goals.home ?? 0),
       ga: String(match.goals.away ?? 0),
       status: match.status.short,
-      elapsed: String(match.status.elapsed ?? 0),
-      sent_ms: String(now),
+      // Saniye hassasiyeti: telefon dakikayı elapsed×60 + (şimdi − sent_ms) olarak sayar → çapadan hesaplanan
+      // saniyeler sent_ms'e katılır (eski APK'larla da çalışır).
+      ...liveClock(match, now),
       finished: match.is_finished ? '1' : '0',
       // Başlamadıysa panelin ortasında başlama saati (ör. "20:00")
       kickoff_text: match.kickoff && match.kickoff.toDate
@@ -364,6 +394,7 @@ module.exports = {
   diffMatch,
   buildMatchMessage,
   buildLiveMessage,
+  clockAnchor,
   nationalizeMatch,
   flagEmoji,
   NATIONAL_TOPIC,

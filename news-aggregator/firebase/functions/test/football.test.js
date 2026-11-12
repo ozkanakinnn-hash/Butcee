@@ -154,3 +154,31 @@ test('kırmızı kart: yeni kart bildirilir; eski belgede kart listesi yoksa bil
   assert.deepEqual(fb.diffMatch({ ...base }, next), [], 'eski belge: taban');
   assert.equal(fb.diffMatch(next, next).length, 0, 'aynı kart tekrar bildirilmez');
 });
+
+test('panel dakikası saniye hassasiyetinde: 1. yarı başlama saatine, 2. yarı ilk görüldüğü ana göre; API dakikasıyla sınırlı', () => {
+  const { Timestamp } = require('firebase-admin/firestore');
+  const kickoff = Date.parse('2026-11-12T17:00:00Z');
+  const m = (short, elapsed, extra = {}) => ({
+    fixture_id: 5, kickoff: Timestamp.fromMillis(kickoff), status: { short, elapsed }, goals: { home: 0, away: 0 },
+    home: { id: 'a', name: 'A' }, away: { id: 'b', name: 'B' }, league: { name: 'L' }, is_finished: false, ...extra,
+  });
+  // 1. yarı, şimdi 3:20 geçti, API "3" diyor → çapa başlama saati
+  const now = kickoff + 200_000;
+  const c1 = fb.clockAnchor(null, m('1H', 3), now);
+  assert.equal(c1.anchor_ms, kickoff);
+  const d = fb.buildLiveMessage({ ...m('1H', 3), clock: c1 }, now).data;
+  assert.equal(d.elapsed, '3');
+  assert.equal(Number(d.sent_ms), now - 20_000, '20 sn telefona aktarılır');
+  // Maç 2 dk geç başladıysa (API "1" diyor) çapa API dakikasına sıkıştırılır (en fazla 90 sn önde)
+  const late = fb.clockAnchor(null, m('1H', 1), now);
+  assert.ok(now - late.anchor_ms <= (60 + 59 + 90) * 1000);
+  // 2. yarı: ilk görüldüğünde API "46" → 1 dk 30 sn varsayılır; sonraki turda aynı çapa korunur
+  const t2 = kickoff + 3_600_000;
+  const c2 = fb.clockAnchor(m('HT', 45), m('2H', 46), t2);
+  assert.equal(c2.anchor_ms, t2 - 90_000);
+  assert.equal(fb.clockAnchor({ clock: c2 }, m('2H', 47), t2 + 60_000).anchor_ms, c2.anchor_ms);
+  const d2 = fb.buildLiveMessage({ ...m('2H', 47), clock: c2 }, t2 + 60_000).data;
+  assert.equal(d2.elapsed, '47');
+  // Devre arası / başlamadı: çapa yok, eski davranış
+  assert.equal(fb.clockAnchor(null, m('HT', 45), t2), null);
+});

@@ -284,6 +284,7 @@ async function pollOnce(db, api, messaging, active) {
       ? fb.nationalizeMatch(fb.matchDocFromFixture(f), nq ? JSON.parse(nq) : null)
       : fb.matchDocFromFixture(f);
     const prev = active.find((m) => m.fixture_id === next.fixture_id);
+    next.clock = fb.clockAnchor(prev, next, Date.now()); // paneldeki dakika saniye hassasiyetinde
     // Devre arası başlangıcı (istek harcamadan beklemek için)
     next.ht_since = next.status.short === 'HT'
       ? (prev && prev.status.short === 'HT' && prev.ht_since ? prev.ht_since : Timestamp.now())
