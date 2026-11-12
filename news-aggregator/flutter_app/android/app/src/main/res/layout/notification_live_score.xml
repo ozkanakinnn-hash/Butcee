@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Canlı skor paneli (bildirim). Yalnızca RemoteViews'in desteklediği görünümler kullanılır. -->
+<!-- Canlı skor paneli (bildirim). Yalnızca RemoteViews'in desteklediği görünümler kullanılır.
+     Milli maçta renk noktası yerine bayrak emojisi (live_*_flag) gösterilir. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -54,6 +55,14 @@
             android:src="@drawable/live_dot" />
 
         <TextView
+            android:id="@+id/live_home_flag"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="6dp"
+            android:textSize="20sp"
+            android:visibility="gone" />
+
+        <TextView
             android:id="@+id/live_home_short"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -80,6 +89,14 @@
             android:textSize="18sp"
             android:textStyle="bold"
             android:textAppearance="@style/TextAppearance.Compat.Notification.Title" />
+
+        <TextView
+            android:id="@+id/live_away_flag"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="6dp"
+            android:textSize="20sp"
+            android:visibility="gone" />
 
         <ImageView
             android:id="@+id/live_away_dot"

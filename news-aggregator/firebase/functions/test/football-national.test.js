@@ -43,6 +43,9 @@ test('milli maç: takım kimliğiyle bulunur, sorgu saklanır, tek maç yeniden 
   const live = fb.buildLiveMessage(doc);
   assert.equal(live.condition, "'national_tr' in topics");
   assert.equal(live.data.home_short, 'TÜR');
+  assert.equal(live.data.home_flag, '🇹🇷');
+  assert.equal(live.data.away_flag, '🇧🇪');
+  assert.equal(fb.flagEmoji('gbeng'), '🏴󠁧󠁢󠁥󠁮󠁧󠁿');
   const polled = await api.nationalPoll(501, { homeTeamId: 9 }, '2026-11-12');
   assert.equal(polled.length, 1);
 });

@@ -171,12 +171,32 @@ const NATIONS = {
   'united states': ['ABD', 'ABD', ['#3C3B6E']], mexico: ['Meksika', 'MEK', ['#006847']], japan: ['Japonya', 'JAP', ['#BC002D']],
 };
 
+// Bayrak emojisi için ülke kodu (ISO 3166-1); İngiltere/İskoçya/Galler alt bölge bayrağı.
+const FLAG_CODES = {
+  turkey: 'TR', turkiye: 'TR', belgium: 'BE', france: 'FR', italy: 'IT', spain: 'ES', germany: 'DE', netherlands: 'NL',
+  portugal: 'PT', croatia: 'HR', bulgaria: 'BG', georgia: 'GE', greece: 'GR', austria: 'AT', switzerland: 'CH', hungary: 'HU',
+  poland: 'PL', serbia: 'RS', ukraine: 'UA', 'czech republic': 'CZ', czechia: 'CZ', denmark: 'DK', sweden: 'SE', norway: 'NO',
+  iceland: 'IS', azerbaijan: 'AZ', 'bosnia and herzegovina': 'BA', albania: 'AL', romania: 'RO', slovakia: 'SK', slovenia: 'SI',
+  'north macedonia': 'MK', montenegro: 'ME', israel: 'IL', russia: 'RU', 'republic of ireland': 'IE', ireland: 'IE',
+  finland: 'FI', estonia: 'EE', latvia: 'LV', lithuania: 'LT', kazakhstan: 'KZ', brazil: 'BR', argentina: 'AR', usa: 'US',
+  'united states': 'US', mexico: 'MX', japan: 'JP',
+  england: 'gbeng', scotland: 'gbsct', wales: 'gbwls',
+};
+/** "TR" → 🇹🇷; "gbeng" → 🏴󠁧󠁢󠁥󠁮󠁧󠁿 (etiket dizisi). */
+function flagEmoji(code) {
+  if (!code) return '';
+  if (code.length === 2) return String.fromCodePoint(...[...code.toUpperCase()].map((c) => 0x1f1e6 + c.charCodeAt(0) - 65));
+  return String.fromCodePoint(0x1f3f4, ...[...code].map((c) => 0xe0000 + c.charCodeAt(0)), 0xe007f);
+}
+
 /** Milli maç belgesi: takım adları Türkçe, Türkiye'nin kimliği "turkiye"; panel herkese (national: true). */
 function nationalizeMatch(doc, q = null) {
   const side = (t) => {
-    const n = NATIONS[fold(t.name)];
-    if (!n) return t;
-    return { ...t, id: n[0] === 'Türkiye' ? 'turkiye' : t.id, name: n[0], short: n[1], colors: n[2] };
+    const key = fold(t.name);
+    const n = NATIONS[key];
+    const flag = flagEmoji(FLAG_CODES[key]);
+    if (!n) return { ...t, flag };
+    return { ...t, id: n[0] === 'Türkiye' ? 'turkiye' : t.id, name: n[0], short: n[1], colors: n[2], flag };
   };
   const home = side(doc.home);
   const away = side(doc.away);
@@ -273,9 +293,11 @@ function buildLiveMessage(match, now = Date.now()) {
       home_short: shortOf(match.home),
       home_name: match.home.name || '',
       home_color: dotColor(match.home),
+      home_flag: match.home.flag || '', // milli maçta bayrak emojisi (telefon renk noktası yerine gösterir)
       away_short: shortOf(match.away),
       away_name: match.away.name || '',
       away_color: dotColor(match.away),
+      away_flag: match.away.flag || '',
       gh: String(match.goals.home ?? 0),
       ga: String(match.goals.away ?? 0),
       status: match.status.short,
@@ -316,6 +338,7 @@ module.exports = {
   buildMatchMessage,
   buildLiveMessage,
   nationalizeMatch,
+  flagEmoji,
   NATIONAL_TOPIC,
   pollIntervalMs,
   teamTopic,

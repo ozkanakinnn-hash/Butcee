@@ -50,6 +50,16 @@ object LiveScoreNotifier {
         rv.setTextViewText(R.id.live_away_name, d["away_name"].orEmpty())
         rv.setInt(R.id.live_home_dot, "setColorFilter", parseColor(d["home_color"]))
         rv.setInt(R.id.live_away_dot, "setColorFilter", parseColor(d["away_color"]))
+        // Milli maç: renk noktası yerine bayrak (sunucu bayrak emojisi gönderir)
+        for ((flag, dot, value) in listOf(
+            Triple(R.id.live_home_flag, R.id.live_home_dot, d["home_flag"]),
+            Triple(R.id.live_away_flag, R.id.live_away_dot, d["away_flag"]),
+        )) {
+            val hasFlag = !value.isNullOrEmpty()
+            rv.setTextViewText(flag, value.orEmpty())
+            rv.setViewVisibility(flag, if (hasFlag) View.VISIBLE else View.GONE)
+            rv.setViewVisibility(dot, if (hasFlag) View.GONE else View.VISIBLE)
+        }
 
         if (status == "NS") {
             rv.setTextViewText(R.id.live_score, d["kickoff_text"] ?: "– : –")
