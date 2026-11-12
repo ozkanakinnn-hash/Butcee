@@ -157,6 +157,8 @@ class AppSettings extends ChangeNotifier {
     },
     if (matchNotifications && followsFootball)
       for (final t in followedTeams) 'team_$t',
+    // Türkiye milli maçları: canlı skor paneli açık herkese (sunucu: football.js NATIONAL_TOPIC)
+    if (liveScorePanel) 'national_tr',
   };
 
   /// En son abone olunan konular (fark hesaplamak için; NotificationService kullanır).

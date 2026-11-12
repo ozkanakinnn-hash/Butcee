@@ -63,20 +63,23 @@ void main() {
     });
     final s = await AppSettings.load();
     const lvl = {'lvl_balanced', 'calm', 'bulletin'}; // varsayılan: Dengeli + bültenler
-    expect(s.desiredTopics, {'news_gundem', 'news_futbol', ...lvl, 'team_galatasaray', 'team_fenerbahce'});
+    const tr = 'national_tr'; // canlı skor paneli açık → milli maçlar
+    expect(s.desiredTopics, {'news_gundem', 'news_futbol', ...lvl, 'team_galatasaray', 'team_fenerbahce', tr});
     await s.setNotifLevel(NotifLevel.important);
     await s.setBulletins(false);
-    expect(s.desiredTopics, {'news_gundem', 'news_futbol', 'lvl_important', 'calm', 'team_galatasaray', 'team_fenerbahce'});
+    expect(s.desiredTopics, {'news_gundem', 'news_futbol', 'lvl_important', 'calm', 'team_galatasaray', 'team_fenerbahce', tr});
     await s.setNotifLevel(NotifLevel.all);
     expect(s.desiredTopics.where((t) => t.startsWith('lvl_') || t == 'calm'), {'lvl_all'});
     await s.setNotifLevel(NotifLevel.balanced);
     await s.setBulletins(true);
     await s.setMatchNotifications(false);
-    expect(s.desiredTopics, {'news_gundem', 'news_futbol', ...lvl});
+    expect(s.desiredTopics, {'news_gundem', 'news_futbol', ...lvl, tr});
     await s.setMatchNotifications(true);
     await s.setNewsNotifications(false);
-    expect(s.desiredTopics, {'team_galatasaray', 'team_fenerbahce'});
+    expect(s.desiredTopics, {'team_galatasaray', 'team_fenerbahce', tr});
     await s.setInterests(['gundem']); // futbol bırakılınca takım bildirimleri de durur
+    expect(s.desiredTopics, {tr}, reason: 'milli maç paneli futbol ilgisinden bağımsız');
+    await s.setLiveScorePanel(false);
     expect(s.desiredTopics, isEmpty);
   });
 

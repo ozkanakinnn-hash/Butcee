@@ -146,6 +146,43 @@ function diffMatch(prev, next) {
   return events;
 }
 
+/** Milli maç paneli: canlı skor paneli açık TÜM kullanıcılar bu konuya abonedir (futbol ilgisi şart değil). */
+const NATIONAL_TOPIC = 'national_tr';
+const fold = (t) => String(t || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/ı/g, 'i').trim();
+// Sık rakipler: Türkçe ad, kısaltma, panel rengi
+const NATIONS = {
+  turkey: ['Türkiye', 'TÜR', ['#E30A17']], turkiye: ['Türkiye', 'TÜR', ['#E30A17']],
+  belgium: ['Belçika', 'BEL', ['#E30613']], france: ['Fransa', 'FRA', ['#1F3D8B']], italy: ['İtalya', 'İTA', ['#0066B3']],
+  spain: ['İspanya', 'İSP', ['#C60B1E']], germany: ['Almanya', 'ALM', ['#DD0000']], england: ['İngiltere', 'İNG', ['#CF142B']],
+  netherlands: ['Hollanda', 'HOL', ['#F36C21']], portugal: ['Portekiz', 'POR', ['#C8102E']], croatia: ['Hırvatistan', 'HIR', ['#E30A17']],
+  bulgaria: ['Bulgaristan', 'BUL', ['#00966E']], georgia: ['Gürcistan', 'GÜR', ['#E30A17']], greece: ['Yunanistan', 'YUN', ['#0D5EAF']],
+  wales: ['Galler', 'GAL', ['#C8102E']], scotland: ['İskoçya', 'İSK', ['#005EB8']], austria: ['Avusturya', 'AVU', ['#ED2939']],
+  switzerland: ['İsviçre', 'İSV', ['#D52B1E']], hungary: ['Macaristan', 'MAC', ['#CD2A3E']], poland: ['Polonya', 'POL', ['#DC143C']],
+  serbia: ['Sırbistan', 'SIR', ['#C6363C']], ukraine: ['Ukrayna', 'UKR', ['#FFD500']], 'czech republic': ['Çekya', 'ÇEK', ['#D7141A']],
+  czechia: ['Çekya', 'ÇEK', ['#D7141A']], denmark: ['Danimarka', 'DAN', ['#C60C30']], sweden: ['İsveç', 'İSV', ['#FECC02']],
+  norway: ['Norveç', 'NOR', ['#BA0C2F']], iceland: ['İzlanda', 'İZL', ['#02529C']], azerbaijan: ['Azerbaycan', 'AZE', ['#00B5E2']],
+  'bosnia and herzegovina': ['Bosna Hersek', 'BOS', ['#002395']], albania: ['Arnavutluk', 'ARN', ['#E41E20']],
+  romania: ['Romanya', 'ROM', ['#FCD116']], slovakia: ['Slovakya', 'SLK', ['#0B4EA2']], slovenia: ['Slovenya', 'SLO', ['#005DA4']],
+  'north macedonia': ['Kuzey Makedonya', 'MKD', ['#D20000']], montenegro: ['Karadağ', 'KAR', ['#C40308']],
+  israel: ['İsrail', 'İSR', ['#0038B8']], russia: ['Rusya', 'RUS', ['#0039A6']], 'republic of ireland': ['İrlanda', 'İRL', ['#169B62']],
+  ireland: ['İrlanda', 'İRL', ['#169B62']], finland: ['Finlandiya', 'FİN', ['#002F6C']], estonia: ['Estonya', 'EST', ['#0072CE']],
+  latvia: ['Letonya', 'LET', ['#9E3039']], lithuania: ['Litvanya', 'LİT', ['#006A44']], kazakhstan: ['Kazakistan', 'KAZ', ['#00AFCA']],
+  brazil: ['Brezilya', 'BRE', ['#FFDF00']], argentina: ['Arjantin', 'ARJ', ['#74ACDF']], usa: ['ABD', 'ABD', ['#3C3B6E']],
+  'united states': ['ABD', 'ABD', ['#3C3B6E']], mexico: ['Meksika', 'MEK', ['#006847']], japan: ['Japonya', 'JAP', ['#BC002D']],
+};
+
+/** Milli maç belgesi: takım adları Türkçe, Türkiye'nin kimliği "turkiye"; panel herkese (national: true). */
+function nationalizeMatch(doc, q = null) {
+  const side = (t) => {
+    const n = NATIONS[fold(t.name)];
+    if (!n) return t;
+    return { ...t, id: n[0] === 'Türkiye' ? 'turkiye' : t.id, name: n[0], short: n[1], colors: n[2] };
+  };
+  const home = side(doc.home);
+  const away = side(doc.away);
+  return { ...doc, home, away, team_ids: [home.id, away.id], national: true, national_q: q ? JSON.stringify(q) : '' };
+}
+
 const scoreLine = (m) => `${m.home.name} ${m.goals.home}-${m.goals.away} ${m.away.name}`;
 const teamTopic = (id) => `team_${id}`;
 
@@ -224,7 +261,9 @@ function dotColor(t) {
  * Her skor turunda canlı maçlar için gönderilir; maç bitince bir kez `finished: '1'`. Bildirim geçmişine yazılmaz.
  */
 function buildLiveMessage(match, now = Date.now()) {
-  const condition = `'${teamTopic(match.home.id)}' in topics || '${teamTopic(match.away.id)}' in topics`;
+  const condition = match.national
+    ? `'${NATIONAL_TOPIC}' in topics`
+    : `'${teamTopic(match.home.id)}' in topics || '${teamTopic(match.away.id)}' in topics`;
   return {
     condition,
     data: {
@@ -272,6 +311,8 @@ module.exports = {
   diffMatch,
   buildMatchMessage,
   buildLiveMessage,
+  nationalizeMatch,
+  NATIONAL_TOPIC,
   pollIntervalMs,
   teamTopic,
 };

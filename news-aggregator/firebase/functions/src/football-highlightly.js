@@ -117,6 +117,10 @@ function toFixture(m) {
 /** Yanıttan liste çıkarır ({data:[...]} | [...] | {...}). */
 const listOf = (json) => (Array.isArray(json) ? json : Array.isArray(json && json.data) ? json.data : json ? [json] : []);
 
+/** Türkiye A Milli Takımı mı? (U21, kadın vb. hariç) */
+const isTurkey = (name) => /^t[uü]rk(ey|iye)$/i.test(String(name || '').trim());
+const isTurkeyFixture = (f) => isTurkey(f.teams.home.name) || isTurkey(f.teams.away.name);
+
 const isSuperLig = (l) => /s[uü]per\s*lig/i.test(l.name || '') && !/1\.?\s*lig|women|kad[ıi]n|u\d\d/i.test(l.name || '');
 
 /** Futbol sezonu yıl olarak (Temmuz–Haziran): 2026 Kasım → 2026. */
@@ -193,6 +197,56 @@ class Highlightly {
     return listOf(await this.raw('/matches', { leagueId, timezone: TIMEZONE, limit: 100, ...params })).map(toFixture);
   }
 
+  /**
+   * Günün Türkiye A Milli Takımı maçları. Önce takım kimliği bulunur (/teams?name=…, bir kez), sonra
+   * ev sahibi/deplasman sorgusuyla (2 istek). Kimlik bulunamazsa günün maçları sayfa sayfa taranır (en fazla 8).
+   * Her fikstüre yeniden sorgulamak için `_q` eklenir.
+   */
+  async nationalFixtures(date) {
+    if (!this.base) await this.findLeague(); // çalışan adresi seç
+    if (!this.nationalTeamId) {
+      for (const name of ['Turkey', 'Türkiye', 'Turkiye']) {
+        try {
+          const t = listOf(await this.raw('/teams', { name, limit: 50 })).find((x) => isTurkey(x.name || x.displayName));
+          if (t) {
+            this.nationalTeamId = t.id;
+            break;
+          }
+        } catch {
+          // sıradaki ad
+        }
+      }
+    }
+    const found = new Map();
+    const add = (list, q) => list.map(toFixture).filter(isTurkeyFixture).forEach((f) => found.set(String(f.fixture.id), { ...f, _q: q }));
+    if (this.nationalTeamId) {
+      try {
+        for (const side of ['homeTeamId', 'awayTeamId']) {
+          const q = { [side]: this.nationalTeamId };
+          add(listOf(await this.raw('/matches', { ...q, date, timezone: TIMEZONE, limit: 100 })), q);
+        }
+        if (found.size) return [...found.values()];
+      } catch {
+        // sorgu türü desteklenmiyor → günün maçlarını tara
+      }
+    }
+    for (let page = 0; page < 8; page += 1) {
+      const list = listOf(await this.raw('/matches', { date, timezone: TIMEZONE, limit: 100, offset: page * 100 }));
+      add(list, null);
+      if (found.size || list.length < 100) break;
+    }
+    return [...found.values()];
+  }
+
+  /** Tek milli maçın güncel hâli: kayıtlı sorguyla (1 istek); sorgu yoksa /matches/{id}. */
+  async nationalPoll(id, q, date) {
+    if (!this.base) await this.findLeague();
+    const list = q
+      ? listOf(await this.raw('/matches', { ...q, date, timezone: TIMEZONE, limit: 100 }))
+      : listOf(await this.raw(`/matches/${id}`, { timezone: TIMEZONE }));
+    return list.map(toFixture).filter((f) => String(f.fixture.id) === String(id));
+  }
+
   /** API-Football uyumlu arayüz. */
   async get(path, params = {}) {
     switch (path) {
@@ -232,4 +286,4 @@ class Highlightly {
   }
 }
 
-module.exports = { BASES, Highlightly, HighlightlyError, toFixture, statusShort, parseScore, parseMinute, mapEvents, isSuperLig, seasonFor };
+module.exports = { BASES, Highlightly, HighlightlyError, toFixture, statusShort, parseScore, parseMinute, mapEvents, isSuperLig, isTurkey, isTurkeyFixture, seasonFor };

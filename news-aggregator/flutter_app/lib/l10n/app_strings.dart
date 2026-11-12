@@ -208,8 +208,8 @@ class S {
   // Canlı skor paneli
   String get liveScorePanel => _t('Canlı skor paneli', 'Live score panel');
   String get liveScorePanelDesc => _t(
-    'Takımının maçı boyunca bildirimlerde sabit duran, kendini güncelleyen skor paneli.',
-    'A pinned, self-updating score panel in notifications during your team\'s match.',
+    'Takımınızın ve Türkiye milli maçlarının skoru bildirimlerde sabit durur, kendini günceller.',
+    'A pinned, self-updating score panel for your team\'s and Türkiye national team matches.',
   );
 
   // Bayram ve anma

@@ -121,9 +121,38 @@ async function syncTodayFixtures(db, api, meta) {
     const doc = fb.matchDocFromFixture(f);
     batch.set(db.doc(`matches/${doc.fixture_id}`), { ...doc, updated_at: Timestamp.now() }, { merge: true });
   }
-  batch.set(db.doc('football_meta/state'), { fixtures_date: today }, { merge: true });
+  batch.set(db.doc('football_meta/state'), { fixtures_date: today, league_count_today: fixtures.length }, { merge: true });
   await batch.commit();
+  meta.league_count_today = fixtures.length;
   log(`Bugünün maçları (${today}): ${fixtures.length}`);
+}
+
+/**
+ * Türkiye A Milli Takımı maçları (günde bir; yalnızca sağlayıcı destekliyorsa). Milli aralarda Süper Lig oynanmadığı
+ * için yalnızca bugün lig maçı yoksa aranır → normal günlerde istek harcanmaz.
+ */
+async function syncNationalFixtures(db, api, meta, today = fb.istanbulDate()) {
+  if (typeof api.nationalFixtures !== 'function' || meta.league_count_today > 0) {
+    await db.doc('football_meta/state').set({ national_date: today }, { merge: true });
+    meta.national_date = today;
+    return 0;
+  }
+  let fixtures = [];
+  try {
+    fixtures = await api.nationalFixtures(today);
+  } catch (err) {
+    log(`Milli maç aranamadı: ${err.message}`);
+  }
+  const batch = db.batch();
+  for (const f of fixtures) {
+    const doc = fb.nationalizeMatch(fb.matchDocFromFixture(f), f._q || null);
+    batch.set(db.doc(`matches/${doc.fixture_id}`), { ...doc, updated_at: Timestamp.now() }, { merge: true });
+  }
+  batch.set(db.doc('football_meta/state'), { national_date: today }, { merge: true });
+  await batch.commit();
+  meta.national_date = today;
+  log(`Milli maç (${today}): ${fixtures.map((f) => `${f.teams.home.name}-${f.teams.away.name}`).join(', ') || 'yok'}`);
+  return fixtures.length;
 }
 
 async function cleanupOldMatches(db) {
@@ -151,7 +180,8 @@ async function followedTeamIds(db, meta, now = Date.now()) {
   return ids;
 }
 
-const involves = (ids) => (m) => !ids || ids.includes(m.home.id) || ids.includes(m.away.id);
+// Milli maçlar herkese (takip şartı yok); lig maçları yalnızca takip edilen takımlar için izlenir.
+const involves = (ids) => (m) => m.national || !ids || ids.includes(m.home.id) || ids.includes(m.away.id);
 
 /**
  * Devre arasındaki maçlar için bekleme: hepsi devre arasındaysa (ya da henüz başlamamışsa) istek harcamadan
@@ -203,6 +233,7 @@ async function prepare(db, api, meta) {
       await cleanupOldMatches(db);
       meta.fixtures_date = fb.istanbulDate();
     }
+    if (meta.national_date !== fb.istanbulDate()) await syncNationalFixtures(db, api, meta);
   } catch (err) {
     if (isPlanSeasonError(err)) {
       await metaRef.set(
@@ -219,24 +250,44 @@ async function prepare(db, api, meta) {
 
 /** Bir tur skor güncellemesi: değişiklikleri yazar, bildirimleri gönderir. @returns {Promise<object[]>} güncel aktif maçlar */
 async function pollOnce(db, api, messaging, active) {
-  const ids = active.slice(0, 20).map((m) => m.fixture_id).join('-');
+  const league = active.filter((m) => !m.national);
+  const national = active.filter((m) => m.national);
   let fixtures = [];
-  try {
-    fixtures = await api.get('/fixtures', { ids, timezone: 'Europe/Istanbul' });
-  } catch (err) {
-    log(`Skor alınamadı: ${err.message}`);
+  if (league.length) {
+    try {
+      fixtures = await api.get('/fixtures', { ids: league.slice(0, 20).map((m) => m.fixture_id).join('-'), timezone: 'Europe/Istanbul' });
+    } catch (err) {
+      log(`Skor alınamadı: ${err.message}`);
+    }
+  }
+  // Milli maçlar: maç başına 1 istek (kayıtlı sorguyla)
+  const nationalIds = new Map();
+  for (const m of national) {
+    if (typeof api.nationalPoll !== 'function') break;
+    try {
+      const q = m.national_q ? JSON.parse(m.national_q) : null;
+      const list = await api.nationalPoll(m.fixture_id, q, fb.istanbulDate());
+      for (const f of list) nationalIds.set(String(f.fixture.id), m.national_q || '');
+      fixtures = fixtures.concat(list);
+    } catch (err) {
+      log(`Milli maç skoru alınamadı: ${err.message}`);
+    }
   }
   const messages = [];
   const panels = []; // canlı skor paneli (veri mesajı; bildirim geçmişine yazılmaz)
   const batch = db.batch();
   for (const f of fixtures) {
-    const next = fb.matchDocFromFixture(f);
+    const nq = nationalIds.get(String(f.fixture.id));
+    const next = nq !== undefined
+      ? fb.nationalizeMatch(fb.matchDocFromFixture(f), nq ? JSON.parse(nq) : null)
+      : fb.matchDocFromFixture(f);
     const prev = active.find((m) => m.fixture_id === next.fixture_id);
     // Devre arası başlangıcı (istek harcamadan beklemek için)
     next.ht_since = next.status.short === 'HT'
       ? (prev && prev.status.short === 'HT' && prev.ht_since ? prev.ht_since : Timestamp.now())
       : null;
-    for (const ev of fb.diffMatch(prev, next)) {
+    // Milli maçta yalnızca canlı skor paneli (herkese); gol/başlama bildirimi gönderilmez.
+    for (const ev of next.national ? [] : fb.diffMatch(prev, next)) {
       const msg = fb.buildMatchMessage(ev, next);
       if (msg) messages.push(msg);
       log(`Olay: ${ev.type} ${next.home.name} ${next.goals.home}-${next.goals.away} ${next.away.name}`);
@@ -284,7 +335,7 @@ async function tick(db, makeApi, messaging, now = Date.now(), { fast = false, sl
   const metaRef = db.doc('football_meta/state');
   const meta = (await metaRef.get()).data() || {};
   const today = fb.istanbulDate(new Date(now));
-  const needsPrepare = meta.fixtures_date !== today ||
+  const needsPrepare = meta.fixtures_date !== today || meta.national_date !== today ||
     !meta.season || !meta.teams_synced_at || now - meta.teams_synced_at.toMillis() > TEAMS_TTL_MS;
   // Highlightly'ye geçişte takım listesi bir kez yerel listeyle yenilenir (önceki sürüm API listesini yazmış olabilir).
   const forceTeams = makeApi.provider === 'highlightly' && meta.teams_source !== 'local';
@@ -369,6 +420,6 @@ async function tick(db, makeApi, messaging, now = Date.now(), { fast = false, sl
 }
 
 module.exports = {
-  check, currentSeason, syncTeams, syncTodayFixtures, cleanupOldMatches, activeMatches,
+  check, currentSeason, syncTeams, syncTodayFixtures, syncNationalFixtures, cleanupOldMatches, activeMatches,
   prepare, pollOnce, nextWaitMs, laterMatchesToday, followedTeamIds, halftimeAwareWait, tick, START_EARLY_MS,
 };

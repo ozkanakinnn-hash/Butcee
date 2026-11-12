@@ -15,7 +15,7 @@ test('tick: maç yokken API çağrılmaz; canlı maçta tur atar, aralığı kor
   initializeApp({ projectId: 'demo-tick' });
   const db = getFirestore();
   const today = fb.istanbulDate();
-  await db.doc('football_meta/state').set({ season: 2026, teams_synced_at: Timestamp.now(), fixtures_date: today });
+  await db.doc('football_meta/state').set({ season: 2026, teams_synced_at: Timestamp.now(), fixtures_date: today, national_date: today });
 
   let made = 0;
   const frames = [];
@@ -32,7 +32,7 @@ test('tick: maç yokken API çağrılmaz; canlı maçta tur atar, aralığı kor
   // 2) Anahtar yoksa (makeApi null) ve hazırlık gerekiyorsa sessizce çıkar
   await db.doc('football_meta/state').update({ fixtures_date: 'eski' });
   assert.equal(await tick(db, () => null, messaging), 'no-key');
-  await db.doc('football_meta/state').update({ fixtures_date: today });
+  await db.doc('football_meta/state').update({ fixtures_date: today, national_date: today });
 
   // 3) Canlı maç → tur atılır, gol bildirilir, sonraki kontrol zamanı yazılır
   const kickoff = new Date(Date.now() - 10 * 60_000);
@@ -76,7 +76,7 @@ test('tick + Highlightly: günlük bütçe sayılır, lig kimliği saklanır, go
   const db = getFirestore();
   for (const d of (await db.collection('matches').get()).docs) await d.ref.delete();
   const today = fb.istanbulDate();
-  await db.doc('football_meta/state').set({ season: 2026, teams_synced_at: Timestamp.now(), fixtures_date: today });
+  await db.doc('football_meta/state').set({ season: 2026, teams_synced_at: Timestamp.now(), fixtures_date: today, national_date: today });
 
   const kickoff = new Date(Date.now() - 20 * 60_000).toISOString();
   let score = '0 - 0';
@@ -280,4 +280,51 @@ test('test maçı: başlangıçta panel + "başladı", 15. dk gol, 20. dk sonuç
   // 00:45 her zaman sıradaki gece yarısından sonrası
   const t = nextIstanbulTime('00:45', Date.parse('2026-11-08T19:00:00Z')); // İstanbul 22:00
   assert.equal(new Date(t).toISOString(), '2026-11-08T21:45:00.000Z');
+});
+
+test('milli maç: lig maçı olmayan gün Türkiye maçı bulunur; takip olmasa da panel herkese (national_tr) gider, gol bildirimi gitmez', { skip }, async () => {
+  const { getFirestore, Timestamp } = require('firebase-admin/firestore');
+  const fb = require('../src/football');
+  const { tick } = require('../src/football-job');
+  const { Highlightly } = require('../src/football-highlightly');
+  const db = getFirestore();
+  for (const d of (await db.collection('matches').get()).docs) await d.ref.delete();
+  for (const d of (await db.collection('team_follows').get()).docs) await d.ref.delete();
+  await db.doc('team_follows/galatasaray').set({ count: 1 }); // yalnızca GS takip ediliyor
+  const today = fb.istanbulDate();
+  await db.doc('football_meta/state').set({ season: 2026, teams_synced_at: Timestamp.now(), teams_source: 'local', fixtures_date: today, league_count_today: 0, provider_league_id: 1, provider_base: 'https://h/football' });
+
+  const kickoff = new Date(Date.now() + 60_000).toISOString();
+  let score = '0 - 0';
+  let desc = 'Not started';
+  const fetchImpl = async (url) => {
+    const p = `${url.pathname}?${url.searchParams}`;
+    const body = /\/teams\?name=Turkey/.test(p) ? { data: [{ id: 9, name: 'Turkey' }] }
+      : /homeTeamId=9/.test(p) ? { data: [{ id: 501, date: kickoff, league: { id: 77, name: 'UEFA Nations League' }, homeTeam: { id: 9, name: 'Turkey' }, awayTeam: { id: 11, name: 'Belgium' }, state: { description: desc, score: { current: score }, clock: 20 } }] }
+        : { data: [] };
+    return new Response(JSON.stringify(body), { headers: { 'content-type': 'application/json' } });
+  };
+  const makeApi = () => new Highlightly({ key: 'k', fetchImpl });
+  makeApi.provider = 'highlightly';
+  const panels = [];
+  const sent = [];
+  const messaging = { sendEach: async (m) => { sent.push(...m.filter((x) => x.notification)); panels.push(...m.filter((x) => !x.notification)); return { successCount: m.length, failureCount: 0, responses: m.map(() => ({ success: true })) }; } };
+
+  await tick(db, makeApi, messaging);
+  const doc = (await db.doc('matches/501').get()).data();
+  assert.equal(doc.national, true);
+  assert.equal(doc.home.name, 'Türkiye');
+  assert.equal(doc.away.name, 'Belçika');
+
+  desc = 'First half';
+  score = '1 - 0';
+  await db.doc('football_meta/state').update({ next_poll_at: null });
+  assert.equal(await tick(db, makeApi, messaging, Date.now() + 61_000), 'polled');
+  assert.equal(panels.length >= 1, true);
+  const last = panels[panels.length - 1];
+  assert.equal(last.condition, "'national_tr' in topics");
+  assert.equal(last.data.gh, '1');
+  assert.equal(last.data.home_short, 'TÜR');
+  assert.equal(last.data.league, 'UEFA Nations League');
+  assert.equal(sent.length, 0, 'milli maçta gol/başlama bildirimi gönderilmez');
 });
