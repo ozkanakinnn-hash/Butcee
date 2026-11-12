@@ -138,7 +138,7 @@ test('canlı skor paneli verisi: kısaltma, renk, skor, dakika; yalnızca veri (
   assert.ok(Object.values(msg.data).every((v) => typeof v === 'string'), 'FCM veri alanları metin olmalı');
 });
 
-test('kırmızı kart: yeni kart bildirilir; eski belgede kart listesi yoksa bildirilmez; milli maçta gönderilmez', () => {
+test('kırmızı kart: yeni kart bildirilir; eski belgede kart listesi yoksa bildirilmez', () => {
   const base = {
     fixture_id: 1, status: { short: '2H' }, goals: { home: 1, away: 0 }, goal_events: [],
     home: { id: 'galatasaray', name: 'Galatasaray' }, away: { id: 'fenerbahce', name: 'Fenerbahçe' },
@@ -153,5 +153,4 @@ test('kırmızı kart: yeni kart bildirilir; eski belgede kart listesi yoksa bil
   assert.equal(msg.android.notification.channelId, 'match');
   assert.deepEqual(fb.diffMatch({ ...base }, next), [], 'eski belge: taban');
   assert.equal(fb.diffMatch(next, next).length, 0, 'aynı kart tekrar bildirilmez');
-  assert.equal(fb.isTurkeyGoalEvent(ev[0], next), false);
 });

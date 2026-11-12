@@ -223,10 +223,6 @@ function nationalizeMatch(doc, q = null) {
   return { ...doc, home, away, team_ids: [home.id, away.id], national: true, national_q: q ? JSON.stringify(q) : '' };
 }
 
-/** Milli maçta bildirilecek olay mı? Yalnızca Türkiye'nin golü ve gol iptali. */
-const isTurkeyGoalEvent = (ev, match) =>
-  (ev.type === 'goal' || ev.type === 'goal_cancelled') && match[ev.side] && match[ev.side].id === 'turkiye';
-
 const scoreLine = (m) => `${m.home.name} ${m.goals.home}-${m.goals.away} ${m.away.name}`;
 const teamTopic = (id) => `team_${id}`;
 
@@ -369,7 +365,6 @@ module.exports = {
   buildMatchMessage,
   buildLiveMessage,
   nationalizeMatch,
-  isTurkeyGoalEvent,
   flagEmoji,
   NATIONAL_TOPIC,
   pollIntervalMs,

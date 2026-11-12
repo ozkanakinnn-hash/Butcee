@@ -282,7 +282,7 @@ test('test maçı: başlangıçta panel + "başladı", 15. dk gol, 20. dk sonuç
   assert.equal(new Date(t).toISOString(), '2026-11-08T21:45:00.000Z');
 });
 
-test('milli maç: lig maçı olmayan gün Türkiye maçı bulunur; panel herkese (national_tr); yalnızca Türkiye golü sesli bildirilir', { skip }, async () => {
+test('milli maç: lig maçı olmayan gün Türkiye maçı bulunur; panel ve tüm maç bildirimleri national_tr konusuna', { skip }, async () => {
   const { getFirestore, Timestamp } = require('firebase-admin/firestore');
   const fb = require('../src/football');
   const { tick } = require('../src/football-job');
@@ -333,23 +333,21 @@ test('milli maç: lig maçı olmayan gün Türkiye maçı bulunur; panel herkese
   assert.equal(last.data.gh, '1');
   assert.equal(last.data.home_short, 'TÜR');
   assert.equal(last.data.league, 'UEFA Nations League');
-  // Türkiye'nin golü: sesli bildirim (herkese, national_tr); başlama bildirimi yok
-  assert.equal(sent.length, 1, 'yalnızca Türkiye golü bildirilir');
-  assert.equal(sent[0].condition, "'national_tr' in topics");
-  assert.equal(sent[0].notification.title, '⚽ GOL! Türkiye 1-0 Belçika');
-  assert.ok(['goal_alert', 'quiet'].includes(sent[0].android.notification.channelId), 'gol kanalı (gece sessiz)');
+  // Başlama + Türkiye golü bildirilir (national_tr)
+  assert.deepEqual(sent.map((m) => m.notification.title), ['🟢 Maç başladı', '⚽ GOL! Türkiye 1-0 Belçika']);
+  assert.ok(sent.every((m) => m.condition === "'national_tr' in topics"));
 
-  // Rakibin golü: bildirim yok, yalnızca panel
+  // Rakibin golü de bildirilir, panel güncellenir
   score = '1 - 1';
   await db.doc('football_meta/state').update({ next_poll_at: null });
   assert.equal(await tick(db, makeApi, messaging, Date.now() + 180_000), 'polled');
-  assert.equal(sent.length, 1, 'Belçika golü bildirilmez');
-  assert.equal(panels[panels.length - 1].data.ga, '1', 'panel güncellenir');
+  assert.equal(sent[sent.length - 1].notification.title, '⚽ GOL! Türkiye 1-1 Belçika');
+  assert.equal(panels[panels.length - 1].data.ga, '1');
 
-  // Maç sonu: bildirim yok, panel "bitti"
+  // Maç sonu bildirilir, panel "bitti"
   desc = 'Finished';
   await db.doc('football_meta/state').update({ next_poll_at: null });
   await tick(db, makeApi, messaging, Date.now() + 300_000);
-  assert.equal(sent.length, 1, 'maç sonucu bildirilmez');
+  assert.equal(sent[sent.length - 1].notification.title, '🏁 Maç sonucu');
   assert.equal(panels[panels.length - 1].data.finished, '1');
 });
