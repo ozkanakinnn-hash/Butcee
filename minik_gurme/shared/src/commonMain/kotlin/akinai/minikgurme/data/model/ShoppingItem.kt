@@ -16,5 +16,5 @@ data class ShoppingItem(
     val emoji: String = "🛒",
     val source: String = "",
     val checked: Boolean = false,
-    val timestamp: Long = System.currentTimeMillis()
+    val timestamp: Long = akinai.minikgurme.shared.currentTimeMillis()
 )

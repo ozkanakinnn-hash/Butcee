@@ -20,5 +20,5 @@ data class FeedingDiaryEntry(
     val reaction: String = "Sorunsuz / Keyifli ✨", // "Sorunsuz / Keyifli ✨", "Hafif Gaz / Huysuzluk 💨", "Kızarıklık / Döküntü ⚠️", "Reflü / Tükürme 🚨"
     val reactionNotes: String = "", // Varsa reaksiyon notu veya gözlem
     val notes: String = "", // Ebeveyn hazırlama notları, kullanılan zeytinyağı, pişirme şekli vb.
-    val timestamp: Long = System.currentTimeMillis()
+    val timestamp: Long = akinai.minikgurme.shared.currentTimeMillis()
 )

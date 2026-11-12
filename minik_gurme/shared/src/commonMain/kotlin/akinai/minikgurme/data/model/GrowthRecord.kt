@@ -16,5 +16,5 @@ data class GrowthRecord(
     val headCircumferenceCm: Float? = null, // örn: 43.5 cm (isteğe bağlı baş çevresi)
     val ageMonths: Int, // Bebeğin ölçüm yapıldığı andaki ayı (örn: 7)
     val notes: String = "", // Doktor kontrolü notu, aşı günü vb.
-    val timestamp: Long = System.currentTimeMillis()
+    val timestamp: Long = akinai.minikgurme.shared.currentTimeMillis()
 )

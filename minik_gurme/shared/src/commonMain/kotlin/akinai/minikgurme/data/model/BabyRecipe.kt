@@ -28,5 +28,5 @@ data class BabyRecipe(
 @Entity(tableName = "favorite_recipes")
 data class FavoriteRecipe(
     @PrimaryKey val recipeId: String,
-    val timestamp: Long = System.currentTimeMillis()
+    val timestamp: Long = akinai.minikgurme.shared.currentTimeMillis()
 )

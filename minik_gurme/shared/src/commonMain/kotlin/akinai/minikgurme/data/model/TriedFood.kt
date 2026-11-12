@@ -12,5 +12,5 @@ data class TriedFood(
     val symptoms: String = "", // comma-separated symptoms: "Hapşırma, Döküntü"
     val triedDate: String = "",
     val reactionNotes: String = "",
-    val timestamp: Long = System.currentTimeMillis()
+    val timestamp: Long = akinai.minikgurme.shared.currentTimeMillis()
 )

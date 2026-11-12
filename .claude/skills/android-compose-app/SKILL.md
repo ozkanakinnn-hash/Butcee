@@ -152,3 +152,12 @@ gradle/actions/setup-gradle@v5 → `./gradlew assembleDebug` → upload-artifact
 - İstemci filtresi: bağlantı, telefon/e-posta, küfür (kısa kelimeler tam eşleşme — "eksik", "götürmek" yanlış pozitif vermesin), 20 sn bekleme.
 - Test: `CommunityBackend` arayüzü + `Community.backend` değiştirilebilir; Robolectric'te sahte arka uç. Firebase'e uygulama açılışında dokunma (tembel başlat).
 - Kullanıcı içeriğini çeviri sözlüğünden geçirme (`Text(..., translate = false)`).
+
+## Android uygulamasını iPhone'a taşıma (Kotlin Multiplatform + Compose Multiplatform)
+- AGP 9'da `com.android.application` ile `kotlin.multiplatform` aynı modülde olmaz → ayrı `shared` modülü:
+  `org.jetbrains.kotlin.multiplatform` + `com.android.kotlin.multiplatform.library` (`kotlin { androidLibrary { namespace; compileSdk; minSdk } }`) + `org.jetbrains.compose` 1.9.x + `kotlin.plugin.compose`.
+- `gradle.properties` → `kotlin.native.enableKlibsCrossCompilation=true`: iOS klib'leri **Linux'ta derlenir** (`:shared:compileKotlinIosArm64`) → Mac olmadan derleme kontrolü. Kotlin/Native Maven Central'dan iner (download.jetbrains.com engelli olsa da çalışır). Framework bağlama/uygulama paketleme yine Mac (veya Codemagic) ister.
+- Compose Multiplatform 1.9.3 → androidx Compose 1.9.4 getirir; uygulamanın Compose BOM'unu eşitle (2025.10.01), yoksa testlerde `NoSuchMethodError` (FlowRow, ExposedDropdownMenuBox).
+- Paket adlarını koruyarak `git mv` ile taşı → uygulama kodundaki importlar değişmez. Room `@Entity` modelleri ortakta: `api(androidx.room:room-runtime)` (2.7 KMP); KSP uygulamada kalabilir.
+- iOS'ta olmayanlar: `System.currentTimeMillis()` → `expect fun currentTimeMillis()` (iOS: `NSDate().timeIntervalSince1970`, `import platform.Foundation.timeIntervalSince1970` gerekir), `java.util`, `String.format`, `android.*`.
+- Sıra: iskelet → saf veri → ayarlar/DB → arayüz (compose resources) → platform servisleri (expect/actual) → iosApp + bulut derleme. Her adımda Android testleri yeşil kalmalı.

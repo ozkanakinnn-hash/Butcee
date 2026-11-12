@@ -12,5 +12,5 @@ data class Meal(
     val texture: String, // "Pürüzsüz Püre", "Çatalla Ezilmiş", "Pütürlü Ezme", "Parmak Gıda"
     val reaction: String, // "Sevdi", "Nötr", "İstemedi", "Alerji Sinyali"
     val notes: String = "",
-    val timestamp: Long = System.currentTimeMillis()
+    val timestamp: Long = akinai.minikgurme.shared.currentTimeMillis()
 )

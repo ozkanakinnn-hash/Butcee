@@ -28,6 +28,7 @@ kotlin {
       implementation(compose.material3)
       implementation(compose.materialIconsExtended)
       implementation(compose.components.resources)
+      api(libs.androidx.room.runtime) // @Entity modelleri (Room KMP)
     }
     commonTest.dependencies {
       implementation(kotlin("test"))
