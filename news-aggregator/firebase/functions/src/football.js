@@ -249,7 +249,14 @@ function nationalizeMatch(doc, q = null) {
   };
   const home = side(doc.home);
   const away = side(doc.away);
-  return { ...doc, home, away, team_ids: [home.id, away.id], national: true, national_q: q ? JSON.stringify(q) : '' };
+  // Olayların takım kimliği de yeni kimliğe taşınır ("turkey" → "turkiye"); yoksa panel Türkiye'nin gol/kartlarını
+  // rakibin tarafına yazar ve devre skoru yanlış çıkar.
+  const remap = { [doc.home.id]: home.id, [doc.away.id]: away.id };
+  const fix = (list) => (list || []).map((e) => ({ ...e, team_id: remap[e.team_id] ?? e.team_id }));
+  return {
+    ...doc, home, away, team_ids: [home.id, away.id], national: true, national_q: q ? JSON.stringify(q) : '',
+    goal_events: fix(doc.goal_events), red_cards: fix(doc.red_cards), yellow_cards: fix(doc.yellow_cards), penalties: fix(doc.penalties),
+  };
 }
 
 const scoreLine = (m) => `${m.home.name} ${m.goals.home}-${m.goals.away} ${m.away.name}`;

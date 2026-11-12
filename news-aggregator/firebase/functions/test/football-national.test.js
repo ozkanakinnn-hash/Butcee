@@ -51,6 +51,11 @@ test('milli maç: takım kimliğiyle bulunur, sorgu saklanır, tek maç yeniden 
   assert.equal(polled.length, 1);
   assert.equal(calls.filter((c) => c.startsWith('/football/matches/501')).length, 1, 'maç ayrıntısı sorgulanır');
   assert.equal(polled[0].events[0].player.name, 'K. Yildiz', 'olaylar (gol atan) ayrıntıdan gelir');
+  // Türkiye'nin golü panelde TÜRKİYE'nin tarafında (sol) ve devre skoru doğru
+  const pd = fb.nationalizeMatch(fb.matchDocFromFixture(polled[0]), { homeTeamId: 9 });
+  assert.equal(pd.goal_events[0].team_id, 'turkiye');
+  assert.equal(fb.buildTimeline(pd), "H|21'|⚽ K. Yildiz");
+  assert.equal(fb.buildTimeline({ ...pd, status: { short: '2H' } }).split('\n')[1], 'S||İLK YARI 1 – 0');
   // Ayrıntı alınamazsa liste sorgusuna düşülür
   const api2 = new Highlightly({ key: 'k', base: 'https://h/football', fetchImpl: fake([
     [/\/matches\/501/, 500], [/homeTeamId=9/, { data: [match(501, 'Turkey', 'Belgium')] }],
