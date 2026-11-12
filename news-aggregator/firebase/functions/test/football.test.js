@@ -155,37 +155,35 @@ test('kırmızı kart: yeni kart bildirilir; eski belgede kart listesi yoksa bil
   assert.equal(fb.diffMatch(next, next).length, 0, 'aynı kart tekrar bildirilmez');
 });
 
-test('panel dakikası saniye hassasiyetinde: 1. yarı başlama saatine, 2. yarı ilk görüldüğü ana göre; API dakikasıyla sınırlı', () => {
+test('panel dakikası: API dakikasından çapalanır, turlarla daralır, planlanan saati kullanmaz, API önüne geçmez', () => {
   const { Timestamp } = require('firebase-admin/firestore');
-  const kickoff = Date.parse('2026-11-12T17:00:00Z');
-  const m = (short, elapsed, extra = {}) => ({
+  const kickoff = Date.parse('2026-11-12T17:00:00Z'); // planlanan 20:00
+  const realStart = kickoff + 150_000; // maç 2,5 dk geç başladı
+  const m = (short, elapsed) => ({
     fixture_id: 5, kickoff: Timestamp.fromMillis(kickoff), status: { short, elapsed }, goals: { home: 0, away: 0 },
-    home: { id: 'a', name: 'A' }, away: { id: 'b', name: 'B' }, league: { name: 'L' }, is_finished: false, ...extra,
+    home: { id: 'a', name: 'A' }, away: { id: 'b', name: 'B' }, league: { name: 'L' }, is_live: true, is_finished: false,
   });
-  // 1. yarı, şimdi 3:20 geçti, API "3" diyor → çapa başlama saati
-  const now = kickoff + 200_000;
-  const c1 = fb.clockAnchor(null, m('1H', 3), now, 0);
-  assert.equal(c1.anchor_ms, kickoff);
-  const d = fb.buildLiveMessage({ ...m('1H', 3), clock: c1 }, now).data;
-  assert.equal(d.elapsed, '3');
-  assert.equal(Number(d.sent_ms), now - 20_000, '20 sn telefona aktarılır');
-  // İstenirse TV gecikmesi kadar geri kaydırma (clock_offset_sec): 25 sn → 3:20 yerine 2:55
-  assert.equal(fb.DEFAULT_CLOCK_OFFSET_SEC, 0, 'varsayılan: gerçek maç saati');
-  const tv = fb.buildLiveMessage({ ...m('1H', 3), clock: fb.clockAnchor(null, m('1H', 3), now, 25) }, now).data;
+  const apiMin = (t) => Math.floor((t - realStart) / 60_000); // API'nin göreceği tam dakika (gecikmesiz)
+  // Turlar ~83 sn arayla
+  let clock = null;
+  for (let t = realStart + 70_000; t < realStart + 15 * 60_000; t += 83_000) {
+    clock = fb.clockAnchor(clock ? { clock } : null, m('1H', apiMin(t)), t);
+    assert.ok(clock.anchor_ms >= realStart, 'panel gerçek saatin önüne geçmez');
+  }
+  assert.ok(clock.anchor_ms - realStart < 15_000, `birkaç turda 15 sn içine yaklaşır (fark ${clock.anchor_ms - realStart} ms)`);
+  const now = realStart + 13 * 60_000 + 29_000; // gerçek 13:29
+  const d = fb.buildLiveMessage({ ...m('1H', 13), clock }, now).data;
+  const shown = Number(d.elapsed) * 60 + (now - Number(d.sent_ms)) / 1000;
+  assert.ok(shown <= 13 * 60 + 29 && shown > 13 * 60 + 10, `gösterilen ${shown} sn`);
+  // Eski sürüm çapası (planlanan saat, v yok) yok sayılır
+  const old = { clock: { period: '1H', anchor_ms: kickoff } };
+  assert.equal(fb.clockAnchor(old, m('1H', 10), realStart + 10 * 60_000 + 5_000).anchor_ms, realStart + 5_000);
+  // İstenirse TV gecikmesi kadar geri kaydırma
+  assert.equal(fb.DEFAULT_CLOCK_OFFSET_SEC, 0);
+  const tv = fb.buildLiveMessage({ ...m('1H', 3), clock: { period: '1H', anchor_ms: now - 200_000, v: 2, offset_sec: 25 } }, now).data;
   assert.equal(tv.elapsed, '2');
-  assert.equal(Number(tv.sent_ms), now - 55_000);
-  // Maç 2 dk geç başladıysa (API "1" diyor) çapa API dakikasına sıkıştırılır (en fazla 90 sn önde)
-  const late = fb.clockAnchor(null, m('1H', 1), now);
-  assert.ok(now - late.anchor_ms <= (60 + 59 + 90) * 1000);
-  // 2. yarı: ilk görüldüğünde API "46" → 1 dk 30 sn varsayılır; sonraki turda aynı çapa korunur
-  const t2 = kickoff + 3_600_000;
-  const c2 = fb.clockAnchor(m('HT', 45), m('2H', 46), t2, 0);
-  assert.equal(c2.anchor_ms, t2 - 90_000);
-  assert.equal(fb.clockAnchor({ clock: c2 }, m('2H', 47), t2 + 60_000).anchor_ms, c2.anchor_ms);
-  const d2 = fb.buildLiveMessage({ ...m('2H', 47), clock: c2 }, t2 + 60_000).data;
-  assert.equal(d2.elapsed, '47');
-  // Devre arası / başlamadı: çapa yok, eski davranış
-  assert.equal(fb.clockAnchor(null, m('HT', 45), t2), null);
+  // Devre arası: çapa yok
+  assert.equal(fb.clockAnchor(null, m('HT', 45), now), null);
 });
 
 test('penaltı yalnızca panelde: olaydan sonra 3 dk üst satırda, sonra lig adı; ayrı bildirim yok', () => {

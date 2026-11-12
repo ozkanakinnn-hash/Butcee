@@ -314,13 +314,26 @@ function dotColor(t) {
 }
 
 /**
- * Maç saatinin saniye hassasiyetinde çapası. API dakikayı yalnızca tam sayı verir (ve birkaç sn gecikir); telefon
- * buna göre sayarsa 0–59 sn geride kalır. Çapa = içinde bulunulan devrenin "0. saniyesi" (ms):
- *  - 1. yarı: planlanan başlama saati (maçlar genelde tam saatinde başlar)
- *  - 2. yarı / uzatma: devrenin ilk görüldüğü an − (API dakikası × 60 + 30 sn)
- * Çapa, API dakikasının izin verdiği aralığa sıkıştırılır (gerçek saat API'den en fazla 90 sn önde olabilir).
- * @returns {{period: string, anchor_ms: number} | null}
+ * Maç saatinin saniye hassasiyetinde çapası (içinde bulunulan devrenin "0. saniyesi", ms).
+ * API dakikayı yalnızca tam sayı verir. Her turda gelen dakika, çapa için bir üst sınır verir:
+ *   çapa ≤ şimdi − (devredeki dakika × 60 sn)   (gerçek saat API'nin bildirdiğinden geride olamaz)
+ * Turlar boyunca bu üst sınırların EN KÜÇÜĞÜ tutulur → birkaç turda gerçek başlama anına birkaç saniye yaklaşır.
+ * Planlanan başlama saati KULLANILMAZ (maçlar geç başlayabilir). Panel hiçbir zaman API dakikasının önüne geçmez.
+ * @returns {{period: string, anchor_ms: number, v: number, offset_sec?: number} | null}
  */
+const PERIOD_BASE_MIN = { '1H': 0, '2H': 45, ET: 90 };
+const CLOCK_VERSION = 2;
+function clockAnchor(prev, next, now = Date.now(), offsetSec = DEFAULT_CLOCK_OFFSET_SEC) {
+  const period = next.status && next.status.short;
+  if (!(period in PERIOD_BASE_MIN) || next.status.elapsed === null || next.status.elapsed === undefined) return null;
+  const minIn = Math.max(0, next.status.elapsed - PERIOD_BASE_MIN[period]);
+  const hi = now - minIn * 60 * 1000;
+  const lo = now - (minIn * 60 + 59 + 90) * 1000; // çok eski çapa (ör. veri sıçraması) → sıfırla
+  const keep = prev && prev.clock && prev.clock.period === period && prev.clock.v === CLOCK_VERSION && prev.clock.anchor_ms >= lo;
+  const anchor = keep ? Math.min(prev.clock.anchor_ms, hi) : hi;
+  return { period, anchor_ms: anchor, v: CLOCK_VERSION, offset_sec: offsetSec };
+}
+
 /** Son penaltı (atılan/kaçan) olaydan sonraki 3 dakika panelin üst satırında; yoksa lig adı. Ayrı bildirim yok. */
 const PENALTY_SHOW_MIN = 3;
 function panelHeadline(match) {
@@ -346,19 +359,6 @@ function liveClock(match, now) {
   return { elapsed: String(Math.floor(sec / 60)), sent_ms: String(now - (sec % 60) * 1000) };
 }
 
-const PERIOD_BASE_MIN = { '1H': 0, '2H': 45, ET: 90 };
-function clockAnchor(prev, next, now = Date.now(), offsetSec = DEFAULT_CLOCK_OFFSET_SEC) {
-  const period = next.status && next.status.short;
-  if (!(period in PERIOD_BASE_MIN) || next.status.elapsed === null || next.status.elapsed === undefined) return null;
-  const minIn = Math.max(0, next.status.elapsed - PERIOD_BASE_MIN[period]);
-  let anchor;
-  if (prev && prev.clock && prev.clock.period === period) anchor = prev.clock.anchor_ms;
-  else if (period === '1H' && next.kickoff && next.kickoff.toMillis) anchor = next.kickoff.toMillis();
-  else anchor = now - (minIn * 60 + 30) * 1000;
-  const lo = now - (minIn * 60 + 59 + 90) * 1000; // en fazla bu kadar önde
-  const hi = now - minIn * 60 * 1000; // API dakikasından geride olamaz
-  return { period, anchor_ms: Math.min(hi, Math.max(lo, anchor)), offset_sec: offsetSec };
-}
 
 /**
  * Canlı skor paneli verisi (yalnızca VERİ mesajı; bildirimi telefondaki LiveScoreNotifier.kt çizer ve yerinde günceller).
