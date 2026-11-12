@@ -1,0 +1,52 @@
+# Minik Gurme — iPhone uygulaması. Xcode projesi bu dosyadan üretilir:
+#   brew install xcodegen && cd iosApp && xcodegen generate
+# Uygulamanın tamamı Kotlin ortak modülündedir (shared); burada yalnızca giriş noktası vardır.
+name: MinikGurme
+options:
+  bundleIdPrefix: akinai
+  deploymentTarget:
+    iOS: "15.0"
+  createIntermediateGroups: true
+settings:
+  base:
+    MARKETING_VERSION: "2.2"
+    CURRENT_PROJECT_VERSION: "1"
+    VERSIONING_SYSTEM: apple-generic
+targets:
+  MinikGurme:
+    type: application
+    platform: iOS
+    sources:
+      - path: iosApp
+        excludes:
+          - GoogleService-Info.plist   # Topluluk Firebase REST kullanır; SDK yapılandırması gerekmez
+    info:
+      path: iosApp/Info.plist
+      properties:
+        CFBundleDisplayName: Minik Gurme
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        CFBundleDevelopmentRegion: tr
+        CFBundleLocalizations: [tr, en]
+        UILaunchScreen:
+          UIColorName: LaunchBackground
+        UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
+        UIRequiresFullScreen: true
+        CADisableMinimumFrameDurationOnPhone: true
+        ITSAppUsesNonExemptEncryption: false
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: akinai.minikgurme
+        PRODUCT_NAME: MinikGurme
+        TARGETED_DEVICE_FAMILY: "1"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ENABLE_USER_SCRIPT_SANDBOXING: NO
+        FRAMEWORK_SEARCH_PATHS: ["$(inherited)", "$(SRCROOT)/../shared/build/xcode-frameworks/$(CONFIGURATION)/$(SDK_NAME)"]
+        OTHER_LDFLAGS: ["$(inherited)", "-framework", "Shared"]
+        CODE_SIGN_STYLE: Automatic
+    preBuildScripts:
+      - name: Kotlin ortak modülünü derle
+        basedOnDependencyAnalysis: false
+        script: |
+          cd "$SRCROOT/.."
+          ./gradlew :shared:embedAndSignAppleFrameworkForXcode

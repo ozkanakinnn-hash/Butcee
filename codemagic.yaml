@@ -1,0 +1,67 @@
+# Minik Gurme — Codemagic (codemagic.io) bulut derlemesi. iPhone sürümü Mac olmadan burada derlenir.
+# Uygulama kodu minik_gurme/ klasöründedir (Kotlin Multiplatform + Compose; iOS kabuğu minik_gurme/iosApp).
+workflows:
+
+  # 1) Apple hesabı GEREKTİRMEZ: iPhone uygulamasının derlendiğini simülatör için kontrol eder.
+  ios-derleme-kontrolu:
+    name: iOS derleme kontrolü (imzasız)
+    instance_type: mac_mini_m2
+    max_build_duration: 90
+    environment:
+      java: 21
+      xcode: latest
+    scripts:
+      - name: XcodeGen kur ve projeyi üret
+        script: |
+          brew install xcodegen
+          cd minik_gurme/iosApp && xcodegen generate
+      - name: Android SDK yolu (Gradle yapılandırması için)
+        script: |
+          echo "sdk.dir=$ANDROID_SDK_ROOT" > minik_gurme/local.properties
+      - name: Simülatör için derle
+        script: |
+          cd minik_gurme/iosApp
+          xcodebuild -project MinikGurme.xcodeproj -scheme MinikGurme \
+            -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' \
+            -configuration Debug CODE_SIGNING_ALLOWED=NO build | xcpretty || exit ${PIPESTATUS[0]}
+
+  # 2) Apple Developer üyeliği ve App Store Connect API anahtarı GEREKİR (Codemagic › Teams › Integrations).
+  ios-testflight:
+    name: iOS → TestFlight
+    instance_type: mac_mini_m2
+    max_build_duration: 120
+    integrations:
+      app_store_connect: Minik Gurme ASC   # Codemagic'te eklenecek API anahtarının adı
+    environment:
+      java: 21
+      xcode: latest
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: akinai.minikgurme
+      vars:
+        APP_STORE_APPLE_ID: "0000000000"   # App Store Connect › Uygulama bilgileri › Apple Kimliği (uygulama oluşturulunca)
+    scripts:
+      - name: XcodeGen kur ve projeyi üret
+        script: |
+          brew install xcodegen
+          cd minik_gurme/iosApp && xcodegen generate
+      - name: Android SDK yolu (Gradle yapılandırması için)
+        script: |
+          echo "sdk.dir=$ANDROID_SDK_ROOT" > minik_gurme/local.properties
+      - name: İmzalama profillerini uygula
+        script: xcode-project use-profiles
+      - name: Derleme numarasını artır
+        script: |
+          cd minik_gurme/iosApp
+          LATEST=$(app-store-connect get-latest-testflight-build-number "$APP_STORE_APPLE_ID" || echo 0)
+          agvtool new-version -all $((LATEST + 1))
+      - name: IPA üret
+        script: |
+          cd minik_gurme/iosApp
+          xcode-project build-ipa --project MinikGurme.xcodeproj --scheme MinikGurme
+    artifacts:
+      - minik_gurme/iosApp/build/ios/ipa/*.ipa
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true

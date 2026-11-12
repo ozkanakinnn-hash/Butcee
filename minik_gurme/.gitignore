@@ -21,3 +21,8 @@ local.properties
 keystore.properties
 *.jks
 upload-keystore*
+
+# iOS (XcodeGen ile üretilir)
+iosApp/MinikGurme.xcodeproj/
+iosApp/build/
+iosApp/DerivedData/
