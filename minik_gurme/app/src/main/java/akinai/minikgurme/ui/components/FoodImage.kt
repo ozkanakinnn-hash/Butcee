@@ -14,10 +14,28 @@ import akinai.minikgurme.R
 
 /**
  * Emoji → 3D çizim (Microsoft Fluent Emoji, MIT lisansı; drawable-nodpi/emoji_*.webp).
+ * İstisna: 🥒 (emoji_1f952) uygulamaya özel çizilmiş sakız kabağıdır (tool/zucchini.svg).
  * Telefonun emoji yazı tipi yerine her cihazda aynı görünen görseller kullanılır.
  * Bu dosyadaki eşleme tool ile üretilir (README'ye bakın).
  */
 private val emojiArt: Map<String, Int> = mapOf(
+    // Salatalık: 🥒 + metin seçici (U+FE0E) — 🥒 tek başına sakız kabağı çizimini gösterir
+    "\uD83E\uDD52\uFE0E" to R.drawable.emoji_cucumber,
+    "🫛" to R.drawable.emoji_1fadb,
+    "🍄" to R.drawable.emoji_1f344,
+    "🌽" to R.drawable.emoji_1f33d,
+    "🧅" to R.drawable.emoji_1f9c5,
+    "🧄" to R.drawable.emoji_1f9c4,
+    "🍒" to R.drawable.emoji_1f352,
+    "🍇" to R.drawable.emoji_1f347,
+    "🍉" to R.drawable.emoji_1f349,
+    "🍈" to R.drawable.emoji_1f348,
+    "🥭" to R.drawable.emoji_1f96d,
+    "🍍" to R.drawable.emoji_1f34d,
+    "🍚" to R.drawable.emoji_1f35a,
+    "🍖" to R.drawable.emoji_1f356,
+    "🧈" to R.drawable.emoji_1f9c8,
+    "🦐" to R.drawable.emoji_1f990,
     "☀️" to R.drawable.emoji_2600,
     "⚠" to R.drawable.emoji_26a0,
     "🌈" to R.drawable.emoji_1f308,

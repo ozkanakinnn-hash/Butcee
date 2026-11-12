@@ -344,4 +344,39 @@ class AppSmokeTest {
             assertEquals(2, akinai.minikgurme.util.Babies.all(ctx).size)
         }
     }
+
+    @Test
+    fun hundredFoodsCompleteAndTranslated() {
+        val foods = akinai.minikgurme.data.guide.FoodDirectoryData.allFoods
+        assertEquals(100, foods.size)
+        assertEquals(100, foods.map { it.id }.toSet().size)
+        assertEquals(100, foods.map { it.name }.toSet().size)
+        launch("en").use {
+            compose.waitForIdle()
+            val missing = foods.flatMap { f ->
+                listOf(f.name, f.summary, f.serving6m, f.serving9m, f.serving12m, f.safetyAlert, f.ageDisplay, f.category) + f.nutrients
+            }.filter { Translator.toEnglish(it) == it && it.any { c -> c in "çğıöşüÇĞİÖŞÜ" } }
+            assertTrue("Çevrilmemiş: ${missing.take(10)}", missing.isEmpty())
+        }
+    }
+
+    @Test
+    fun foods100ShowsHundred() {
+        setOnboarded(true)
+        launch("tr").use {
+            compose.waitForIdle()
+            compose.onNodeWithTag("nav_foods100").performClick(); compose.waitForIdle()
+            assertTrue(has("0 / 100"))
+            assertTrue(has("100 Besin Listelendi"))
+            shot("tr_light_10_foods100_full")
+        }
+    }
+
+    @Test
+    fun zucchiniAndCucumberHaveOwnImages() {
+        val kabak = akinai.minikgurme.data.guide.FoodDirectoryData.getFoodById("kabak")!!
+        val salatalik = akinai.minikgurme.data.guide.FoodDirectoryData.getFoodById("salatalik")!!
+        assertEquals(R.drawable.emoji_1f952, akinai.minikgurme.ui.components.emojiArtFor(kabak.emoji))
+        assertEquals(R.drawable.emoji_cucumber, akinai.minikgurme.ui.components.emojiArtFor(salatalik.emoji))
+    }
 }

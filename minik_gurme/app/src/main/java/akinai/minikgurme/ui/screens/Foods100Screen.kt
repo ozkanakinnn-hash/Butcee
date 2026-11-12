@@ -130,7 +130,8 @@ fun Foods100Screen(
         "Tahıllar & Baklagiller",
         "Protein & Et",
         "Süt Ürünleri",
-        "Tohumlar & Sağlıklı Yağlar"
+        "Tohumlar & Sağlıklı Yağlar",
+        "Baharat & Otlar"
     )
 
     LazyColumn(
