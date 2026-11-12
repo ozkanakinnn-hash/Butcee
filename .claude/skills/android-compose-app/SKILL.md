@@ -140,3 +140,15 @@ gradle/actions/setup-gradle@v5 → `./gradlew assembleDebug` → upload-artifact
 - Emoji yazı tipi cihaza göre değişir; `FoodImage(emoji, size)` gibi tek bir composable ile emoji → görsel eşlemesi yap, eşleşme yoksa emojiye düş.
 - Wikimedia Commons otomatik indirmede iletişim adresli User-Agent ister; kullanıcının e-postasını izinsiz kullanma.
 
+
+## Uygulama içi topluluk / forum (Firebase, Minik Gurme'den)
+- Önce seçenekleri sun: (1) dış grup bağlantısı (Telegram önerilir; WhatsApp numaraları gösterir), (2) Firebase forum, (3) birebir mesaj (önerme).
+- Firebase konsol adımları: Analytics **kapalı**, paket adı birebir, `google-services.json` → `app/`, Authentication › **Anonim**, Firestore **europe-west3** + üretim modu, kuralları yapıştır. Anonim girişte SHA-1 gerekmez.
+- AGP 9.1 + `com.google.gms.google-services` 4.5.0 + Firebase BoM 34.x sorunsuz çalışıyor; `kotlinx-coroutines-play-services` ile `await()`.
+- Yapı: `topics/{topic}/posts/{id}/comments/{id}` (başlık başına alt koleksiyon → `orderBy(createdAt)` için bileşik indeks gerekmez), `reports/`, `mods/{uid}` (yalnızca konsoldan).
+- Sayaç yerine liste: `likedBy`/`reportedBy` dizileri + kurallarda `toSet().difference(...).hasOnly([uid])` → yalnızca kendi kimliğini ekleyip çıkarabilir. `createdAt == request.time` (serverTimestamp), `keys().hasOnly([...])`, metin uzunluğu sınırları.
+- Kuralları **Firestore emülatörüyle test et**: scratchpad'de `npm i firebase-tools@14 @firebase/rules-unit-testing@4 firebase@11` → `npx firebase emulators:exec --only firestore --project demo-x "node rules.test.mjs"` (bu konteynerde çalışıyor).
+- Google Play UGC zorunlulukları: kural onayı, şikâyet, engelleme, otomatik gizleme (≥3 şikâyet), moderatör onay/sil, kendi içeriğini + hesabını silme. Veri güvenliği formu ve IARC "kullanıcı etkileşimi" güncellenmeli; gizlilik metnine topluluk bölümü + açık rıza (KVKK m.5).
+- İstemci filtresi: bağlantı, telefon/e-posta, küfür (kısa kelimeler tam eşleşme — "eksik", "götürmek" yanlış pozitif vermesin), 20 sn bekleme.
+- Test: `CommunityBackend` arayüzü + `Community.backend` değiştirilebilir; Robolectric'te sahte arka uç. Firebase'e uygulama açılışında dokunma (tembel başlat).
+- Kullanıcı içeriğini çeviri sözlüğünden geçirme (`Text(..., translate = false)`).

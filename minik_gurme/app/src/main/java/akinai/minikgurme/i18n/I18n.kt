@@ -118,9 +118,11 @@ fun Text(
     minLines: Int = 1,
     onTextLayout: ((TextLayoutResult) -> Unit)? = null,
     style: TextStyle = LocalTextStyle.current,
+    /** false: kullanıcının yazdığı metin (ör. topluluk gönderisi) olduğu gibi gösterilir. */
+    translate: Boolean = true,
 ) {
     androidx.compose.material3.Text(
-        text = t(text),
+        text = if (translate) t(text) else text,
         modifier = modifier,
         color = color,
         fontSize = fontSize,

@@ -27,21 +27,28 @@ Anahtar kaybolursa Play Console'dan "yükleme anahtarı sıfırlama" talep edile
 7. **Vergi/ödeme profili** (Play Console › Ödemeler) ve gelir için vergi kaydı (şahıs şirketi / serbest meslek) — muhasebecinize danışın.
 
 ## 3. Play Console formları (taslak cevaplar)
-**Veri güvenliği**
-- Uygulama kullanıcı verisi topluyor veya paylaşıyor mu? → **Hayır** (tüm veriler cihazda; geliştiriciye gönderilmez).
+**Veri güvenliği** (Ebeveyn Topluluğu eklendiği için güncellendi)
+- Uygulama kullanıcı verisi topluyor mu? → **Evet** — yalnızca isteğe bağlı topluluk için:
+  - *Kişisel bilgiler › Kullanıcı kimlikleri*: anonim Firebase kimliği — amaç: Uygulama işlevselliği, Hesap yönetimi
+  - *Kişisel bilgiler › Ad*: takma ad (kullanıcı seçer) — amaç: Uygulama işlevselliği
+  - *Mesajlar › Diğer uygulama içi mesajlar*: gönderi ve yorumlar — amaç: Uygulama işlevselliği
+  - Hepsi **isteğe bağlı** (kullanıcı topluluğa katılmayı seçerse), **paylaşılmaz** (Google veri işleyen olarak sayılır).
+- Bebek profili, kilo/boy, öğün ve alerji kayıtları **toplanmaz** (cihazda kalır).
 - Satın alma geçmişi Google Play tarafından işlenir (Google'ın kendi beyanı kapsamında).
-- Veriler aktarımda şifreleniyor mu? → Uygulama veri aktarmaz.
-- Kullanıcı veri silme talep edebilir mi? → Evet: Ayarlar'dan sıfırlama / uygulamayı kaldırma.
+- Veriler aktarımda şifreleniyor mu? → **Evet** (Firebase, HTTPS/TLS).
+- Kullanıcı veri silme talep edebilir mi? → **Evet**: uygulama içinde Ayarlar › Topluluk › Topluluk hesabımı sil. Play, hesap silme için ayrıca bir **web bağlantısı** da istiyor: gizlilik sayfanıza "Silme talebi için e-posta gönderin: …" bölümü ekleyip o adresi girin.
 
 **Sağlık uygulamaları beyanı**: Kategori "Beslenme ve kilo yönetimi / ebeveynlik". Tıbbi cihaz değildir; teşhis/tedavi sunmaz.
 
 **Hedef kitle ve içerik**: Hedef yaş **18+** (ebeveynler). "Çocuklara yönelik" **işaretlenmemeli**.
 
-**İçerik derecelendirmesi (IARC)**: Şiddet/cinsellik/kumar yok, kullanıcı etkileşimi yok, konum paylaşımı yok → "Herkes / 3+".
+**İçerik derecelendirmesi (IARC)**: Şiddet/cinsellik/kumar yok, konum paylaşımı yok. **"Kullanıcılar etkileşime girebilir / içerik paylaşabilir: Evet"** (Ebeveyn Topluluğu). Moderasyon: şikâyet, engelleme, otomatik gizleme ve moderatör silmesi var.
+
+**Kullanıcı tarafından oluşturulan içerik (UGC) politikası**: Uygulamada şunlar mevcut — kullanım koşullarının kabulü (katılırken onay kutusu), uygunsuz içerik/kullanıcı **şikâyet** etme, kullanıcı **engelleme**, 3 şikâyette otomatik gizleme, moderatör onay/silme, kendi içeriğini ve hesabını silme. Şikâyetleri düzenli olarak (en az haftada bir) Firebase konsolundaki `reports` koleksiyonundan kontrol edin.
 
 **Reklam**: Uygulamada reklam **yok**.
 
-**İzinler**: `POST_NOTIFICATIONS` (hatırlatıcılar), `RECEIVE_BOOT_COMPLETED` (yeniden başlatmada hatırlatıcıları kurmak), `BILLING` (Play aboneliği). `INTERNET` ve `ACCESS_NETWORK_STATE` izinlerini Google Play Billing kütüphanesi ekler; yalnızca abonelik işlemleri için Google Play ile konuşur. Uygulama kullanıcı verisini hiçbir sunucuya göndermez.
+**İzinler**: `POST_NOTIFICATIONS` (hatırlatıcılar), `RECEIVE_BOOT_COMPLETED` (yeniden başlatmada hatırlatıcıları kurmak), `BILLING` (Play aboneliği). `INTERNET` ve `ACCESS_NETWORK_STATE` izinlerini Google Play Billing ve Firebase kütüphaneleri ekler: abonelik işlemleri ve isteğe bağlı Ebeveyn Topluluğu için. Bebek verileri hiçbir sunucuya gönderilmez.
 
 ## 4. Mağaza metinleri
 **Uygulama adı**: Minik Gurme: Ek Gıda Takibi
@@ -56,7 +63,8 @@ Minik Gurme, 6. aydan itibaren ek gıdaya geçişi kolaylaştıran sade bir taki
 • Ay ay beslenme rehberi, kıvam aşamaları ve güvenlik uyarıları
 • Kilo ve boy takibi; WHO kız/erkek medyanlarıyla karşılaştırma
 • Açık ve koyu tema, Türkçe ve İngilizce
-Gizlilik: Hesap yok, reklam yok, veri toplama yok — bebeğinizin tüm kayıtları telefonunuzda kalır.
+• Ebeveyn Topluluğu: ay ay konu başlıklarında soru sorun, deneyim paylaşın (takma adla, isteğe bağlı)
+Gizlilik: Reklam yok, analiz yok — bebeğinizin tüm kayıtları telefonunuzda kalır; topluluğa yalnızca sizin yazdıklarınız gider.
 Minik Gurme Plus: haftalık menü planlayıcı, doktor raporu (PDF), birden fazla bebek, öğün hatırlatıcıları.
 Uygulama genel bilgi sunar; tıbbi tavsiye yerine geçmez. Lütfen çocuk doktorunuza danışın.
 
@@ -68,7 +76,8 @@ Minik Gurme is a simple tracker that makes starting solids easier from 6 months.
 • Month-by-month feeding guide, texture stages and safety tips
 • Weight and height tracking compared with WHO girl/boy medians
 • Light and dark theme, Turkish and English
-Privacy: no account, no ads, no data collection — all of your baby's records stay on your phone.
+• Parent Community: ask questions and share experiences in month-by-month topics (optional, with a nickname)
+Privacy: no ads, no analytics — all of your baby's records stay on your phone; only what you write yourself goes to the community.
 Minik Gurme Plus: weekly meal planner, doctor report (PDF), multiple babies, meal reminders.
 The app provides general information and does not replace medical advice. Please consult your paediatrician.
 
@@ -83,3 +92,17 @@ The app provides general information and does not replace medical advice. Please
 - Lisansı belirsiz 4 fotoğraf kaldırıldı.
 - Yedekleme kuralları açık; Gizlilik metninde belirtildi. Dışa aktar / geri yükle eklendi.
 - Abonelik doğrulaması cihazda; gelir büyüdüğünde sunucu taraflı doğrulama önerilir.
+
+
+## 6. Ebeveyn Topluluğu (Firebase) kurulumu
+Proje: `minik-gurme-f0db0` · Uygulama yapılandırması: `minik_gurme/app/google-services.json`
+1. **Authentication › Sign-in method › Anonymous → Etkinleştir.** (Google ile giriş kullanılmıyor; SHA-1 eklemek gerekmez.)
+2. **Firestore Database › Veritabanı oluştur** → konum **europe-west3 (Frankfurt)** → **Üretim modu**.
+3. **Firestore › Kurallar** sekmesine `docs/minik-gurme/firestore.rules` dosyasının tamamını yapıştırıp **Yayınla**.
+4. **Moderatör olmak için**: uygulamada topluluğa katılın → Ayarlar › Topluluk › **Topluluk kimliğim**'e dokunun (kopyalanır) →
+   Firestore › Veri › **Koleksiyon başlat**: koleksiyon kimliği `mods`, belge kimliği = kopyaladığınız kimlik, bir alan ekleyin (ör. `ad` = `Özkan`, string) → Kaydet.
+   Uygulamayı yeniden açınca gizlenen içeriklerde **Onayla** ve her içerikte **Sil (moderatör)** görünür.
+5. **Şikâyetler**: Firestore › `reports` koleksiyonunda kimin, hangi içeriği (`path` = başlık/gönderi[/yorum]), hangi nedenle şikâyet ettiği görülür.
+6. **Bütçe**: Ücretsiz Spark planında kalındığı sürece ücret çıkmaz; kota aşılırsa topluluk o gün durur. Blaze'e geçerseniz bütçe uyarısı (ör. 5 $) kurun.
+7. **Yazmayı Plus'a özel yapmak**: `community/Community.kt` → `CommunityConfig.WRITE_PLUS_ONLY = true`.
+8. Kurallar, Firestore emülatöründe 34 senaryoyla test edildi (başkası adına yazma, sahte beğeni, şikâyet temizleme, kendini moderatör yapma vb. engelleniyor).

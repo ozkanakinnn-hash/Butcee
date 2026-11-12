@@ -36,6 +36,8 @@ import androidx.compose.material.icons.filled.ChildCare
 import androidx.compose.material.icons.filled.HealthAndSafety
 import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.automirrored.filled.MenuBook
+import androidx.compose.material.icons.filled.Forum
+import androidx.compose.material.icons.outlined.Forum
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Restaurant
 import androidx.compose.material.icons.filled.Science
@@ -164,6 +166,7 @@ fun MainScreen(
     var currentTab by remember { mutableStateOf("today") }
     var guideSection by remember { mutableStateOf("month") } // "month" (bu ayın önerileri) | "library" (rehber)
     var previousTab by remember { mutableStateOf("today") }
+    var subReturn by remember { mutableStateOf("settings") } // Plus/yasal ekranlardan geri dönülecek sekme
 
     // Dialog & Sheet States
     var showAddMealSheet by remember { mutableStateOf(false) }
@@ -185,14 +188,15 @@ fun MainScreen(
 
     // Handle Android system back gesture when in Profile or Growth screen
     BackHandler(enabled = currentTab in setOf("profile", "growth", "shopping", "settings", "paywall", "planner") || currentTab.startsWith("legal_")) {
-        currentTab = previousTab
+        currentTab = if (currentTab == "paywall" || currentTab.startsWith("legal_")) subReturn else previousTab
     }
 
     val navItems = listOf(
         NavigationTabItem("today", "Bugün", Icons.Filled.Restaurant, Icons.Outlined.Restaurant, "nav_today"),
         NavigationTabItem("foods100", "100 Gıda", Icons.Filled.Stars, Icons.Outlined.Stars, "nav_foods100"),
         NavigationTabItem("recipes", "Tarifler", Icons.Filled.AutoStories, Icons.Outlined.AutoStories, "nav_recipes"),
-        NavigationTabItem("guide", "Rehber", Icons.AutoMirrored.Filled.MenuBook, Icons.AutoMirrored.Outlined.MenuBook, "nav_guide")
+        NavigationTabItem("guide", "Rehber", Icons.AutoMirrored.Filled.MenuBook, Icons.AutoMirrored.Outlined.MenuBook, "nav_guide"),
+        NavigationTabItem("community", "Topluluk", Icons.Filled.Forum, Icons.Outlined.Forum, "nav_community")
     )
 
     Scaffold(
@@ -526,6 +530,14 @@ fun MainScreen(
                         }
                     }
 
+                    "community" -> akinai.minikgurme.ui.screens.CommunityScreen(
+                        ageMonths = babyProfile.ageMonths,
+                        isPlus = akinai.minikgurme.billing.PlusManager.isPlus,
+                        onOpenPaywall = { subReturn = "community"; currentTab = "paywall" },
+                        onOpenTerms = { subReturn = "community"; currentTab = "legal_terms" },
+                        onOpenPrivacy = { subReturn = "community"; currentTab = "legal_privacy" }
+                    )
+
                     "profile" -> ProfileScreen(
                         profile = babyProfile,
                         allMeals = allMeals,
@@ -550,16 +562,16 @@ fun MainScreen(
                             scope.launch { snackbarHostState.showSnackbar(t("İstatistikler sıfırlandı.")) }
                         },
                         onClearShopping = { viewModel.clearAllShopping() },
-                        onOpenPaywall = { currentTab = "paywall" },
+                        onOpenPaywall = { subReturn = "settings"; currentTab = "paywall" },
                         onOpenPlanner = { currentTab = "planner" },
-                        onOpenLegal = { currentTab = "legal_$it" },
+                        onOpenLegal = { subReturn = "settings"; currentTab = "legal_$it" },
                         onSwitchBaby = onSwitchBaby,
                         onAddBaby = onAddBaby,
                         onDeleteBaby = onDeleteBaby,
                         onDataImported = onReload
                     )
                     "paywall" -> akinai.minikgurme.ui.screens.PaywallScreen(
-                        onBack = { currentTab = "settings" },
+                        onBack = { currentTab = subReturn },
                         onOpenTerms = { currentTab = "legal_terms" },
                         onOpenPrivacy = { currentTab = "legal_privacy" }
                     )
@@ -574,7 +586,7 @@ fun MainScreen(
                     )
                     "legal_privacy", "legal_terms", "legal_licenses" -> akinai.minikgurme.ui.screens.LegalScreen(
                         kind = tab.removePrefix("legal_"),
-                        onBack = { currentTab = "settings" }
+                        onBack = { currentTab = subReturn }
                     )
                     "shopping" -> akinai.minikgurme.ui.screens.ShoppingListScreen(
                         items = shoppingItems,

@@ -25,6 +25,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Badge
+import androidx.compose.material.icons.filled.Block
+import androidx.compose.material.icons.filled.Fingerprint
+import androidx.compose.material.icons.filled.PersonRemove
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Check
@@ -73,6 +77,8 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import akinai.minikgurme.BuildConfig
 import akinai.minikgurme.billing.PlusManager
+import akinai.minikgurme.community.Community
+import akinai.minikgurme.community.ContentFilter
 import akinai.minikgurme.i18n.AppLanguage
 import akinai.minikgurme.i18n.Text
 import akinai.minikgurme.i18n.t
@@ -108,6 +114,7 @@ fun SettingsScreen(
     var allergenOn by remember { mutableStateOf(Reminders.allergenOn(context)) }
     var mealsOn by remember { mutableStateOf(Reminders.mealsOn(context)) }
     var busy by remember { mutableStateOf(false) }
+    var renaming by remember { mutableStateOf(false) }
     val babies = remember { Babies.all(context) }
     val activeId = remember { Babies.activeId(context) }
     val isPlus = PlusManager.isPlus
@@ -136,6 +143,8 @@ fun SettingsScreen(
         val (title, body, action) = when {
             what == "stats" -> Triple("İstatistikler sıfırlansın mı?", "Tüm öğün kayıtları ve alerjen testleri kalıcı olarak silinecek. Bebek profili ve boy/kilo ölçümleri korunur. Bu işlem geri alınamaz.", "Evet, sıfırla")
             what == "shopping" -> Triple("Alışveriş listesi temizlensin mi?", "Listedeki tüm ürünler silinecek. Bu işlem geri alınamaz.", "Evet, temizle")
+            what == "unblock" -> Triple("Engeller kaldırılsın mı?", "Engellediğiniz kullanıcıların gönderilerini ve yorumlarını yeniden göreceksiniz.", "Engelleri kaldır")
+            what == "community" -> Triple("Topluluk hesabınız silinsin mi?", "Toplulukta paylaştığınız tüm gönderiler ve yorumlar kalıcı olarak silinecek. Bebek kayıtlarınız etkilenmez. Bu işlem geri alınamaz.", "Evet, sil")
             what == "import" -> Triple("Yedek geri yüklensin mi?", "Bu bebeğin mevcut tüm kayıtları yedekteki verilerle değiştirilecek.", "Geri yükle")
             else -> Triple("Bebek profili silinsin mi?", "Bu bebeğe ait tüm kayıtlar kalıcı olarak silinecek. Bu işlem geri alınamaz.", "Evet, sil")
         }
@@ -158,6 +167,19 @@ fun SettingsScreen(
                                 }
                             }
                             what.startsWith("baby:") -> onDeleteBaby(what.removePrefix("baby:"))
+                            what == "unblock" -> Community.clearBlocked(context)
+                            what == "community" -> if (!busy) {
+                                busy = true
+                                scope.launch {
+                                    val r = runCatching {
+                                        Community.backend.signIn()
+                                        Community.backend.deleteAccount(Community.myComments)
+                                    }
+                                    busy = false
+                                    if (r.isSuccess) { Community.leave(context); toast("Topluluk hesabınız ve paylaşımlarınız silindi.") }
+                                    else toast("Silinemedi. İnternet bağlantınızı kontrol edip tekrar deneyin.")
+                                }
+                            }
                         }
                         confirm = null
                     },
@@ -166,6 +188,27 @@ fun SettingsScreen(
                 ) { Text(action) }
             },
             dismissButton = { TextButton(onClick = { confirm = null }) { Text("Vazgeç") } }
+        )
+    }
+
+    if (renaming) {
+        var nick by remember { mutableStateOf(Community.nick) }
+        val err = ContentFilter.checkNick(nick)
+        AlertDialog(
+            onDismissRequest = { renaming = false },
+            title = { Text("Takma ad") },
+            text = {
+                Column {
+                    androidx.compose.material3.OutlinedTextField(
+                        value = nick, onValueChange = { if (it.length <= 30) nick = it }, singleLine = true, isError = err != null,
+                        modifier = Modifier.fillMaxWidth().testTag("settings_nick_input")
+                    )
+                    Spacer(Modifier.height(6.dp))
+                    Text(err ?: "Yeni ad, bundan sonraki paylaşımlarınızda görünür.", style = MaterialTheme.typography.bodySmall, color = if (err != null) ReactionAllergy else TextSecondary)
+                }
+            },
+            confirmButton = { TextButton(onClick = { Community.rename(context, nick); renaming = false }, enabled = err == null) { Text("Kaydet") } },
+            dismissButton = { TextButton(onClick = { renaming = false }) { Text("Vazgeç") } }
         )
     }
 
@@ -246,6 +289,25 @@ fun SettingsScreen(
             }
         }
 
+        if (Community.joined) Section("Topluluk") {
+            SettingRow(Icons.Filled.Badge, "Takma ad", Community.nick, tag = "settings_nick") { renaming = true }
+            HorizontalDivider(color = DividerColor, modifier = Modifier.padding(vertical = 4.dp))
+            SettingRow(Icons.Filled.Block, "Engellenen kullanıcılar", t("${Community.blocked.size} kişi") + if (Community.blocked.isEmpty()) "" else t(" · engeli kaldırmak için dokunun"), tag = "settings_blocked") {
+                if (Community.blocked.isNotEmpty()) confirm = "unblock"
+            }
+            HorizontalDivider(color = DividerColor, modifier = Modifier.padding(vertical = 4.dp))
+            SettingRow(Icons.Filled.Fingerprint, "Topluluk kimliğim", t("Moderatör eklemek için kopyalayın"), tag = "settings_uid") {
+                val uid = runCatching { Community.backend.currentUid() }.getOrNull()
+                if (uid != null) {
+                    val cm = context.getSystemService(android.content.ClipboardManager::class.java)
+                    cm?.setPrimaryClip(android.content.ClipData.newPlainText("uid", uid))
+                    toast("Kimlik kopyalandı.")
+                } else toast("Önce topluluğa bağlanın.")
+            }
+            HorizontalDivider(color = DividerColor, modifier = Modifier.padding(vertical = 4.dp))
+            SettingRow(Icons.Filled.PersonRemove, "Topluluk hesabımı sil", "Tüm gönderi ve yorumlarınız silinir", tint = ReactionAllergy, tag = "settings_delete_community") { confirm = "community" }
+        }
+
         Section("Veriler") {
             SettingRow(Icons.Filled.Download, "Verileri dışa aktar", "Telefonunuza yedek dosyası (JSON) kaydedin", tag = "settings_export") { exportLauncher.launch("MinikGurme-yedek.json") }
             HorizontalDivider(color = DividerColor, modifier = Modifier.padding(vertical = 4.dp))
@@ -264,7 +326,7 @@ fun SettingsScreen(
                 style = MaterialTheme.typography.bodySmall, color = TextSecondary
             )
             Spacer(Modifier.height(6.dp))
-            SettingRow(Icons.Filled.PrivacyTip, "Gizlilik Politikası", "Verileriniz telefonunuzda kalır", tag = "settings_privacy") { onOpenLegal("privacy") }
+            SettingRow(Icons.Filled.PrivacyTip, "Gizlilik Politikası", "Bebek verileriniz telefonunuzda kalır", tag = "settings_privacy") { onOpenLegal("privacy") }
             SettingRow(Icons.Filled.Gavel, "Kullanım Koşulları", "Abonelik ve sorumluluk koşulları", tag = "settings_terms") { onOpenLegal("terms") }
             SettingRow(Icons.Filled.Description, "Açık Kaynak Lisansları", "Yazı tipi, ikonlar ve kütüphaneler", tag = "settings_licenses") { onOpenLegal("licenses") }
         }

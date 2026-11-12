@@ -35,13 +35,14 @@ class AppSmokeTest {
     @get:Rule val compose = createEmptyComposeRule()
 
     private val ctx get() = ApplicationProvider.getApplicationContext<Context>()
-    private val tabs = listOf("nav_today", "nav_foods100", "nav_recipes", "nav_guide")
+    private val tabs = listOf("nav_today", "nav_foods100", "nav_recipes", "nav_guide", "nav_community")
 
     @org.junit.Before
     fun reset() {
         AppDatabase.closeAll()
         listOf("minik_gurme_db").forEach { ctx.deleteDatabase(it) }
         ctx.getSharedPreferences("app_prefs", Context.MODE_PRIVATE).edit().clear().commit()
+        ctx.getSharedPreferences("community", Context.MODE_PRIVATE).edit().clear().commit()
         org.robolectric.Shadows.shadowOf(ctx as android.app.Application).grantPermissions(android.Manifest.permission.POST_NOTIFICATIONS)
     }
 

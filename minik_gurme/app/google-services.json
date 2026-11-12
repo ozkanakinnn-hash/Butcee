@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "242724410601",
+    "project_id": "minik-gurme-f0db0",
+    "storage_bucket": "minik-gurme-f0db0.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:242724410601:android:b143299a0d9235aa930c78",
+        "android_client_info": {
+          "package_name": "akinai.minikgurme"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDjzd7trZ_UXqwq49uEPRvCU5xksNOiSfQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

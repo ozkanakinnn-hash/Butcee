@@ -1,5 +1,17 @@
 [
 [
+"^Herkesten gizlendi · (\\d+) şikâyet$",
+"Hidden for everyone · $1 reports"
+],
+[
+"^(\\d+) kişi$",
+"$1 people"
+],
+[
+"^Lütfen (\\d+) saniye sonra tekrar deneyin\\.$",
+"Please try again in $1 seconds."
+],
+[
 "^Minik Gurme • Sürüm (.+)$",
 "Minik Gurme • Version $1"
 ],

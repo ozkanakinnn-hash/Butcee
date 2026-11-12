@@ -1,0 +1,112 @@
+rules_version = '2';
+
+// Minik Gurme — Ebeveyn Topluluğu güvenlik kuralları
+// Firebase konsolu › Firestore Database › Kurallar (Rules) sekmesine bu dosyanın TAMAMINI yapıştırıp "Yayınla" deyin.
+//
+//  topics/{topic}/posts/{postId}                gönderiler
+//  topics/{topic}/posts/{postId}/comments/{id}  yorumlar
+//  reports/{id}                                 şikâyetler (yalnızca moderatör okur)
+//  mods/{uid}                                   moderatörler (yalnızca konsoldan eklenir)
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+    function me() { return request.auth.uid; }
+    function isMod() { return signedIn() && exists(/databases/$(database)/documents/mods/$(me())); }
+    function validText(s, max) { return s is string && s.size() >= 2 && s.size() <= max; }
+    function validNick(s) { return s is string && s.size() >= 2 && s.size() <= 30; }
+    function changedOnly(keys) { return request.resource.data.diff(resource.data).affectedKeys().hasOnly(keys); }
+    function topics() { return ['m6', 'm7_9', 'm10_12', 'blw', 'allergy', 'recipes', 'sleep']; }
+
+    // Liste alanına yalnızca kendi kimliğini ekleme/çıkarma (beğeni)
+    function toggledSelf(field) {
+      let before = resource.data.get(field, []).toSet();
+      let after = request.resource.data.get(field, []).toSet();
+      return after.difference(before).hasOnly([me()])
+          && before.difference(after).hasOnly([me()])
+          && request.resource.data.get(field, []).size() == after.size();
+    }
+    // Liste alanına yalnızca kendi kimliğini ekleme (şikâyet)
+    function addedSelf(field) {
+      let before = resource.data.get(field, []).toSet();
+      let after = request.resource.data.get(field, []).toSet();
+      return before.difference(after).size() == 0
+          && after.difference(before).hasOnly([me()])
+          && request.resource.data.get(field, []).size() == after.size();
+    }
+
+    match /topics/{topic}/posts/{postId} {
+      allow read: if signedIn();
+
+      allow create: if signedIn()
+        && topic in topics()
+        && request.resource.data.keys().hasOnly(['uid', 'nick', 'text', 'createdAt', 'likedBy', 'reportedBy', 'commentCount', 'modApproved', 'lang'])
+        && request.resource.data.uid == me()
+        && validNick(request.resource.data.nick)
+        && validText(request.resource.data.text, 2000)
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.likedBy == []
+        && request.resource.data.reportedBy == []
+        && request.resource.data.commentCount == 0
+        && request.resource.data.modApproved == false
+        && request.resource.data.lang in ['tr', 'en'];
+
+      allow update: if signedIn() && (
+           (changedOnly(['likedBy']) && toggledSelf('likedBy'))
+        || (changedOnly(['reportedBy']) && addedSelf('reportedBy'))
+        || (changedOnly(['commentCount'])
+            && (request.resource.data.commentCount == resource.data.commentCount + 1
+                || request.resource.data.commentCount == resource.data.commentCount - 1))
+        || (isMod() && changedOnly(['modApproved', 'reportedBy']))
+      );
+
+      allow delete: if signedIn() && (resource.data.uid == me() || isMod());
+
+      match /comments/{commentId} {
+        allow read: if signedIn();
+
+        allow create: if signedIn()
+          && exists(/databases/$(database)/documents/topics/$(topic)/posts/$(postId))
+          && request.resource.data.keys().hasOnly(['uid', 'nick', 'text', 'createdAt', 'reportedBy', 'modApproved'])
+          && request.resource.data.uid == me()
+          && validNick(request.resource.data.nick)
+          && validText(request.resource.data.text, 1000)
+          && request.resource.data.createdAt == request.time
+          && request.resource.data.reportedBy == []
+          && request.resource.data.modApproved == false;
+
+        allow update: if signedIn() && (
+             (changedOnly(['reportedBy']) && addedSelf('reportedBy'))
+          || (isMod() && changedOnly(['modApproved', 'reportedBy']))
+        );
+
+        // Yorumu yazan, gönderinin sahibi veya moderatör silebilir
+        allow delete: if signedIn() && (
+             resource.data.uid == me()
+          || isMod()
+          || get(/databases/$(database)/documents/topics/$(topic)/posts/$(postId)).data.uid == me()
+        );
+      }
+    }
+
+    match /reports/{reportId} {
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['reporter', 'path', 'reason', 'createdAt'])
+        && request.resource.data.reporter == me()
+        && request.resource.data.path is string && request.resource.data.path.size() < 300
+        && request.resource.data.reason is string && request.resource.data.reason.size() <= 100
+        && request.resource.data.createdAt == request.time;
+      allow read, delete: if isMod();
+    }
+
+    match /mods/{uid} {
+      allow read: if signedIn() && me() == uid;
+      allow write: if false;
+    }
+
+    // Diğer her şey kapalı
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

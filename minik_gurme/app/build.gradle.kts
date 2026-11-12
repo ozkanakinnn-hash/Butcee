@@ -2,6 +2,7 @@ plugins {
   alias(libs.plugins.android.application)
   alias(libs.plugins.kotlin.compose)
   alias(libs.plugins.google.devtools.ksp)
+  alias(libs.plugins.google.services)
 }
 
 import java.util.Properties
@@ -22,8 +23,8 @@ android {
     applicationId = "akinai.minikgurme"
     minSdk = 24
     targetSdk = 36
-    versionCode = 12
-    versionName = "2.0"
+    versionCode = 13
+    versionName = "2.1"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
@@ -99,6 +100,11 @@ dependencies {
   // implementation(libs.androidx.navigation.compose)
   implementation(libs.androidx.room.ktx)
   implementation(libs.android.billing.ktx)
+  // Topluluk (forum): Firebase anonim giriş + Firestore
+  implementation(platform(libs.firebase.bom))
+  implementation(libs.firebase.auth)
+  implementation(libs.firebase.firestore)
+  implementation(libs.kotlinx.coroutines.play.services)
   implementation(libs.androidx.room.runtime)
   // implementation(libs.coil.compose)
   implementation(libs.kotlinx.coroutines.android)
