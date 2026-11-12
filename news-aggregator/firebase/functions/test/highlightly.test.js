@@ -51,8 +51,9 @@ test('Highlightly maçı → uygulamanın maç belgesi (takımlar bizim kimlikle
   const f = toFixture(sample());
   assert.equal(f.fixture.status.short, '2H');
   assert.deepEqual(f.goals, { home: 2, away: 1 });
-  const goals = f.events.filter((e) => e.type === 'Goal');
+  const goals = f.events.filter((e) => e.type === 'Goal' && e.detail !== 'Missed Penalty');
   assert.equal(goals.length, 3, 'kaçan penaltı gol sayılmaz');
+  assert.equal(f.events.filter((e) => e.detail === 'Missed Penalty').length, 1, 'kaçan penaltı panel için alınır');
   assert.deepEqual(goals.map((e) => e.detail), ['Normal Goal', 'Penalty', 'Own Goal']);
   assert.deepEqual(f.events.filter((e) => e.type === 'Card').map((e) => e.detail), ['Red Card'], 'sarı kart alınmaz, kırmızı alınır');
   const doc = fb.matchDocFromFixture(f);
@@ -60,6 +61,7 @@ test('Highlightly maçı → uygulamanın maç belgesi (takımlar bizim kimlikle
   assert.equal(doc.away.id, 'fenerbahce');
   assert.equal(doc.is_live, true);
   assert.deepEqual(doc.goal_events.map((g) => g.player), ['M. Icardi', 'E. Dzeko', 'X']);
+  assert.deepEqual(doc.penalties.map((p) => [p.player, p.scored]), [['E. Dzeko', true], ['Y', false]]);
   assert.deepEqual(doc.red_cards.map((c) => [c.team_id, c.player, c.minute]), [['fenerbahce', 'K. Kart', 70]]);
 
   const notStarted = toFixture(sample({ state: { description: 'Not started', score: { current: null } }, events: [] }));

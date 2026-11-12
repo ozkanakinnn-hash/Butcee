@@ -97,6 +97,15 @@ function matchDocFromFixture(f, resolve = defaultResolver) {
       player: (e.player && e.player.name) || '',
       detail: e.detail || '',
     }));
+  const penalties = (f.events || [])
+    .filter((e) => e.type === 'Goal' && /penalty/i.test(e.detail || ''))
+    .map((e) => ({
+      minute: (e.time && e.time.elapsed) || 0,
+      extra: (e.time && e.time.extra) || 0,
+      team_id: keyForApiTeam(e.team && e.team.id),
+      player: (e.player && e.player.name) || '',
+      scored: !/missed/i.test(e.detail || ''),
+    }));
   const redCards = (f.events || [])
     .filter((e) => e.type === 'Card' && /red|second yellow/i.test(e.detail || ''))
     .map((e) => ({
@@ -120,6 +129,7 @@ function matchDocFromFixture(f, resolve = defaultResolver) {
     goals: { home: f.goals.home ?? 0, away: f.goals.away ?? 0 },
     goal_events: goalsEvents,
     red_cards: redCards,
+    penalties,
     team_ids: [home.id, away.id],
     is_live: LIVE.has(f.fixture.status.short),
     is_finished: FINISHED.has(f.fixture.status.short),
@@ -311,9 +321,22 @@ function dotColor(t) {
  * Çapa, API dakikasının izin verdiği aralığa sıkıştırılır (gerçek saat API'den en fazla 90 sn önde olabilir).
  * @returns {{period: string, anchor_ms: number} | null}
  */
-/** TV yayını gerçek zamandan ~20–30 sn geride; panel TV ile aynı gitsin diye bu kadar geriden sayılır.
- * Firestore football_meta/state.clock_offset_sec ile yükleme yapmadan değiştirilebilir. */
-const DEFAULT_CLOCK_OFFSET_SEC = 25;
+/** Son penaltı (atılan/kaçan) olaydan sonraki 3 dakika panelin üst satırında; yoksa lig adı. Ayrı bildirim yok. */
+const PENALTY_SHOW_MIN = 3;
+function panelHeadline(match) {
+  const league = match.league && match.league.name ? match.league.name : 'Süper Lig';
+  const now = match.status && match.status.elapsed;
+  const p = (match.penalties || []).slice(-1)[0];
+  if (!p || !match.is_live || now === null || now === undefined || now - p.minute > PENALTY_SHOW_MIN || now < p.minute) return league;
+  const side = p.team_id === (match.home && match.home.id) ? match.home : match.away;
+  const who = [p.player, side ? `(${shortOf(side)})` : ''].filter(Boolean).join(' ');
+  const min = `${p.minute}${p.extra ? '+' + p.extra : ''}'`;
+  return p.scored ? `🎯 Penaltı golü ${min} ${who}` : `❌ Kaçan penaltı ${min} ${who}`;
+}
+
+/** Panel gerçek maç saatini gösterir (TV yayını ~20–30 sn geriden gelir). İstenirse geri kaydırma:
+ * Firestore football_meta/state.clock_offset_sec (yükleme gerekmez). */
+const DEFAULT_CLOCK_OFFSET_SEC = 0; // kullanıcı kararı: gerçek maç saati (TV'ye göre kaydırma yok)
 
 function liveClock(match, now) {
   const c = match.clock;
@@ -350,7 +373,7 @@ function buildLiveMessage(match, now = Date.now()) {
     data: {
       type: 'match_live',
       fixture_id: String(match.fixture_id),
-      league: match.league && match.league.name ? match.league.name : 'Süper Lig',
+      league: panelHeadline(match),
       home_short: shortOf(match.home),
       home_name: match.home.name || '',
       home_color: dotColor(match.home),
@@ -400,6 +423,7 @@ module.exports = {
   buildMatchMessage,
   buildLiveMessage,
   clockAnchor,
+  panelHeadline,
   DEFAULT_CLOCK_OFFSET_SEC,
   nationalizeMatch,
   flagEmoji,

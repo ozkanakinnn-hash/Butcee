@@ -169,9 +169,9 @@ test('panel dakikası saniye hassasiyetinde: 1. yarı başlama saatine, 2. yarı
   const d = fb.buildLiveMessage({ ...m('1H', 3), clock: c1 }, now).data;
   assert.equal(d.elapsed, '3');
   assert.equal(Number(d.sent_ms), now - 20_000, '20 sn telefona aktarılır');
-  // TV gecikmesi: varsayılan 25 sn geriden (3:20 → 2:55)
-  const tv = fb.buildLiveMessage({ ...m('1H', 3), clock: fb.clockAnchor(null, m('1H', 3), now) }, now).data;
-  assert.equal(fb.DEFAULT_CLOCK_OFFSET_SEC, 25);
+  // İstenirse TV gecikmesi kadar geri kaydırma (clock_offset_sec): 25 sn → 3:20 yerine 2:55
+  assert.equal(fb.DEFAULT_CLOCK_OFFSET_SEC, 0, 'varsayılan: gerçek maç saati');
+  const tv = fb.buildLiveMessage({ ...m('1H', 3), clock: fb.clockAnchor(null, m('1H', 3), now, 25) }, now).data;
   assert.equal(tv.elapsed, '2');
   assert.equal(Number(tv.sent_ms), now - 55_000);
   // Maç 2 dk geç başladıysa (API "1" diyor) çapa API dakikasına sıkıştırılır (en fazla 90 sn önde)
@@ -186,4 +186,18 @@ test('panel dakikası saniye hassasiyetinde: 1. yarı başlama saatine, 2. yarı
   assert.equal(d2.elapsed, '47');
   // Devre arası / başlamadı: çapa yok, eski davranış
   assert.equal(fb.clockAnchor(null, m('HT', 45), t2), null);
+});
+
+test('penaltı yalnızca panelde: olaydan sonra 3 dk üst satırda, sonra lig adı; ayrı bildirim yok', () => {
+  const base = {
+    fixture_id: 1, is_live: true, league: { name: 'UEFA Nations League' }, goals: { home: 1, away: 0 }, goal_events: [], red_cards: [],
+    home: { id: 'turkiye', name: 'Türkiye', short: 'TÜR' }, away: { id: 'belgium', name: 'Belçika', short: 'BEL' },
+  };
+  const scored = { ...base, status: { short: '2H', elapsed: 68 }, penalties: [{ minute: 67, extra: 0, team_id: 'turkiye', player: 'H. Çalhanoğlu', scored: true }] };
+  assert.equal(fb.buildLiveMessage(scored).data.league, "🎯 Penaltı golü 67' H. Çalhanoğlu (TÜR)");
+  const missed = { ...scored, penalties: [{ minute: 67, extra: 0, team_id: 'belgium', player: 'R. Lukaku', scored: false }] };
+  assert.equal(fb.buildLiveMessage(missed).data.league, "❌ Kaçan penaltı 67' R. Lukaku (BEL)");
+  assert.equal(fb.buildLiveMessage({ ...scored, status: { short: '2H', elapsed: 75 } }).data.league, 'UEFA Nations League');
+  // Penaltı için ayrı olay/bildirim üretilmez (gol zaten gol olarak bildirilir)
+  assert.deepEqual(fb.diffMatch({ ...missed, status: { short: '2H' }, penalties: [] }, missed).map((e) => e.type), []);
 });

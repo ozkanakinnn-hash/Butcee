@@ -91,8 +91,9 @@ function mapEvents(events) {
       });
       continue;
     }
-    if (!/goal|penalty/.test(type) || /missed|miss|cancel|disallow/.test(type)) continue;
-    const detail = /own/.test(type) ? 'Own Goal' : /penalty/.test(type) ? 'Penalty' : 'Normal Goal';
+    if (!/goal|penalty/.test(type) || /cancel|disallow/.test(type)) continue;
+    // Kaçan penaltı: API-Football'daki gibi { type: 'Goal', detail: 'Missed Penalty' } (gol sayılmaz, panelde gösterilir)
+    const detail = /miss/.test(type) ? 'Missed Penalty' : /own/.test(type) ? 'Own Goal' : /penalty/.test(type) ? 'Penalty' : 'Normal Goal';
     const player = e.player && typeof e.player === 'object' ? e.player.name : e.player;
     out.push({
       time: parseMinute(e.time ?? e.minute),
