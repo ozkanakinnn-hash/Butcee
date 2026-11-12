@@ -115,8 +115,8 @@ fun SettingsScreen(
     var mealsOn by remember { mutableStateOf(Reminders.mealsOn(context)) }
     var busy by remember { mutableStateOf(false) }
     var renaming by remember { mutableStateOf(false) }
-    val babies = remember { Babies.all(context) }
-    val activeId = remember { Babies.activeId(context) }
+    val babies = remember { Babies.all() }
+    val activeId = remember { Babies.activeId() }
     val isPlus = PlusManager.isPlus
 
     fun toast(msg: String) = Toast.makeText(context, t(msg), Toast.LENGTH_LONG).show()

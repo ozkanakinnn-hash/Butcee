@@ -52,7 +52,7 @@ class MainActivity : ComponentActivity() {
         intent?.getStringExtra("lang")?.let { if (it == "tr" || it == "en") AppLanguage.set(it) }
 
         val prefs = getSharedPreferences("app_prefs", MODE_PRIVATE)
-        val babyId = Babies.activeId(this)
+        val babyId = Babies.activeId()
         val dbName = Babies.dbName(babyId)
         val database = AppDatabase.getDatabase(applicationContext, dbName)
         val repository = FeedingRepository(
@@ -81,9 +81,9 @@ class MainActivity : ComponentActivity() {
                 if (onboarded) {
                     MainScreen(
                         viewModel = viewModel,
-                        onSwitchBaby = { id -> Babies.setActive(this, id); recreate() },
-                        onAddBaby = { Babies.addNew(this); recreate() },
-                        onDeleteBaby = { id -> AppDatabase.closeAll(); Babies.delete(this, id); recreate() },
+                        onSwitchBaby = { id -> Babies.setActive(id); recreate() },
+                        onAddBaby = { Babies.addNew(); recreate() },
+                        onDeleteBaby = { id -> AppDatabase.closeAll(); Babies.delete(id); recreate() },
                         onReload = { recreate() }
                     )
                 } else if (showPrivacy) {
@@ -95,7 +95,7 @@ class MainActivity : ComponentActivity() {
                     OnboardingScreen(onOpenPrivacy = { showPrivacy = true }) { name, months, weight, height, style, sex ->
                         viewModel.completeOnboarding(name, months, weight, height, sex)
                         viewModel.applyFeedingStyle(style)
-                        Babies.setName(this, babyId, name)
+                        Babies.setName(babyId, name)
                         prefs.edit().putBoolean(Babies.onboardedKey(babyId), true).putString(KEY_FEEDING_STYLE, style).apply()
                         onboarded = true
                     }

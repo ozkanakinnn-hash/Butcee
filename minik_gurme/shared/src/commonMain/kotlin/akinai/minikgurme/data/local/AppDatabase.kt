@@ -81,3 +81,6 @@ fun AppDatabase.Companion.getDatabase(name: String): AppDatabase = synchronizedC
 fun AppDatabase.Companion.closeAll() = synchronizedCompat(DatabaseCache.lock) {
     DatabaseCache.instances.values.forEach { it.close() }; DatabaseCache.instances.clear()
 }
+
+/** Bir bebeğin veritabanı dosyasını siler (bebek profili silinince). */
+expect fun deleteDatabaseFile(name: String)

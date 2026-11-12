@@ -8,7 +8,7 @@ import kotlinx.coroutines.CoroutineScope
 @Suppress("UNUSED_PARAMETER")
 fun AppDatabase.Companion.getDatabase(context: Context, scope: CoroutineScope? = null): AppDatabase {
     PlatformContext.init(context)
-    return getDatabase(Babies.dbName(Babies.activeId(context)))
+    return getDatabase(Babies.dbName(Babies.activeId()))
 }
 
 /** Adı verilen bebek veritabanı. */

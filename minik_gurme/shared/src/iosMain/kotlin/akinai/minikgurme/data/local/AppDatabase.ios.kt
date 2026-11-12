@@ -33,3 +33,9 @@ actual fun databaseBuilder(name: String): RoomDatabase.Builder<AppDatabase> =
 // iOS'ta veritabanları yalnızca ana iş parçacığından açılır; basit kilit yeterli.
 @Suppress("NOTHING_TO_INLINE")
 actual inline fun <T> synchronizedCompat(lock: Any, block: () -> T): T = block()
+
+@OptIn(ExperimentalForeignApi::class)
+actual fun deleteDatabaseFile(name: String) {
+    val base = "${documentsDir()}/$name"
+    listOf(base, "$base-wal", "$base-shm", "$base-journal").forEach { NSFileManager.defaultManager.removeItemAtPath(it, null) }
+}

@@ -3,8 +3,9 @@ package akinai.minikgurme.shared
 import android.content.Context
 import akinai.minikgurme.data.local.PlatformContext
 
-actual class KeyValueStore actual constructor(name: String) {
-    private val prefs = PlatformContext.app.getSharedPreferences(name, Context.MODE_PRIVATE)
+actual class KeyValueStore actual constructor(private val name: String) {
+    // Her çağrıda güncel bağlam (Android SharedPreferences zaten önbellekler; testlerde bağlam değişebilir)
+    private val prefs get() = PlatformContext.app.getSharedPreferences(name, Context.MODE_PRIVATE)
 
     actual fun getString(key: String, default: String?): String? = prefs.getString(key, default)
     actual fun putString(key: String, value: String?) { prefs.edit().putString(key, value).apply() }

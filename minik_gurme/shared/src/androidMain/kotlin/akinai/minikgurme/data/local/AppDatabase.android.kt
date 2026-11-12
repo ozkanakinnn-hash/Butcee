@@ -27,3 +27,5 @@ actual fun databaseBuilder(name: String): RoomDatabase.Builder<AppDatabase> =
 
 @Suppress("NOTHING_TO_INLINE")
 actual inline fun <T> synchronizedCompat(lock: Any, block: () -> T): T = synchronized(lock, block)
+
+actual fun deleteDatabaseFile(name: String) { PlatformContext.app.deleteDatabase(name) }

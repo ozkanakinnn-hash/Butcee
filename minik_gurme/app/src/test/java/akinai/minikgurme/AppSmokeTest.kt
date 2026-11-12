@@ -350,9 +350,9 @@ class AppSmokeTest {
             compose.onNodeWithTag("top_settings").performClick(); compose.waitForIdle()
             compose.onNodeWithTag("settings_add_baby").performScrollTo().performClick()
             compose.waitUntil(8000) { has("Minik Gurme'ye hoş geldiniz") }
-            val id = akinai.minikgurme.util.Babies.activeId(ctx)
+            val id = akinai.minikgurme.util.Babies.activeId()
             assertTrue(id != akinai.minikgurme.util.Babies.MAIN)
-            assertEquals(2, akinai.minikgurme.util.Babies.all(ctx).size)
+            assertEquals(2, akinai.minikgurme.util.Babies.all().size)
         }
     }
 
