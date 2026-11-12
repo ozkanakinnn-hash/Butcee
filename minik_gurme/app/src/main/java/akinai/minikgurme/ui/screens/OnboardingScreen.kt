@@ -119,9 +119,8 @@ fun OnboardingScreen(
                 painter = androidx.compose.ui.res.painterResource(akinai.minikgurme.R.drawable.logo_emblem),
                 contentDescription = "Minik Gurme",
                 modifier = Modifier
-                    .size(170.dp)
-                    .background(LogoBackdrop, CircleShape)
-                    .padding(4.dp)
+                    .size(132.dp)
+                    .clip(CircleShape)
             )
             Spacer(Modifier.height(16.dp))
             Text(

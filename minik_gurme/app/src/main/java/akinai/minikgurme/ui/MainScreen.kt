@@ -208,7 +208,6 @@ fun MainScreen(
                             modifier = Modifier
                                 .size(42.dp)
                                 .clip(CircleShape)
-                                .background(LogoBackdrop)
                                 .testTag("app_logo")
                         )
                         Spacer(modifier = Modifier.width(10.dp))

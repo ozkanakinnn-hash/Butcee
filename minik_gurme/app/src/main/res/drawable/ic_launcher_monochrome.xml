@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 13+ temalı simge katmanı (tek renk) -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
+    <group>
+        <path android:fillColor="#FFFFFFFF" android:pathData="M31.06,53.52 H76.94 Q76.2,76.46 54,77.2 Q31.8,76.46 31.06,53.52 Z" />
+        <path android:fillColor="#FFFFFFFF" android:pathData="M29.8,51.85 H78.2 A1.67,1.67 0 0 1 78.2,55.19 H29.8 A1.67,1.67 0 0 1 29.8,51.85 Z" />
+        <path android:fillColor="#FFFFFFFF" android:pathData="M54,49.08 C48.82,43.9 41.42,42.42 39.94,36.5 C39.2,32.06 45.12,29.84 49.56,32.8 C51.78,34.28 53.26,36.5 54,38.72 Z" />
+        <path android:fillColor="#FFFFFFFF" android:pathData="M54,49.08 C59.18,43.9 66.58,42.42 68.06,36.5 C68.8,32.06 62.88,29.84 58.44,32.8 C56.22,34.28 54.74,36.5 54,38.72 Z" />
+    </group>
+</vector>
