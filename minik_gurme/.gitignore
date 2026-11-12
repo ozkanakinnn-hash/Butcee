@@ -16,3 +16,8 @@
 local.properties
 .env
 /app/build
+
+# Yayın anahtarı ve şifreleri — ASLA depoya eklenmez
+keystore.properties
+*.jks
+upload-keystore*

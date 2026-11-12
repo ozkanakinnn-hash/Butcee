@@ -4,6 +4,38 @@
 "Minik Gurme • Version $1"
 ],
 [
+"^3 günlük deneme başladı: (.+)$",
+"3-day trial started: $1"
+],
+[
+"^Sıradaki: (.+)$",
+"Next: $1"
+],
+[
+"^(\\d+)/3 gün$",
+"$1/3 days"
+],
+[
+"^(.+) · (Kahvaltı|Öğle|Akşam)$",
+"$1 · $2"
+],
+[
+"^Merhaba, (.+)!$",
+"Hello, $1!"
+],
+[
+"^(\\d+)\\. ay$",
+"Month $1"
+],
+[
+"^(\\d+) öğün$",
+"$1 meals"
+],
+[
+"^Minik Gurme • Sürüm (.+)$",
+"Minik Gurme • Version $1"
+],
+[
 "^(\\d+) kalem alınacak$",
 "$1 items to buy"
 ],

@@ -2,7 +2,7 @@
 # Release APK'yı emülatöre kurar; her sekmeyi Türkçe ve İngilizce açıp ekran görüntüsü alır,
 # çökme olmadığını doğrular. Başarılıysa "SMOKE: tamam" yazar.
 set -u
-PKG=com.aistudio.minikgurme.kqxvpt
+PKG=akinai.minikgurme
 APK=app/build/outputs/apk/release/app-release.apk
 OUT=screenshots
 mkdir -p "$OUT"
@@ -50,7 +50,7 @@ adb logcat -c
 run_tabs() {
   local lang=$1
   adb shell am force-stop "$PKG"
-  adb shell am start -n "$PKG/com.example.MainActivity" --es lang "$lang" >/dev/null
+  adb shell am start -n "$PKG/akinai.minikgurme.MainActivity" --es lang "$lang" >/dev/null
   sleep 12
   tap_text "Wait" || true
   check_alive "açılış $lang"

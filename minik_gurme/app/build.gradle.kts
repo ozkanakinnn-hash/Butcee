@@ -4,12 +4,22 @@ plugins {
   alias(libs.plugins.google.devtools.ksp)
 }
 
+import java.util.Properties
+
+// Yayın imzası bilgileri: proje kökündeki keystore.properties (depoya GİRMEZ) veya ortam değişkenleri
+val ksProps = Properties().apply {
+  val f = rootProject.file("keystore.properties")
+  if (f.exists()) f.inputStream().use { load(it) }
+}
+fun ksValue(key: String, env: String): String? = ksProps.getProperty(key) ?: System.getenv(env)
+val releaseStore: String? = ksValue("storeFile", "KEYSTORE_PATH")
+
 android {
-  namespace = "com.example"
+  namespace = "akinai.minikgurme"
   compileSdk { version = release(36) { minorApiLevel = 1 } }
 
   defaultConfig {
-    applicationId = "com.aistudio.minikgurme.kqxvpt"
+    applicationId = "akinai.minikgurme"
     minSdk = 24
     targetSdk = 36
     versionCode = 11
@@ -18,21 +28,15 @@ android {
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
 
-  // Release: KEYSTORE_PATH verilirse yükleme anahtarı, yoksa depodaki sabit debug anahtarı
-  // (CI'da her derleme aynı imzayı taşır → güncellemeler eskisinin üzerine kurulur).
+  // Release imzası: proje kökündeki keystore.properties (depoya GİRMEZ) veya ortam değişkenleri.
+  // İkisi de yoksa release derlemesi imzasız kalır (Play'e yüklenemez) — yanlışlıkla debug anahtarıyla yayın yapılmaz.
   signingConfigs {
-    create("release") {
-      val ks = System.getenv("KEYSTORE_PATH")
-      if (ks != null) {
-        storeFile = file(ks)
-        storePassword = System.getenv("STORE_PASSWORD")
-        keyAlias = System.getenv("KEY_ALIAS") ?: "upload"
-        keyPassword = System.getenv("KEY_PASSWORD")
-      } else {
-        storeFile = file("${rootDir}/debug.keystore")
-        storePassword = "android"
-        keyAlias = "androiddebugkey"
-        keyPassword = "android"
+    if (releaseStore != null) {
+      create("release") {
+        storeFile = rootProject.file(releaseStore)
+        storePassword = ksValue("storePassword", "STORE_PASSWORD")
+        keyAlias = ksValue("keyAlias", "KEY_ALIAS") ?: "upload"
+        keyPassword = ksValue("keyPassword", "KEY_PASSWORD")
       }
     }
     create("debugConfig") {
@@ -50,7 +54,7 @@ android {
       isMinifyEnabled = true
       isShrinkResources = true
       proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-      signingConfig = signingConfigs.getByName("release")
+      if (releaseStore != null) signingConfig = signingConfigs.getByName("release")
     }
     debug {
       signingConfig = signingConfigs.getByName("debugConfig")
@@ -94,6 +98,7 @@ dependencies {
   implementation(libs.androidx.lifecycle.viewmodel.compose)
   // implementation(libs.androidx.navigation.compose)
   implementation(libs.androidx.room.ktx)
+  implementation(libs.android.billing.ktx)
   implementation(libs.androidx.room.runtime)
   // implementation(libs.coil.compose)
   implementation(libs.kotlinx.coroutines.android)

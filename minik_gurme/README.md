@@ -1,11 +1,20 @@
 # Minik Gurme (Android, Kotlin + Jetpack Compose)
 
+Paket adı: `akinai.minikgurme` · Palet: "Yaban Mersini & Krem" · Yayın rehberi: `docs/minik-gurme/YAYIN-HAZIRLIK.md`
+
+**Ücretsiz:** Bugün (öğün kaydı), 1 yaşına kadar 100 gıda, tarifler (porsiyon ayarı), Rehber (Bu Ay + kütüphane),
+alerjen tanıtım planı (9 alerjen, 3 gün kuralı), alerjen hatırlatıcısı, alışveriş listesi, yedekle/geri yükle, WHO kız/erkek karşılaştırması.
+**Minik Gurme Plus (abonelik, Google Play Billing):** haftalık menü planlayıcı, doktor raporu (PDF), birden fazla bebek, öğün hatırlatıcıları.
+Ürün kimlikleri: `minikgurme_plus_monthly`, `minikgurme_plus_yearly` (bkz. `billing/PlusManager.kt`). Test sürümünde Ayarlar › Geliştirici › "Plus'ı test et".
+
+**İmza:** `keystore.properties` + `minikgurme-upload.jks` proje kökünde (depoya girmez). Yoksa release imzasız derlenir.
+
 Bebeklerde ek gıdaya geçiş uygulaması: öğün planı, 100 gıda listesi, tarifler, öneriler, haftalık pediatrik rehber,
 alerjen (3 gün kuralı) takibi, büyüme grafiği ve bebek profili. Kaynak: AI Studio dışa aktarımı (Kasım 2026).
 
 ## Dil desteği: Türkçe + İngilizce
 - Profil ekranında **🌐 Dil / Language** kartı. Seçim kaydedilir; ekranlar anında İngilizceye geçer.
-- Kaynak metinler Türkçe koda gömülüdür. Ekranlar `androidx.compose.material3.Text` yerine `com.example.i18n.Text`'i
+- Kaynak metinler Türkçe koda gömülüdür. Ekranlar `androidx.compose.material3.Text` yerine `akinai.minikgurme.i18n.Text`'i
   import eder; bu, metni `assets/i18n/en.json` sözlüğünden (2.070 birebir metin: arayüz + rehber, tarif ve gıda verileri)
   ve `assets/i18n/en_patterns.json` kalıplarından (değişken içeren metinler) çevirir. Bulunamayan metin Türkçe kalır.
 - Kullanıcının girdiği veriler (bebek adı, notlar) çevrilmez.
