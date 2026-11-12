@@ -125,7 +125,7 @@ class AppSmokeTest {
                 assertEquals(1, db.growthRecordDao().getRecordCount().first())
                 assertEquals(7.8f, db.growthRecordDao().getLatestGrowthRecord().first()!!.weightKg)
                 assertEquals("girl", db.babyProfileDao().getProfile().first()!!.sex)
-                assertTrue("İlk açılışta bildirimler açık gelmeli", akinai.minikgurme.reminders.Reminders.allergenOn(ctx))
+                assertTrue("İlk açılışta bildirimler açık gelmeli", akinai.minikgurme.reminders.Reminders.allergenOn())
             }
             compose.onNodeWithTag("top_profile_pill").performClick()
             compose.waitForIdle()

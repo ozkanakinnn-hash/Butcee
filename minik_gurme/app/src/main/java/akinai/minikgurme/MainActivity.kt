@@ -15,7 +15,6 @@ import akinai.minikgurme.util.CrashReporter
 import akinai.minikgurme.data.repository.FeedingRepository
 import akinai.minikgurme.ui.MainScreen
 import akinai.minikgurme.billing.PlusManager
-import akinai.minikgurme.reminders.Reminders
 import akinai.minikgurme.ui.screens.LegalScreen
 import akinai.minikgurme.util.Babies
 import androidx.compose.foundation.background
@@ -46,7 +45,12 @@ class MainActivity : ComponentActivity() {
         akinai.minikgurme.data.local.PlatformContext.init(applicationContext)
         AppLanguage.init()
         kotlinx.coroutines.runBlocking { akinai.minikgurme.i18n.Translator.load(akinai.minikgurme.i18n.composeFileReader(applicationContext)) }
-        akinai.minikgurme.community.Community.init(applicationContext)
+        akinai.minikgurme.community.Community.init()
+        // Platforma özel servisler (ortak ekranlar bunları kullanır)
+        akinai.minikgurme.platform.Platform.services = akinai.minikgurme.platform.AndroidPlatformServices(applicationContext)
+        if (akinai.minikgurme.community.Community.backend === akinai.minikgurme.community.Community.Unconfigured)
+            akinai.minikgurme.community.Community.backend = akinai.minikgurme.community.AndroidCommunityBackend
+        akinai.minikgurme.reminders.AndroidReminders.install(applicationContext)
         akinai.minikgurme.ui.theme.ThemePrefs.init()
         // Duman testi / ilk açılış için dil seçimi: adb shell am start ... --es lang en
         intent?.getStringExtra("lang")?.let { if (it == "tr" || it == "en") AppLanguage.set(it) }
@@ -70,9 +74,10 @@ class MainActivity : ComponentActivity() {
         val viewModel = ViewModelProvider(this, viewModelFactory)["vm_$dbName", FeedingViewModel::class.java]
         viewModel.applyFeedingStyle(prefs.getString(KEY_FEEDING_STYLE, null))
 
-        PlusManager.init(this)
-        Reminders.ensureChannel(this)
-        Reminders.reschedule(this)
+        akinai.minikgurme.billing.GooglePlayBilling.activity = java.lang.ref.WeakReference(this)
+        akinai.minikgurme.billing.GooglePlayBilling.init(this)
+        akinai.minikgurme.reminders.AndroidReminders.ensureChannel(this)
+        akinai.minikgurme.reminders.AndroidReminders.reschedule(this)
 
         setContent {
             MinikGurmeTheme {

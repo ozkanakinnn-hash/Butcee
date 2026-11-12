@@ -143,7 +143,7 @@ class CommunityTest {
             fake.seedComment("m6", elif.id, "u2", "Burak", "Biz havuçla başladık, tatlı olduğu için hemen kabul etti.")
             compose.onNodeWithTag("community_post_${elif.id}").performClick(); compose.waitForIdle()
             assertTrue(has("Biz havuçla başladık"))
-            Community.markWrote(ctx, 0) // bekleme süresini sıfırla
+            Community.markWrote(0) // bekleme süresini sıfırla
             compose.onNodeWithTag("community_comment_input").performTextInput("Biz de brokoliyle başladık, sapından tutmak kolay oluyor.")
             compose.onNodeWithTag("community_comment_send").performClick()
             compose.waitUntil(5000) { has("sapından tutmak kolay") }
