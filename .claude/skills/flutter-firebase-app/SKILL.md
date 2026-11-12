@@ -315,3 +315,4 @@ description: Flutter/FlutterFlow + Firebase (Firestore, Cloud Functions) uygulam
 - Yeni günlük işaret ekleyince (`national_date`) eski testlerin meta kurulumuna da ekle; destek yoksa da işareti yaz (yoksa her dakika hazırlık döngüsü).
 - Maç öncesi panel: başlamaya ≤10 dk kala, kayıtlı maç belgesiyle (API isteği yok) bir kez `match_live` (status NS, `kickoff_text` "20:00") gönder; `prematch_sent` işaretle. Telefon NS'de ortada saati, altında "Başlamadı" gösterir.
 - Bayrak: milli maçta panelde renk noktası yerine bayrak EMOJİSİ (sunucu home_flag/away_flag; ISO kodundan U+1F1E6 bölgesel harfler, İngiltere/İskoçya/Galler etiket dizisi). Görsel indirme/lisans yok; RemoteViews TextView ile gösterilir.
+- Milli maç bildirimi (kullanıcı kararı): yalnızca TÜRKİYE'nin golü/gol iptali sesli (goal_alert, koşul national_tr); rakip golü, başlama, devre, sonuç yalnızca panelde.

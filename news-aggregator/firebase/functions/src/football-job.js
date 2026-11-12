@@ -288,9 +288,12 @@ async function pollOnce(db, api, messaging, active) {
     next.ht_since = next.status.short === 'HT'
       ? (prev && prev.status.short === 'HT' && prev.ht_since ? prev.ht_since : Timestamp.now())
       : null;
-    // Milli maçta yalnızca canlı skor paneli (herkese); gol/başlama bildirimi gönderilmez.
-    for (const ev of next.national ? [] : fb.diffMatch(prev, next)) {
+    // Milli maç: yalnızca TÜRKİYE'nin golü (ve iptali) sesli bildirilir; rakibin golü, başlama, devre ve sonuç
+    // yalnızca panelde güncellenir.
+    const events = fb.diffMatch(prev, next);
+    for (const ev of next.national ? events.filter((e) => fb.isTurkeyGoalEvent(e, next)) : events) {
       const msg = fb.buildMatchMessage(ev, next);
+      if (msg && next.national) msg.condition = `'${fb.NATIONAL_TOPIC}' in topics`;
       if (msg) messages.push(msg);
       log(`Olay: ${ev.type} ${next.home.name} ${next.goals.home}-${next.goals.away} ${next.away.name}`);
     }
