@@ -81,7 +81,7 @@ Privacy: no ads, no analytics — all of your baby's records stay on your phone;
 Minik Gurme Plus: weekly meal planner, doctor report (PDF), multiple babies, meal reminders.
 The app provides general information and does not replace medical advice. Please consult your paediatrician.
 
-**Görseller**: Simge 512×512 (`res/drawable-nodpi/logo_emblem.webp` kaynağından), öne çıkan görsel 1024×500, en az 2 telefon ekran görüntüsü (`docs/minik-gurme/screenshots`).
+**Görseller**: Simge 512×512 (`res/drawable-nodpi/logo_emblem.webp` kaynağından), öne çıkan görsel 1024×500, en az 2 telefon ekran görüntüsü (`minik_gurme/docs/screenshots`).
 
 ## 5. Uygulanan güvenlik/uyum değişiklikleri
 - Debug anahtarıyla yayın imzası kaldırıldı; anahtar yoksa release imzasız kalır.
@@ -98,7 +98,7 @@ The app provides general information and does not replace medical advice. Please
 Proje: `minik-gurme-f0db0` · Uygulama yapılandırması: `minik_gurme/app/google-services.json`
 1. **Authentication › Sign-in method › Anonymous → Etkinleştir.** (Google ile giriş kullanılmıyor; SHA-1 eklemek gerekmez.)
 2. **Firestore Database › Veritabanı oluştur** → konum **europe-west3 (Frankfurt)** → **Üretim modu**.
-3. **Firestore › Kurallar** sekmesine `docs/minik-gurme/firestore.rules` dosyasının tamamını yapıştırıp **Yayınla**.
+3. **Firestore › Kurallar** sekmesine `minik_gurme/docs/firestore.rules` dosyasının tamamını yapıştırıp **Yayınla**.
 4. **Moderatör olmak için**: uygulamada topluluğa katılın → Ayarlar › Topluluk › **Topluluk kimliğim**'e dokunun (kopyalanır) →
    Firestore › Veri › **Koleksiyon başlat**: koleksiyon kimliği `mods`, belge kimliği = kopyaladığınız kimlik, bir alan ekleyin (ör. `ad` = `Özkan`, string) → Kaydet.
    Uygulamayı yeniden açınca gizlenen içeriklerde **Onayla** ve her içerikte **Sil (moderatör)** görünür.

@@ -1,6 +1,6 @@
 # Minik Gurme (Android, Kotlin + Jetpack Compose)
 
-Paket adı: `akinai.minikgurme` · Palet: "Yaban Mersini & Krem" · Yayın rehberi: `docs/minik-gurme/YAYIN-HAZIRLIK.md`
+Paket adı: `akinai.minikgurme` · Palet: "Yaban Mersini & Krem" · Yayın rehberi: `docs/YAYIN-HAZIRLIK.md`
 
 **Ücretsiz:** Bugün (öğün kaydı), 1 yaşına kadar 100 gıda, tarifler (porsiyon ayarı), Rehber (Bu Ay + kütüphane),
 alerjen tanıtım planı (9 alerjen, 3 gün kuralı), alerjen hatırlatıcısı, alışveriş listesi, yedekle/geri yükle, WHO kız/erkek karşılaştırması.
@@ -30,9 +30,23 @@ alerjen (3 gün kuralı) takibi, büyüme grafiği ve bebek profili. Kaynak: AI 
 ./gradlew :app:assembleRelease   # app/build/outputs/apk/release/app-release.apk
 ```
 CI: `.github/workflows/minik-gurme-android.yml` — APK (`minik-gurme-apk` artifact), emülatörde duman testi
-(`tool/smoke.sh`: tüm sekmeler TR + EN, dil değiştirme, çökme kontrolü), ekran görüntüleri `docs/minik-gurme/screenshots`.
+(`tool/smoke.sh`: tüm sekmeler TR + EN, dil değiştirme, çökme kontrolü), ekran görüntüleri `docs/screenshots`.
 
 ## Görseller
 Besin, tarif ve kart ikonları Microsoft **Fluent Emoji (3D)** çizimleridir (MIT lisansı; npm `@lobehub/fluent-emoji-3d`),
 `res/drawable-nodpi/emoji_<kod>.webp` (144 px). Eşleme `ui/components/FoodImage.kt` içindedir; yeni bir emoji
 eklenirse ilgili `.webp` dosyası ve eşleme satırı da eklenmelidir (yoksa emojinin kendisi gösterilir).
+
+
+## Klasör yapısı (bu uygulamaya ait her şey bu klasörde)
+```
+minik_gurme/
+├── app/        Android uygulaması (Google Play, alarmlar, Firebase SDK, yedek/PDF)
+├── shared/     Ortak Kotlin kodu: tüm ekranlar, veritabanı, çeviriler, topluluk (Android + iPhone)
+├── iosApp/     iPhone kabuğu (XcodeGen project.yml, SwiftUI giriş, simge)
+├── docs/       Yayın rehberi (YAYIN-HAZIRLIK.md), Firebase kuralları (firestore.rules)
+└── tool/       Yardımcı betikler
+```
+Kök dizinde kalmak ZORUNDA olan iki dosya (araçlar yalnızca orada arar):
+- `codemagic.yaml` — iPhone bulut derlemesi (Codemagic yalnızca depo kökünü okur)
+- `.github/workflows/minik-gurme-android.yml` — Android CI (GitHub yalnızca bu klasörü çalıştırır)

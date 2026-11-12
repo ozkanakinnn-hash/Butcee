@@ -18,7 +18,7 @@ import kotlinx.coroutines.flow.Flow
  *   topics/{topic}/posts/{postId}/comments/{id}    yorum
  *   reports/{id}                                   şikâyet kaydı (yalnızca moderatör okur)
  *   mods/{uid}                                     moderatör listesi (yalnızca konsoldan eklenir)
- * Güvenlik kuralları: docs/minik-gurme/firestore.rules
+ * Güvenlik kuralları: minik_gurme/docs/firestore.rules
  *
  * Bebek profili ve sağlık kayıtları buraya ASLA gönderilmez; yalnızca kullanıcının yazdığı metin ve takma adı gider.
  */

@@ -1,4 +1,6 @@
-# Minik Gurme — Codemagic (codemagic.io) bulut derlemesi. iPhone sürümü Mac olmadan burada derlenir.
+# Minik Gurme — Codemagic (codemagic.io) bulut derlemesi. (Codemagic bu dosyayı yalnızca depo kökünde okur;
+# uygulamanın kendisi ve belgeleri minik_gurme/ klasöründedir.)
+# iPhone sürümü Mac olmadan burada derlenir.
 # Uygulama kodu minik_gurme/ klasöründedir (Kotlin Multiplatform + Compose; iOS kabuğu minik_gurme/iosApp).
 workflows:
 
