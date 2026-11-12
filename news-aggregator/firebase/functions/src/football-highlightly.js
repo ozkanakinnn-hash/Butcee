@@ -73,12 +73,24 @@ function parseMinute(t) {
 
 const teamOf = (t) => ({ id: t && t.id, name: (t && (t.name || t.displayName)) || '', logo: (t && t.logo) || '' });
 
-/** Highlightly olay listesi → API-Football gol olayları (yalnızca goller). */
+/** Highlightly olay listesi → API-Football olayları (goller ve kırmızı kartlar). */
 function mapEvents(events) {
   if (!Array.isArray(events)) return [];
   const out = [];
   for (const e of events) {
     const type = String(e.type || e.eventType || '').toLowerCase();
+    // Kırmızı kart (doğrudan ya da ikinci sarıdan)
+    if (/red card|second yellow|yellow ?red/.test(type)) {
+      const player = e.player && typeof e.player === 'object' ? e.player.name : e.player;
+      out.push({
+        time: parseMinute(e.time ?? e.minute),
+        team: { id: e.team && typeof e.team === 'object' ? e.team.id : e.teamId },
+        player: { name: player || '' },
+        type: 'Card',
+        detail: /second|yellow ?red/.test(type) ? 'Second Yellow card' : 'Red Card',
+      });
+      continue;
+    }
     if (!/goal|penalty/.test(type) || /missed|miss|cancel|disallow/.test(type)) continue;
     const detail = /own/.test(type) ? 'Own Goal' : /penalty/.test(type) ? 'Penalty' : 'Normal Goal';
     const player = e.player && typeof e.player === 'object' ? e.player.name : e.player;

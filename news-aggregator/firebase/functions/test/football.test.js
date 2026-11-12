@@ -137,3 +137,21 @@ test('canlı skor paneli verisi: kısaltma, renk, skor, dakika; yalnızca veri (
   assert.deepEqual([msg.data.gh, msg.data.ga, msg.data.status, msg.data.elapsed, msg.data.finished], ['2', '1', '2H', '67', '0']);
   assert.ok(Object.values(msg.data).every((v) => typeof v === 'string'), 'FCM veri alanları metin olmalı');
 });
+
+test('kırmızı kart: yeni kart bildirilir; eski belgede kart listesi yoksa bildirilmez; milli maçta gönderilmez', () => {
+  const base = {
+    fixture_id: 1, status: { short: '2H' }, goals: { home: 1, away: 0 }, goal_events: [],
+    home: { id: 'galatasaray', name: 'Galatasaray' }, away: { id: 'fenerbahce', name: 'Fenerbahçe' },
+  };
+  const prev = { ...base, red_cards: [] };
+  const next = { ...base, red_cards: [{ minute: 70, extra: 0, team_id: 'fenerbahce', player: 'K. Kart', second_yellow: true }] };
+  const ev = fb.diffMatch(prev, next);
+  assert.deepEqual(ev.map((e) => [e.type, e.side]), [['red_card', 'away']]);
+  const msg = fb.buildMatchMessage(ev[0], next, new Date('2026-11-12T18:00:00Z'));
+  assert.equal(msg.notification.title, '🟥 Kırmızı kart: Fenerbahçe');
+  assert.equal(msg.notification.body, "70' K. Kart (ikinci sarı) · Galatasaray 1-0 Fenerbahçe");
+  assert.equal(msg.android.notification.channelId, 'match');
+  assert.deepEqual(fb.diffMatch({ ...base }, next), [], 'eski belge: taban');
+  assert.equal(fb.diffMatch(next, next).length, 0, 'aynı kart tekrar bildirilmez');
+  assert.equal(fb.isTurkeyGoalEvent(ev[0], next), false);
+});

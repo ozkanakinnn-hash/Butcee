@@ -97,6 +97,15 @@ function matchDocFromFixture(f, resolve = defaultResolver) {
       player: (e.player && e.player.name) || '',
       detail: e.detail || '',
     }));
+  const redCards = (f.events || [])
+    .filter((e) => e.type === 'Card' && /red|second yellow/i.test(e.detail || ''))
+    .map((e) => ({
+      minute: (e.time && e.time.elapsed) || 0,
+      extra: (e.time && e.time.extra) || 0,
+      team_id: keyForApiTeam(e.team && e.team.id),
+      player: (e.player && e.player.name) || '',
+      second_yellow: /second yellow/i.test(e.detail || ''),
+    }));
   return {
     fixture_id: f.fixture.id,
     kickoff: Timestamp.fromDate(new Date(f.fixture.date)),
@@ -110,6 +119,7 @@ function matchDocFromFixture(f, resolve = defaultResolver) {
     away,
     goals: { home: f.goals.home ?? 0, away: f.goals.away ?? 0 },
     goal_events: goalsEvents,
+    red_cards: redCards,
     team_ids: [home.id, away.id],
     is_live: LIVE.has(f.fixture.status.short),
     is_finished: FINISHED.has(f.fixture.status.short),
@@ -118,7 +128,7 @@ function matchDocFromFixture(f, resolve = defaultResolver) {
 
 /**
  * Önceki ve yeni maç durumunu karşılaştırıp bildirilecek olayları çıkarır (saf fonksiyon).
- * @returns {Array<{type: 'kickoff'|'goal'|'goal_cancelled'|'halftime'|'second_half'|'fulltime', side?: 'home'|'away', scorer?: object}>}
+ * @returns {Array<{type: 'kickoff'|'goal'|'goal_cancelled'|'red_card'|'halftime'|'second_half'|'fulltime', side?: 'home'|'away', scorer?: object}>}
  */
 function diffMatch(prev, next) {
   const events = [];
@@ -137,6 +147,16 @@ function diffMatch(prev, next) {
       }
     } else if (after < before) {
       events.push({ type: 'goal_cancelled', side });
+    }
+  }
+
+  // Kırmızı kartlar (önceki kayıtta kart listesi yoksa — eski belge — taban sayılır, bildirilmez)
+  if (prev && Array.isArray(prev.red_cards)) {
+    for (const side of ['home', 'away']) {
+      const teamId = next[side].id;
+      const before = prev.red_cards.filter((c) => c.team_id === teamId).length;
+      const cards = (next.red_cards || []).filter((c) => c.team_id === teamId);
+      for (let i = before; i < cards.length; i++) events.push({ type: 'red_card', side, card: cards[i] });
     }
   }
 
@@ -232,6 +252,13 @@ function buildMatchMessage(event, match, now = new Date(), { ignoreQuiet = false
       body = `${match[event.side].name} golü geçersiz sayıldı (VAR)`;
       channelId = 'goal_alert';
       break;
+    case 'red_card': {
+      const c = event.card;
+      const minute = c ? `${c.minute}${c.extra ? '+' + c.extra : ''}'` : '';
+      title = `🟥 Kırmızı kart: ${match[event.side].name}`;
+      body = `${minute} ${c && c.player ? c.player : ''}${c && c.second_yellow ? ' (ikinci sarı)' : ''} · ${scoreLine(match)}`.trim();
+      break;
+    }
     case 'kickoff':
       title = `🟢 Maç başladı`;
       body = `${match.home.name} - ${match.away.name}`;
@@ -262,7 +289,7 @@ function buildMatchMessage(event, match, now = new Date(), { ignoreQuiet = false
       priority: quiet ? 'normal' : 'high',
       notification: {
         channelId,
-        tag: `match_${match.fixture_id}_${event.type === 'goal' ? 'goal' : 'status'}`,
+        tag: `match_${match.fixture_id}_${event.type === 'goal' ? 'goal' : event.type === 'red_card' ? `card_${event.side}_${event.card ? event.card.minute : ''}` : 'status'}`,
         icon: 'ic_stat_news',
         color: '#0B1F3A',
       },
