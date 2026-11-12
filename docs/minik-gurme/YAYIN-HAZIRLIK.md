@@ -41,7 +41,7 @@ Anahtar kaybolursa Play Console'dan "yükleme anahtarı sıfırlama" talep edile
 
 **Reklam**: Uygulamada reklam **yok**.
 
-**İzinler**: `POST_NOTIFICATIONS` (hatırlatıcılar), `RECEIVE_BOOT_COMPLETED` (yeniden başlatmada hatırlatıcıları kurmak), `BILLING` (Play aboneliği). İnternet izni yok.
+**İzinler**: `POST_NOTIFICATIONS` (hatırlatıcılar), `RECEIVE_BOOT_COMPLETED` (yeniden başlatmada hatırlatıcıları kurmak), `BILLING` (Play aboneliği). `INTERNET` ve `ACCESS_NETWORK_STATE` izinlerini Google Play Billing kütüphanesi ekler; yalnızca abonelik işlemleri için Google Play ile konuşur. Uygulama kullanıcı verisini hiçbir sunucuya göndermez.
 
 ## 4. Mağaza metinleri
 **Uygulama adı**: Minik Gurme: Ek Gıda Takibi
@@ -56,7 +56,7 @@ Minik Gurme, 6. aydan itibaren ek gıdaya geçişi kolaylaştıran sade bir taki
 • Ay ay beslenme rehberi, kıvam aşamaları ve güvenlik uyarıları
 • Kilo ve boy takibi; WHO kız/erkek medyanlarıyla karşılaştırma
 • Açık ve koyu tema, Türkçe ve İngilizce
-Gizlilik: Hesap yok, reklam yok, internet yok — tüm veriler telefonunuzda kalır.
+Gizlilik: Hesap yok, reklam yok, veri toplama yok — bebeğinizin tüm kayıtları telefonunuzda kalır.
 Minik Gurme Plus: haftalık menü planlayıcı, doktor raporu (PDF), birden fazla bebek, öğün hatırlatıcıları.
 Uygulama genel bilgi sunar; tıbbi tavsiye yerine geçmez. Lütfen çocuk doktorunuza danışın.
 
@@ -68,7 +68,7 @@ Minik Gurme is a simple tracker that makes starting solids easier from 6 months.
 • Month-by-month feeding guide, texture stages and safety tips
 • Weight and height tracking compared with WHO girl/boy medians
 • Light and dark theme, Turkish and English
-Privacy: no account, no ads, no internet — all data stays on your phone.
+Privacy: no account, no ads, no data collection — all of your baby's records stay on your phone.
 Minik Gurme Plus: weekly meal planner, doctor report (PDF), multiple babies, meal reminders.
 The app provides general information and does not replace medical advice. Please consult your paediatrician.
 
