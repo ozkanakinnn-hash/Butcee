@@ -46,16 +46,16 @@ final _outDir = Platform.environment['PROMO_OUT'] ?? 'build/promo';
 final _captureKey = GlobalKey();
 
 void main() {
-  final images = _localImages();
+  // Her ekran AYRI bir işlemde yakalanır: widget ağacının sökülmesi bu ortamda dakikalar sürdüğü için
+  // dosya yazılır yazılmaz exit(0) ile çıkılır (tool/promo/yakala.sh hepsini sırayla çalıştırır).
+  final only = Platform.environment['PROMO_ONLY'] ?? '01-akis';
   final sw = Stopwatch();
-  void mark(String m) => debugPrint('[PROMO] ${sw.elapsedMilliseconds} ms · $m');
 
-  // Tüm ekranlar TEK testte: her testin kapanışı (widget ağacının sökülmesi) bu ortamda dakikalar sürüyor.
-  testWidgets('tanıtım ekranları', (tester) async {
+  testWidgets('tanıtım ekranı: $only', (tester) async {
     sw.start();
     debugDisableShadows = true;
     await _loadFonts();
-    AppStorage.images = _FileCache(images);
+    AppStorage.images = _FileCache(_localImages());
     WeatherService.shared = _FixedWeather();
     Directory(_outDir).createSync(recursive: true);
     SharedPreferences.setMockInitialValues({
@@ -74,43 +74,35 @@ void main() {
     final db = FakeFirebaseFirestore();
     await _seed(db);
     final repo = NewsRepository(firestore: db);
-    mark('hazırlık');
 
-    await _shot(tester, '01-akis', _app(RootShell(settings: settings, repository: repo)));
-    mark('01 akış');
-
-    await _shot(tester, '02-canli-skor', _app(MatchDetailPage(fixtureId: 9001, repository: repo)));
-    mark('02 canlı skor');
-
-    await _shot(tester, '03-bildirim-ayarlari', _app(SettingsPage(settings: settings)), after: (t) async {
-      await t.drag(find.byType(Scrollable).first, const Offset(0, -150));
-      await _settle(t);
-    });
-    mark('03 bildirim ayarları');
-
-    await _shot(tester, '04-piyasa-hava', _app(RootShell(settings: settings, repository: repo)), after: (t) async {
-      await t.tap(find.byIcon(Icons.menu_rounded));
-      await _settle(t);
-    });
-    mark('04 piyasa/hava');
-
-    await _shot(tester, '05-ilgi-alanlari', _app(InterestsPage(settings: settings, repository: repo)));
-    mark('05 ilgi alanları');
-
-    await _shot(tester, '06-bildirimler', _app(NotificationsPage(settings: settings, repository: repo)));
-    mark('06 bildirimler');
-
-    await _shot(tester, '07-akis-koyu', _app(RootShell(settings: settings, repository: repo), dark: true), dark: true);
-    mark('07 koyu tema');
-
-    // Ağacı ve görsel önbelleğini boşalt: sökme maliyeti testin kapanışına kalmasın
-    await tester.pumpWidget(const SizedBox.shrink());
-    mark('ağaç boşaltıldı');
-    PaintingBinding.instance.imageCache
-      ..clear()
-      ..clearLiveImages();
-    mark('görsel önbelleği boşaltıldı');
-  }, timeout: const Timeout(Duration(minutes: 25)));
+    switch (only) {
+      case '01-akis':
+        await _shot(tester, only, _app(RootShell(settings: settings, repository: repo)));
+      case '02-canli-skor':
+        await _shot(tester, only, _app(MatchDetailPage(fixtureId: 9001, repository: repo)));
+      case '03-bildirim-ayarlari':
+        await _shot(tester, only, _app(SettingsPage(settings: settings)), after: (t) async {
+          await t.drag(find.byType(Scrollable).first, const Offset(0, -150));
+          await _settle(t);
+        });
+      case '04-piyasa-hava':
+        await _shot(tester, only, _app(RootShell(settings: settings, repository: repo)), after: (t) async {
+          await t.tap(find.byIcon(Icons.menu_rounded));
+          await _settle(t);
+        });
+      case '05-ilgi-alanlari':
+        await _shot(tester, only, _app(InterestsPage(settings: settings, repository: repo)));
+      case '06-bildirimler':
+        await _shot(tester, only, _app(NotificationsPage(settings: settings, repository: repo)));
+      case '07-akis-koyu':
+        await _shot(tester, only, _app(RootShell(settings: settings, repository: repo), dark: true));
+      default:
+        throw ArgumentError('Bilinmeyen ekran: $only');
+    }
+    debugPrint('[PROMO] $only bitti (${sw.elapsedMilliseconds} ms)');
+    await Future<void>.delayed(Duration.zero);
+    exit(0); // ağacı sökmeden çık
+  });
 }
 
 Widget _app(Widget home, {bool dark = false}) => MaterialApp(
@@ -132,7 +124,6 @@ Future<void> _shot(
   String name,
   Widget app, {
   Future<void> Function(WidgetTester)? after,
-  bool dark = false,
 }) async {
   tester.view.devicePixelRatio = _dpr;
   tester.view.physicalSize = _screen * _dpr;
