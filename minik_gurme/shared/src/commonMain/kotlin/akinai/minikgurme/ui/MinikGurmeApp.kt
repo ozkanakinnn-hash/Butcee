@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
@@ -73,13 +74,21 @@ fun MinikGurmeApp(onRestart: (() -> Unit)? = null) {
                     LegalScreen(kind = "privacy", onBack = { showPrivacy = false })
                 }
             }
-            else -> OnboardingScreen(onOpenPrivacy = { showPrivacy = true }) { name, months, weight, height, style, sex ->
-                viewModel.completeOnboarding(name, months, weight, height, sex)
-                viewModel.applyFeedingStyle(style)
-                Babies.setName(babyId, name)
-                Babies.setOnboarded(babyId)
-                prefs.putString(KEY_FEEDING_STYLE, style)
-                onboarded = true
+            else -> {
+                val complete: (String, Int, Float, Float, String, String) -> Unit = { name, months, weight, height, style, sex ->
+                    viewModel.completeOnboarding(name, months, weight, height, sex)
+                    viewModel.applyFeedingStyle(style)
+                    Babies.setName(babyId, name)
+                    Babies.setOnboarded(babyId)
+                    prefs.putString(KEY_FEEDING_STYLE, style)
+                    onboarded = true
+                }
+                if (TestHooks.demoProfile) {
+                    // Otomatik test: formu örnek profille geç
+                    LaunchedEffect(Unit) { complete("Defne", 8, 8.4f, 70f, "mixed", "girl") }
+                } else {
+                    OnboardingScreen(onOpenPrivacy = { showPrivacy = true }, onComplete = complete)
+                }
             }
         }
     }

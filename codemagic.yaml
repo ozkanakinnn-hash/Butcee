@@ -56,6 +56,27 @@ workflows:
             cp ~/Library/Logs/DiagnosticReports/MinikGurme* shots/ 2>/dev/null || true
             exit 1
           fi
+      - name: Ana ekranlar — örnek profille sekme sekme ekran görüntüsü
+        script: |
+          cd minik_gurme/iosApp
+          UDID=$(xcrun simctl list devices booted | grep -oE '[0-9A-F]{8}-[0-9A-F-]{27}' | head -1)
+          # TestHooks: -mgDemo 1 ilk açılış formunu örnek profille geçer, -mgTab açılış sekmesini seçer
+          n=2
+          for lang in tr en; do
+            for tab in today foods100 recipes guide community settings; do
+              xcrun simctl terminate "$UDID" akinai.minikgurme 2>/dev/null || true
+              xcrun simctl launch "$UDID" akinai.minikgurme -mgDemo 1 -mgLang "$lang" -mgTab "$tab"
+              sleep 8
+              xcrun simctl io "$UDID" screenshot "shots/$(printf %02d $n)_${lang}_${tab}.png"
+              if ! xcrun simctl spawn "$UDID" launchctl list | grep -q "UIKitApplication:akinai.minikgurme"; then
+                echo "HATA: '$tab' ($lang) sekmesinde uygulama çöktü"
+                cp ~/Library/Logs/DiagnosticReports/MinikGurme* shots/ 2>/dev/null || true
+                exit 1
+              fi
+              n=$((n+1))
+            done
+          done
+          echo "TAMAM: tüm sekmeler açıldı"
     artifacts:
       - minik_gurme/iosApp/shots/*
 

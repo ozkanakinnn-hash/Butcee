@@ -21,6 +21,11 @@ fun MainViewController() = ComposeUIViewController {
     LaunchedEffect(Unit) {
         Platform.services = IosPlatformServices()
         AppLanguage.init()
+        // Otomatik test kancaları (Codemagic simülatörü): -mgDemo 1 -mgTab foods100 -mgLang en
+        val args = platform.Foundation.NSUserDefaults.standardUserDefaults
+        args.stringForKey("mgLang")?.let { if (it == "tr" || it == "en") AppLanguage.set(it) }
+        akinai.minikgurme.ui.TestHooks.demoProfile = args.stringForKey("mgDemo") == "1"
+        akinai.minikgurme.ui.TestHooks.startTab = args.stringForKey("mgTab")
         ThemePrefs.init()
         Community.init()
         // Topluluk: Firebase REST (Android ile aynı proje ve kurallar; iOS anahtarı paket kimliğine kısıtlı olabilir)

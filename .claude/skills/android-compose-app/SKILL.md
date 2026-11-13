@@ -183,3 +183,9 @@ gradle/actions/setup-gradle@v5 → `./gradlew assembleDebug` → upload-artifact
 - Robolectric `android.graphics.pdf.PdfDocument` desteklemez ("document is closed") → PDF içeriğini ortak satır listesi olarak test et, çizimi cihazda dene.
 - **Codemagic/Xcode derlemesi: `syncComposeResourcesForIos` "Cannot query the value of this provider because it has no value available"**: eklenti `ARCHS`'tan her mimari için hedef arar (`targetResources.getting("ios_x64").get()`); `generic/platform=iOS Simulator` hem arm64 hem x86_64 ister, projede `iosX64()` yoksa çöker → `xcodebuild ... ARCHS=arm64` (veya `iosX64()` ekle).
 - **CI'da `a | xcpretty || exit ${PIPESTATUS[0]}` hatayı YUTAR** (boru hattı durumu son komuta ait) → `set -o pipefail` + `tee build.log`; derleme sonrası `Info.plist` var mı kontrol et. Yeşil derleme kanıt değildir, uygulamayı simülatörde açıp ekran görüntüsü al.
+- **iOS simülatöründe dokunmadan çok ekranlı test**: `simctl` dokunamaz → ortak kodda `TestHooks` nesnesi (örnek profil, açılış sekmesi);
+  iOS girişinde `NSUserDefaults.standardUserDefaults.stringForKey("mgTab")` oku (başlatma argümanları `-mgTab x` argüman alanına düşer,
+  kalıcı değil). Betik: `simctl terminate` → `simctl launch <udid> <paket> -mgDemo 1 -mgTab <sekme>` → `simctl io screenshot`, her seferinde çökme kontrolü.
+- **iPhone alt boş şerit**: tam ekran kaydırmalı formda `systemBarsPadding()` altta ana ekran çubuğu kadar sabit boşluk bırakır →
+  dış kutuya yalnızca `windowInsetsPadding(systemBars.only(Top + Horizontal))` + `imePadding()`, kaydırılan içeriğin sonuna
+  `Spacer(Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars))` (tüketilmiş ime boşluğunu düşer).

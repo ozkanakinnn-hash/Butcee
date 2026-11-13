@@ -16,7 +16,13 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.windowInsetsBottomHeight
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -95,7 +101,9 @@ fun OnboardingScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(CanvasBackground)
-            .systemBarsPadding()
+            // Alt kenar (iPhone ana ekran çubuğu / Android gezinme çubuğu) burada değil, kaydırılan içeriğin
+            // sonunda bırakılır: böylece altta sabit boş bir şerit kalmaz, içerik çubuğun arkasına kayar.
+            .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal))
             .imePadding()
     ) {
         Column(
@@ -350,6 +358,7 @@ fun OnboardingScreen(
                 textAlign = TextAlign.Center
             )
             Spacer(Modifier.width(1.dp))
+            Spacer(Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars))
         }
     }
 }

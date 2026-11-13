@@ -163,7 +163,7 @@ fun MainScreen(
     val allGrowthRecords by viewModel.allGrowthRecords.collectAsStateWithLifecycle()
     val latestGrowthRecord by viewModel.latestGrowthRecord.collectAsStateWithLifecycle()
 
-    var currentTab by remember { mutableStateOf("today") }
+    var currentTab by remember { mutableStateOf(TestHooks.startTab ?: "today") }
     var guideSection by remember { mutableStateOf("month") } // "month" (bu ayın önerileri) | "library" (rehber)
     var previousTab by remember { mutableStateOf("today") }
     var subReturn by remember { mutableStateOf("settings") } // Plus/yasal ekranlardan geri dönülecek sekme
