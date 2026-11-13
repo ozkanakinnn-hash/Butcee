@@ -32,6 +32,7 @@ fun MainViewController() = ComposeUIViewController {
         )
         Translator.load()
         akinai.minikgurme.reminders.IosReminders.install()
+        akinai.minikgurme.billing.IosStore.start()   // Plus (StoreKit) — önbellekten durum + mağaza dinleyicisi
         akinai.minikgurme.reminders.IosReminders.reschedule()
         ready = true
     }
