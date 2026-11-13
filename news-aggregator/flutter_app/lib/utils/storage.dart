@@ -19,7 +19,8 @@ class AppStorage {
   static const memoryImageCacheBytes = 50 * 1024 * 1024;
 
   /// Haber görselleri ve kaynak logoları için sınırlı önbellek.
-  static final images = CacheManager(
+  /// Tanıtım görseli aracı (tool/promo) yerel dosyalardan okuyan bir önbellekle değiştirir.
+  static BaseCacheManager images = CacheManager(
     Config('haber_gorselleri', stalePeriod: const Duration(days: 3), maxNrOfCacheObjects: 150),
   );
 
