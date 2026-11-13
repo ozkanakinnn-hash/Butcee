@@ -16,14 +16,13 @@ news-aggregator/
 │       ├── src/ingest.js      # Mükerrer kontrolü + Firestore'a yazma
 │       ├── scripts/seed.js    # Örnek kategori ve kaynakları yükler
 │       └── test/              # Birim testleri + Firestore emülatörü uçtan uca testi
-├── flutter_app/               # Çalışan Flutter uygulaması (FlutterFlow'suz da kullanılabilir)
+├── flutter_app/               # Flutter uygulaması (asıl kaynak)
 │   └── lib/
 │       ├── backend/           # ArticlesRecord / CategoriesRecord / SourcesRecord + sorgular
 │       ├── pages/home_page.dart            # Kategori sekmeleri, sonsuz kaydırma, yenileme
 │       ├── pages/article_webview_page.dart # WebView okuma ekranı (X / kaynak + kilit / paylaş)
 │       └── pages/settings_page.dart        # Dil, KVKK/gizlilik, telif "Uyar-Kaldır"
-├── flutterflow/custom_widgets/article_web_view.dart  # FlutterFlow'a yapıştırılacak özel bileşen
-└── docs/FLUTTERFLOW_KURULUM.md                      # FlutterFlow veri bağlama adımları
+└── docs/play-store/           # Mağaza metinleri, görseller ve yükleme rehberi
 ```
 
 ## Uygulama özellikleri
@@ -72,7 +71,7 @@ news-aggregator/
 3. Actions → **Haber Akışı - Canlı Skor** → Run workflow → mode: **check**. Kayıtta planınız, kalan istek ve
    "Güncel sezona erişim VAR/YOK" yazar. YOK ise ücretsiz plan bu sezonu kapsamıyordur.
 4. mode: **sync-teams** ile takım listesini yükleyin (uygulamadaki takım seçimi bu listeyi kullanır).
-5. Firestore kurallarına `football_teams` ve `matches` okuma izni ekleyin (`docs/UCRETSIZ_KURULUM.md` Adım 3).
+5. Firestore kurallarına `football_teams` ve `matches` okuma izni ekleyin (`firebase/firestore.rules`).
 
 ## Yeni RSS kaynağı eklemek
 1. Adayı `firebase/functions/scripts/feed-candidates.json` dosyasına ekleyin ve gönderin (push).
@@ -101,8 +100,8 @@ news-aggregator/
 
 ## Kurulum
 
-> **Ücret ödemeden test etmek için:** [`docs/UCRETSIZ_KURULUM.md`](docs/UCRETSIZ_KURULUM.md) — Spark (ücretsiz) plan,
-> RSS botu GitHub Actions'ta 30 dakikada bir çalışır. Aşağıdaki adımlar Blaze (Cloud Functions) içindir.
+> Proje **Blaze** planında çalışır: botlar Cloud Functions'tadır (`fetchRssFeeds`, `cleanupOldArticles`,
+> `footballTick`). Güncel durum ve çalışma yöntemi: [`DEVAM.md`](DEVAM.md).
 
 ### 1. Firebase
 1. [console.firebase.google.com](https://console.firebase.google.com) → yeni proje → **Firestore** (europe-west1).
@@ -144,10 +143,7 @@ Kaynak eklemek/çıkarmak için Firestore Console'da `sources` belgesini düzenl
 (`is_active: false` yaparak geçici olarak kapatabilirsiniz). `scripts/seed-data.json` içindeki RSS adreslerini
 yayından önce tarayıcıda açıp doğrulayın.
 
-### 3a. Uygulama — FlutterFlow ile
-[`docs/FLUTTERFLOW_KURULUM.md`](docs/FLUTTERFLOW_KURULUM.md) rehberini izleyin.
-
-### 3b. Uygulama — Flutter koduyla (FlutterFlow'suz)
+### 3. Uygulama
 ```bash
 cd news-aggregator/flutter_app
 # Firebase Console → Android uygulaması ekle (paket: akinai.app1)
