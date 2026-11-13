@@ -55,3 +55,12 @@ The app provides general information and does not replace medical advice. Please
 - Öne çıkan görsel: `tr/feature-1024x500.png`, `en/feature-1024x500.png`
 - Telefon ekran görüntüleri (1080×1920): `tr/phone-1..6.png`, `en/phone-1..6.png`
 - Yeniden üretmek: `./gradlew :app:testDebugUnitTest --tests '*StoreScreenshotsTest'` → `python3 tool/store_graphics.py`
+
+## Tanıtım görselleri (docs/store/promo/tr, docs/store/promo/en)
+| Dosya | Boyut | Nerede kullanılır |
+|---|---|---|
+| `tanitim-1920x1080.png` | 16:9 | Play Console › Tanıtım içeriği / Etkinlik görseli, YouTube kapak |
+| `yatay-1200x628.png` | 1.91:1 | Google Ads uygulama kampanyası (yatay), Facebook/LinkedIn bağlantı görseli |
+| `kare-1200x1200.png` | 1:1 | Google Ads (kare), Instagram gönderisi |
+| `dikey-1200x1500.png` | 4:5 | Google Ads (dikey), Instagram/Facebook akışı |
+Yeniden üretmek: `python3 tool/promo_graphics.py` (önce StoreScreenshotsTest).

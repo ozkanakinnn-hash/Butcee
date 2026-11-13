@@ -61,9 +61,12 @@ class StoreScreenshotsTest {
         ).forEachIndexed { i, (d, w, h) ->
             db.growthRecordDao().insertRecord(GrowthRecord(date = day(d), weightKg = w, heightCm = h, headCircumferenceCm = null, ageMonths = 6 + i / 2))
         }
-        db.mealDao().insertMeal(Meal(date = day(0), mealType = "Kahvaltı", foodItems = "Yulaf lapası, Muz", texture = "Çatalla ezilmiş", reaction = "Sevdi", notes = ""))
-        db.mealDao().insertMeal(Meal(date = day(0), mealType = "Öğle", foodItems = "Brokoli, Havuç", texture = "Parmak gıda", reaction = "Sevdi", notes = ""))
-        db.mealDao().insertMeal(Meal(date = day(0), mealType = "Akşam", foodItems = "Kabak, Mercimek", texture = "Püre", reaction = "Nötr", notes = ""))
+        // Öğün metinlerini kullanıcı yazar (çevrilmez) → İngilizce çekimde İngilizce örnek
+        val m = if (en) listOf("Oatmeal, Banana" to "Mashed", "Broccoli, Carrot" to "Finger food", "Zucchini, Lentils" to "Purée")
+                else listOf("Yulaf lapası, Muz" to "Çatalla ezilmiş", "Brokoli, Havuç" to "Parmak gıda", "Kabak, Mercimek" to "Püre")
+        db.mealDao().insertMeal(Meal(date = day(0), mealType = "Kahvaltı", foodItems = m[0].first, texture = m[0].second, reaction = "Sevdi", notes = ""))
+        db.mealDao().insertMeal(Meal(date = day(0), mealType = "Öğle", foodItems = m[1].first, texture = m[1].second, reaction = "Sevdi", notes = ""))
+        db.mealDao().insertMeal(Meal(date = day(0), mealType = "Akşam", foodItems = m[2].first, texture = m[2].second, reaction = "Nötr", notes = ""))
         val tried = listOf("avokado" to "Avokado", "kabak" to "Yeşil Kabak", "havuc" to "Havuç", "tatli_patates" to "Tatlı Patates", "brokoli" to "Brokoli",
             "elma" to "Elma", "armut" to "Armut", "muz" to "Muz", "yulaf" to "Bebek Yulafı", "yogurt" to "Doğal Ev Yoğurdu (Tam Yağlı)",
             "kirmizi_mercimek" to "Kırmızı Mercimek", "seftali" to "Şeftali", "karnabahar" to "Karnabahar", "patates" to "Patates", "yumurta_sarisi" to "Yumurta Sarısı")
