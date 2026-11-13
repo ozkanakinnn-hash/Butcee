@@ -193,6 +193,24 @@ fun NotificationWizardScreen(onNavigateBack: () -> Unit) {
         tx("Arka plan testi gelmezse 3. ve 4. adımları tekrar kontrol edin.", "If the background test doesn't arrive, recheck steps 3 and 4."),
         fontSize = 11.sp, color = cs.onSurfaceVariant
       )
+      Spacer(modifier = Modifier.height(8.dp))
+      // Firebase konsolundan "Test mesajı gönder" için cihazın FCM kimliği (yalnızca kullanıcı isteyince, panoya)
+      TestButton(tx("📋 Bildirim kimliğini kopyala (Firebase testi)", "📋 Copy push token (Firebase test)"), Modifier.fillMaxWidth()) {
+        try {
+          com.google.firebase.messaging.FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+            val token = if (task.isSuccessful) task.result else null
+            if (token.isNullOrBlank()) {
+              Toast.makeText(context, tx("Kimlik alınamadı. İnternet bağlantısını kontrol edin.", "Could not get the token. Check your connection."), Toast.LENGTH_LONG).show()
+            } else {
+              val cm = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+              cm.setPrimaryClip(android.content.ClipData.newPlainText("FCM", token))
+              Toast.makeText(context, tx("Kopyalandı. Firebase → Messaging → \"Test mesajı gönder\" alanına yapıştırın.", "Copied. Paste it into Firebase → Messaging → \"Send test message\"."), Toast.LENGTH_LONG).show()
+            }
+          }
+        } catch (e: Exception) {
+          Toast.makeText(context, tx("Firebase yapılandırılmamış.", "Firebase is not configured."), Toast.LENGTH_LONG).show()
+        }
+      }
     }
     Spacer(modifier = Modifier.height(16.dp))
   }
