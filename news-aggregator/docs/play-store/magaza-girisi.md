@@ -101,7 +101,7 @@ Market data is for information only and is not investment advice.
 |---|---|---|
 | Uygulama simgesi 512×512 | `docs/brand/play-ikon-512.png` | hazır |
 | Öne çıkan görsel 1024×500 | `docs/play-store/one-cikan-gorsel-1024x500.png` | hazır |
-| Telefon ekran görüntüleri (en az 2, önerilen 4–8; 9:16, en kısa kenar ≥1080 px) | `docs/play-store/ekran-goruntuleri/` | **sizden** — liste aşağıda |
+| Telefon ekran görüntüleri / tanıtım görselleri (6 adet, 1080×1920) | `docs/play-store/tanitim-gorselleri/` | hazır (temsili ekranlar; gerçek ekran görüntüleriyle değiştirilebilir) |
 
 ### Çekilecek ekran görüntüleri (telefonda, açık tema, bildirim çubuğu sade)
 1. Ana akış (Gündem sekmesi, görselli haberler)
