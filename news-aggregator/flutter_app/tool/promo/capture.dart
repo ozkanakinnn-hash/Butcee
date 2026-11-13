@@ -42,28 +42,22 @@ import 'package:shared_preferences/shared_preferences.dart';
 const _screen = Size(360, 750);
 const _dpr = 2.0;
 
-/// Takılan bir ekran tüm koşuyu yemesin.
-const _limit = Timeout(Duration(minutes: 5));
-
 final _outDir = Platform.environment['PROMO_OUT'] ?? 'build/promo';
 final _captureKey = GlobalKey();
 
 void main() {
   final images = _localImages();
-  late AppSettings settings;
-  late FakeFirebaseFirestore db;
-  late NewsRepository repo;
+  final sw = Stopwatch();
+  void mark(String m) => debugPrint('[PROMO] ${sw.elapsedMilliseconds} ms · $m');
 
-  setUpAll(() async {
-    // Gölge bulanıklığı testte yazılımla hesaplanır ve çok yavaştır; arayüz zaten düz (elevation 0).
+  // Tüm ekranlar TEK testte: her testin kapanışı (widget ağacının sökülmesi) bu ortamda dakikalar sürüyor.
+  testWidgets('tanıtım ekranları', (tester) async {
+    sw.start();
     debugDisableShadows = true;
     await _loadFonts();
     AppStorage.images = _FileCache(images);
     WeatherService.shared = _FixedWeather();
     Directory(_outDir).createSync(recursive: true);
-  });
-
-  setUp(() async {
     SharedPreferences.setMockInitialValues({
       'flutter.interests': ['son-dakika', 'gundem', 'ekonomi', 'futbol', 'teknoloji', 'bilim'],
       'flutter.chose_interests': true,
@@ -76,56 +70,47 @@ void main() {
       'flutter.liveScorePanel': true,
       'flutter.language': 'tr',
     });
-    settings = await AppSettings.load();
-    db = FakeFirebaseFirestore();
+    final settings = await AppSettings.load();
+    final db = FakeFirebaseFirestore();
     await _seed(db);
-    repo = NewsRepository(firestore: db);
-  });
+    final repo = NewsRepository(firestore: db);
+    mark('hazırlık');
 
-  testWidgets('01 ana akış (açık tema)', (tester) async {
     await _shot(tester, '01-akis', _app(RootShell(settings: settings, repository: repo)));
-  }, timeout: _limit);
+    mark('01 akış');
 
-  testWidgets('02 maç detayı (canlı skor)', (tester) async {
     await _shot(tester, '02-canli-skor', _app(MatchDetailPage(fixtureId: 9001, repository: repo)));
-  }, timeout: _limit);
+    mark('02 canlı skor');
 
-  testWidgets('03 bildirim ayarları', (tester) async {
-    await _shot(
-      tester,
-      '03-bildirim-ayarlari',
-      _app(SettingsPage(settings: settings)),
-      after: (t) async {
-        final list = find.byType(Scrollable).first;
-        await t.drag(list, const Offset(0, -150));
-        await _settle(t);
-      },
-    );
-  }, timeout: _limit);
+    await _shot(tester, '03-bildirim-ayarlari', _app(SettingsPage(settings: settings)), after: (t) async {
+      await t.drag(find.byType(Scrollable).first, const Offset(0, -150));
+      await _settle(t);
+    });
+    mark('03 bildirim ayarları');
 
-  testWidgets('04 piyasa ve hava paneli', (tester) async {
-    await _shot(
-      tester,
-      '04-piyasa-hava',
-      _app(RootShell(settings: settings, repository: repo)),
-      after: (t) async {
-        await t.tap(find.byIcon(Icons.menu_rounded));
-        await _settle(t);
-      },
-    );
-  }, timeout: _limit);
+    await _shot(tester, '04-piyasa-hava', _app(RootShell(settings: settings, repository: repo)), after: (t) async {
+      await t.tap(find.byIcon(Icons.menu_rounded));
+      await _settle(t);
+    });
+    mark('04 piyasa/hava');
 
-  testWidgets('05 ilgi alanları', (tester) async {
     await _shot(tester, '05-ilgi-alanlari', _app(InterestsPage(settings: settings, repository: repo)));
-  }, timeout: _limit);
+    mark('05 ilgi alanları');
 
-  testWidgets('06 bildirimler sekmesi', (tester) async {
     await _shot(tester, '06-bildirimler', _app(NotificationsPage(settings: settings, repository: repo)));
-  }, timeout: _limit);
+    mark('06 bildirimler');
 
-  testWidgets('07 ana akış (koyu tema)', (tester) async {
-    await _shot(tester, '07-akis-koyu', _app(RootShell(settings: settings, repository: repo), dark: true));
-  }, timeout: _limit);
+    await _shot(tester, '07-akis-koyu', _app(RootShell(settings: settings, repository: repo), dark: true), dark: true);
+    mark('07 koyu tema');
+
+    // Ağacı ve görsel önbelleğini boşalt: sökme maliyeti testin kapanışına kalmasın
+    await tester.pumpWidget(const SizedBox.shrink());
+    mark('ağaç boşaltıldı');
+    PaintingBinding.instance.imageCache
+      ..clear()
+      ..clearLiveImages();
+    mark('görsel önbelleği boşaltıldı');
+  }, timeout: const Timeout(Duration(minutes: 25)));
 }
 
 Widget _app(Widget home, {bool dark = false}) => MaterialApp(
@@ -147,6 +132,7 @@ Future<void> _shot(
   String name,
   Widget app, {
   Future<void> Function(WidgetTester)? after,
+  bool dark = false,
 }) async {
   tester.view.devicePixelRatio = _dpr;
   tester.view.physicalSize = _screen * _dpr;
@@ -159,11 +145,13 @@ Future<void> _shot(
   await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 600)));
   await _settle(tester);
 
+  debugPrint('[PROMO]   · $name yakalanıyor');
   final boundary = _captureKey.currentContext!.findRenderObject()! as RenderRepaintBoundary;
   final image = await boundary.toImage(pixelRatio: _dpr);
   final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
   File('$_outDir/$name.png').writeAsBytesSync(bytes!.buffer.asUint8List());
   image.dispose();
+  debugPrint('[PROMO]   · $name yazıldı');
   // Ağ/akış hataları (eklentisiz ortam) görüntüyü engellemesin
   tester.takeException();
 }
