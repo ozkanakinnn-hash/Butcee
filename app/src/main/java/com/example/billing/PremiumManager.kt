@@ -105,8 +105,10 @@ object PremiumManager : PurchasesUpdatedListener {
     val subs = QueryProductDetailsParams.newBuilder().setProductList(
       listOf(QueryProductDetailsParams.Product.newBuilder().setProductId(SUB_ID).setProductType(ProductType.SUBS).build())
     ).build()
-    c.queryProductDetailsAsync(subs) { r, list ->
+    // Play Billing 8: sonuç QueryProductDetailsResult (bulunan + bulunamayan ürünler)
+    c.queryProductDetailsAsync(subs) { r, result ->
       if (r.responseCode != BillingClient.BillingResponseCode.OK) return@queryProductDetailsAsync
+      val list = result.productDetailsList
       val subPlans = list.flatMap { pd ->
         pd.subscriptionOfferDetails.orEmpty().map { offer ->
           // Son (ücretli) fiyat aşaması; varsa ücretsiz deneme aşaması
@@ -123,8 +125,9 @@ object PremiumManager : PurchasesUpdatedListener {
     val inapp = QueryProductDetailsParams.newBuilder().setProductList(
       listOf(QueryProductDetailsParams.Product.newBuilder().setProductId(LIFETIME_ID).setProductType(ProductType.INAPP).build())
     ).build()
-    c.queryProductDetailsAsync(inapp) { r, list ->
+    c.queryProductDetailsAsync(inapp) { r, result ->
       if (r.responseCode != BillingClient.BillingResponseCode.OK) return@queryProductDetailsAsync
+      val list = result.productDetailsList
       val one = list.mapNotNull { pd ->
         pd.oneTimePurchaseOfferDetails?.let { Plan(pd.productId, pd.name, it.formattedPrice, "", null, pd, null) }
       }
