@@ -4,6 +4,8 @@ Uygulamanın tamamı Kotlin ortak modülündedir (`../shared`): ekranlar (Compos
 topluluk (Firebase REST). Bu klasör yalnızca iPhone kabuğudur (SwiftUI giriş noktası, simge, Info.plist).
 
 ## Derleme (Mac gerekmez — Codemagic)
+Not: GitHub Actions macOS makineleri bu hesapta atanmadı (iş 15 dk sırada bekleyip iptal oldu), bu yüzden iPhone derlemesi yalnızca Codemagic'te yapılır.
+
 Depodaki `codemagic.yaml` iki iş akışı içerir:
 1. **iOS derleme kontrolü (imzasız)** — Apple hesabı gerekmez; uygulamanın iPhone simülatörü için derlendiğini doğrular.
 2. **iOS → TestFlight** — Apple Developer üyeliği + App Store Connect API anahtarı gerekir.
