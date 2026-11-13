@@ -25,8 +25,23 @@ def screen_img(name, ios=False, keep=1.0):
     bottom = int(top + (h - top) * keep)
     return b64(p, (0, top, w, bottom)), (bottom - top) / w
 
+STORE = ROOT + '/app/build/store-shots'
+WR = ROOT + '/app/build/widget-renders'
+
+def png64(path):
+    return 'data:image/png;base64,' + base64.b64encode(open(path, 'rb').read()).decode()
+
+def new_slide(fn, title, sub, shot, lines=2):
+    """Robolectric ile uygulamanın gerçek temasıyla çizilmiş ekran (durum çubuğu yok)."""
+    src = b64(STORE + '/' + shot + '.png')
+    h1_h = 108 * lines
+    sub_top = 170 + h1_h + 34
+    phone_top = sub_top + 3 * 53 + 70
+    inner = status_bar(True) + f"<img class='s' src='{src}'>"
+    return fn, page(title, sub, phone(inner, phone_top), sub_top)
+
 LOGO = 'data:image/png;base64,' + base64.b64encode(open(ROOT + '/docs/store/play_store_icon_512.png', 'rb').read()).decode()
-WIDGET = 'data:image/png;base64,' + base64.b64encode(open(''+ROOT+'/scripts/store/widget_crop.png', 'rb').read()).decode()
+WIDGET = 'data:image/png;base64,' + base64.b64encode(open(ROOT + '/app/build/widget-renders/times_saray.png', 'rb').read()).decode()
 MOSQUE = b64(ROOT + '/app/src/main/res/drawable-nodpi/mosque_sultanahmet.webp')
 
 CSS = f"""
@@ -106,37 +121,48 @@ def notif_slide():
 <div style='position:relative;margin:40px 30px 0;display:flex;flex-direction:column;gap:18px'>
 """ + ''.join(f"""<div style='background:rgba(30,26,20,.78);backdrop-filter:blur(20px);border-radius:34px;padding:24px 28px;display:flex;gap:20px;align-items:flex-start;border:1px solid rgba(229,184,105,.25)'>
 <img src='{LOGO}' style='width:60px;height:60px;border-radius:14px'>
-<div style='flex:1'><div style='display:flex;justify-content:space-between;font-size:22px;color:#cfc6b4'><span>RAMAZAN REHBERİ</span><span>{t}</span></div>
+<div style='flex:1'><div style='display:flex;justify-content:space-between;font-size:22px;color:#cfc6b4'><span>EZAN &amp; VAKİT</span><span>{t}</span></div>
 <div style='font-family:InterX;font-size:28px;color:#fff;margin-top:6px'>{a}</div>
 <div style='font-size:25px;color:#e9e3d6;margin-top:4px;line-height:1.3'>{b}</div></div></div>""" for t, a, b in [
         ("şimdi", "🕌 Akşam Ezanı • İftar Vakti", "Manisa / Saruhanlı için iftar vakti (18:57). Allah orucunuzu kabul etsin! 🤲"),
-        ("15 dk önce", "🍽️ İftara 15 dakika kaldı", "Sofranızı hazırlarken dualarınızı da hazırlayın."),
-        ("04:35", "🌙 Sahura 45 dakika kaldı", "Sahur yemeğinde bereket vardır. Kalkın, niyetinizi tazeleyin."),
+        ("canlı", "⏳ İftara kalan süre  <span style='color:#F5D98F'>00:12:48</span>", "Manisa • İftar 18:57 — bildirim çubuğunda saniye saniye geri sayım"),
+        ("Cuma 12:13", "🕌 Cuma namazı 12:58'de", "Ey iman edenler! Cuma günü namaz için çağrı yapıldığında Allah'ı anmaya koşun. (Cuma, 9)"),
     ]) + f"""</div>
 <img src='{WIDGET}' style='position:relative;display:block;width:596px;margin:34px auto 0;border-radius:40px;box-shadow:0 20px 50px rgba(0,0,0,.6)'>
 </div>"""
     title = "Ezanı Vaktinde<br>Duyun"
     sub_top = 170 + 216 + 34
-    return 'ss03_bildirim.png', page(title, "Ezan sesli vakit bildirimleri, sahur ve iftar hatırlatıcıları, ana ekran widget'ları.", phone(inner, sub_top + 3 * 53 + 70), sub_top)
+    return 'ss01_ezan.png', page(title, "Ezan sesli vakit bildirimleri, canlı iftar sayacı, sahur ve Cuma hatırlatıcıları.", phone(inner, sub_top + 3 * 53 + 70), sub_top)
+
+def widget_slide():
+    wp = MOSQUE
+    nx, fs, tm, sp = (png64(WR + f'/{n}_saray.png') for n in ['next', 'fasting', 'times', 'spiritual'])
+    inner = f"""<div style='position:relative;height:1480px;background:url({wp}) center/cover'>
+<div style='position:absolute;inset:0;background:linear-gradient(180deg,rgba(5,8,20,.25),rgba(5,8,20,.75))'></div>
+{status_bar(True).replace("background:#050505","background:transparent")}
+<div style='position:relative;padding:40px 34px;display:flex;flex-direction:column;gap:26px'>
+<img src='{tm}' style='width:588px;border-radius:34px;box-shadow:0 18px 40px rgba(0,0,0,.6)'>
+<div style='display:flex;gap:26px'><img src='{nx}' style='width:281px;border-radius:34px;box-shadow:0 18px 40px rgba(0,0,0,.6)'>
+<img src='{fs}' style='width:281px;border-radius:34px;box-shadow:0 18px 40px rgba(0,0,0,.6)'></div>
+<img src='{sp}' style='width:588px;border-radius:34px;box-shadow:0 18px 40px rgba(0,0,0,.6)'>
+</div></div>"""
+    sub_top = 170 + 216 + 34
+    return 'ss06_widgetlar.png', page("Ana Ekranda<br>4 Şık Widget", "Sıradaki vakit, günün vakitleri, iftar sayacı ve günün ayeti; temanıza uyumlu, canlı geri sayımlı.", phone(inner, sub_top + 3 * 53 + 70), sub_top)
 
 slides = [
-    shot_slide('ss01_ramazan.png', "Ramazan'ı Dolu<br>Dolu Yaşayın", "İftar ve sahur sayacı, fener süslemeleri ve her gün değişen mahya ile Ramazan ruhu cebinizde.", '16_ramazan_anasayfa'),
-    shot_slide('ss02_oruc_ilerleme.png', "Orucunuzun Ne<br>Kadarı Tamam?", "Yüzde ilerleme çubuğu, iftara kalan süre ve sizi motive eden ayet ve hadisler.", '16b_ramazan_oruc_ilerleme'),
     notif_slide(),
-    shot_slide('ss04_kuran.png', "Kur'an-ı Kerim<br>Sayfa Sayfa", "604 sayfa Medine mushafı; Arapça, Türkçe okunuş ve meal tek dokunuşla.", '04b_okuyucu_bakara'),
-    shot_slide('ss05_hatim.png', "Hatminizi<br>Takip Edin", "Okuduğunuz cüz ve sureleri işaretleyin, ilerlemenizi görün, hatimlerinizi sayın.", '04f_hatim'),
-    shot_slide('ss06_kible.png', "Kıbleyi<br>Hassas Bulun", "Pusula ile kıble yönü, günün Kıble Saati ve yakındaki camilere yol tarifi.", '07_kible'),
-    shot_slide('ss07_takvim.png', "Oruç Takvimi ve<br>Dini Günler", "Oruçlarınızı planlayın, kaza borcunuzu takip edin; kandil ve bayramları kaçırmayın.", '05_takvim'),
-    shot_slide('ss08_kartlar.png', "Sevdiklerinize<br>Özel Gün Kartı", "Cuma, kandil ve bayramlar için ayet ve hadisli kartlar; WhatsApp ve Instagram'da paylaşın.", '15_kart_kadir'),
-    shot_slide('ss09_menu.png', "Günün İftar ve<br>Sahur Menüsü", "Her güne özel menü önerileri, orucun faydaları ve sağlıklı beslenme ipuçları.", '06n_rehber_sahur_menu', keep=0.715),
-    shot_slide('ss10_zikirmatik.png', "Dijital<br>Zikirmatik", "Serbest, 33, 99 ve tesbihat modları; titreşimli sayaç ve kaydedilen zikirleriniz.", '01c_zikirmatik_7'),
-    shot_slide('ss11_manevi_iklim.png', "Günün Ayeti,<br>Hadisi ve Duası", "Her gün yeni bir ayet, hadis ve dua; tek dokunuşla sevdiklerinizle paylaşın.", '11_manevi_iklim'),
-    shot_slide('ss12_dahasi.png', "Hepsi Tek<br>Uygulamada", "Kaza namazı, kandil duaları, Esmâü'l-Hüsnâ, bildirim sihirbazı ve daha fazlası.", '06a_dahasi'),
+    shot_slide('ss02_ramazan.png', "İftar ve Sahur<br>Sayacı", "Dakikası dakikasına vakitler, iftara kalan süre, oruç ilerlemesi ve Ramazan süslemeleri.", '16_ramazan_anasayfa'),
+    new_slide('ss03_kible.png', "Kıbleyi<br>Hassas Bulun", "Titremeyen hassas pusula, resmî takvimdeki kıble açısı ve güneşle kontrol için Kıble Saati.", 'qibla'),
+    new_slide('ss04_imsakiye.png', "30 Günlük<br>İmsakiye", "Resmî ilçe vakitleri bir arada; tek dokunuşla PDF olarak sevdiklerinizle paylaşın.", 'imsakiye'),
+    shot_slide('ss05_kuran.png', "Kur'an-ı Kerim<br>Sayfa Sayfa", "604 sayfa Medine mushafı; Arapça, Türkçe okunuş ve meal. Hatminizi takip edin.", '04b_okuyucu_bakara'),
+    widget_slide(),
+    new_slide('ss07_fitre_zekat.png', "Fitre, Fidye ve<br>Zekât Hesabı", "Güncel asgari fitre ve fidye tutarları, nisap kontrolüyle zekât hesaplayıcı.", 'fitre'),
+    shot_slide('ss08_hepsi.png', "Hepsi Tek<br>Uygulamada", "Zikirmatik, kaza namazı, Esmâü'l-Hüsnâ, kandiller, Cuma hatırlatıcısı, yedekleme ve daha fazlası.", '06a_dahasi'),
 ]
 
 # Öne çıkan görsel (1024x500)
 home_src, _ = screen_img('16_ramazan_anasayfa')
-card_src, _ = screen_img('04b_okuyucu_bakara')
+card_src = b64(STORE + '/qibla.png')
 FEATURE = f"""<html><head><meta charset='utf-8'><style>{CSS}
 body{{width:1024px;height:500px}}
 .glow{{background:radial-gradient(600px 500px at 85% 100%, rgba(229,184,105,.55), rgba(0,0,0,0) 70%), radial-gradient(500px 400px at 0% 0%, rgba(158,107,32,.25), rgba(0,0,0,0) 70%)}}
@@ -144,8 +170,8 @@ body{{width:1024px;height:500px}}
 .mini img{{display:block;width:232px;border-radius:26px}}
 </style></head><body><div class='glow'></div>{PATTERN_SVG}
 <img src='{LOGO}' style='position:absolute;left:64px;top:92px;width:110px;height:110px;border-radius:26px;box-shadow:0 10px 30px rgba(0,0,0,.6)'>
-<div style='position:absolute;left:64px;top:222px;font-family:Playfair;font-size:62px;color:#F5D98F;line-height:1.05'>Ramazan<br>Rehberi</div>
-<div style='position:absolute;left:66px;top:368px;width:470px;font-size:24px;line-height:1.35;color:#EDEBE6'>Namaz vakitleri • İftar & sahur sayacı • Kur'an-ı Kerim • Kıble</div>
+<div style='position:absolute;left:64px;top:222px;font-family:Playfair;font-size:66px;color:#F5D98F;line-height:1.05'>Ezan &amp;<br>Vakit</div>
+<div style='position:absolute;left:66px;top:368px;width:470px;font-size:24px;line-height:1.35;color:#EDEBE6'>Ramazan Rehberi • Oruç ve vakit takibi • Kıble • Kur'an-ı Kerim</div>
 <div class='mini' style='left:560px;top:60px;transform:rotate(-8deg)'><img src='{card_src}'></div>
 <div class='mini' style='left:740px;top:40px;transform:rotate(6deg)'><img src='{home_src}'></div>
 </body></html>"""
