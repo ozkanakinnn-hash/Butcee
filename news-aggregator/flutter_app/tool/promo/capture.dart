@@ -100,8 +100,9 @@ void main() {
         throw ArgumentError('Bilinmeyen ekran: $only');
     }
     debugPrint('[PROMO] $only bitti (${sw.elapsedMilliseconds} ms)');
-    await Future<void>.delayed(Duration.zero);
-    exit(0); // ağacı sökmeden çık
+    // Doğrudan çık: testin kapanışı (ağacın sökülmesi) bu ortamda dakikalar sürüyor.
+    // Not: testWidgets gövdesi sahte zaman bölgesinde çalışır; burada Future.delayed BEKLENMEZ (asla dönmez).
+    exit(0);
   });
 }
 
