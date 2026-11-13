@@ -53,7 +53,8 @@ The app provides general information and does not replace medical advice. Please
 ## Görseller (docs/store)
 - Simge: `icon-512.png`
 - Öne çıkan görsel: `tr/feature-1024x500.png`, `en/feature-1024x500.png`
-- Telefon ekran görüntüleri (1080×1920): `tr/phone-1..6.png`, `en/phone-1..6.png`
+- Telefon ekran görüntüleri (1080×1920): `tr/phone-1..7.png`, `en/phone-1..7.png` (7: uygulamadaki besin çizimlerinden pano)
+- Öne çıkan görsel uygulama ekranı ve besin çizimleri içerir
 - Yeniden üretmek: `./gradlew :app:testDebugUnitTest --tests '*StoreScreenshotsTest'` → `python3 tool/store_graphics.py`
 
 ## Tanıtım görselleri (docs/store/promo/tr, docs/store/promo/en)
