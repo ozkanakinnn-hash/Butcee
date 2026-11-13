@@ -178,7 +178,7 @@ struct SettingsView: View {
         if Ads.privacyOptionsRequired {
           Button { Ads.showPrivacyOptions() } label: { Label(t("Reklam gizlilik seçenekleri"), systemImage: "hand.raised") }
         }
-        Link(t("Gizlilik Politikası"), destination: URL(string: "https://ozkanakinnn-hash.github.io/Butcee/privacy-policy.html")!)
+        Link(t("Gizlilik Politikası"), destination: URL(string: "https://ozkanakinnn-hash.github.io/Butcee/ezan-vakit/privacy-policy.html")!)
       } footer: {
         Text(t("🔒 Verileriniz yalnızca cihazınızda yerel olarak saklanmaktadır.")).frame(maxWidth: .infinity).padding(.top, 8)
       }
