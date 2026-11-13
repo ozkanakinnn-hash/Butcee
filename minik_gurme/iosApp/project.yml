@@ -50,4 +50,11 @@ targets:
         basedOnDependencyAnalysis: false
         script: |
           cd "$SRCROOT/.."
+          # Compose eklentisi görsel/yazı tipi çıktı klasörünü bu Xcode değişkenlerinden hesaplar; boş gelirse yedek değer ver
+          export BUILT_PRODUCTS_DIR="${BUILT_PRODUCTS_DIR:-$TARGET_BUILD_DIR}"
+          export UNLOCALIZED_RESOURCES_FOLDER_PATH="${UNLOCALIZED_RESOURCES_FOLDER_PATH:-${WRAPPER_NAME:-MinikGurme.app}}"
+          export PLATFORM_NAME="${PLATFORM_NAME:-iphonesimulator}"
+          echo "--- Xcode değişkenleri ---"
+          env | grep -E '^(BUILT_PRODUCTS_DIR|UNLOCALIZED_RESOURCES_FOLDER_PATH|TARGET_BUILD_DIR|WRAPPER_NAME|CONTENTS_FOLDER_PATH|ARCHS|PLATFORM_NAME|SDK_NAME|CONFIGURATION|OTHER_LDFLAGS)=' || true
+          echo "--------------------------"
           ./gradlew :shared:embedAndSignAppleFrameworkForXcode
