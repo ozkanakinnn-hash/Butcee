@@ -16,11 +16,13 @@ INDIGO, CORAL = (0x4F, 0x63, 0xD8), (0xF0, 0x8A, 0x6C)
 
 CAPTIONS = {
     "tr": ["Öğünleri tek dokunuşla kaydedin", "1 yaşına kadar 100 gıda", "Yaşa uygun tarifler ve günün menüsü",
-           "Ay ay rehber ve alerjen planı", "WHO eğrileriyle büyüme takibi", "Ebeveyn Topluluğu"],
+           "Ay ay rehber ve alerjen planı", "WHO eğrileriyle büyüme takibi", "Ebeveyn Topluluğu",
+           "Haftalık menü planlayıcı"],
     "en": ["Log meals in one tap", "100 foods before age 1", "Age-appropriate recipes & daily menu",
-           "Month-by-month guide & allergen plan", "Growth tracking with WHO curves", "Parent Community"],
+           "Month-by-month guide & allergen plan", "Growth tracking with WHO curves", "Parent Community",
+           "Weekly meal planner"],
 }
-NAMES = ["1_today", "2_foods100", "3_recipes", "4_guide", "5_growth", "6_community"]
+NAMES = ["1_today", "2_foods100", "3_recipes", "4_guide", "5_growth", "6_community", "7_planner"]
 
 def font(weight, size):
     return ImageFont.truetype(os.path.join(FONT, f"plus_jakarta_sans_{weight}.ttf"), size)
@@ -110,36 +112,6 @@ def feature(lang):
     with_shadow(bg, p, (690, 34))
     return bg.convert("RGB")
 
-def foods_showcase(lang):
-    """7. ekran görüntüsü: uygulamadaki 100 besin çiziminden pano."""
-    import re
-    W, H = 1080, 1920
-    bg = gradient(W, H)
-    d = ImageDraw.Draw(bg)
-    cap = "100 besin, 100 renkli çizim" if lang == "tr" else "100 foods, 100 colourful illustrations"
-    f = font("extrabold", 74); yy = 120
-    for line in wrap(d, cap, f, W - 140):
-        d.text(((W - d.textlength(line, font=f)) / 2, yy), line, font=f, fill="white"); yy += 92
-    src = open(os.path.join(ROOT, "shared/src/commonMain/kotlin/akinai/minikgurme/ui/components/FoodImage.kt"), encoding="utf-8").read()
-    names = list(dict.fromkeys(re.findall(r"Res\.drawable\.((?:emoji|food)_\w+)", src)))
-    skip = {"emoji_1f32d", "emoji_2600", "emoji_26a0", "emoji_1f308", "emoji_1f319", "emoji_1f324", "emoji_1f3af", "emoji_1f4da", "emoji_1f50d", "emoji_1fa7a", "emoji_1f4cf", "emoji_1f9ea", "emoji_1f37d"}
-    names = [n for n in names if n not in skip and os.path.exists(os.path.join(DRAW, n + ".webp"))]
-    # Düz çizimleri (emoji) ve renklendirilmiş besinleri (food_) karıştır
-    em = [n for n in names if n.startswith("emoji_")]; fd = [n for n in names if n.startswith("food_")]
-    names = [x for pair in zip(em, fd) for x in pair] + em[len(fd):] + fd[len(em):]
-    card = Image.new("RGBA", (W - 120, H - yy - 120), (255, 255, 255, 235))
-    m = Image.new("L", card.size, 0); ImageDraw.Draw(m).rounded_rectangle((0, 0, card.width - 1, card.height - 1), 48, fill=255)
-    out = bg.convert("RGBA"); out.paste(card, (60, yy + 50), m)
-    cols, icon = 6, 128
-    cell = (W - 120 - 40) // cols
-    rows = (card.height - 40) // (icon + 14)
-    gap_y = (card.height - 40 - rows * icon) / max(1, rows - 1)
-    for i, n in enumerate(names[: cols * rows]):
-        r, c = divmod(i, cols)
-        x = 60 + 20 + c * cell + (cell - icon) // 2; y = int(yy + 50 + 20 + r * (icon + gap_y))
-        out.alpha_composite(food(n, icon), (x, y))
-    return out.convert("RGB")
-
 def main():
     os.makedirs(OUT, exist_ok=True)
     Image.open(ICON).convert("RGB").resize((512, 512), Image.LANCZOS).save(os.path.join(OUT, "icon-512.png"))
@@ -148,7 +120,6 @@ def main():
         feature(lang).save(os.path.join(d, "feature-1024x500.png"))
         for i, (n, cap) in enumerate(zip(NAMES, CAPTIONS[lang])):
             framed(os.path.join(SHOTS, f"{lang}_{n}.png"), cap).save(os.path.join(d, f"phone-{i+1}.png"), optimize=True)
-        foods_showcase(lang).save(os.path.join(d, "phone-7.png"), optimize=True)
     print("Mağaza görselleri:", OUT)
 
 if __name__ == "__main__":

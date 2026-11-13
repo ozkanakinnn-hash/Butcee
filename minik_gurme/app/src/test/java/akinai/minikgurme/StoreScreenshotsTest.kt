@@ -7,6 +7,7 @@ import androidx.compose.ui.test.junit4.createEmptyComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
 import akinai.minikgurme.community.Community
@@ -114,6 +115,11 @@ class StoreScreenshotsTest {
             compose.onAllNodesWithText(if (lang == "en") "Weight" else "Kilo")[0].performClick()
             compose.waitUntil(8000) { compose.onAllNodes(androidx.compose.ui.test.hasTestTag("metric_weight")).fetchSemanticsNodes().isNotEmpty() }
             shot("${lang}_5_growth")
+            // 7: Haftalık menü planlayıcı (Plus) — Boşları doldur ile dolu hafta
+            compose.onNodeWithTag("top_settings").performClick(); compose.waitForIdle()
+            compose.onNodeWithTag("settings_planner").performScrollTo().performClick(); compose.waitForIdle()
+            compose.onNodeWithTag("planner_autofill").performClick(); compose.waitForIdle()
+            shot("${lang}_7_planner")
         }
     }
 
