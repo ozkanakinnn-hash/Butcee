@@ -36,12 +36,14 @@ import 'package:haber_akisi/theme.dart';
 import 'package:haber_akisi/utils/storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// Telefon ekranı (mantıksal piksel) ve yoğunluk: 1080×2250 PNG.
+/// Telefon ekranı (mantıksal piksel) ve yoğunluk: 720×1500 PNG.
+/// Test ortamında GPU yok; 3x yoğunlukta piksele dökme dakikalar sürüyordu. 2x, çerçeveye yerleşen
+/// ~684 piksel genişlik için fazlasıyla yeterli.
 const _screen = Size(360, 750);
-const _dpr = 3.0;
+const _dpr = 2.0;
 
 /// Takılan bir ekran tüm koşuyu yemesin.
-const _limit = Timeout(Duration(minutes: 3));
+const _limit = Timeout(Duration(minutes: 5));
 
 final _outDir = Platform.environment['PROMO_OUT'] ?? 'build/promo';
 final _captureKey = GlobalKey();
@@ -53,8 +55,8 @@ void main() {
   late NewsRepository repo;
 
   setUpAll(() async {
-    // Gölgeler testte varsayılan olarak kapalıdır; gerçek görünüm için açılır.
-    debugDisableShadows = false;
+    // Gölge bulanıklığı testte yazılımla hesaplanır ve çok yavaştır; arayüz zaten düz (elevation 0).
+    debugDisableShadows = true;
     await _loadFonts();
     AppStorage.images = _FileCache(images);
     WeatherService.shared = _FixedWeather();
