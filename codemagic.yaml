@@ -25,10 +25,12 @@ workflows:
           cd minik_gurme/iosApp
           mkdir -p shots
           set -o pipefail   # xcodebuild hata verirse adım da başarısız olsun (boru hattı hatayı yutmasın)
+          # ARCHS=arm64: generic simülatör hedefi x86_64'ü de ister; ortak modülde x86_64 iPhone hedefi olmadığından
+          # Compose kaynak eşitleme adımı "değer yok" hatasıyla çöker. Mac'ler Apple işlemcili, arm64 yeterli.
           xcodebuild -project MinikGurme.xcodeproj -scheme MinikGurme \
             -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' \
             -configuration Debug -derivedDataPath build/DerivedData \
-            CODE_SIGNING_ALLOWED=NO build 2>&1 | tee shots/xcodebuild.log | xcpretty
+            ARCHS=arm64 ONLY_ACTIVE_ARCH=NO CODE_SIGNING_ALLOWED=NO build 2>&1 | tee shots/xcodebuild.log | xcpretty
           APP=$(find build/DerivedData -name "MinikGurme.app" -path "*iphonesimulator*" | head -1)
           test -f "$APP/Info.plist" || { echo "HATA: derleme tamamlanmamış (Info.plist yok)"; grep -E "error:|FAILED|BUILD" shots/xcodebuild.log | head -40; exit 1; }
       - name: Simülatörde aç ve ekran görüntüsü al (çökme kontrolü)
