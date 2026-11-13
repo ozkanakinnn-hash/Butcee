@@ -193,3 +193,9 @@ gradle/actions/setup-gradle@v5 → `./gradlew assembleDebug` → upload-artifact
 - `app-ads.txt`: `google.com, pub-XXXX, DIRECT, f08c47fec0942fa0` → geliştirici web sitesinin KÖKÜNE (proje sayfası alt yolu sayılmaz; kullanıcı sitesi `<kullanıcı>.github.io` deposu gerekir).
 - Gizlilik politikası barındırma: Bitbucket `<workspace>.bitbucket.io` 2026'da DNS çözmedi (NXDOMAIN). Kullanıcının düzeni: `ozkanakinnn-hash/Butcee` deposunda Pages `gh-pages` dalından (/root) yayınlanır, her uygulama kendi klasöründe: `minik-gurme/`, `ezan-vakit/` → `https://ozkanakinnn-hash.github.io/Butcee/<uygulama>/privacy-policy.html`. Yeni uygulamanın sayfalarını gh-pages'e yeni klasör olarak ekle (kullanıcı izniyle); Pages kaynağını değiştirme, diğer uygulamaların sayfaları kapanır. Pages'i GITHUB_TOKEN açamaz.
 - Play başlığı ≤30, kısa açıklama ≤80, tam açıklama ≤4000 karakter; simge adı kısa tut (kesilir). Satıcı (trader) beyanı: reklam/satın alma varsa trader → AB'de iletişim bilgileri görünür.
+
+## Play Console yükleme hataları
+- "Play Faturalandırma Kitaplığı X kullanılıyor, en az 8.0.0" → `billing-ktx` 8.x (2026: 8.3.0; 9.x da var). 8.x'te `queryProductDetailsAsync` geri çağrısı `(BillingResult, QueryProductDetailsResult)` → `result.productDetailsList`. Sürümleri `dl.google.com/android/maven2/com/android/billingclient/billing-ktx/maven-metadata.xml` ile kontrol et.
+- Reddedilen yüklemeden sonra sürüm kodunu artır (kitaplıkta kalmış olabilir).
+- "Yerel kod + hata ayıklama sembolü yok" uyarısı: üçüncü taraf (AdMob vb.) .so'lardan gelir, engelleyici değil; `ndk.debugSymbolLevel` NDK ister.
+- Sürüm notu etiketi uygulamanın varsayılan diliyle aynı olmalı (`<tr-TR>…</tr-TR>`).
