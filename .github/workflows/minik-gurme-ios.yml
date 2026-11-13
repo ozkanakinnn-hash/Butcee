@@ -1,0 +1,39 @@
+# Minik Gurme (iPhone) — GitHub'ın Mac makinesinde İMZASIZ derleme kontrolü (Apple hesabı gerekmez).
+# Uygulamanın iPhone simülatörü için derlendiğini doğrular; TestFlight gönderimi codemagic.yaml'dadır.
+name: Minik Gurme (iOS derleme kontrolü)
+
+on:
+  push:
+    paths: [ "minik_gurme/shared/**", "minik_gurme/iosApp/**", "minik_gurme/*.kts", "minik_gurme/gradle/**", ".github/workflows/minik-gurme-ios.yml" ]
+  workflow_dispatch:
+
+jobs:
+  ios-build:
+    runs-on: macos-15
+    timeout-minutes: 90
+    defaults:
+      run:
+        working-directory: minik_gurme
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+      - name: Android SDK (Gradle yapılandırması ortak modülde Android'i de okur)
+        run: |
+          SDK="${ANDROID_HOME:-$HOME/Library/Android/sdk}"
+          SDKM="$(ls "$SDK"/cmdline-tools/*/bin/sdkmanager 2>/dev/null | head -1)"
+          yes | "$SDKM" --licenses > /dev/null || true
+          "$SDKM" "platforms;android-36.1" "platforms;android-36" || true
+          echo "sdk.dir=$SDK" > local.properties
+      - uses: gradle/actions/setup-gradle@v5
+      - name: XcodeGen
+        run: brew install xcodegen && cd iosApp && xcodegen generate
+      - name: Simülatör için derle
+        run: |
+          cd iosApp
+          set -o pipefail
+          xcodebuild -project MinikGurme.xcodeproj -scheme MinikGurme \
+            -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' \
+            -configuration Debug CODE_SIGNING_ALLOWED=NO build 2>&1 | tail -120
