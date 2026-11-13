@@ -1,3 +1,4 @@
+// ignore_for_file: invalid_use_of_visible_for_testing_member
 // Play Store tanıtım görselleri için UYGULAMANIN GERÇEK EKRANLARINI yakalar.
 //
 // Uygulama widget'ları (RootShell, HomePage, MarketPanel, SettingsPage…) sahte Firestore verisiyle gerçekten
@@ -39,6 +40,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 const _screen = Size(360, 750);
 const _dpr = 3.0;
 
+/// Takılan bir ekran tüm koşuyu yemesin.
+const _limit = Timeout(Duration(minutes: 3));
+
 final _outDir = Platform.environment['PROMO_OUT'] ?? 'build/promo';
 final _captureKey = GlobalKey();
 
@@ -78,11 +82,11 @@ void main() {
 
   testWidgets('01 ana akış (açık tema)', (tester) async {
     await _shot(tester, '01-akis', _app(RootShell(settings: settings, repository: repo)));
-  });
+  }, timeout: _limit);
 
   testWidgets('02 maç detayı (canlı skor)', (tester) async {
     await _shot(tester, '02-canli-skor', _app(MatchDetailPage(fixtureId: 9001, repository: repo)));
-  });
+  }, timeout: _limit);
 
   testWidgets('03 bildirim ayarları', (tester) async {
     await _shot(
@@ -95,7 +99,7 @@ void main() {
         await _settle(t);
       },
     );
-  });
+  }, timeout: _limit);
 
   testWidgets('04 piyasa ve hava paneli', (tester) async {
     await _shot(
@@ -107,19 +111,19 @@ void main() {
         await _settle(t);
       },
     );
-  });
+  }, timeout: _limit);
 
   testWidgets('05 ilgi alanları', (tester) async {
     await _shot(tester, '05-ilgi-alanlari', _app(InterestsPage(settings: settings, repository: repo)));
-  });
+  }, timeout: _limit);
 
   testWidgets('06 bildirimler sekmesi', (tester) async {
     await _shot(tester, '06-bildirimler', _app(NotificationsPage(settings: settings, repository: repo)));
-  });
+  }, timeout: _limit);
 
   testWidgets('07 ana akış (koyu tema)', (tester) async {
     await _shot(tester, '07-akis-koyu', _app(RootShell(settings: settings, repository: repo), dark: true));
-  });
+  }, timeout: _limit);
 }
 
 Widget _app(Widget home, {bool dark = false}) => MaterialApp(
@@ -149,8 +153,9 @@ Future<void> _shot(
   await tester.pumpWidget(RepaintBoundary(key: _captureKey, child: app));
   await _settle(tester);
   if (after != null) await after(tester);
-  // Görsellerin belirme animasyonu bitsin
-  await tester.pump(const Duration(milliseconds: 400));
+  // Görseller yerel dosyadan okunup çözülsün (gerçek I/O yalnızca runAsync içinde ilerler)
+  await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 600)));
+  await _settle(tester);
 
   final boundary = _captureKey.currentContext!.findRenderObject()! as RenderRepaintBoundary;
   final image = await boundary.toImage(pixelRatio: _dpr);
