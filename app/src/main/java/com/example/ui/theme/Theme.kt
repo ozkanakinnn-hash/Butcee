@@ -10,7 +10,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 import com.example.data.AppColorTheme
@@ -156,8 +155,8 @@ fun MyApplicationTheme(
   if (!view.isInEditMode) {
     SideEffect {
       val window = (view.context as Activity).window
-      window.statusBarColor = colorScheme.background.toArgb()
-      window.navigationBarColor = colorScheme.surface.toArgb()
+      // Kenardan kenara (edge-to-edge): çubuklar şeffaf, renk içerikten gelir.
+      // Window.setStatusBarColor/setNavigationBarColor Android 15'te kullanımdan kalktı.
       val insetsController = WindowCompat.getInsetsController(window, view)
       insetsController.isAppearanceLightStatusBars = !darkTheme
       insetsController.isAppearanceLightNavigationBars = !darkTheme

@@ -137,6 +137,8 @@ dependencies {
   implementation(libs.ump)
   // Reklamsız Premium üyelik — Google Play Faturalandırma
   implementation(libs.billing.ktx)
+  // Reklam/konum kütüphaneleri eski fragment 1.1.0'ı getiriyor; Play önerisi: 1.2.1+
+  implementation(libs.androidx.fragment)
   // Akıllı saate namaz vakitlerini gönderme (Wear Data Layer)
   implementation(libs.play.services.wearable)
   // Uncomment to use Firestore:

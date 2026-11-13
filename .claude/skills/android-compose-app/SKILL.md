@@ -199,3 +199,4 @@ gradle/actions/setup-gradle@v5 → `./gradlew assembleDebug` → upload-artifact
 - Reddedilen yüklemeden sonra sürüm kodunu artır (kitaplıkta kalmış olabilir).
 - "Yerel kod + hata ayıklama sembolü yok" uyarısı: üçüncü taraf (AdMob vb.) .so'lardan gelir, engelleyici değil; `ndk.debugSymbolLevel` NDK ister.
 - Sürüm notu etiketi uygulamanın varsayılan diliyle aynı olmalı (`<tr-TR>…</tr-TR>`).
+- Play "Bir sonraki yayın için" önerileri: (1) eski `androidx.fragment` 1.1.0 → reklam/konum kütüphanelerinden dolaylı gelir, `fragment-ktx` 1.8.9'u doğrudan ekle; (2) edge-to-edge: `enableEdgeToEdge()` + activity 1.12.x; (3) `window.statusBarColor/navigationBarColor` kullanma (Android 15'te kalktı), yalnızca `WindowCompat.getInsetsController` ile açık/koyu simge. Karartılmış ad (m43.a vb.) satırları üçüncü taraf kütüphanelerdendir.
