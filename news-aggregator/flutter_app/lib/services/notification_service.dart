@@ -277,7 +277,13 @@ class NotificationService {
   static const _askedKey = 'notif_permission_asked';
 
   Future<NotificationPermission> permissionStatus() async {
-    final st = (await FirebaseMessaging.instance.getNotificationSettings()).authorizationStatus;
+    // Firebase başlatılamadıysa (ör. yapılandırma dosyası yok) ayarlar ekranı yine açılabilmeli.
+    AuthorizationStatus st;
+    try {
+      st = (await FirebaseMessaging.instance.getNotificationSettings()).authorizationStatus;
+    } catch (_) {
+      return NotificationPermission.denied;
+    }
     if (st == AuthorizationStatus.authorized || st == AuthorizationStatus.provisional) {
       return NotificationPermission.granted;
     }

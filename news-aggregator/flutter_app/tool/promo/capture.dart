@@ -70,6 +70,7 @@ void main() {
       'flutter.liveScorePanel': true,
       'flutter.language': 'tr',
     });
+    _mockPlugins();
     final settings = await AppSettings.load();
     final db = FakeFirebaseFirestore();
     await _seed(db);
@@ -82,7 +83,7 @@ void main() {
         await _shot(tester, only, _app(MatchDetailPage(fixtureId: 9001, repository: repo)));
       case '03-bildirim-ayarlari':
         await _shot(tester, only, _app(SettingsPage(settings: settings)), after: (t) async {
-          await t.drag(find.byType(Scrollable).first, const Offset(0, -150));
+          await t.drag(find.byType(Scrollable).first, const Offset(0, -265));
           await _settle(t);
         });
       case '04-piyasa-hava':
@@ -133,9 +134,12 @@ Future<void> _shot(
   await tester.pumpWidget(RepaintBoundary(key: _captureKey, child: app));
   await _settle(tester);
   if (after != null) await after(tester);
-  // Görseller yerel dosyadan okunup çözülsün (gerçek I/O yalnızca runAsync içinde ilerler)
-  await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 600)));
-  await _settle(tester);
+  // Görseller yerel dosyadan okunup çözülsün: gerçek I/O yalnızca runAsync içinde ilerler, çizim ise
+  // kare başına olur → ikisi dönüşümlü çalıştırılır.
+  for (var i = 0; i < 12; i++) {
+    await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 80)));
+    await tester.pump(const Duration(milliseconds: 100));
+  }
 
   debugPrint('[PROMO]   · $name yakalanıyor');
   final boundary = _captureKey.currentContext!.findRenderObject()! as RenderRepaintBoundary;
@@ -153,6 +157,14 @@ Future<void> _settle(WidgetTester tester) async {
   for (var i = 0; i < 8; i++) {
     await tester.pump(const Duration(milliseconds: 120));
   }
+}
+
+/// Ayarlar ekranı konum iznini sorar; test ortamında eklenti yok → "izin verildi" döndürülür.
+void _mockPlugins() {
+  TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(
+    const MethodChannel('flutter.baseflow.com/geolocator'),
+    (call) async => call.method == 'checkPermission' ? 2 : null, // 2 = whileInUse
+  );
 }
 
 // ── Fontlar ────────────────────────────────────────────────────────────────
@@ -370,10 +382,10 @@ Future<void> _seed(FakeFirebaseFirestore db) async {
   });
 
   final notifications = [
-    ('n1', '🔴 SON DAKİKA', 'Şehir içi ulaşımda yeni dönem: kart yerine telefonla geçiş', 'news_son-dakika', 'breaking_news', 'article', 6),
-    ('n2', '☀️ Sabah Bülteni', '• Ulaşımda yeni dönem\n• Altın yükselişini sürdürdü\n• Ligde haftanın maçı nefes kesti', 'bulletin', 'news', 'article', 190),
-    ('n3', '⚽ GOL! Yeşil FK 2-1 Mavi SK', "58' M. Arslan (pen.)", 'team_yesil-fk', 'goal_alert', 'match', 9),
-    ('n4', '📰 3 yeni haber', 'Ekonomi: Altın yükselişini sürdürdü\nTeknoloji: Yerli girişim yatırım aldı', 'news_ekonomi', 'news', 'article', 65),
+    ('n1', 'SON DAKİKA', 'Şehir içi ulaşımda yeni dönem: kart yerine telefonla geçiş', 'news_son-dakika', 'breaking_news', 'article', 6),
+    ('n2', 'Sabah Bülteni', '• Ulaşımda yeni dönem\n• Altın yükselişini sürdürdü\n• Ligde haftanın maçı nefes kesti', 'bulletin', 'news', 'article', 190),
+    ('n3', 'GOL! Yeşil FK 2-1 Mavi SK', "58' M. Arslan (pen.)", 'team_yesil-fk', 'goal_alert', 'match', 9),
+    ('n4', '3 yeni haber', 'Ekonomi: Altın yükselişini sürdürdü\nTeknoloji: Yerli girişim yatırım aldı', 'news_ekonomi', 'news', 'article', 65),
   ];
   for (final (id, title, body, topic, channel, type, minutesAgo) in notifications) {
     await db.doc('notifications/$id').set({
