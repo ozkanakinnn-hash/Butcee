@@ -446,7 +446,7 @@ object PediatricRecipesData {
             emoji = "🍳"
         ),
 
-        // === 10-12+ AY: GELİŞMİŞ ÇİĞNEME & ZENGİN TABAKLAR ===
+        // === 10+ AY: GELİŞMİŞ ÇİĞNEME & ZENGİN TABAKLAR ===
         BabyRecipe(
             id = "tavuklu_sebze_yahni",
             title = "Didilmiş Tavuklu & Bezelyeli Bebek Yahnisi",
@@ -494,6 +494,438 @@ object PediatricRecipesData {
             ),
             doctorTip = "İpucu: Ispanaktaki demir ile yumurtadaki protein mükemmel bir kahvaltı kombinasyonudur.",
             emoji = "🥬"
+        ),
+
+        // === 10+ AY: EK TARİFLER ===
+        BabyRecipe(
+            id = "kiymali_kabak_mucver",
+            title = "Fırında Kıymalı Kabak Mücveri",
+            ageMonths = 10,
+            ageLabel = "10+ Ay",
+            prepTime = "25 dk",
+            servings = "2 porsiyon",
+            mealType = "Öğle yemeği",
+            textureStyle = "BLW (Parmak Besin)",
+            tags = listOf("Demir", "Yüksek Protein", "BLW", "Fırında Sağlıklı"),
+            ingredients = listOf(
+                RecipeIngredient("Rendelenmiş kabak (suyu sıkılmış)", "1 küçük adet", "🥒"),
+                RecipeIngredient("Yağsız dana kıyma", "40g", "🥩"),
+                RecipeIngredient("Yumurta", "1 adet", "🥚"),
+                RecipeIngredient("Tam buğday unu", "2 yemek kaşığı", "🌾"),
+                RecipeIngredient("Taze dereotu (ince kıyılmış)", "1 tutam", "🌿")
+            ),
+            instructions = listOf(
+                "Kabağı rendeleyip suyunu iyice sıkın.",
+                "Tüm malzemeleri kasede yoğurun; tuz eklemeyin.",
+                "Yağlı kâğıt serili tepsiye parmak boyunda şekiller verip dizin.",
+                "180°C fırında arkalı önlü 18-20 dakika pişirin, ılıtıp sunun."
+            ),
+            doctorTip = "İpucu: Kıyma demir ve çinko, kabak ise lif sağlar. Fırında pişirmek kızartmaya göre çok daha hafiftir; dondurucuda 1 ay saklanabilir.",
+            emoji = "🥒"
+        ),
+        BabyRecipe(
+            id = "mercimek_koftesi_bebek",
+            title = "Bebek Mercimek Köftesi",
+            ageMonths = 10,
+            ageLabel = "10+ Ay",
+            prepTime = "30 dk",
+            servings = "3 porsiyon",
+            mealType = "Öğle yemeği / Ara Öğün",
+            textureStyle = "BLW (Parmak Besin)",
+            tags = listOf("Bitkisel Protein", "Demir", "BLW", "Geleneksel"),
+            ingredients = listOf(
+                RecipeIngredient("Kırmızı mercimek", "1/4 su bardağı", "🫘"),
+                RecipeIngredient("İnce bulgur", "2 yemek kaşığı", "🌾"),
+                RecipeIngredient("Rendelenmiş havuç", "1 yemek kaşığı", "🥕"),
+                RecipeIngredient("Sızma zeytinyağı", "1 tatlı kaşığı", "🫒"),
+                RecipeIngredient("Taze maydanoz (ince kıyılmış)", "1 tutam", "🌿")
+            ),
+            instructions = listOf(
+                "Mercimeği yıkayıp suyu çekene kadar yumuşak pişirin.",
+                "Sıcakken bulguru ekleyip kapağı kapalı 15 dakika demlendirin.",
+                "Havuç, zeytinyağı ve maydanozu ekleyip yoğurun.",
+                "Bebeğin tutabileceği uzun parmak köfteler şekillendirin."
+            ),
+            doctorTip = "İpucu: Mercimek ve bulgur birlikte tam bir bitkisel protein oluşturur. Demir emilimi için yanında portakal veya çilek gibi C vitamini kaynağı verin.",
+            emoji = "🫘"
+        ),
+        BabyRecipe(
+            id = "somonlu_patates_toplari",
+            title = "Somonlu Patates Topları",
+            ageMonths = 10,
+            ageLabel = "10+ Ay",
+            prepTime = "25 dk",
+            servings = "2 porsiyon",
+            mealType = "Akşam yemeği",
+            textureStyle = "BLW (Parmak Besin)",
+            tags = listOf("Omega-3", "Beyin Gelişimi", "Balık", "BLW"),
+            ingredients = listOf(
+                RecipeIngredient("Kılçıksız somon fileto", "40g", "🐟"),
+                RecipeIngredient("Haşlanmış patates", "1 küçük adet", "🥔"),
+                RecipeIngredient("Haşlanmış brokoli (ince kıyılmış)", "1 yemek kaşığı", "🥦"),
+                RecipeIngredient("Sızma zeytinyağı", "1 tatlı kaşığı", "🫒")
+            ),
+            instructions = listOf(
+                "Somonu buharda 10 dakika pişirin, kılçık kalmadığını elinizle kontrol ederek didikleyin.",
+                "Patatesi çatalla ezip somon ve brokoliyle karıştırın.",
+                "Ceviz büyüklüğünde toplar yapıp zeytinyağı sürülmüş tavada hafifçe çevirin."
+            ),
+            doctorTip = "İpucu: Somondaki DHA beyin ve göz gelişimini destekler. Haftada 2 kez balık önerilir; balık alerjisi açısından ilk denemeden sonra 3 gün izleyin.",
+            emoji = "🐟"
+        ),
+        BabyRecipe(
+            id = "elmali_yulaf_bar",
+            title = "Elmalı Yulaf Barları",
+            ageMonths = 10,
+            ageLabel = "10+ Ay",
+            prepTime = "30 dk",
+            servings = "6 parça",
+            mealType = "Ara Öğün",
+            textureStyle = "BLW (Parmak Besin)",
+            tags = listOf("Şekersiz", "Zengin Lif", "Doğal Tatlı", "BLW"),
+            ingredients = listOf(
+                RecipeIngredient("Yulaf ezmesi", "1 su bardağı", "🌾"),
+                RecipeIngredient("Rendelenmiş elma", "1 adet", "🍎"),
+                RecipeIngredient("Ezilmiş olgun muz", "1 adet", "🍌"),
+                RecipeIngredient("Yumurta", "1 adet", "🥚"),
+                RecipeIngredient("Tarçın", "1 tutam", "🪵")
+            ),
+            instructions = listOf(
+                "Tüm malzemeleri kasede karıştırıp 5 dakika dinlendirin.",
+                "Yağlı kâğıt serili küçük kaba 1,5 cm kalınlığında yayın.",
+                "180°C fırında 20-25 dakika pişirin, soğuyunca parmak çubuklar halinde kesin."
+            ),
+            doctorTip = "İpucu: Tatlılığı yalnızca meyveden gelir; şeker ve bal eklemeyin. Buzdolabında 3 gün, dondurucuda 1 ay saklanır.",
+            emoji = "🍎"
+        ),
+
+        // === 11+ AY: AİLE SOFRASINA HAZIRLIK ===
+        BabyRecipe(
+            id = "sebzeli_bebek_makarna",
+            title = "Sebzeli Domates Soslu Bebek Makarnası",
+            ageMonths = 11,
+            ageLabel = "11+ Ay",
+            prepTime = "20 dk",
+            servings = "2 porsiyon",
+            mealType = "Öğle yemeği",
+            textureStyle = "Lokma Büyüklüğünde Parçalar",
+            tags = listOf("Enerji", "Sebze Sevdiren", "Aile Sofrası", "Hızlı"),
+            ingredients = listOf(
+                RecipeIngredient("Fiyonk veya burgu makarna", "1/2 su bardağı", "🍝"),
+                RecipeIngredient("Rendelenmiş domates", "1 adet", "🍅"),
+                RecipeIngredient("Rendelenmiş kabak ve havuç", "2 yemek kaşığı", "🥕"),
+                RecipeIngredient("Tuzsuz beyaz peynir", "1 yemek kaşığı", "🧀"),
+                RecipeIngredient("Sızma zeytinyağı", "1 tatlı kaşığı", "🫒")
+            ),
+            instructions = listOf(
+                "Makarnayı tuzsuz suda paketteki süreden 2 dakika fazla, yumuşak pişirin.",
+                "Sebzeleri zeytinyağında 3 dakika soteleyin, domatesi ekleyip 5 dakika pişirin.",
+                "Makarnayı sosla karıştırın, üzerine peyniri ufalayın."
+            ),
+            doctorTip = "İpucu: Fiyonk ve burgu makarna 11. ayda kaşık ve parmakla yemeyi öğretmek için idealdir. Sebzeler sosun içinde fark edilmeden yenir.",
+            emoji = "🍝"
+        ),
+        BabyRecipe(
+            id = "firinda_kofte_patates",
+            title = "Fırında Sebzeli Köfte & Patates",
+            ageMonths = 11,
+            ageLabel = "11+ Ay",
+            prepTime = "35 dk",
+            servings = "3 porsiyon",
+            mealType = "Akşam yemeği",
+            textureStyle = "Lokma Büyüklüğünde Parçalar",
+            tags = listOf("Demir", "Çinko", "Yüksek Protein", "Aile Sofrası"),
+            ingredients = listOf(
+                RecipeIngredient("Yağsız dana kıyma", "80g", "🥩"),
+                RecipeIngredient("Rendelenmiş havuç", "1 yemek kaşığı", "🥕"),
+                RecipeIngredient("Rendelenmiş soğan (suyu sıkılmış)", "1 tatlı kaşığı", "🧅"),
+                RecipeIngredient("Bayat ekmek içi", "1 dilim", "🍞"),
+                RecipeIngredient("Küp patates", "1 adet", "🥔")
+            ),
+            instructions = listOf(
+                "Kıyma, havuç, soğan ve ekmek içini yoğurun; tuz eklemeyin.",
+                "Bebeğin elinde tutabileceği küçük yassı köfteler yapın.",
+                "Patateslerle birlikte tepsiye dizip 190°C fırında 25 dakika pişirin.",
+                "Köftenin içinin tamamen piştiğinden emin olun, ılıtıp sunun."
+            ),
+            doctorTip = "İpucu: Kırmızı et, 11. ayda hızla azalan demir depolarını desteklemenin en etkili yoludur. Köfteler aile sofrasıyla aynı tepside pişebilir.",
+            emoji = "🥩"
+        ),
+        BabyRecipe(
+            id = "nohutlu_sebze_guvec",
+            title = "Nohutlu Sebze Güveci",
+            ageMonths = 11,
+            ageLabel = "11+ Ay",
+            prepTime = "30 dk",
+            servings = "2 porsiyon",
+            mealType = "Öğle yemeği",
+            textureStyle = "Yumuşak Ezme / BLW",
+            tags = listOf("Bitkisel Protein", "Zengin Lif", "Demir", "Geleneksel"),
+            ingredients = listOf(
+                RecipeIngredient("Haşlanmış nohut (kabukları soyulmuş, ezilmiş)", "2 yemek kaşığı", "🫘"),
+                RecipeIngredient("Patlıcan küpleri", "2 yemek kaşığı", "🍆"),
+                RecipeIngredient("Kabak küpleri", "2 yemek kaşığı", "🥒"),
+                RecipeIngredient("Rendelenmiş domates", "1 adet", "🍅"),
+                RecipeIngredient("Sızma zeytinyağı", "1 tatlı kaşığı", "🫒")
+            ),
+            instructions = listOf(
+                "Nohutların kabuklarını soyup çatalla hafifçe ezin (bütün nohut boğulma riski taşır).",
+                "Sebzeleri zeytinyağında soteleyip domatesi ekleyin.",
+                "Nohutları ve az su ekleyip sebzeler çok yumuşayana kadar 15 dakika pişirin."
+            ),
+            doctorTip = "İpucu: Nohut bitkisel protein ve demir kaynağıdır. Bütün nohut 4 yaşına kadar boğulma riski taşır; mutlaka ezin veya ikiye bölün.",
+            emoji = "🍆"
+        ),
+        BabyRecipe(
+            id = "peynirli_bebek_pankek",
+            title = "Peynirli Ispanaklı Bebek Pankeki",
+            ageMonths = 11,
+            ageLabel = "11+ Ay",
+            prepTime = "15 dk",
+            servings = "6 adet",
+            mealType = "Kahvaltı",
+            textureStyle = "BLW (Parmak Besin)",
+            tags = listOf("Kalsiyum", "Demir", "BLW", "Zengin Kahvaltı"),
+            ingredients = listOf(
+                RecipeIngredient("Yumurta", "1 adet", "🥚"),
+                RecipeIngredient("Tam buğday unu", "3 yemek kaşığı", "🌾"),
+                RecipeIngredient("Tam yağlı yoğurt", "2 yemek kaşığı", "🥛"),
+                RecipeIngredient("İnce kıyılmış ıspanak", "1 avuç", "🥬"),
+                RecipeIngredient("Tuzsuz lor peyniri", "1 yemek kaşığı", "🧀")
+            ),
+            instructions = listOf(
+                "Tüm malzemeleri pürüzsüz bir hamur olana kadar çırpın.",
+                "Yapışmaz tavaya birer yemek kaşığı dökün.",
+                "Kısık ateşte iki yüzü de 2'şer dakika pişirin, ılıtıp sunun."
+            ),
+            doctorTip = "İpucu: Küçük pankekler kıskaç (başparmak-işaret parmağı) tutuşunu geliştirir. Hamur bir gün önceden hazırlanıp buzdolabında bekletilebilir.",
+            emoji = "🥞"
+        ),
+        BabyRecipe(
+            id = "kabak_tatlisi_yogurtlu",
+            title = "Yoğurtlu Fırın Bal Kabağı",
+            ageMonths = 11,
+            ageLabel = "11+ Ay",
+            prepTime = "30 dk",
+            servings = "2 porsiyon",
+            mealType = "Ara Öğün",
+            textureStyle = "Yumuşak Ezme / BLW",
+            tags = listOf("A Vitamini", "Şekersiz", "Doğal Tatlı", "Kalsiyum"),
+            ingredients = listOf(
+                RecipeIngredient("Bal kabağı dilimleri", "150g", "🎃"),
+                RecipeIngredient("Tam yağlı süzme yoğurt", "2 yemek kaşığı", "🥛"),
+                RecipeIngredient("Tarçın", "1 tutam", "🪵")
+            ),
+            instructions = listOf(
+                "Bal kabağını parmak dilimler halinde kesip üzerine tarçın serpin.",
+                "180°C fırında 25 dakika, çatal kolayca batana kadar pişirin.",
+                "Ilıtıp yoğurda batırarak veya ezerek sunun."
+            ),
+            doctorTip = "İpucu: Kabak tatlısındaki şeker yerine fırının doğal karamelizasyonu kullanılır. Beta-karoten göz ve bağışıklık sağlığını destekler. Bal 1 yaşından önce verilmez.",
+            emoji = "🎃"
+        ),
+        BabyRecipe(
+            id = "tavuklu_sehriyeli_corba",
+            title = "Tavuklu Arpa Şehriye Çorbası",
+            ageMonths = 11,
+            ageLabel = "11+ Ay",
+            prepTime = "25 dk",
+            servings = "2 porsiyon",
+            mealType = "Öğle yemeği",
+            textureStyle = "Yumuşak Taneli Çorba",
+            tags = listOf("Çorba", "Protein", "Bağışıklık", "Kemik Suyu"),
+            ingredients = listOf(
+                RecipeIngredient("Tavuk but eti", "50g", "🍗"),
+                RecipeIngredient("Arpa şehriye", "2 yemek kaşığı", "🌾"),
+                RecipeIngredient("Küp havuç", "1 yemek kaşığı", "🥕"),
+                RecipeIngredient("Limon suyu", "birkaç damla", "🍋")
+            ),
+            instructions = listOf(
+                "Tavuğu 3 su bardağı suda haşlayın, didikleyip suyunu süzün.",
+                "Suya havuç ve şehriyeyi ekleyip 12 dakika yumuşayana kadar pişirin.",
+                "Didiklenmiş tavuğu ekleyin, birkaç damla limonla ılık sunun."
+            ),
+            doctorTip = "İpucu: Hastalık dönemlerinde sıvı ve protein ihtiyacını birlikte karşılar. Hazır bulyon ve tuz kullanmayın.",
+            emoji = "🍲"
+        ),
+
+        // === 12+ AY: AİLE SOFRASI (BEBEK PAYI TUZSUZ) ===
+        BabyRecipe(
+            id = "aile_menemen_tam_ekmek",
+            title = "Aile Menemeni & Tam Buğday Ekmek",
+            ageMonths = 12,
+            ageLabel = "12+ Ay",
+            prepTime = "15 dk",
+            servings = "Aile (bebek payı 1 porsiyon)",
+            mealType = "Kahvaltı",
+            textureStyle = "Lokma Büyüklüğünde Parçalar",
+            tags = listOf("Aile Sofrası", "Zengin Kahvaltı", "Protein", "Kolin"),
+            ingredients = listOf(
+                RecipeIngredient("Yumurta", "2 adet", "🥚"),
+                RecipeIngredient("Domates", "2 adet", "🍅"),
+                RecipeIngredient("Közlenmiş tatlı biber", "1 adet", "🫑"),
+                RecipeIngredient("Sızma zeytinyağı", "1 yemek kaşığı", "🫒"),
+                RecipeIngredient("Tam buğday ekmeği", "1 dilim", "🍞")
+            ),
+            instructions = listOf(
+                "Biber ve domatesi zeytinyağında suyunu çekene kadar pişirin.",
+                "Yumurtaları ekleyip tamamen pişene kadar karıştırın (akışkan bırakmayın).",
+                "Bebeğin payını ayırdıktan sonra yetişkin tabaklarına tuz ekleyin.",
+                "Ekmeği şeritler halinde kesip menemene batırarak sunun."
+            ),
+            doctorTip = "İpucu: 12. aydan itibaren bebek aile sofrasına katılır; tek fark tuzun bebeğin payı ayrıldıktan sonra eklenmesidir. Yumurtadaki kolin beyin gelişimini destekler.",
+            emoji = "🍳"
+        ),
+        BabyRecipe(
+            id = "zeytinyagli_taze_fasulye",
+            title = "Zeytinyağlı Taze Fasulye & Bulgur Pilavı",
+            ageMonths = 12,
+            ageLabel = "12+ Ay",
+            prepTime = "40 dk",
+            servings = "Aile (bebek payı 1 porsiyon)",
+            mealType = "Öğle yemeği",
+            textureStyle = "Lokma Büyüklüğünde Parçalar",
+            tags = listOf("Aile Sofrası", "Zengin Lif", "Geleneksel", "Sebze Sevdiren"),
+            ingredients = listOf(
+                RecipeIngredient("Taze fasulye (küçük doğranmış)", "200g", "🫛"),
+                RecipeIngredient("Rendelenmiş domates", "1 adet", "🍅"),
+                RecipeIngredient("Rendelenmiş soğan", "1/2 adet", "🧅"),
+                RecipeIngredient("Pilavlık bulgur", "1/2 su bardağı", "🌾"),
+                RecipeIngredient("Sızma zeytinyağı", "2 yemek kaşığı", "🫒")
+            ),
+            instructions = listOf(
+                "Soğanı zeytinyağında yumuşatıp fasulye ve domatesi ekleyin.",
+                "Az suyla kısık ateşte fasulyeler çok yumuşayana kadar 30 dakika pişirin.",
+                "Bulguru 1 su bardağı suyla ayrı pişirip demlendirin.",
+                "Bebeğin payını tuzsuz ayırın; fasulyeleri bulgurla karıştırıp sunun."
+            ),
+            doctorTip = "İpucu: Zeytinyağlılar Türk mutfağının bebek dostu sebze yemekleridir. Yağ, sebzelerdeki A ve K vitaminlerinin emilimini artırır.",
+            emoji = "🫛"
+        ),
+        BabyRecipe(
+            id = "firin_tavuk_sebze_tepsi",
+            title = "Tek Tepside Fırın Tavuk & Sebzeler",
+            ageMonths = 12,
+            ageLabel = "12+ Ay",
+            prepTime = "45 dk",
+            servings = "Aile (bebek payı 1 porsiyon)",
+            mealType = "Akşam yemeği",
+            textureStyle = "Lokma Büyüklüğünde Parçalar",
+            tags = listOf("Aile Sofrası", "Yüksek Protein", "Bağışıklık", "Fırında Sağlıklı"),
+            ingredients = listOf(
+                RecipeIngredient("Tavuk but (kemiksiz)", "300g", "🍗"),
+                RecipeIngredient("Patates ve tatlı patates küpleri", "2 adet", "🍠"),
+                RecipeIngredient("Brokoli çiçekleri", "1 kase", "🥦"),
+                RecipeIngredient("Sızma zeytinyağı", "2 yemek kaşığı", "🫒"),
+                RecipeIngredient("Kekik", "1 tutam", "🌿")
+            ),
+            instructions = listOf(
+                "Tüm malzemeleri zeytinyağı ve kekikle harmanlayıp tepsiye yayın.",
+                "200°C fırında 35-40 dakika, tavuk tamamen pişene kadar pişirin.",
+                "Bebeğin payını ayırıp tavuğu küçük lifler halinde didikleyin.",
+                "Yetişkinlerin tabağına tuz ve baharat sonradan eklenir."
+            ),
+            doctorTip = "İpucu: Tek tepsi yemekler hem aileye hem bebeğe aynı anda hazırlanır. Tavuk butu göğse göre daha sulu ve demir açısından daha zengindir.",
+            emoji = "🍗"
+        ),
+        BabyRecipe(
+            id = "yogurtlu_meyve_kasesi",
+            title = "Yoğurtlu Meyve & Yulaf Kasesi",
+            ageMonths = 12,
+            ageLabel = "12+ Ay",
+            prepTime = "5 dk",
+            servings = "1 porsiyon",
+            mealType = "Kahvaltı / Ara Öğün",
+            textureStyle = "Yumuşak Kıvam",
+            tags = listOf("Kalsiyum", "Doğal Probiyotik", "Pişirme Yok", "Hızlı & Kolay"),
+            ingredients = listOf(
+                RecipeIngredient("Tam yağlı yoğurt", "4 yemek kaşığı", "🥛"),
+                RecipeIngredient("Yaban mersini (ezilmiş veya ikiye bölünmüş)", "1 avuç", "🫐"),
+                RecipeIngredient("Küp şeftali veya armut", "2 yemek kaşığı", "🍑"),
+                RecipeIngredient("İnce yulaf ezmesi", "1 yemek kaşığı", "🌾"),
+                RecipeIngredient("Toz ceviz (öğütülmüş)", "1 tatlı kaşığı", "🌰")
+            ),
+            instructions = listOf(
+                "Yoğurdu kaseye alıp yulafı karıştırın, 5 dakika yumuşamaya bırakın.",
+                "Meyveleri ekleyin; yaban mersinlerini mutlaka ezin veya bölün.",
+                "Üzerine öğütülmüş ceviz serpin (bütün ceviz verilmez)."
+            ),
+            doctorTip = "İpucu: 12. aydan sonra bile bütün kuruyemiş 4 yaşına kadar verilmez; öğütülmüş hali omega-3 ve sağlıklı yağ sağlar. Şeker veya bal yerine meyve kullanın.",
+            emoji = "🫐"
+        ),
+        BabyRecipe(
+            id = "sebzeli_bebek_pizza",
+            title = "Lavaş Tabanlı Sebzeli Bebek Pizzası",
+            ageMonths = 12,
+            ageLabel = "12+ Ay",
+            prepTime = "15 dk",
+            servings = "2 porsiyon",
+            mealType = "Akşam yemeği / Ara Öğün",
+            textureStyle = "BLW (Parmak Besin)",
+            tags = listOf("Kalsiyum", "Sebze Sevdiren", "BLW", "Hızlı & Pratik"),
+            ingredients = listOf(
+                RecipeIngredient("Tam buğday lavaş", "1 adet", "🌾"),
+                RecipeIngredient("Rendelenmiş domates (koyulaştırılmış)", "2 yemek kaşığı", "🍅"),
+                RecipeIngredient("Rendelenmiş az tuzlu kaşar", "2 yemek kaşığı", "🧀"),
+                RecipeIngredient("İnce kıyılmış mantar ve biber", "2 yemek kaşığı", "🍄")
+            ),
+            instructions = listOf(
+                "Domatesi tavada koyulaşana kadar pişirip lavaşa sürün.",
+                "Sebzeleri ve kaşarı serpin.",
+                "200°C fırında 8-10 dakika pişirin, ılıtıp parmak şeritler halinde kesin."
+            ),
+            doctorTip = "İpucu: Hazır pizza ve salamlar çok tuzludur; ev yapımı versiyon aile pizza gecesine bebeği de katar. Peynir porsiyonunu küçük tutun.",
+            emoji = "🧀"
+        ),
+        BabyRecipe(
+            id = "kiymali_bulgur_dolma",
+            title = "Kıymalı Biber Dolması (Bebek Usulü)",
+            ageMonths = 12,
+            ageLabel = "12+ Ay",
+            prepTime = "50 dk",
+            servings = "Aile (bebek payı 1 porsiyon)",
+            mealType = "Akşam yemeği",
+            textureStyle = "Lokma Büyüklüğünde Parçalar",
+            tags = listOf("Aile Sofrası", "Demir", "Geleneksel", "Doyurucu"),
+            ingredients = listOf(
+                RecipeIngredient("Dolmalık biber", "4 adet", "🫑"),
+                RecipeIngredient("Yağsız dana kıyma", "150g", "🥩"),
+                RecipeIngredient("Pirinç (yıkanmış)", "1/3 su bardağı", "🍚"),
+                RecipeIngredient("Rendelenmiş domates", "1 adet", "🍅"),
+                RecipeIngredient("Taze nane ve maydanoz", "1 tutam", "🌿")
+            ),
+            instructions = listOf(
+                "Kıyma, pirinç, domates ve yeşillikleri karıştırın; tuz eklemeyin.",
+                "Biberleri doldurup tencereye dizin, yarısına kadar su ekleyin.",
+                "Kısık ateşte 40 dakika, pirinç ve biber çok yumuşayana kadar pişirin.",
+                "Bebeğin payını kesip biber kabuğunu soyarak yoğurtla sunun."
+            ),
+            doctorTip = "İpucu: Biber kabuğu küçük bebekler için zor çiğnenir; soyup vermek güvenlidir. Yanındaki yoğurt kalsiyum ve protein ekler.",
+            emoji = "🫑"
+        ),
+        BabyRecipe(
+            id = "sutlu_irmik_meyveli",
+            title = "Meyveli Sütlü İrmik Tatlısı",
+            ageMonths = 12,
+            ageLabel = "12+ Ay",
+            prepTime = "15 dk",
+            servings = "2 porsiyon",
+            mealType = "Ara Öğün",
+            textureStyle = "Yumuşak Kıvam",
+            tags = listOf("Kalsiyum", "Şekersiz", "Tatlı Krizine Sağlıklı", "Enerji"),
+            ingredients = listOf(
+                RecipeIngredient("İnek sütü (tam yağlı)", "1 su bardağı", "🥛"),
+                RecipeIngredient("İrmik", "2 yemek kaşığı", "🌾"),
+                RecipeIngredient("Ezilmiş olgun muz", "1/2 adet", "🍌"),
+                RecipeIngredient("Küp çilek", "3 adet", "🍓")
+            ),
+            instructions = listOf(
+                "Sütü ısıtıp irmiği yavaşça ekleyerek sürekli karıştırın.",
+                "Koyulaşınca ocaktan alıp muzu karıştırın (şeker eklemeyin).",
+                "Ilıyınca kaselere paylaştırıp üzerine çilek koyun."
+            ),
+            doctorTip = "İpucu: 12. aydan sonra inek sütü içecek olarak verilebilir (günde en fazla 500 ml). Fazlası demir emilimini azaltır ve iştahı kapatır.",
+            emoji = "🍓"
         )
     )
 

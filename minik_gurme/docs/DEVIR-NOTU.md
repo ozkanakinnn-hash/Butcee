@@ -40,6 +40,7 @@ Test: `./gradlew --no-daemon --no-configuration-cache --max-workers=2 :app:testD
   (`windowInsetsBottomHeight(navigationBars)`); (b) Codemagic "Ana ekranlar" adımı — `TestHooks` (`-mgDemo 1 -mgLang en -mgTab foods100`)
   ile formu örnek profille geçip TR/EN × 6 sekmenin ekran görüntüsünü alır. Codemagic'te bu dalı (`ccr-2e754343-d9gh2t`) seçip
   "iOS derleme kontrolü" çalıştırılmalı, `shots/*.png` incelenmeli.
+- **Tarifler 2026-11-14:** 10/11/12+ ay için 16 yeni tarif (toplam 35), filtrelerde ayrı "11+ Aylık" ve "12+ Aylık"; çeviri testi `recipesTranslated`.
 - Kullanıcı isterse: Tarifler simgesi alternatifi, kuzu eti/tavuk ciğeri ve bal kabağı/bezelye görselleri, Android'e "APK derle".
 
 ## Önemli teknik dersler (ayrıntı SKILL.md'de)

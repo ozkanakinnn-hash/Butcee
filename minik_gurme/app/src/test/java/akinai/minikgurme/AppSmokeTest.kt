@@ -372,6 +372,19 @@ class AppSmokeTest {
     }
 
     @Test
+    fun recipesTranslated() {
+        val recipes = akinai.minikgurme.data.guide.PediatricRecipesData.allRecipes
+        launch("en").use {
+            compose.waitForIdle()
+            val missing = recipes.flatMap { r ->
+                listOf(r.title, r.ageLabel, r.prepTime, r.servings, r.mealType, r.textureStyle, r.doctorTip) +
+                    r.tags + r.instructions + r.ingredients.flatMap { listOf(it.name, it.amount) }
+            }.filter { Translator.toEnglish(it) == it && it.any { c -> c in "çğıöşüÇĞİÖŞÜ" } }
+            assertTrue("Çevrilmemiş: ${missing.distinct().take(10)}", missing.isEmpty())
+        }
+    }
+
+    @Test
     fun foods100ShowsHundred() {
         setOnboarded(true)
         launch("tr").use {

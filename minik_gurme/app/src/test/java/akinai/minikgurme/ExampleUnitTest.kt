@@ -122,13 +122,18 @@ class ExampleUnitTest {
     val recipes7m = allRecipes.filter { it.ageMonths == 7 }
     val recipes8m = allRecipes.filter { it.ageMonths == 8 }
     val recipes9m = allRecipes.filter { it.ageMonths == 9 }
-    val recipes10m = allRecipes.filter { it.ageMonths >= 10 }
+    val recipes10m = allRecipes.filter { it.ageMonths == 10 }
+    val recipes11m = allRecipes.filter { it.ageMonths == 11 }
+    val recipes12m = allRecipes.filter { it.ageMonths >= 12 }
 
     assertTrue("6+ ay tarifleri mevcut olmalı", recipes6m.isNotEmpty())
     assertTrue("7+ ay tarifleri mevcut olmalı", recipes7m.isNotEmpty())
     assertTrue("8+ ay tarifleri mevcut olmalı", recipes8m.isNotEmpty())
     assertTrue("9+ ay tarifleri mevcut olmalı", recipes9m.isNotEmpty())
-    assertTrue("10+ ay tarifleri mevcut olmalı", recipes10m.isNotEmpty())
+    assertTrue("10+ ay en az 5 tarif", recipes10m.size >= 5)
+    assertTrue("11+ ay en az 5 tarif", recipes11m.size >= 5)
+    assertTrue("12+ ay en az 5 tarif", recipes12m.size >= 5)
+    assertEquals("Tarif kimlikleri benzersiz olmalı", allRecipes.size, allRecipes.map { it.id }.toSet().size)
 
     // Her tarif doktor tavsiyesi ve malzeme içermeli
     allRecipes.forEach { recipe ->

@@ -105,7 +105,9 @@ fun RecipesScreen(
                     "7+ Aylık" -> recipe.ageMonths == 7
                     "8+ Aylık" -> recipe.ageMonths == 8
                     "9+ Aylık" -> recipe.ageMonths == 9
-                    "10+ Aylık" -> recipe.ageMonths >= 10
+                    "10+ Aylık" -> recipe.ageMonths == 10
+                    "11+ Aylık" -> recipe.ageMonths == 11
+                    "12+ Aylık" -> recipe.ageMonths >= 12
                     "Favorilerim" -> favoriteRecipeIds.contains(recipe.id)
                     else -> true
                 }
@@ -129,7 +131,7 @@ fun RecipesScreen(
         }
     }
 
-    val ageFilters = listOf("Bebeğime Uygun 👶", "Tüm Yaşlar", "6+ Aylık", "7+ Aylık", "8+ Aylık", "9+ Aylık", "10+ Aylık", "Favorilerim")
+    val ageFilters = listOf("Bebeğime Uygun 👶", "Tüm Yaşlar", "6+ Aylık", "7+ Aylık", "8+ Aylık", "9+ Aylık", "10+ Aylık", "11+ Aylık", "12+ Aylık", "Favorilerim")
     val styleFilters = listOf("Tümü", "BLW", "Püre", "Kahvaltı", "Çorba & Öğle")
 
     LazyColumn(
