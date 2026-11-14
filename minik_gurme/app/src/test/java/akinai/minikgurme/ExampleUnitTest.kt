@@ -165,4 +165,24 @@ class ExampleUnitTest {
     val searchResults = akinai.minikgurme.data.guide.PediatricKnowledgeBaseData.searchGuides("demir")
     assertTrue("Demir araması sonuç döndürmeli", searchResults.isNotEmpty())
   }
+
+  @Test
+  fun recipeAllergens_detectedFromIngredients() {
+    val all = akinai.minikgurme.data.guide.PediatricRecipesData.allRecipes.associateBy { it.id }
+    val of = { id: String -> akinai.minikgurme.data.guide.RecipeAllergens.of(all.getValue(id)) }
+    assertEquals(listOf("Yumurta", "Süt"), of("lorlu_bebek_omleti"))
+    assertEquals(listOf("Balık"), of("somonlu_patates_toplari"))
+    assertEquals(listOf("Süt", "Gluten", "Kuruyemiş"), of("yogurtlu_meyve_kasesi"))
+    assertEquals(listOf("Süt", "Gluten"), of("sutlu_irmik_meyveli"))   // "İnek sütü" büyük İ ile
+    assertTrue(of("avokado_muz_ipek").isEmpty())                       // anne sütü alerjen sayılmaz
+    assertEquals(listOf("Süt"), akinai.minikgurme.data.guide.RecipeAllergens.of(listOf("Anne sütü veya formül mama")))
+  }
+
+  @Test
+  fun sourcesPage_hasBothLanguages() {
+    val tr = akinai.minikgurme.util.LegalTexts.sources("tr")
+    val en = akinai.minikgurme.util.LegalTexts.sources("en")
+    assertEquals(tr.size, en.size)
+    assertTrue(tr.any { it.first.contains("DSÖ") } && en.any { it.first.contains("WHO") })
+  }
 }

@@ -34,9 +34,10 @@ fun LegalScreen(kind: String, onBack: () -> Unit) {
     val sections = when (kind) {
         "privacy" -> LegalTexts.privacy(lang).map { (h, b) -> h.forStore() to b.forStore() }
         "terms" -> LegalTexts.terms(lang).map { (h, b) -> h.forStore() to b.forStore() }
+        "sources" -> LegalTexts.sources(lang)
         else -> LegalTexts.licenses(lang)
     }
-    val title = when (kind) { "privacy" -> t("Gizlilik Politikası"); "terms" -> t("Kullanım Koşulları"); else -> t("Açık Kaynak Lisansları") }
+    val title = when (kind) { "privacy" -> t("Gizlilik Politikası"); "terms" -> t("Kullanım Koşulları"); "sources" -> t("Kaynaklar"); else -> t("Açık Kaynak Lisansları") }
     Column(
         modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp).testTag("legal_$kind"),
         verticalArrangement = Arrangement.spacedBy(10.dp)

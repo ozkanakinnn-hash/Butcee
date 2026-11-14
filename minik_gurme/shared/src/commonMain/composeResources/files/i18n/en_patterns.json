@@ -304,8 +304,8 @@
 "Test Date: $1"
 ],
 [
-"^(.+) için dengeli pediatrik menü$",
-"A balanced pediatric menu for $1"
+"^(.+) için yaşa uygun örnek menü$",
+"An age-appropriate sample menu for $1"
 ],
 [
 "^(\\d+) Tarif$",

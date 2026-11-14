@@ -262,7 +262,7 @@ fun GuideScreen(
                             )
                         }
                         Text(
-                            text = "Bebeklerin sindirim sistemi, böbrek fonksiyonları ve çiğneme refleksine göre pediatrik rehberlerle hazırlanan başlangıç tablosu. Arama veya filtreleri kullanarak istediğiniz gıdayı inceleyebilirsiniz.",
+                            text = "Bebeklerin sindirim sistemi, böbrek fonksiyonları ve çiğneme becerisi dikkate alınarak DSÖ ve sağlık kuruluşlarının genel önerilerine göre hazırlanmış başlangıç tablosu. Arama veya filtreleri kullanarak istediğiniz gıdayı inceleyebilirsiniz.",
                             style = MaterialTheme.typography.bodySmall,
                             color = TextPrimary,
                             lineHeight = 18.sp
@@ -815,7 +815,7 @@ fun GuideScreen(
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = "İlk 28 gün boyunca bebeğinizi sebzeler, demir kaynakları, yumurta, yoğurt ve alerjenlerle kademeli tanıştıran pediatrik program.",
+                            text = "İlk 28 gün boyunca bebeğinizi sebzeler, demir kaynakları, yumurta, yoğurt ve alerjenlerle kademeli tanıştıran örnek program. Doktorunuzun önerisine göre uyarlayın.",
                             style = MaterialTheme.typography.bodySmall,
                             color = TextSecondary
                         )

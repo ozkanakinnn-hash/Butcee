@@ -189,3 +189,9 @@ gradle/actions/setup-gradle@v5 → `./gradlew assembleDebug` → upload-artifact
 - **iPhone alt boş şerit**: tam ekran kaydırmalı formda `systemBarsPadding()` altta ana ekran çubuğu kadar sabit boşluk bırakır →
   dış kutuya yalnızca `windowInsetsPadding(systemBars.only(Top + Horizontal))` + `imePadding()`, kaydırılan içeriğin sonuna
   `Spacer(Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars))` (tüketilmiş ime boşluğunu düşer).
+- **Robolectric'te ModalBottomSheet/diyalog ekran görüntüsü**: ayrı pencerede olduğu için `decorView.draw` görmez, `captureToImage` takılır →
+  `WindowManagerGlobal.getInstance()` → yansıma ile `mViews` listesi → `views.last().draw(Canvas(bmp))` (onActivity içinde).
+- **Sağlık içerikli uygulamada hukuki risk azaltma** (Minik Gurme): ilk açılışta zorunlu "tıbbi tavsiye değildir" onayı, her tarif/öneri
+  altında kısa uyarı, malzemelerden otomatik alerjen etiketi ("İçerir: Yumurta, Süt…" + "etiketi kontrol edin"), "pediatrik/uzman onaylı"
+  gibi yetki ima eden ifadeleri kaldırma, Ayarlar › Kaynaklar sayfası (DSÖ, ESPGHAN, Sağlık Bakanlığı TÜBER, AAP; "onaylamamıştır" notu).
+  Kullanıcıya: TBK m.115 ağır kusur sorumluluğu sözleşmeyle kaldırılamaz → içerik doğruluğu + uzman kontrolü asıl korumadır; avukat önerilir.

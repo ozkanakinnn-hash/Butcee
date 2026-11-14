@@ -582,7 +582,7 @@ fun MainScreen(
                             scope.launch { snackbarHostState.showSnackbar(t("Malzemeler alışveriş listesine eklendi")) }
                         }
                     )
-                    "legal_privacy", "legal_terms", "legal_licenses" -> akinai.minikgurme.ui.screens.LegalScreen(
+                    "legal_privacy", "legal_terms", "legal_sources", "legal_licenses" -> akinai.minikgurme.ui.screens.LegalScreen(
                         kind = tab.removePrefix("legal_"),
                         onBack = { currentTab = subReturn }
                     )

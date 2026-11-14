@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Minik Gurme web sayfalarını (gizlilik, koşullar, hesap silme) uygulamadaki LegalTexts.kt'den üretir.
+"""Minik Gurme web sayfalarını (gizlilik, koşullar, kaynaklar, hesap silme) uygulamadaki LegalTexts.kt'den üretir.
 Çıktı: minik_gurme/docs/site/  — GitHub Pages'te https://<kullanıcı>.github.io/<depo>/minik-gurme/ altında yayınlanır.
 Kullanım: python3 tool/build_site.py
 """
@@ -78,6 +78,8 @@ def build():
     legal("en", "privacy", "privacy.html", "gizlilik.html")
     legal("tr", "terms", "kosullar.html", "terms.html")
     legal("en", "terms", "terms.html", "kosullar.html")
+    legal("tr", "sources", "kaynaklar.html", "sources.html")
+    legal("en", "sources", "sources.html", "kaynaklar.html")
     for lang, fname, other in [("tr", "hesap-silme.html", "delete-account.html"), ("en", "delete-account.html", "hesap-silme.html")]:
         title, items = DELETE[lang]
         body = "".join(f"<section><h2>{html.escape(h)}</h2><p>{html.escape(b)}</p></section>" for h, b in items)
@@ -88,6 +90,7 @@ def build():
                  if tr else "Your baby's solid food journey: 100 foods before age 1, allergen introduction plan, age-appropriate recipes, growth tracking and a Parent Community.")
         links = [("gizlilik.html" if tr else "privacy.html", "Gizlilik Politikası" if tr else "Privacy Policy"),
                  ("kosullar.html" if tr else "terms.html", "Kullanım Koşulları" if tr else "Terms of Use"),
+                 ("kaynaklar.html" if tr else "sources.html", "Kaynaklar" if tr else "Sources"),
                  ("hesap-silme.html" if tr else "delete-account.html", "Hesap ve veri silme" if tr else "Account and data deletion")]
         body = f"<p>{html.escape(intro)}</p><div class='cards'>" + "".join(
             f"<a href='{h}'><section><h2>{html.escape(t)}</h2></section></a>" for h, t in links) + \

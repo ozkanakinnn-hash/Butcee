@@ -30,6 +30,7 @@ import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.DeleteSweep
 import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Gavel
@@ -303,6 +304,7 @@ fun SettingsScreen(
             Spacer(Modifier.height(6.dp))
             SettingRow(Icons.Filled.PrivacyTip, "Gizlilik Politikası", "Bebek verileriniz telefonunuzda kalır", tag = "settings_privacy") { onOpenLegal("privacy") }
             SettingRow(Icons.Filled.Gavel, "Kullanım Koşulları", "Abonelik ve sorumluluk koşulları", tag = "settings_terms") { onOpenLegal("terms") }
+            SettingRow(Icons.AutoMirrored.Filled.MenuBook, "Kaynaklar", "Tarif ve rehberlerin dayandığı öneriler", tag = "settings_sources") { onOpenLegal("sources") }
             SettingRow(Icons.Filled.Description, "Açık Kaynak Lisansları", "Yazı tipi, ikonlar ve kütüphaneler", tag = "settings_licenses") { onOpenLegal("licenses") }
         }
 

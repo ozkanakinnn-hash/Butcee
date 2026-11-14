@@ -179,7 +179,7 @@ fun RecipesScreen(
                                     color = TextPrimary
                                 )
                                 Text(
-                                    text = "${profile.name} için dengeli pediatrik menü",
+                                    text = "${profile.name} için yaşa uygun örnek menü",
                                     style = MaterialTheme.typography.bodySmall,
                                     color = TextSecondary
                                 )

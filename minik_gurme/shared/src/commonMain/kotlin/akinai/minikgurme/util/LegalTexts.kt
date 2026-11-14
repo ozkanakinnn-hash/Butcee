@@ -8,7 +8,7 @@ package akinai.minikgurme.util
 object LegalTexts {
     /** Kullanıcıların ulaşacağı iletişim adresi — yayından önce doldurun. */
     const val CONTACT_EMAIL = "ozkan.akinnn@gmail.com"
-    const val UPDATED = "12.11.2026"
+    const val UPDATED = "14.11.2026"
 
     private val contact get() = CONTACT_EMAIL.ifBlank { "[iletişim e-postası]" }
     private val contactEn get() = CONTACT_EMAIL.ifBlank { "[contact e-mail]" }
@@ -45,7 +45,7 @@ object LegalTexts {
         "Your responsibility" to "You are responsible for the accuracy of the data you enter and for decisions about your baby's feeding. Food textures, portions and allergen introduction must be adapted to your baby with your doctor.",
         "Minik Gurme Plus" to "Writing posts and comments in the Parent Community requires Plus; reading is free. Plus is an auto-renewing subscription billed through Google Play. It renews at the end of each period unless cancelled at least 24 hours before. You can cancel anytime in Google Play › Subscriptions; access continues until the end of the paid period. Refunds follow Google Play's policies. Prices are shown in the app before purchase.",
         "Parent Community" to "Be respectful; insults, hate speech, advertising, links and sharing other people's personal data are not allowed. Community posts are the personal experiences of parents, not medical advice, and are not reviewed by doctors. You are responsible for what you post and grant us the right to display it in the app. We may hide or delete content and suspend access that breaks these rules. Report anything inappropriate with the ⋮ menu.",
-        "Content" to "Recipes and guides are prepared from public sources (e.g. WHO, ESPGHAN) and may be updated. The app does not claim endorsement by any organisation.",
+        "Content" to "Recipes and guides are prepared from the general recommendations of public sources (WHO, ESPGHAN, the Turkish Ministry of Health, AAP; see Settings › Sources) and may be updated. They do not contain an individual assessment of your baby, and the app does not claim endorsement by any organisation. Allergen labels on recipes are derived automatically from ingredient names; always check the labels of the products you use.",
         "Liability" to "To the extent permitted by law, the developer is not liable for damages arising from the use of the app. These terms are governed by the laws of the Republic of Türkiye.",
         "Contact" to contactEn,
     ) else listOf(
@@ -54,9 +54,27 @@ object LegalTexts {
         "Sorumluluğunuz" to "Girdiğiniz verilerin doğruluğundan ve bebeğinizin beslenmesine ilişkin kararlardan siz sorumlusunuz. Kıvam, porsiyon ve alerjen tanıtımı doktorunuzla birlikte bebeğinize göre uyarlanmalıdır.",
         "Minik Gurme Plus" to "Ebeveyn Topluluğu'nda gönderi ve yorum yazmak Plus'a özeldir; okumak ücretsizdir. Plus, Google Play üzerinden faturalanan, otomatik yenilenen bir aboneliktir. Dönem bitiminden en az 24 saat önce iptal edilmezse yenilenir. Google Play › Abonelikler'den istediğiniz zaman iptal edebilirsiniz; erişim ödenen dönemin sonuna kadar sürer. İadeler Google Play politikalarına tabidir. Fiyatlar satın almadan önce uygulamada gösterilir.",
         "Ebeveyn Topluluğu" to "Saygılı olun; hakaret, nefret söylemi, reklam, bağlantı ve başkalarının kişisel verilerini paylaşmak yasaktır. Topluluk paylaşımları ebeveynlerin kişisel deneyimleridir; tıbbi tavsiye değildir ve doktorlar tarafından denetlenmez. Paylaştıklarınızdan siz sorumlusunuz ve bunların uygulamada gösterilmesine izin vermiş olursunuz. Kurallara aykırı içerikleri gizleyebilir, silebilir ve erişimi kısıtlayabiliriz. Uygunsuz içerikleri ⋮ menüsünden şikâyet edin.",
-        "İçerik" to "Tarif ve rehberler kamuya açık kaynaklardan (ör. WHO, ESPGHAN) yararlanılarak hazırlanmıştır ve güncellenebilir. Uygulama herhangi bir kuruluş tarafından onaylandığını iddia etmez.",
+        "İçerik" to "Tarif ve rehberler kamuya açık kaynakların (DSÖ, ESPGHAN, T.C. Sağlık Bakanlığı, AAP; bkz. Ayarlar › Kaynaklar) genel önerilerinden yararlanılarak hazırlanmıştır ve güncellenebilir. Bebeğinize özel bir değerlendirme içermez; uygulama herhangi bir kuruluş tarafından onaylandığını iddia etmez. Tariflerdeki alerjen bilgisi malzeme adlarından otomatik çıkarılır; kullandığınız ürünlerin etiketini mutlaka kontrol edin.",
         "Sorumluluk" to "Yasaların izin verdiği ölçüde geliştirici, uygulamanın kullanımından doğan zararlardan sorumlu tutulamaz. Bu koşullar Türkiye Cumhuriyeti hukukuna tabidir.",
         "İletişim" to contact,
+    )
+
+    fun sources(lang: String): List<Pair<String, String>> = if (lang == "en") listOf(
+        "Sources" to "Last updated: $UPDATED. Recipes, food guides, the allergen plan and growth charts in the app are based on the general recommendations of the sources below. These organisations have not reviewed or endorsed the app, and the content does not replace an individual assessment by your doctor.",
+        "World Health Organization (WHO)" to "WHO Guideline for complementary feeding of infants and young children 6–23 months of age (2023). WHO Child Growth Standards (2006) — used for the growth charts.",
+        "ESPGHAN" to "Fewtrell M, et al. Complementary Feeding: A Position Paper by the ESPGHAN Committee on Nutrition. J Pediatr Gastroenterol Nutr. 2017;64(1):119-132.",
+        "Turkish Ministry of Health" to "Türkiye Nutrition Guide (TÜBER) 2022 — infant and young child nutrition sections.",
+        "American Academy of Pediatrics (AAP)" to "HealthyChildren.org guidance on starting solid foods, choking hazards and avoiding honey before age 1. Fleischer DM, et al. A Consensus Approach to the Primary Prevention of Food Allergy Through Nutrition. J Allergy Clin Immunol Pract. 2021;9(1):22-43.",
+        "Allergen labels" to "Recipe allergen labels follow the major allergens listed in Annex II of EU Regulation 1169/2011 and are derived automatically from ingredient names. Always check the labels of the products you use.",
+        "Important" to "Every baby is different. If your baby has an allergy history, severe eczema, a chronic illness, was born prematurely or has feeding or swallowing difficulties, consult your paediatrician before following any recipe or plan. In an emergency (difficulty breathing, swelling of the face or lips, persistent vomiting) call 112.",
+    ) else listOf(
+        "Kaynaklar" to "Son güncelleme: $UPDATED. Uygulamadaki tarifler, gıda rehberleri, alerjen planı ve büyüme grafikleri aşağıdaki kaynakların genel önerilerine dayanır. Bu kuruluşlar uygulamayı incelememiş veya onaylamamıştır; içerik doktorunuzun bireysel değerlendirmesinin yerini tutmaz.",
+        "Dünya Sağlık Örgütü (DSÖ)" to "WHO Guideline for complementary feeding of infants and young children 6–23 months of age (2023). DSÖ Çocuk Büyüme Standartları (2006) — büyüme grafiklerinde kullanılır.",
+        "ESPGHAN" to "Fewtrell M, ve ark. Complementary Feeding: A Position Paper by the ESPGHAN Committee on Nutrition. J Pediatr Gastroenterol Nutr. 2017;64(1):119-132.",
+        "T.C. Sağlık Bakanlığı" to "Türkiye Beslenme Rehberi (TÜBER) 2022 — bebek ve çocuk beslenmesi bölümleri.",
+        "Amerikan Pediatri Akademisi (AAP)" to "HealthyChildren.org: ek gıdaya başlama, boğulma riski taşıyan gıdalar ve 1 yaşından önce bal verilmemesi önerileri. Fleischer DM, ve ark. A Consensus Approach to the Primary Prevention of Food Allergy Through Nutrition. J Allergy Clin Immunol Pract. 2021;9(1):22-43.",
+        "Alerjen etiketleri" to "Tariflerdeki alerjen bilgisi, AB 1169/2011 sayılı Tüzük Ek II'deki başlıca alerjenler esas alınarak malzeme adlarından otomatik çıkarılır. Kullandığınız ürünlerin etiketini mutlaka kontrol edin.",
+        "Önemli" to "Her bebek farklıdır. Bebeğinizin alerji öyküsü, şiddetli egzaması, kronik hastalığı, erken doğum öyküsü veya yutma/beslenme güçlüğü varsa herhangi bir tarif ya da planı uygulamadan önce çocuk doktorunuza danışın. Acil durumda (nefes darlığı, yüzde/dudaklarda şişlik, durmayan kusma) 112'yi arayın.",
     )
 
     fun licenses(lang: String): List<Pair<String, String>> = listOf(

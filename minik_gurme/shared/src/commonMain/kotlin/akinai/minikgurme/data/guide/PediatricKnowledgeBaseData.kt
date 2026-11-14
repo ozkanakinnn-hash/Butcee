@@ -15,7 +15,7 @@ data class WeeklyPediatricGuide(
     val goldenRules: List<String>,
     val safetyAndAlerts: List<String>,
     val faqs: List<KnowledgeBaseFAQ>,
-    val medicalSource: String = "WHO 2023 Infant Feeding Guidelines & ESPGHAN Complementary Feeding Committee Raporu"
+    val medicalSource: String = "DSÖ 2023 Tamamlayıcı Beslenme Kılavuzu & ESPGHAN 2017 Tamamlayıcı Beslenme Görüş Bildirisi (genel öneriler)"
 )
 
 data class KnowledgeBaseFoodItem(
@@ -31,7 +31,7 @@ data class KnowledgeBaseFoodItem(
 data class KnowledgeBaseFAQ(
     val question: String,
     val answer: String,
-    val expertBadge: String = "Pediatrik Gastroenteroloji & Beslenme"
+    val expertBadge: String = "Beslenme"
 )
 
 object PediatricKnowledgeBaseData {
@@ -555,7 +555,7 @@ object PediatricKnowledgeBaseData {
                 KnowledgeBaseFAQ(
                     question = "Balıkla yoğurt aynı gün yenir mi?",
                     answer = "Balık taze olduğu sürece yoğurtla birlikte tüketilmesinde hiçbir tıbbi sakınca yoktur; zehirlenme efsanesi bayat balıktaki histamin artışından kaynaklanır.",
-                    expertBadge = "Pediatrik Toksikoloji"
+                    expertBadge = "Gıda güvenliği"
                 )
             )
         ),
@@ -725,7 +725,7 @@ object PediatricKnowledgeBaseData {
             month = 9,
             weekNumber = 4,
             title = "9. Ay 4. Hafta: Demir Emilimi ve Besin Eşleşmeleri",
-            subtitle = "Etin yanına C vitamini, yoğurdun ayrılması: Pediatrik beslenme biyokimyası",
+            subtitle = "Etin yanına C vitamini, yoğurdun ayrılması: demir emilimini artıran eşleşmeler",
             ageLabel = "9. Ay • 4. Hafta (39-40. Hafta)",
             developmentalGoal = "Demir eksikliği anemisini önlemek için akılcı besin kombinasyonlarını öğrenmek.",
             textureMilestone = "Çatalla ezilmiş tencere yemekleri, yumuşak parmak köfteler.",

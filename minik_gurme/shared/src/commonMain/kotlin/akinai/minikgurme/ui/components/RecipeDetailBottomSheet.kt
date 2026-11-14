@@ -459,6 +459,31 @@ fun RecipeDetailBottomSheet(
                 }
             }
 
+            // Alerjen bilgisi (malzemelerden otomatik)
+            val allergens = remember(recipe.id) { akinai.minikgurme.data.guide.RecipeAllergens.of(recipe) }
+            Card(
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = if (allergens.isEmpty()) SageSoft.copy(alpha = 0.4f) else CoralSoft.copy(alpha = 0.5f)),
+                border = BorderStroke(1.dp, if (allergens.isEmpty()) SageBorder else CoralBorder),
+                modifier = Modifier.fillMaxWidth().testTag("recipe_allergens")
+            ) {
+                Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text(
+                        if (allergens.isEmpty()) t("Başlıca alerjenleri içermez")
+                        else t("Alerjen içerir") + ": " + allergens.joinToString(", ") { t(it) },
+                        translate = false,
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = if (allergens.isEmpty()) SageDark else CoralDark
+                    )
+                    Text(
+                        "Malzeme adlarından otomatik belirlenir. Kullandığınız ürünlerin etiketini kontrol edin; yeni alerjenleri tek tek ve doktorunuzun önerisiyle tanıtın.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = TextSecondary
+                    )
+                }
+            }
+
             // Doctor's Tip Card
             Card(
                 shape = RoundedCornerShape(16.dp),
@@ -484,6 +509,13 @@ fun RecipeDetailBottomSheet(
                     )
                 }
             }
+
+            Text(
+                "Bu tarif genel bilgi amaçlıdır, tıbbi tavsiye değildir. Bebeğinizin alerji öyküsü, sağlık sorunu veya özel durumu varsa önce çocuk doktorunuza danışın.",
+                style = MaterialTheme.typography.labelSmall,
+                color = TextTertiary,
+                modifier = Modifier.testTag("recipe_disclaimer")
+            )
 
             // Action Buttons: Beslenme Günlüğüne Kaydet + Öğünlere Ekle
             Column(
