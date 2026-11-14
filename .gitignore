@@ -18,3 +18,4 @@ ios/*.xcodeproj/
 ios/Payload/
 ios/*.ipa
 /wear/build/
+__pycache__/
