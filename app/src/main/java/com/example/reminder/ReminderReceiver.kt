@@ -16,7 +16,8 @@ class ReminderReceiver : BroadcastReceiver() {
     val type = runCatching { ReminderScheduler.Type.valueOf(intent.getStringExtra(ReminderScheduler.EXTRA_TYPE) ?: "") }.getOrNull()
     val targetMillis = intent.getLongExtra(ReminderScheduler.EXTRA_TARGET_MILLIS, 0L)
 
-    if (type != null && targetMillis > 0L) {
+    // Kullanıcı bu bildirimi kapattıysa (eski bir alarm kalmış olsa bile) hiçbir şey gösterme
+    if (type != null && targetMillis > 0L && ReminderScheduler.isEnabled(prefs, type)) {
       val targetDay = Calendar.getInstance().apply { timeInMillis = targetMillis }
       val dayKey = RamadanCalendar.dateKey(targetDay)
       val isFastingDay = RamadanCalendar.isRamadanDay(dayKey) || prefs.getFastingDates().contains(dayKey)

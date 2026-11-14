@@ -222,6 +222,8 @@ fun RamadanRemindersSection(
         onToggle = {
           sahurOn = it
           prefs.remindBeforeImsak = it
+          // Hatırlatıcı açan kullanıcı bildirim istiyor demektir: ana anahtar kapalıysa aç
+          if (it) prefs.notificationsEnabled = true
           ensurePermissionAndSchedule()
         },
         onMinutes = {
@@ -241,6 +243,8 @@ fun RamadanRemindersSection(
         onToggle = {
           iftarOn = it
           prefs.remindBeforeIftar = it
+          // Hatırlatıcı açan kullanıcı bildirim istiyor demektir: ana anahtar kapalıysa aç
+          if (it) prefs.notificationsEnabled = true
           ensurePermissionAndSchedule()
         },
         onMinutes = {

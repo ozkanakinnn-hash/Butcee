@@ -42,6 +42,29 @@ object ReminderScheduler {
     rescheduleAll(context)
   }
 
+  /**
+   * Bu tür bildirim şu an açık mı? "Tüm Vakit Bildirimleri" ana anahtarı kapalıysa hiçbiri gönderilmez
+   * (sahur/iftar ön hatırlatıcıları dahil). Hem alarm kurulurken hem alarm çaldığında kontrol edilir;
+   * böylece eski bir alarm kalmış olsa bile kapalı bildirim gösterilmez.
+   */
+  fun isEnabled(prefs: AppPreferences, type: Type): Boolean {
+    if (type == Type.TEST) return true
+    if (!prefs.notificationsEnabled) return false
+    return when (type) {
+      Type.SAHUR -> prefs.remindBeforeImsak
+      Type.IFTAR -> prefs.remindBeforeIftar
+      Type.PRAYER_IMSAK -> prefs.notifyImsak
+      Type.PRAYER_OGLE -> prefs.notifyOgle
+      Type.PRAYER_IKINDI -> prefs.notifyIkindi
+      Type.PRAYER_AKSAM -> prefs.notifyIftar
+      Type.PRAYER_YATSI -> prefs.notifyYatsi
+      Type.FASTING_TIP -> true
+      Type.CUMA -> prefs.notifyCuma
+      Type.IFTAR_LIVE -> prefs.liveIftarCountdown
+      Type.TEST -> true
+    }
+  }
+
   fun rescheduleAll(context: Context) {
     val prefs = AppPreferences(context)
     // Vakit bugün geçmişse alarm yarına kurulur: yarının vakti Diyanet aylık tablosundan alınır
@@ -57,19 +80,19 @@ object ReminderScheduler {
       prefs.lastIkindi = d.ikindi; prefs.lastAksam = d.aksam; prefs.lastYatsi = d.yatsi
     }
     val tomorrow = diyanetDay(1)
-    schedule(context, Type.SAHUR, prefs.remindBeforeImsak, prefs.lastImsak, prefs.remindBeforeImsakMinutes, tomorrow?.imsak)
-    schedule(context, Type.IFTAR, prefs.remindBeforeIftar, prefs.lastAksam, prefs.remindBeforeIftarMinutes, tomorrow?.aksam)
-    val on = prefs.notificationsEnabled
-    schedule(context, Type.PRAYER_IMSAK, on && prefs.notifyImsak, prefs.lastImsak, 0, tomorrow?.imsak)
-    schedule(context, Type.PRAYER_OGLE, on && prefs.notifyOgle, prefs.lastOgle, 0, tomorrow?.ogle)
-    schedule(context, Type.PRAYER_IKINDI, on && prefs.notifyIkindi, prefs.lastIkindi, 0, tomorrow?.ikindi)
-    schedule(context, Type.PRAYER_AKSAM, on && prefs.notifyIftar, prefs.lastAksam, 0, tomorrow?.aksam)
-    schedule(context, Type.PRAYER_YATSI, on && prefs.notifyYatsi, prefs.lastYatsi, 0, tomorrow?.yatsi)
+    fun on(t: Type) = isEnabled(prefs, t)
+    schedule(context, Type.SAHUR, on(Type.SAHUR), prefs.lastImsak, prefs.remindBeforeImsakMinutes, tomorrow?.imsak)
+    schedule(context, Type.IFTAR, on(Type.IFTAR), prefs.lastAksam, prefs.remindBeforeIftarMinutes, tomorrow?.aksam)
+    schedule(context, Type.PRAYER_IMSAK, on(Type.PRAYER_IMSAK), prefs.lastImsak, 0, tomorrow?.imsak)
+    schedule(context, Type.PRAYER_OGLE, on(Type.PRAYER_OGLE), prefs.lastOgle, 0, tomorrow?.ogle)
+    schedule(context, Type.PRAYER_IKINDI, on(Type.PRAYER_IKINDI), prefs.lastIkindi, 0, tomorrow?.ikindi)
+    schedule(context, Type.PRAYER_AKSAM, on(Type.PRAYER_AKSAM), prefs.lastAksam, 0, tomorrow?.aksam)
+    schedule(context, Type.PRAYER_YATSI, on(Type.PRAYER_YATSI), prefs.lastYatsi, 0, tomorrow?.yatsi)
     // Her gün 13:00'te kurulur; yalnızca Ramazan günlerinde bildirim gösterilir
-    schedule(context, Type.FASTING_TIP, on, FASTING_TIP_TIME, 0)
+    schedule(context, Type.FASTING_TIP, on(Type.FASTING_TIP), FASTING_TIP_TIME, 0)
     // İftardan 60 dk önce canlı geri sayım (yalnızca oruç günlerinde gösterilir)
-    schedule(context, Type.IFTAR_LIVE, on && prefs.liveIftarCountdown, prefs.lastAksam, 60, tomorrow?.aksam)
-    scheduleCuma(context, prefs, on && prefs.notifyCuma)
+    schedule(context, Type.IFTAR_LIVE, on(Type.IFTAR_LIVE), prefs.lastAksam, 60, tomorrow?.aksam)
+    scheduleCuma(context, prefs, on(Type.CUMA))
     // Ana ekran widget'larını da güncel tut
     com.example.widget.WidgetUpdater.updateAll(context)
   }

@@ -634,6 +634,10 @@ fun RamazanRehberiApp(
     }
 
     if (showSettingsDialog) {
+      // Ayarlar hangi yoldan kapanırsa kapansın (kapat, sihirbaz, premium, konum) hatırlatıcıları yeniden kur
+      androidx.compose.runtime.DisposableEffect(Unit) {
+        onDispose { ReminderScheduler.rescheduleAll(AppHolder.context) }
+      }
       SettingsDialog(
         prefs = prefs,
         onThemeChanged = onThemeChanged,
@@ -654,8 +658,6 @@ fun RamazanRehberiApp(
         },
         onDismiss = {
           showSettingsDialog = false
-          // Ayarlardaki hatırlatıcı değişikliklerini uygula
-          ReminderScheduler.rescheduleAll(AppHolder.context)
         }
       )
     }

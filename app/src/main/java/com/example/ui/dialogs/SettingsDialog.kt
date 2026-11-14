@@ -349,6 +349,7 @@ fun SettingsDialog(
                   onCheckedChange = {
                     notificationsEnabled = it
                     prefs.notificationsEnabled = it
+                    com.example.reminder.ReminderScheduler.rescheduleAll(context)
                     if (it && android.os.Build.VERSION.SDK_INT >= 33 &&
                       androidx.core.content.ContextCompat.checkSelfPermission(context, android.Manifest.permission.POST_NOTIFICATIONS) !=
                       android.content.pm.PackageManager.PERMISSION_GRANTED
