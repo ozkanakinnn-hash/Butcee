@@ -206,3 +206,11 @@ gradle/actions/setup-gradle@v5 → `./gradlew assembleDebug` → upload-artifact
 - Derlemede doğrula: `app/build/generated/res/processReleaseGoogleServices/values/values.xml` içinde `google_app_id`/`project_id`.
 - Test için Bildirim Sihirbazı'nda "Bildirim kimliğini kopyala" (FirebaseMessaging.token → pano) → Firebase Messaging "Test mesajı gönder". Herkese: konu `all_users`.
 - Varsayılan kanal/simge manifest meta-data'sı olmazsa uygulama kapalıyken bildirim genel kanala düşer.
+
+## Play tanıtım videosu (kayıt gerektirmeden)
+- `scripts/store/make_promo_video.py` kalıbı: mağaza ekran görüntülerindeki telefon çerçevesini PIL ile kes + yuvarlak köşe maskesi
+  → tek HTML sayfa, `window.render(t)` her kareyi zamana göre çizer → Playwright ile kare kare JPEG → ffmpeg
+  (`libx264 -crf 18 -pix_fmt yuv420p -movflags +faststart`, `anullsrc` ile sessiz ses izi). Deterministik, takılmasız.
+- Yapı: giriş (ikon + ad) → sahne başına ~3 sn özellik (sol başlık, sağda yükselen telefon) → kapanış çağrısı. 1920×1080, ~30 sn.
+- Play yalnızca YouTube bağlantısı alır (herkese açık/liste dışı, reklamsız). Videoda "Google Play" markasını resmi rozet olmadan yazma.
+- Dini içerikli uygulamada müziği sessiz bırak / kullanıcıya sor.

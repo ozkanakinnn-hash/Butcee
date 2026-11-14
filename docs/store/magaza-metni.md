@@ -73,3 +73,7 @@ Ezan & Vakit shows accurate prayer times, plays the adhan on time and makes Rama
 • No account needed; your data stays on your phone.
 
 Prayer times are based on the tables published by Türkiye's Presidency of Religious Affairs (Diyanet). This app is not affiliated with Diyanet.
+
+## Tanıtım videosu
+- Dosya: `docs/store/ezan-vakit-tanitim.mp4` (1920×1080, 30 fps, 33 sn, H.264 + sessiz AAC). Üretici: `python3 scripts/store/make_promo_video.py`.
+- Play Console yalnızca **YouTube bağlantısı** kabul eder: videoyu YouTube'a **Herkese açık** veya **Liste dışı** yükleyin, reklamları kapatın, yaş kısıtlaması koymayın; bağlantıyı Mağaza girişi → Grafikler → Video alanına yapıştırın.
