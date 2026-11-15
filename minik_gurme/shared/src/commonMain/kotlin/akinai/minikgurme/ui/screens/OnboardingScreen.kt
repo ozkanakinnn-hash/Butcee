@@ -4,6 +4,8 @@ import akinai.minikgurme.resources.logo_emblem
 import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.material.icons.filled.WarningAmber
+import androidx.compose.foundation.border
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -301,29 +303,45 @@ fun OnboardingScreen(
                         )
                     }
 
-                    // Tıbbi uyarı onayı (zorunlu)
-                    Row(
-                        verticalAlignment = Alignment.Top,
+                    // Tıbbi uyarı onayı (zorunlu) — kırmızı, dikkat çekici kutu
+                    Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clip(RoundedCornerShape(12.dp))
+                            .clip(RoundedCornerShape(14.dp))
+                            .background(ReactionAllergySoft)
+                            .border(if (tried && !consent) 2.5.dp else 1.5.dp, ReactionAllergy, RoundedCornerShape(14.dp))
                             .clickable { consent = !consent }
+                            .padding(start = 4.dp, end = 12.dp, top = 10.dp, bottom = 12.dp)
                             .testTag("onb_consent")
                     ) {
-                        androidx.compose.material3.Checkbox(checked = consent, onCheckedChange = { consent = it })
-                        Column(modifier = Modifier.padding(top = 12.dp)) {
-                            Text(
-                                "Uygulamadaki bilgilerin genel rehberlik amaçlı olduğunu, tıbbi tavsiye yerine geçmediğini anladım.",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = if (tried && !consent) ReactionAllergy else TextSecondary
+                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = 10.dp, bottom = 2.dp)) {
+                            Icon(Icons.Filled.WarningAmber, contentDescription = null, tint = ReactionAllergy, modifier = Modifier.size(20.dp))
+                            Spacer(Modifier.width(8.dp))
+                            Text("Tıbbi tavsiye değildir", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.ExtraBold, color = ReactionAllergy)
+                        }
+                        Row(verticalAlignment = Alignment.Top) {
+                            androidx.compose.material3.Checkbox(
+                                checked = consent,
+                                onCheckedChange = { consent = it },
+                                colors = androidx.compose.material3.CheckboxDefaults.colors(
+                                    checkedColor = ReactionAllergy, uncheckedColor = ReactionAllergy, checkmarkColor = OnAccent
+                                )
                             )
-                            Text(
-                                "Gizlilik politikası",
-                                style = MaterialTheme.typography.labelMedium,
-                                fontWeight = FontWeight.Bold,
-                                color = CoralPrimary,
-                                modifier = Modifier.padding(top = 4.dp).clickable { onOpenPrivacy() }
-                            )
+                            Column(modifier = Modifier.padding(top = 12.dp)) {
+                                Text(
+                                    "Uygulamadaki bilgilerin genel rehberlik amaçlı olduğunu, tıbbi tavsiye yerine geçmediğini anladım.",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = AllergyText
+                                )
+                                Text(
+                                    "Gizlilik politikası",
+                                    style = MaterialTheme.typography.labelMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = CoralPrimary,
+                                    modifier = Modifier.padding(top = 4.dp).clickable { onOpenPrivacy() }
+                                )
+                            }
                         }
                     }
 
