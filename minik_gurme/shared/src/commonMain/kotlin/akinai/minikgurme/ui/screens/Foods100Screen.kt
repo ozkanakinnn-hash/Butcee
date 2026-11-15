@@ -97,9 +97,10 @@ fun Foods100Screen(
     val progressFraction = (triedCount.toFloat() / totalGoal.toFloat()).coerceIn(0f, 1f)
 
     // Suggest next food (untried)
-    val nextSuggestion = remember(triedMap) {
-        FoodDirectoryData.allFoods.firstOrNull { !triedMap.containsKey(it.id) || !triedMap[it.id]!!.isTried }
-            ?: FoodDirectoryData.allFoods.first()
+    val nextSuggestion = remember(triedMap, profile.ageMonths) {
+        val untried = FoodDirectoryData.allFoods.filter { triedMap[it.id]?.isTried != true }
+        // Önce bebeğin yaşına uygun denenmemiş besin; yoksa herhangi bir denenmemiş besin
+        untried.firstOrNull { it.minAgeMonths <= profile.ageMonths } ?: untried.firstOrNull() ?: FoodDirectoryData.allFoods.first()
     }
 
     val filteredFoods by remember(searchQuery, selectedCategory, triedMap) {

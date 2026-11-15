@@ -185,4 +185,13 @@ class ExampleUnitTest {
     assertEquals(tr.size, en.size)
     assertTrue(tr.any { it.first.contains("DSÖ") } && en.any { it.first.contains("WHO") })
   }
+
+  @Test
+  fun monthlyMealRoutine_parsedPerMonth() {
+    val guides = akinai.minikgurme.data.guide.PediatricGuideData.monthlyGuides
+    val parsed = guides.map { akinai.minikgurme.ui.screens.mealRoutineSteps(it.sampleMealRoutine) }
+    parsed.forEach { steps -> assertTrue(steps.size >= 3); steps.forEach { (label, _) -> assertTrue(label.isNotBlank()) } }
+    assertEquals("Sabah", parsed.first().first().first)
+    assertTrue("Aylar farklı akış göstermeli", parsed.map { it }.toSet().size > 1)
+  }
 }

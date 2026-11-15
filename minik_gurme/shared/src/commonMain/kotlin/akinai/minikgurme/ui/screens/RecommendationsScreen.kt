@@ -108,7 +108,8 @@ fun RecommendationsScreen(
     onOpenReactionNote: (AllergenTest) -> Unit = {},
     onSelectFood: (FoodDirectoryItem) -> Unit = {},
     allTests: List<AllergenTest> = tests,
-    onStartAllergen: (String) -> Unit = {}
+    onStartAllergen: (String) -> Unit = {},
+    triedFoodIds: Set<String> = emptySet()
 ) {
     var selectedSectionTab by remember { mutableIntStateOf(0) } // 0: Günün & Ayın Önerileri, 1: 3 Gün Alerjen Takibi
 
@@ -118,8 +119,8 @@ fun RecommendationsScreen(
     }
 
     // Recommended superfoods for this month
-    val recommendedFoods = remember(profile.ageMonths) {
-        FoodDirectoryData.allFoods.filter { it.minAgeMonths <= profile.ageMonths }.take(4)
+    val recommendedFoods = remember(profile.ageMonths, triedFoodIds) {
+        FoodDirectoryData.allFoods.filter { it.minAgeMonths <= profile.ageMonths && it.id !in triedFoodIds }.take(4)
     }
 
     LazyColumn(
@@ -356,7 +357,7 @@ fun RecommendationsScreen(
                             Spacer(modifier = Modifier.width(10.dp))
                             Column {
                                 Text(
-                                    text = "Önerilen Günlük Öğün Akışı",
+                                    text = "Örnek Günlük Öğün Akışı",
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.ExtraBold,
                                     color = TextPrimary
@@ -369,89 +370,31 @@ fun RecommendationsScreen(
                             }
                         }
 
-                        // Sabah
-                        Surface(
-                            shape = RoundedCornerShape(12.dp),
-                            color = OchreSoft,
-                            border = BorderStroke(1.dp, OchreBorder),
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(12.dp),
-                                verticalAlignment = Alignment.CenterVertically
+                        // Aya özel örnek akış (veri: MonthGuide.sampleMealRoutine, "Etiket: içerik -> ...")
+                        val palette = listOf(
+                            Triple(OchreSoft, OchreBorder, OchreDark),
+                            Triple(CoralSoft, CoralBorder, CoralDark),
+                            Triple(SageSoft, SageBorder, SageDark),
+                            Triple(SlateBlueSoft, BlueBorder, SlateBlue)
+                        )
+                        mealRoutineSteps(t(currentMonthGuide.sampleMealRoutine)).forEachIndexed { i, (label, body) ->
+                            val (bg, border, fg) = palette[i % palette.size]
+                            Surface(
+                                shape = RoundedCornerShape(12.dp),
+                                color = bg,
+                                border = BorderStroke(1.dp, border),
+                                modifier = Modifier.fillMaxWidth()
                             ) {
-                                akinai.minikgurme.ui.components.FoodImage("☀️", 29.dp)
-                                Spacer(modifier = Modifier.width(12.dp))
-                                Column {
-                                    Text(
-                                        text = "Sabah (Uyanış): Anne Sütü veya Formül Mama",
-                                        style = MaterialTheme.typography.labelMedium,
-                                        fontWeight = FontWeight.Bold,
-                                        color = OchreDark
-                                    )
-                                    Text(
-                                        text = "İlk yıl beslenmesinin %70'ini anne sütü/mama oluşturmaya devam eder.",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = TextSecondary
-                                    )
-                                }
-                            }
-                        }
-
-                        // Kuşluk / Öğle
-                        Surface(
-                            shape = RoundedCornerShape(12.dp),
-                            color = CoralSoft,
-                            border = BorderStroke(1.dp, CoralBorder),
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(12.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                akinai.minikgurme.ui.components.FoodImage("🥣", 29.dp)
-                                Spacer(modifier = Modifier.width(12.dp))
-                                Column {
-                                    Text(
-                                        text = "Öğle: Kıymalı Sebze Ezmesi / Yoğurt Denemesi",
-                                        style = MaterialTheme.typography.labelMedium,
-                                        fontWeight = FontWeight.Bold,
-                                        color = CoralDark
-                                    )
-                                    Text(
-                                        text = "Demir depoları için 2 tatlı kaşığı kıymalı kabak/havuç ezmesi.",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = TextSecondary
-                                    )
-                                }
-                            }
-                        }
-
-                        // İkindi / Akşam
-                        Surface(
-                            shape = RoundedCornerShape(12.dp),
-                            color = SageSoft,
-                            border = BorderStroke(1.dp, SageBorder),
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(12.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                akinai.minikgurme.ui.components.FoodImage("🌙", 29.dp)
-                                Spacer(modifier = Modifier.width(12.dp))
-                                Column {
-                                    Text(
-                                        text = "İkindi / Akşam: Anne Sütü & Küçük Meyve Tadımı",
-                                        style = MaterialTheme.typography.labelMedium,
-                                        fontWeight = FontWeight.Bold,
-                                        color = SageDark
-                                    )
-                                    Text(
-                                        text = "Cam rendeden geçirilmiş çeyrek elma veya avokado püresi.",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = TextSecondary
-                                    )
+                                Row(
+                                    modifier = Modifier.padding(12.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    akinai.minikgurme.ui.components.FoodImage(routineEmoji(label), 29.dp)
+                                    Spacer(modifier = Modifier.width(12.dp))
+                                    Column {
+                                        Text(text = label, translate = false, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, color = fg)
+                                        if (body.isNotBlank()) Text(text = body, translate = false, style = MaterialTheme.typography.bodySmall, color = TextSecondary)
+                                    }
                                 }
                             }
                         }
@@ -482,7 +425,7 @@ fun RecommendationsScreen(
                             )
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
-                                text = "Kıymalı veya mercimekli sebze yemeklerine birkaç damla limon sıkmak, demir emilimini 3 katına çıkarır!",
+                                text = "Kıymalı veya mercimekli sebze yemeklerine birkaç damla limon sıkmak ya da yanında C vitamini kaynağı (domates, biber, portakal) vermek demir emilimini artırır.",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = TextPrimary,
                                 lineHeight = 18.sp
@@ -503,6 +446,11 @@ fun RecommendationsScreen(
                         letterSpacing = 1.sp
                     )
 
+                    if (recommendedFoods.isEmpty()) Text(
+                        "Bu yaşa uygun tüm besinleri denediniz! 🎉",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = TextSecondary
+                    )
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -526,7 +474,9 @@ fun RecommendationsScreen(
                                         style = MaterialTheme.typography.labelSmall,
                                         fontWeight = FontWeight.Bold,
                                         color = TextPrimary,
-                                        maxLines = 1
+                                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                                        maxLines = 2,
+                                        minLines = 2
                                     )
                                     Text(
                                         text = food.ageDisplay,
@@ -678,5 +628,25 @@ fun RecommendationsScreen(
                 }
             }
         }
+    }
+}
+
+
+/** "Sabah: Anne sütü -> Öğle: ..." → [("Sabah", "Anne sütü"), ("Öğle", "...")] */
+fun mealRoutineSteps(routine: String): List<Pair<String, String>> =
+    routine.split("->").map { it.trim() }.filter { it.isNotEmpty() }.map { step ->
+        val i = step.indexOf(':')
+        if (i > 0) step.substring(0, i).trim() to step.substring(i + 1).trim() else step to ""
+    }
+
+/** Öğün etiketine göre simge (TR ve EN etiketler). */
+private fun routineEmoji(label: String): String {
+    val l = label.replace('İ', 'i').replace('I', 'ı').lowercase()
+    return when {
+        "akşam" in l || "evening" in l || "dinner" in l -> "🌙"
+        "ikindi" in l || "afternoon" in l || "ara" == l || "snack" in l -> "🍎"
+        "öğle" in l || "gün ortası" in l || "lunch" in l || "midday" in l -> "🥣"
+        "kuşluk" in l || "kahvaltı" in l || "mid-morning" in l || "breakfast" in l -> "🍳"
+        else -> "☀️"
     }
 }

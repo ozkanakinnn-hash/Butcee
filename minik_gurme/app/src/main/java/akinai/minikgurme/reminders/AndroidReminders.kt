@@ -108,9 +108,12 @@ class ReminderReceiver : BroadcastReceiver() {
     }
 }
 
-/** Telefon yeniden başlayınca veya uygulama güncellenince hatırlatıcıları yeniden kurar. */
+/** Telefon yeniden başlayınca, uygulama güncellenince veya saat/saat dilimi değişince hatırlatıcıları yeniden kurar. */
 class BootReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
+        // Yalnızca sistemin gönderdiği beklenen olaylar (sahte intent'lere karşı)
+        if (intent.action !in setOf(Intent.ACTION_BOOT_COMPLETED, Intent.ACTION_MY_PACKAGE_REPLACED,
+                Intent.ACTION_TIMEZONE_CHANGED, Intent.ACTION_TIME_CHANGED)) return
         akinai.minikgurme.data.local.PlatformContext.init(context)
         val p = context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
         AndroidReminders.reschedule(context, plus = p.getBoolean("plus_active_cache", false))

@@ -462,7 +462,6 @@
 "Günün & Ayın Önerileri": "Tips for Today & This Month",
 "3 Gün Alerjen Takibi": "3-Day Allergen Tracking",
 "Beslenme Önerileri": "Feeding Tips",
-"Önerilen Günlük Öğün Akışı": "Suggested Daily Meal Flow",
 "Saatler bebeğinizin uykusuna göre esnetilebilir": "Times can be adjusted to your baby's naps",
 "Sabah (Uyanış): Anne Sütü veya Formül Mama": "Morning (Waking): Breast Milk or Formula",
 "İlk yıl beslenmesinin %70'ini anne sütü/mama oluşturmaya devam eder.": "Breast milk/formula still makes up 70% of nutrition in the first year.",
@@ -471,7 +470,6 @@
 "İkindi / Akşam: Anne Sütü & Küçük Meyve Tadımı": "Afternoon / Evening: Breast Milk & Small Fruit Taste",
 "Cam rendeden geçirilmiş çeyrek elma veya avokado püresi.": "A quarter of a grated apple or avocado purée.",
 "Altın Emilim Kuralı: Demir + C Vitamini": "Golden Absorption Rule: Iron + Vitamin C",
-"Kıymalı veya mercimekli sebze yemeklerine birkaç damla limon sıkmak, demir emilimini 3 katına çıkarır!": "A few drops of lemon on vegetable dishes with meat or lentils can triple iron absorption!",
 "SIRADAKİ DENENECEK SÜPER BESİNLER": "SUPERFOODS TO TRY NEXT",
 "1 Yaşına Kadar Kesinlikle Yasak Olanlar": "Strictly Forbidden Before Age 1",
 "❌ Bal (Botulizm felci riski)\n❌ Tuz ve İlave Şeker (Böbrek yükü ve tat eşiği)\n❌ Çiğ süt / Pastörize edilmemiş peynir\n❌ Çiğ sert kuruyemiş ve çiğ havuç (Boğulma tehlikesi)": "❌ Honey (Risk of infant botulism)\n❌ Salt and Added Sugar (Kidney load and taste threshold)\n❌ Raw milk / Unpasteurised cheese\n❌ Raw hard nuts and raw carrot (Choking hazard)",
@@ -3182,5 +3180,8 @@
 "Tıbbi tavsiye değildir": "Not medical advice",
 "Bu uygulamanın beslenme takibi ve genel bilgilendirme amaçlı olduğunu, tıbbi tavsiye yerine geçmediğini anladım.": "I understand that this app is for feeding tracking and general information only and does not replace medical advice.",
 "Bu uygulama beslenme takibi ve genel bilgilendirme amaçlıdır; tıbbi tavsiye yerine geçmez. Bebeğinizin beslenmesiyle ilgili kararlar için çocuk doktorunuza danışın.": "This app is for feeding tracking and general information only; it does not replace medical advice. Consult your paediatrician about decisions on your baby's feeding.",
-"Minik Gurme beslenme takibi ve genel bilgilendirme amaçlı bir uygulamadır; tıbbi tavsiye, teşhis veya tedavi yerine geçmez. Alerji şüphesinde ya da acil durumda hekiminize danışın.": "Minik Gurme is for feeding tracking and general information only; it does not replace medical advice, diagnosis or treatment. Consult your doctor if you suspect an allergy or in an emergency."
+"Minik Gurme beslenme takibi ve genel bilgilendirme amaçlı bir uygulamadır; tıbbi tavsiye, teşhis veya tedavi yerine geçmez. Alerji şüphesinde ya da acil durumda hekiminize danışın.": "Minik Gurme is for feeding tracking and general information only; it does not replace medical advice, diagnosis or treatment. Consult your doctor if you suspect an allergy or in an emergency.",
+"Örnek Günlük Öğün Akışı": "Sample Daily Meal Flow",
+"Kıymalı veya mercimekli sebze yemeklerine birkaç damla limon sıkmak ya da yanında C vitamini kaynağı (domates, biber, portakal) vermek demir emilimini artırır.": "Adding a few drops of lemon to meat or lentil dishes, or serving a vitamin C source (tomato, pepper, orange) alongside, improves iron absorption.",
+"Bu yaşa uygun tüm besinleri denediniz! 🎉": "You've tried every food suitable for this age! 🎉"
 }

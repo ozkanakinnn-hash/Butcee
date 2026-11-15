@@ -514,6 +514,7 @@ fun MainScreen(
                             selectedFoodForDetail = food
                         },
                         allTests = allAllergens,
+                        triedFoodIds = allTriedFoods.filter { it.isTried }.map { it.foodId }.toSet(),
                         onStartAllergen = { name ->
                             viewModel.addAllergenTest(name, "")
                             scope.launch { snackbarHostState.showSnackbar(t("3 günlük deneme başladı: $name")) }
