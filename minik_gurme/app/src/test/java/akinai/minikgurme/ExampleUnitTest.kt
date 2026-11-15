@@ -194,4 +194,22 @@ class ExampleUnitTest {
     assertEquals("Sabah", parsed.first().first().first)
     assertTrue("Aylar farklı akış göstermeli", parsed.map { it }.toSet().size > 1)
   }
+
+  @Test
+  fun allergenMaintenance_tracksLastGivenAndOverdue() {
+    val tests = listOf(
+      akinai.minikgurme.data.model.AllergenTest(food = "Yumurta", startDate = "2026-11-01", day = 3, status = "Güvenli"),
+      akinai.minikgurme.data.model.AllergenTest(food = "Yoğurt", startDate = "2026-11-10", day = 3, status = "Güvenli"),
+      akinai.minikgurme.data.model.AllergenTest(food = "Balık", startDate = "2026-11-12", day = 2, status = "Devam Ediyor"),
+      akinai.minikgurme.data.model.AllergenTest(food = "Susam", startDate = "2026-11-01", day = 3, status = "Reaksiyon")
+    )
+    val meals = listOf(
+      akinai.minikgurme.data.model.Meal(date = "2026-11-13", mealType = "Öğle", foodItems = "Ev yoğurdu, armut", texture = "", reaction = "Sevdi"),
+      akinai.minikgurme.data.model.Meal(date = "2026-11-14", mealType = "Sabah", foodItems = "Anne sütü", texture = "", reaction = "Sevdi")
+    )
+    val items = akinai.minikgurme.util.AllergenMaintenance.compute(tests, meals, emptyList(), today = "2026-11-15")
+    assertEquals(listOf("Yumurta", "Süt (yoğurt)"), items.map { it.name })   // en uzun süredir verilmeyen önce
+    val egg = items[0]; assertEquals("2026-11-03", egg.lastGiven); assertEquals(12, egg.daysSince); assertTrue(egg.overdue)
+    val milk = items[1]; assertEquals("2026-11-13", milk.lastGiven); assertEquals(2, milk.daysSince); assertFalse(milk.overdue) // anne sütü sayılmaz
+  }
 }

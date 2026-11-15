@@ -84,9 +84,11 @@ fun OnboardingScreen(
     var sex by rememberSaveable { mutableStateOf("") }
     var consent by rememberSaveable { mutableStateOf(false) }
     var notifications by rememberSaveable { mutableStateOf(true) }
+    var highRisk by rememberSaveable { mutableStateOf<Boolean?>(null) } // alerji riski sorusu (zorunlu)
     // Bildirim izni sorulduktan sonra (verilsin ya da verilmesin) kayıt tamamlanır
     val finish = {
         if (notifications) akinai.minikgurme.reminders.Reminders.setAllergen(true)
+        akinai.minikgurme.util.AllergyRisk.set(highRisk == true)
         onComplete(name.trim(), months, parseDecimal(weight)!!, parseDecimal(height)!!, style, sex)
     }
     val requestNotifications = akinai.minikgurme.platform.Platform.services.rememberNotificationPermission { granted ->
@@ -261,7 +263,7 @@ fun OnboardingScreen(
                                     colors = ButtonDefaults.outlinedButtonColors(containerColor = if (sel) CoralSoft else CardSurface),
                                     contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 4.dp)
                                 ) {
-                                    Text("$emoji $label", color = if (sel) CoralDark else TextSecondary, fontWeight = FontWeight.Bold, maxLines = 1)
+                                    Text(label, color = if (sel) CoralDark else TextSecondary, fontWeight = FontWeight.Bold, maxLines = 1)
                                 }
                             }
                         }
@@ -277,7 +279,30 @@ fun OnboardingScreen(
                         )
                     }
 
+                    // Alerji riski (zorunlu): yüksek riskli bebekte alerjen tanıtımı doktorla planlanmalı
+                    Column(modifier = Modifier.testTag("onb_risk")) {
+                        Text("Bebeğinizde şiddetli egzama veya doktorun koyduğu bir gıda alerjisi tanısı var mı?", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold, color = if (tried && highRisk == null) ReactionAllergy else TextPrimary)
+                        Spacer(Modifier.height(8.dp))
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            listOf(false to "Hayır", true to "Evet").forEach { (value, label) ->
+                                val sel = highRisk == value
+                                OutlinedButton(
+                                    onClick = { highRisk = value },
+                                    modifier = Modifier.weight(1f).height(46.dp).testTag(if (value) "onb_risk_yes" else "onb_risk_no"),
+                                    shape = RoundedCornerShape(14.dp),
+                                    border = BorderStroke(if (sel) 2.dp else 1.dp, if (sel) (if (value) ReactionAllergy else CoralPrimary) else CardBorder),
+                                    colors = ButtonDefaults.outlinedButtonColors(containerColor = if (sel) (if (value) ReactionAllergySoft else CoralSoft) else CardSurface)
+                                ) { Text(label, color = if (sel) (if (value) ReactionAllergy else CoralDark) else TextSecondary, fontWeight = FontWeight.Bold) }
+                            }
+                        }
+                        if (highRisk == true) {
+                            Spacer(Modifier.height(8.dp))
+                            akinai.minikgurme.ui.components.HighRiskAllergyNotice()
+                        }
+                    }
+
                     // Bildirimler (isteğe bağlı, varsayılan açık)
+
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
@@ -345,6 +370,9 @@ fun OnboardingScreen(
                         }
                     }
 
+                    if (tried && highRisk == null) {
+                        Text("Lütfen alerji riski sorusunu yanıtlayın.", style = MaterialTheme.typography.bodySmall, color = ReactionAllergy)
+                    }
                     if (tried && !(nameOk && weightOk && heightOk)) {
                         Text(
                             "Lütfen adı, kiloyu (1,5–30 kg) ve boyu (40–130 cm) kontrol edin.",
@@ -359,7 +387,7 @@ fun OnboardingScreen(
             Button(
                 onClick = {
                     tried = true
-                    if (nameOk && weightOk && heightOk && consent) {
+                    if (nameOk && weightOk && heightOk && consent && highRisk != null) {
                         if (notifications) requestNotifications() else finish()
                     }
                 },

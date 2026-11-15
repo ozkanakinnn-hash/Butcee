@@ -3197,5 +3197,12 @@
 "Güvenli bulunan alerjenleri, toleransın sürmesi için haftada birkaç kez vermeye devam edin. Öğün eklediğinizde tarih otomatik güncellenir.": "Keep offering allergens that were found safe a few times a week to maintain tolerance. The date updates automatically when you log a meal.",
 "gündür verilmedi": "days since last given",
 "Bugün verildi": "Given today",
-"gün önce verildi": "days ago"
+"gün önce verildi": "days ago",
+"Alerjen sürdürme": "Allergen maintenance",
+"1 haftadan uzun süredir verilmedi": "not given for over a week",
+"Bebeğinizde şiddetli egzama veya doktorun koyduğu bir gıda alerjisi tanısı var mı?": "Does your baby have severe eczema or a food allergy diagnosed by a doctor?",
+"Hayır": "No",
+"Evet": "Yes",
+"Lütfen alerji riski sorusunu yanıtlayın.": "Please answer the allergy risk question.",
+"Bebeğiniz yüksek alerji riski grubunda: bu tarifi vermeden önce doktorunuza danışın.": "Your baby is in the high allergy risk group: consult your doctor before offering this recipe."
 }

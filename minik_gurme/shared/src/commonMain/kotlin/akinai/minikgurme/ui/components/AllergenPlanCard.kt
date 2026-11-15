@@ -32,7 +32,7 @@ data class MajorAllergen(val name: String, val emoji: String, val keywords: List
 
 val MAJOR_ALLERGENS = listOf(
     MajorAllergen("Yumurta", "🥚", listOf("yumurta"), "İyi pişmiş yumurta sarısıyla başlayın."),
-    MajorAllergen("Süt (yoğurt)", "🥛", listOf("yoğurt", "yogurt", "süt", "lor", "labne", "peynir"), "Tam yağlı ev yoğurduyla başlayın; inek sütü içecek olarak 12. aydan sonra."),
+    MajorAllergen("Süt (yoğurt)", "🥛", listOf("yoğurt", "yoğurd", "yogurt", "süt", "lor", "labne", "peynir", "kaşar"), "Tam yağlı ev yoğurduyla başlayın; inek sütü içecek olarak 12. aydan sonra."),
     MajorAllergen("Buğday", "🌾", listOf("buğday", "irmik", "gluten", "makarna", "ekmek", "bulgur"), "Bebek irmiği veya tam buğday lapası."),
     MajorAllergen("Yer fıstığı", "🥜", listOf("fıstık"), "Şekersiz ezmeyi suyla inceltip az miktarda verin; asla bütün fıstık vermeyin."),
     MajorAllergen("Susam", "🌰", listOf("susam", "tahin"), "Yoğurda birkaç damla tahin ekleyin."),

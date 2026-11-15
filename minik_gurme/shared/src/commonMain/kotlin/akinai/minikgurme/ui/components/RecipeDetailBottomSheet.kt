@@ -477,6 +477,10 @@ fun RecipeDetailBottomSheet(
                         fontWeight = FontWeight.Bold,
                         color = if (allergens.isEmpty()) SageDark else CoralDark
                     )
+                    if (allergens.isNotEmpty() && akinai.minikgurme.util.AllergyRisk.high) Text(
+                        "Bebeğiniz yüksek alerji riski grubunda: bu tarifi vermeden önce doktorunuza danışın.",
+                        style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, color = ReactionAllergy
+                    )
                     Text(
                         "Malzeme adlarından otomatik belirlenir. Kullandığınız ürünlerin etiketini kontrol edin; yeni alerjenleri tek tek ve doktorunuzun önerisiyle tanıtın.",
                         style = MaterialTheme.typography.bodySmall,

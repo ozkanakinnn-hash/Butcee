@@ -423,6 +423,8 @@ fun MainScreen(
                             viewModel.deleteMeal(id)
                             scope.launch { snackbarHostState.showSnackbar(t("Öğün silindi.")) }
                         },
+                        overdueAllergens = allergenMaintenance.filter { it.overdue },
+                        onOpenAllergens = { previousTab = currentTab; currentTab = "foods100"; foodsSection = "allergen" },
                         onDeleteDiaryEntry = { id ->
                             viewModel.deleteDiaryEntry(id)
                             scope.launch { snackbarHostState.showSnackbar(t("Beslenme günlüğü kaydı silindi.")) }

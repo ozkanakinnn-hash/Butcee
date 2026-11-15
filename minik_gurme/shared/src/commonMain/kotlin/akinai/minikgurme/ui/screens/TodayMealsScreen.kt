@@ -115,7 +115,9 @@ fun TodayMealsScreen(
     onOpenRecipes: () -> Unit = {},
     onOpenGuide: () -> Unit = {},
     onDeleteMeal: (Long) -> Unit,
-    onDeleteDiaryEntry: (Long) -> Unit = onDeleteMeal
+    onDeleteDiaryEntry: (Long) -> Unit = onDeleteMeal,
+    overdueAllergens: List<akinai.minikgurme.util.AllergenMaintenance.Item> = emptyList(),
+    onOpenAllergens: () -> Unit = {}
 ) {
     var mealToDelete by remember { mutableStateOf<Meal?>(null) }
 
@@ -260,6 +262,30 @@ fun TodayMealsScreen(
                                 modifier = Modifier.size(18.dp)
                             )
                         }
+                    }
+                }
+            }
+
+            // Alerjen sürdürme hatırlatması (güvenli alerjen 7 günden uzun süredir verilmediyse)
+            if (overdueAllergens.isNotEmpty()) item {
+                androidx.compose.material3.Surface(
+                    onClick = onOpenAllergens,
+                    shape = RoundedCornerShape(16.dp),
+                    color = OchreSoft,
+                    border = androidx.compose.foundation.BorderStroke(1.dp, OchreBorder),
+                    modifier = Modifier.fillMaxWidth().testTag("today_allergen_maintenance")
+                ) {
+                    Row(Modifier.padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
+                        akinai.minikgurme.ui.components.FoodImage(overdueAllergens.first().emoji, 28.dp)
+                        Spacer(Modifier.width(10.dp))
+                        Column(Modifier.weight(1f)) {
+                            Text("Alerjen sürdürme", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold, color = OchreDark)
+                            Text(
+                                overdueAllergens.joinToString(", ") { t(it.name) } + " · " + t("1 haftadan uzun süredir verilmedi"),
+                                translate = false, style = MaterialTheme.typography.bodySmall, color = TextSecondary
+                            )
+                        }
+                        Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, tint = OchreDark, modifier = Modifier.size(18.dp))
                     }
                 }
             }

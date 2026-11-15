@@ -113,6 +113,10 @@ class AppSmokeTest {
             compose.waitForIdle()
             assertTrue(has("Minik Gurme'ye hoş geldiniz"))
             compose.onNodeWithTag("onb_consent").performScrollTo().performClick()
+            // Alerji riski sorusu yanıtlanmadan başlamaz
+            compose.onNodeWithTag("onb_start").performScrollTo().performClick(); compose.waitForIdle()
+            assertTrue(has("Lütfen alerji riski sorusunu yanıtlayın."))
+            compose.onNodeWithTag("onb_risk_no").performScrollTo().performClick()
             shot("tr_light_00b_onboarding_filled")
             compose.onNodeWithTag("onb_start").performScrollTo().performClick()
             compose.waitForIdle()
@@ -259,10 +263,12 @@ class AppSmokeTest {
             compose.onNodeWithTag("onb_name").performTextInput("Kübra")
             compose.onNodeWithTag("onb_weight").performTextInput("5,5")
             compose.onNodeWithTag("onb_height").performTextInput("65")
+            compose.onNodeWithTag("onb_risk_yes").performScrollTo().performClick()
             compose.onNodeWithTag("onb_consent").performScrollTo().performClick()
             compose.onNodeWithTag("onb_start").performScrollTo().performClick()
             compose.waitUntil(5000) { has("Kübra • 6 Ay") }
             compose.waitUntil(5000) { has("Merhaba, Kübra!") }
+            assertTrue(akinai.minikgurme.util.AllergyRisk.high)
             shot("tr_dark_large_font_today")
             compose.onAllNodesWithText("Kilo")[0].performClick(); compose.waitForIdle()
             compose.waitUntil(10000) { compose.onAllNodes(androidx.compose.ui.test.hasTestTag("metric_weight_edit")).fetchSemanticsNodes().isNotEmpty() }
