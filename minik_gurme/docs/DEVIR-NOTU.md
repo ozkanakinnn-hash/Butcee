@@ -42,6 +42,11 @@ Test: `./gradlew --no-daemon --no-configuration-cache --max-workers=2 :app:testD
   "iOS derleme kontrolü" çalıştırılmalı, `shots/*.png` incelenmeli.
 - **Tarifler 2026-11-14:** 10/11/12+ ay için 16 yeni tarif (toplam 35), filtrelerde ayrı "11+ Aylık" ve "12+ Aylık"; çeviri testi `recipesTranslated`.
 - **Hukuki risk azaltma 2026-11-14:** tarif detayında alerjen kartı (`RecipeAllergens`) + uyarı, Ayarlar › Kaynaklar (`LegalTexts.sources`, web: kaynaklar.html/sources.html), "pediatrik" iddiaları yumuşatıldı. Kullanıcıya öneri: içerik bir çocuk doktoru/diyetisyene kontrol ettirilsin, koşullara avukat baksın.
+- **2026-11-15 sadeleştirme + yeni özellikler** (rapor: `docs/RAKIP-ANALIZI.md`): 3 Gün Kuralı 100 Gıda sekmesinde (`foods_section_allergen`),
+  Rehber tek seviye; Tarifler tek satır filtre + "Filtrele" penceresi (varsayılan "Bebeğime Uygun"); Günün Menüsü yaşa uygun (`PediatricRecipesData.menuFor`)
+  ve Plus'ta haftalık planın bugünü (`WeeklyPlan.today`); sepet Tarifler'de (`open_shopping`); moderatör kimliği: Ayarlar'da sürüm yazısına 5 dokunuş.
+  Yeni: alerjen sürdürme (`util/AllergenSafety.kt`, Bugün uyarısı), ilk açılışta alerji riski sorusu (`AllergyRisk`, Ayarlar › Bebek'te değiştirilir),
+  yaşa göre servis çizimleri (`util/ServeShape.kt` metinden otomatik + `ServeShapeIcon` Canvas). Sonraki adaylar raporda ⭐⭐.
 - Kullanıcı isterse: Tarifler simgesi alternatifi, kuzu eti/tavuk ciğeri ve bal kabağı/bezelye görselleri, Android'e "APK derle".
 
 ## Önemli teknik dersler (ayrıntı SKILL.md'de)

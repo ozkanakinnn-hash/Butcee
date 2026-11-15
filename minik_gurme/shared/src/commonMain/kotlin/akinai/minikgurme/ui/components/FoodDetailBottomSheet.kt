@@ -1,5 +1,6 @@
 package akinai.minikgurme.ui.components
 
+import androidx.compose.runtime.remember
 import akinai.minikgurme.ui.theme.*
 import androidx.compose.foundation.BorderStroke
 import akinai.minikgurme.i18n.t
@@ -338,12 +339,20 @@ fun FoodDetailBottomSheet(
                                 color = CoralDark
                             )
                             Spacer(modifier = Modifier.height(2.dp))
-                            Text(
-                                text = food.serving6m,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = TextPrimary,
-                                lineHeight = 18.sp
-                            )
+                            val shapes = remember(food.id) { akinai.minikgurme.util.ServeShape.detect(food.serving6m) }
+                            androidx.compose.foundation.layout.Row(verticalAlignment = Alignment.CenterVertically) {
+                                shapes.forEach { shape ->
+                                    ServeShapeIcon(shape, food = CoralDark, plateBorder = CoralBorder)
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                }
+                                Text(
+                                    text = food.serving6m,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = TextPrimary,
+                                    lineHeight = 18.sp,
+                                    modifier = Modifier.weight(1f)
+                                )
+                            }
                         }
                     }
 
@@ -362,12 +371,20 @@ fun FoodDetailBottomSheet(
                                 color = OchreDark
                             )
                             Spacer(modifier = Modifier.height(2.dp))
-                            Text(
-                                text = food.serving9m,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = TextPrimary,
-                                lineHeight = 18.sp
-                            )
+                            val shapes = remember(food.id) { akinai.minikgurme.util.ServeShape.detect(food.serving9m) }
+                            androidx.compose.foundation.layout.Row(verticalAlignment = Alignment.CenterVertically) {
+                                shapes.forEach { shape ->
+                                    ServeShapeIcon(shape, food = OchreDark, plateBorder = OchreBorder)
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                }
+                                Text(
+                                    text = food.serving9m,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = TextPrimary,
+                                    lineHeight = 18.sp,
+                                    modifier = Modifier.weight(1f)
+                                )
+                            }
                         }
                     }
 
@@ -386,12 +403,20 @@ fun FoodDetailBottomSheet(
                                 color = SageDark
                             )
                             Spacer(modifier = Modifier.height(2.dp))
-                            Text(
-                                text = food.serving12m,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = TextPrimary,
-                                lineHeight = 18.sp
-                            )
+                            val shapes = remember(food.id) { akinai.minikgurme.util.ServeShape.detect(food.serving12m) }
+                            androidx.compose.foundation.layout.Row(verticalAlignment = Alignment.CenterVertically) {
+                                shapes.forEach { shape ->
+                                    ServeShapeIcon(shape, food = SageDark, plateBorder = SageBorder)
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                }
+                                Text(
+                                    text = food.serving12m,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = TextPrimary,
+                                    lineHeight = 18.sp,
+                                    modifier = Modifier.weight(1f)
+                                )
+                            }
                         }
                     }
                 }

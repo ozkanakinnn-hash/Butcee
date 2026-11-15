@@ -195,3 +195,7 @@ gradle/actions/setup-gradle@v5 → `./gradlew assembleDebug` → upload-artifact
   altında kısa uyarı, malzemelerden otomatik alerjen etiketi ("İçerir: Yumurta, Süt…" + "etiketi kontrol edin"), "pediatrik/uzman onaylı"
   gibi yetki ima eden ifadeleri kaldırma, Ayarlar › Kaynaklar sayfası (DSÖ, ESPGHAN, Sağlık Bakanlığı TÜBER, AAP; "onaylamamıştır" notu).
   Kullanıcıya: TBK m.115 ağır kusur sorumluluğu sözleşmeyle kaldırılamaz → içerik doğruluğu + uzman kontrolü asıl korumadır; avukat önerilir.
+- **Besin/servis çizimleri için görsel dosyası yerine Compose Canvas**: tema renklerine uyar, APK büyümez; şekli serbest metinden
+  anahtar kelimeyle çıkar (`ServeShape.detect`, Türkçe çekim eklerine dikkat: "yoğurdu", "kaşığı" → kök "yoğurd", "kaşığ").
+- **Sadeleştirme dersleri** (Minik Gurme): iç içe sekme 2 seviyeyi geçmesin; takip özellikleri (3 gün kuralı) bilgi sekmesinde değil takip sekmesinde;
+  çok sıralı filtre çipleri yerine 2 hızlı çip + "Filtrele" penceresi; yönetici araçları (moderatör kimliği) gizli açılışla (sürüm yazısına 5 dokunuş).

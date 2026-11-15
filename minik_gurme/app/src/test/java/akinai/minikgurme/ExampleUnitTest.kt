@@ -212,4 +212,14 @@ class ExampleUnitTest {
     val egg = items[0]; assertEquals("2026-11-03", egg.lastGiven); assertEquals(12, egg.daysSince); assertTrue(egg.overdue)
     val milk = items[1]; assertEquals("2026-11-13", milk.lastGiven); assertEquals(2, milk.daysSince); assertFalse(milk.overdue) // anne sütü sayılmaz
   }
+
+  @Test
+  fun serveShapes_detectedForAlmostAllFoods() {
+    assertEquals(listOf(akinai.minikgurme.util.ServeShape.STICK, akinai.minikgurme.util.ServeShape.MASH), akinai.minikgurme.util.ServeShape.detect("Yumuşak kalın parmak dilimler veya çatalla ezilerek püre kıvamında sunulur."))
+    assertTrue(akinai.minikgurme.util.ServeShape.detect("8. aydan önce önerilmez.").isEmpty())
+    val texts = akinai.minikgurme.data.guide.FoodDirectoryData.allFoods.flatMap { listOf(it.serving6m, it.serving9m, it.serving12m) }
+      .filter { "önerilmez" !in it && "önerilir" !in it }
+    val missing = texts.filter { akinai.minikgurme.util.ServeShape.detect(it).isEmpty() }
+    assertTrue("Çizimsiz: $missing", missing.size <= 3)
+  }
 }
