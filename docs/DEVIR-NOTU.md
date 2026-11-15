@@ -16,7 +16,7 @@
 - Mağaza metinleri: `docs/store/magaza-metni.md`; görseller: `docs/store/ezan-vakit-play-gorselleri.zip` (8 ekran + öne çıkan + ikon), üretici `scripts/store/`.
 
 ## Gizli / depoda OLMAYAN dosyalar (yeni oturumda kullanıcıdan tekrar iste)
-- **Yükleme anahtarı:** `my-upload-key.jks` + şifre dosyası `YUKLEME-ANAHTARI-SIFRE.txt` (alias `upload`). Kullanıcıda kopyası var. Derleme: `KEYSTORE_PATH=… STORE_PASSWORD=… KEY_PASSWORD=… ./gradlew :app:bundleRelease`.
+- **Yükleme anahtarı:** `my-upload-key.jks` + şifre dosyası `YUKLEME-ANAHTARI-SIFRE.txt` (alias `upload`, 4296 bayt). Parmak izi SHA1 `E5:7E:0E:27:04:FD:AA:EF:E3:F3:78:F1:83:06:CC:0D:74:FE:0F:A5`, SHA256 `5B:99:FB:12:00:50:FE:23:41:2A:F9:2A:9A:96:73:BE:4A:5E:0A:9D:5B:96:E4:E5:10:2D:84:8E:21:16:12:F2`. Kullanıcıya 13 Kasım 00:57'de (TR) "Ramazan rehperi" oturumunda dosya kartı olarak gönderildi; şifre hiçbir kayıtta açık yazmıyor. Derleme: `KEYSTORE_PATH=… STORE_PASSWORD=… KEY_PASSWORD=… ./gradlew :app:bundleRelease`.
 - **Firebase:** `app/google-services.json` (proje `ezan-vakit-10190`, paket `akin.ai2`) — `.gitignore`'da; kullanıcıda kopyası var.
 - AdMob kimlikleri `gradle.properties`'te (gizli değil). Gerçek reklam yalnızca `-PprodAds=true` üretim paketinde; kapalı test paketi test reklamlı.
 
