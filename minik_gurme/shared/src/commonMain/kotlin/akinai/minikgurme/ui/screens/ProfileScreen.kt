@@ -736,7 +736,7 @@ fun ProfileScreen(
                     )
                     Spacer(modifier = Modifier.width(10.dp))
                     Text(
-                        text = "Minik Gurme bir beslenme takip uygulamasıdır; bilgiler genel rehberlik içindir ve tıbbi tavsiye, teşhis veya tedavi yerine geçmez. Alerji şüphesinde ya da acil durumda hekiminize danışın.",
+                        text = "Minik Gurme beslenme takibi ve genel bilgilendirme amaçlı bir uygulamadır; tıbbi tavsiye, teşhis veya tedavi yerine geçmez. Alerji şüphesinde ya da acil durumda hekiminize danışın.",
                         style = MaterialTheme.typography.bodySmall,
                         color = TextSecondary,
                         lineHeight = 16.sp

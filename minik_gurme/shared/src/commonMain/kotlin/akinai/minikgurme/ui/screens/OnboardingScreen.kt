@@ -329,7 +329,7 @@ fun OnboardingScreen(
                             )
                             Column(modifier = Modifier.padding(top = 12.dp)) {
                                 Text(
-                                    "Uygulamadaki bilgilerin genel rehberlik amaçlı olduğunu, tıbbi tavsiye yerine geçmediğini anladım.",
+                                    "Bu uygulamanın beslenme takibi ve genel bilgilendirme amaçlı olduğunu, tıbbi tavsiye yerine geçmediğini anladım.",
                                     style = MaterialTheme.typography.bodySmall,
                                     fontWeight = FontWeight.SemiBold,
                                     color = AllergyText

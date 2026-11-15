@@ -2116,7 +2116,6 @@
 "Alışveriş listesini temizle": "Clear shopping list",
 "Tüm ürünleri sil": "Delete all items",
 "Hakkında": "About",
-"Bu uygulamadaki bilgiler genel rehberlik içindir ve tıbbi tavsiye yerine geçmez. Bebeğinizin beslenmesiyle ilgili kararlar için çocuk doktorunuza danışın.": "The information in this app is general guidance and is not a substitute for medical advice. Consult your paediatrician about decisions on your baby's feeding.",
 "Alışveriş listesi temizlensin mi?": "Clear the shopping list?",
 "Listedeki tüm ürünler silinecek. Bu işlem geri alınamaz.": "All items on the list will be deleted. This cannot be undone.",
 "Evet, temizle": "Yes, clear",
@@ -2190,7 +2189,6 @@
 "Merhaba!": "Hello!",
 "Kilo": "Weight",
 "Boy": "Height",
-"Minik Gurme bir beslenme takip uygulamasıdır; bilgiler genel rehberlik içindir ve tıbbi tavsiye, teşhis veya tedavi yerine geçmez. Alerji şüphesinde ya da acil durumda hekiminize danışın.": "Minik Gurme is a feeding tracker; its information is general guidance and does not replace medical advice, diagnosis or treatment. Consult your doctor if you suspect an allergy or in an emergency.",
 "Altın Kurallar": "Golden Rules",
 "Beslenme Özeti": "Feeding Summary",
 "Genel beslenme kılavuzlarına dayanan ay ay beslenme, kıvam ve güvenlik önerileri.": "Month-by-month feeding, texture and safety suggestions based on general feeding guidelines.",
@@ -2294,7 +2292,6 @@
 "CİNSİYET": "SEX",
 "Belirtilmedi": "Not specified",
 "Büyüme eğrisi WHO'nun kız/erkek tablolarıyla karşılaştırılır.": "The growth curve is compared with WHO girl/boy charts.",
-"Uygulamadaki bilgilerin genel rehberlik amaçlı olduğunu, tıbbi tavsiye yerine geçmediğini anladım.": "I understand that the information in the app is general guidance and does not replace medical advice.",
 "Gizlilik politikası": "Privacy policy",
 "Minik Gurme · Beslenme ve Gelişim Raporu": "Minik Gurme · Feeding and Growth Report",
 "Rapor tarihi": "Report date",
@@ -3182,5 +3179,8 @@
 "Tarif ve rehberlerin dayandığı öneriler": "Recommendations behind the recipes and guides",
 "Malzeme adlarından otomatik belirlenir. Kullandığınız ürünlerin etiketini kontrol edin; yeni alerjenleri tek tek ve doktorunuzun önerisiyle tanıtın.": "Detected automatically from ingredient names. Check the labels of the products you use; introduce new allergens one at a time and as your doctor advises.",
 "Bu tarif genel bilgi amaçlıdır, tıbbi tavsiye değildir. Bebeğinizin alerji öyküsü, sağlık sorunu veya özel durumu varsa önce çocuk doktorunuza danışın.": "This recipe is general information, not medical advice. If your baby has an allergy history, a health problem or special needs, consult your paediatrician first.",
-"Tıbbi tavsiye değildir": "Not medical advice"
+"Tıbbi tavsiye değildir": "Not medical advice",
+"Bu uygulamanın beslenme takibi ve genel bilgilendirme amaçlı olduğunu, tıbbi tavsiye yerine geçmediğini anladım.": "I understand that this app is for feeding tracking and general information only and does not replace medical advice.",
+"Bu uygulama beslenme takibi ve genel bilgilendirme amaçlıdır; tıbbi tavsiye yerine geçmez. Bebeğinizin beslenmesiyle ilgili kararlar için çocuk doktorunuza danışın.": "This app is for feeding tracking and general information only; it does not replace medical advice. Consult your paediatrician about decisions on your baby's feeding.",
+"Minik Gurme beslenme takibi ve genel bilgilendirme amaçlı bir uygulamadır; tıbbi tavsiye, teşhis veya tedavi yerine geçmez. Alerji şüphesinde ya da acil durumda hekiminize danışın.": "Minik Gurme is for feeding tracking and general information only; it does not replace medical advice, diagnosis or treatment. Consult your doctor if you suspect an allergy or in an emergency."
 }

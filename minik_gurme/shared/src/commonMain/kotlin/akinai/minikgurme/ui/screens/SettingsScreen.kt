@@ -298,7 +298,7 @@ fun SettingsScreen(
             Text("Minik Gurme • Sürüm $versionName", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold, color = TextPrimary)
             Spacer(Modifier.height(4.dp))
             Text(
-                "Bu uygulamadaki bilgiler genel rehberlik içindir ve tıbbi tavsiye yerine geçmez. Bebeğinizin beslenmesiyle ilgili kararlar için çocuk doktorunuza danışın.",
+                "Bu uygulama beslenme takibi ve genel bilgilendirme amaçlıdır; tıbbi tavsiye yerine geçmez. Bebeğinizin beslenmesiyle ilgili kararlar için çocuk doktorunuza danışın.",
                 style = MaterialTheme.typography.bodySmall, color = TextSecondary
             )
             Spacer(Modifier.height(6.dp))
