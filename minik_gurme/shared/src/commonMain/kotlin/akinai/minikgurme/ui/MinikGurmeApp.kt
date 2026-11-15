@@ -87,7 +87,12 @@ fun MinikGurmeApp(onRestart: (() -> Unit)? = null) {
                     // Otomatik test: formu örnek profille geç
                     LaunchedEffect(Unit) { complete("Defne", 8, 8.4f, 70f, "mixed", "girl") }
                 } else {
-                    OnboardingScreen(onOpenPrivacy = { showPrivacy = true }, onComplete = complete)
+                    OnboardingScreen(
+                        onOpenPrivacy = { showPrivacy = true },
+                        // Yeni bebek eklerken geri dönüş (ilk bebekte yok)
+                        onCancel = if (Babies.canCancelAdd(babyId)) ({ AppDatabase.closeAll(); Babies.cancelAdd(babyId); restart() }) else null,
+                        onComplete = complete
+                    )
                 }
             }
         }

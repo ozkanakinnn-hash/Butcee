@@ -205,63 +205,53 @@ fun RecipesScreen(
                 ) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            akinai.minikgurme.ui.components.FoodImage("🍽️", 26.dp)
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Column {
-                                Text(
-                                    text = "Günün Menüsü",
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.ExtraBold,
-                                    color = TextPrimary
-                                )
-                                Text(
-                                    text = if (menuFromPlan) t("Haftalık menünüzden") else "${profile.name} için yaşa uygun örnek menü",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = TextSecondary
-                                )
-                            }
+                        akinai.minikgurme.ui.components.FoodImage("🍽️", 26.dp)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        // Başlık kalan alanı alır; düğmeler sabit boyutta kalır (büyük yazı boyutunda da bozulmaz)
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "Günün Menüsü",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.ExtraBold,
+                                color = TextPrimary,
+                                maxLines = 1
+                            )
+                            Text(
+                                text = if (menuFromPlan) t("Haftalık menünüzden") else "${profile.name} için yaşa uygun örnek menü",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = TextSecondary,
+                                maxLines = 2
+                            )
                         }
-
-                        // Alışveriş listesi (üst bardan buraya taşındı) + Yenile
-                        Row(verticalAlignment = Alignment.CenterVertically) {
+                        Spacer(Modifier.width(8.dp))
+                        // Alışveriş listesi
                         androidx.compose.material3.BadgedBox(
                             badge = { if (shoppingCount > 0) androidx.compose.material3.Badge(containerColor = CoralPrimary) { androidx.compose.material3.Text("$shoppingCount") } }
                         ) {
-                            IconButton(onClick = onOpenShopping, modifier = Modifier.size(36.dp).testTag("open_shopping")) {
-                                Icon(Icons.Default.ShoppingCart, contentDescription = t("Alışveriş Listesi"), tint = TextSecondary, modifier = Modifier.size(20.dp))
+                            Surface(
+                                onClick = onOpenShopping,
+                                shape = CircleShape,
+                                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                                modifier = Modifier.size(40.dp).testTag("open_shopping")
+                            ) {
+                                Box(contentAlignment = Alignment.Center) {
+                                    Icon(Icons.Default.ShoppingCart, contentDescription = t("Alışveriş Listesi"), tint = TextSecondary, modifier = Modifier.size(20.dp))
+                                }
                             }
                         }
-                        Spacer(Modifier.width(6.dp))
-                        // Shuffle Menu Button
+                        Spacer(Modifier.width(8.dp))
+                        // Menüyü yenile
                         Surface(
                             onClick = { menuSeed++; onShuffleMenu() },
-                            shape = RoundedCornerShape(12.dp),
+                            shape = CircleShape,
                             color = CoralSoft,
-                            modifier = Modifier.testTag("shuffle_menu_btn")
+                            modifier = Modifier.size(40.dp).testTag("shuffle_menu_btn")
                         ) {
-                            Row(
-                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Refresh,
-                                    contentDescription = t("Karıştır"),
-                                    tint = CoralDark,
-                                    modifier = Modifier.size(16.dp)
-                                )
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text(
-                                    text = "Yenile",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    fontWeight = FontWeight.Bold,
-                                    color = CoralDark
-                                )
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(Icons.Default.Refresh, contentDescription = t("Yenile"), tint = CoralDark, modifier = Modifier.size(20.dp))
                             }
-                        }
                         }
                     }
 

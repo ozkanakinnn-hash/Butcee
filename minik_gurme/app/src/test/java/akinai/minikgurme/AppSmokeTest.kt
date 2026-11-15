@@ -360,6 +360,10 @@ class AppSmokeTest {
             val id = akinai.minikgurme.util.Babies.activeId()
             assertTrue(id != akinai.minikgurme.util.Babies.MAIN)
             assertEquals(2, akinai.minikgurme.util.Babies.all().size)
+            // Yanlışlıkla girildiyse "Vazgeç" ile eklemeden önceki bebeğe dönülür
+            compose.onNodeWithTag("onb_cancel").performClick(); compose.waitForIdle()
+            compose.waitUntil(8000) { akinai.minikgurme.util.Babies.activeId() == akinai.minikgurme.util.Babies.MAIN }
+            assertEquals(1, akinai.minikgurme.util.Babies.all().size)
         }
     }
 

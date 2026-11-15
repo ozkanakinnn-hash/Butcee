@@ -32,6 +32,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.Button
@@ -73,6 +74,7 @@ private fun parseDecimal(s: String): Float? = s.trim().replace(',', '.').toFloat
 @Composable
 fun OnboardingScreen(
     onOpenPrivacy: () -> Unit = {},
+    onCancel: (() -> Unit)? = null,
     onComplete: (name: String, ageMonths: Int, weightKg: Float, heightCm: Float, feedingStyle: String, sex: String) -> Unit
 ) {
     var name by rememberSaveable { mutableStateOf("") }
@@ -117,8 +119,17 @@ fun OnboardingScreen(
                 .padding(horizontal = 20.dp, vertical = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Dil seçimi (ilk açılışta)
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+            if (onCancel != null) akinai.minikgurme.ui.platform.PlatformBackHandler { onCancel() }
+            // Geri (yalnızca yeni bebek eklerken) + dil seçimi
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.CenterVertically) {
+                if (onCancel != null) {
+                    androidx.compose.material3.TextButton(onClick = onCancel, modifier = Modifier.testTag("onb_cancel")) {
+                        Icon(androidx.compose.material.icons.Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null, tint = TextPrimary, modifier = Modifier.size(20.dp))
+                        Spacer(Modifier.width(6.dp))
+                        Text("Vazgeç", color = TextPrimary, fontWeight = FontWeight.Bold)
+                    }
+                    Spacer(Modifier.weight(1f))
+                }
                 listOf("tr" to "TR", "en" to "EN").forEach { (code, label) ->
                     val selected = AppLanguage.current == code
                     OutlinedButton(

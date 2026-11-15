@@ -20,6 +20,7 @@ object Babies {
     private const val KEY_LIST = "babies"
     private const val KEY_ACTIVE = "active_baby"
     const val MAIN = "main"
+    private const val KEY_PREVIOUS = "previous_active_baby"
 
     data class Baby(val id: String, val name: String)
 
@@ -61,6 +62,7 @@ object Babies {
 
     /** Yeni bebek oluşturur ve etkin yapar; ilk açılış ekranı onun için gösterilir. */
     fun addNew(): String {
+        prefs.putString(KEY_PREVIOUS, activeId())   // "Vazgeç" ile dönülecek bebek
         val id = "b" + currentTimeMillis().toString(36)
         save(all() + Baby(id, ""))
         setActive(id)
@@ -74,5 +76,17 @@ object Babies {
         deleteDatabaseFile(dbName(id))
         prefs.remove(onboardedKey(id)); prefs.remove("weekly_plan_${dbName(id)}")
         if (activeId() == id) setActive(MAIN)
+    }
+
+    /** Bebek ekleme yarıda bırakılabilir mi? (Daha önce kaydı tamamlanmış başka bir bebek varsa.) */
+    fun canCancelAdd(id: String = activeId()): Boolean = id != MAIN && all().any { it.id != id && isOnboarded(it.id) }
+
+    /** Yeni bebek eklemeden vazgeç: yarım kaydı sil, önceki bebeğe dön. */
+    fun cancelAdd(id: String = activeId()) {
+        if (!canCancelAdd(id)) return
+        val back = prefs.getString(KEY_PREVIOUS, null)?.takeIf { p -> p != id && isOnboarded(p) }
+            ?: all().first { it.id != id && isOnboarded(it.id) }.id
+        delete(id)
+        setActive(back)
     }
 }
