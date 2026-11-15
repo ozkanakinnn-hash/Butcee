@@ -69,6 +69,12 @@ object WeeklyPlan {
         prefs.putString(key(), JsonObject(plan.mapValues { JsonPrimitive(it.value) }).toString())
     }
     fun slotKey(day: Int, slot: Int) = "${day}_$slot"
+    /** Bugünün planı: "Kahvaltı"/"Öğle"/"Akşam" → tarif (planda bugün boşsa eksik döner). */
+    fun today(): Map<String, BabyRecipe> {
+        val plan = load(); val d = akinai.minikgurme.util.DateKit.mondayIndex(akinai.minikgurme.util.DateKit.today())
+        val byId = PediatricRecipesData.allRecipes.associateBy { it.id }
+        return SLOTS.indices.mapNotNull { s -> plan[slotKey(d, s)]?.let { byId[it] }?.let { SLOTS[s] to it } }.toMap()
+    }
     private fun matches(r: BabyRecipe, slot: Int) = when (slot) {
         0 -> r.mealType.contains("Kahvaltı") || r.mealType.contains("Ara")
         1 -> r.mealType.contains("Öğle")

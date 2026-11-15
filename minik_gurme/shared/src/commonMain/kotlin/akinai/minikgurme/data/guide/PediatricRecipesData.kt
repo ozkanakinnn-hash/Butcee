@@ -929,6 +929,20 @@ object PediatricRecipesData {
         )
     )
 
+    /** Yaşa uygun günlük menü (Kahvaltı/Öğle/Akşam); aynı gün ve tohumda hep aynı, Yenile ile tohum değişir. */
+    fun menuFor(ageMonths: Int, seed: Int, epochDay: Long = akinai.minikgurme.util.DateKit.today().toEpochDays().toLong()): Map<String, BabyRecipe> {
+        val pool = allRecipes.filter { it.ageMonths <= ageMonths.coerceAtLeast(6) }.ifEmpty { allRecipes }
+        fun pick(slot: Int, match: (BabyRecipe) -> Boolean): BabyRecipe {
+            val c = pool.filter(match).ifEmpty { pool }
+            return c[((epochDay + seed * 7 + slot * 3) % c.size).toInt().let { if (it < 0) it + c.size else it }]
+        }
+        return mapOf(
+            "Kahvaltı" to pick(0) { it.mealType.contains("Kahvaltı") || it.mealType.contains("Ara") },
+            "Öğle" to pick(1) { it.mealType.contains("Öğle", ignoreCase = true) },
+            "Akşam" to pick(2) { it.mealType.contains("Akşam", ignoreCase = true) }
+        )
+    }
+
     fun getDailyMenu(): Map<String, BabyRecipe> {
         return mapOf(
             "Kahvaltı" to (allRecipes.firstOrNull { it.id == "avokado_tost" } ?: allRecipes[0]),

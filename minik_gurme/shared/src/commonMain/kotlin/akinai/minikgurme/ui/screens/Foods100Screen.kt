@@ -26,7 +26,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
@@ -487,18 +486,6 @@ fun Foods100Screen(
                         }
                     }
 
-                    // Info button to open full serving & safety sheet
-                    IconButton(
-                        onClick = { onSelectFood(food) },
-                        modifier = Modifier.size(32.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Info,
-                            contentDescription = t("Nasıl Sunulur"),
-                            tint = CoralPrimary,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
                 }
             }
         }

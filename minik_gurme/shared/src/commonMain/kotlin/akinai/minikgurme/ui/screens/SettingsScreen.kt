@@ -1,5 +1,6 @@
 package akinai.minikgurme.ui.screens
 
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -97,6 +98,8 @@ fun SettingsScreen(
     onDataImported: () -> Unit = {}
 ) {
     val platform = Platform.services
+    var adminTaps by remember { mutableIntStateOf(0) }
+    var showAdmin by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     var confirm by remember { mutableStateOf<String?>(null) } // "stats" | "shopping" | "import" | "baby:<id>"
     var pendingImport by remember { mutableStateOf<Any?>(null) }
@@ -244,6 +247,13 @@ fun SettingsScreen(
                     if (b.id != Babies.MAIN) IconButton(onClick = { confirm = "baby:${b.id}" }) { Icon(Icons.Filled.DeleteOutline, contentDescription = t("Sil"), tint = TextTertiary) }
                 }
             }
+            ToggleRow(
+                "Yüksek alerji riski",
+                "Şiddetli egzama veya tanı konmuş gıda alerjisi",
+                akinai.minikgurme.util.AllergyRisk.high,
+                "toggle_high_risk"
+            ) { akinai.minikgurme.util.AllergyRisk.set(it) }
+            HorizontalDivider(color = DividerColor, modifier = Modifier.padding(vertical = 4.dp))
             SettingRow(Icons.Filled.Add, "Bebek ekle", "İkizler ve kardeşler için ayrı profil", tag = "settings_add_baby", locked = !isPlus) { if (isPlus) onAddBaby() else onOpenPaywall() }
         }
 
@@ -272,8 +282,8 @@ fun SettingsScreen(
             SettingRow(Icons.Filled.Block, "Engellenen kullanıcılar", t("${Community.blocked.size} kişi") + if (Community.blocked.isEmpty()) "" else t(" · engeli kaldırmak için dokunun"), tag = "settings_blocked") {
                 if (Community.blocked.isNotEmpty()) confirm = "unblock"
             }
-            HorizontalDivider(color = DividerColor, modifier = Modifier.padding(vertical = 4.dp))
-            SettingRow(Icons.Filled.Fingerprint, "Topluluk kimliğim", t("Moderatör eklemek için kopyalayın"), tag = "settings_uid") {
+            if (platform.isDebugBuild || showAdmin) HorizontalDivider(color = DividerColor, modifier = Modifier.padding(vertical = 4.dp))
+            if (platform.isDebugBuild || showAdmin) SettingRow(Icons.Filled.Fingerprint, "Topluluk kimliğim", t("Moderatör eklemek için kopyalayın"), tag = "settings_uid") {
                 val uid = runCatching { Community.backend.currentUid() }.getOrNull()
                 if (uid != null) {
                     platform.copyText(uid)
@@ -290,12 +300,14 @@ fun SettingsScreen(
             SettingRow(Icons.Filled.Upload, "Yedekten geri yükle", "Daha önce kaydettiğiniz yedeği açın", tag = "settings_import") { pickBackup() }
             HorizontalDivider(color = DividerColor, modifier = Modifier.padding(vertical = 4.dp))
             SettingRow(Icons.Filled.RestartAlt, "Beslenme istatistiklerini sıfırla", "Öğün kayıtları ve alerjen testleri", tint = ReactionAllergy, tag = "settings_reset_stats") { confirm = "stats" }
-            HorizontalDivider(color = DividerColor, modifier = Modifier.padding(vertical = 4.dp))
-            SettingRow(Icons.Filled.DeleteSweep, "Alışveriş listesini temizle", "Tüm ürünleri sil", tint = ReactionAllergy, tag = "settings_clear_shopping") { confirm = "shopping" }
         }
 
         Section("Hakkında") {
-            Text("Minik Gurme • Sürüm $versionName", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold, color = TextPrimary)
+            Text(
+                "Minik Gurme • Sürüm $versionName", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold, color = TextPrimary,
+                // Yönetici (moderatör kimliği) için gizli açılış: 5 kez dokun
+                modifier = Modifier.clickable { adminTaps++; if (adminTaps >= 5) showAdmin = true }.testTag("settings_version")
+            )
             Spacer(Modifier.height(4.dp))
             Text(
                 "Bu uygulama beslenme takibi ve genel bilgilendirme amaçlıdır; tıbbi tavsiye yerine geçmez. Bebeğinizin beslenmesiyle ilgili kararlar için çocuk doktorunuza danışın.",

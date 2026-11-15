@@ -109,18 +109,15 @@ fun RecommendationsScreen(
     onSelectFood: (FoodDirectoryItem) -> Unit = {},
     allTests: List<AllergenTest> = tests,
     onStartAllergen: (String) -> Unit = {},
-    triedFoodIds: Set<String> = emptySet()
+    /** "month": bu ayın bilgileri (Rehber sekmesi) · "allergen": 3 gün kuralı takibi (100 Gıda sekmesi) */
+    mode: String = "month",
+    maintenance: List<akinai.minikgurme.util.AllergenMaintenance.Item> = emptyList(),
+    highRisk: Boolean = false
 ) {
-    var selectedSectionTab by remember { mutableIntStateOf(0) } // 0: Günün & Ayın Önerileri, 1: 3 Gün Alerjen Takibi
 
     val currentMonthGuide = remember(profile.ageMonths) {
         PediatricGuideData.monthlyGuides.firstOrNull { it.month == profile.ageMonths }
             ?: PediatricGuideData.monthlyGuides.first()
-    }
-
-    // Recommended superfoods for this month
-    val recommendedFoods = remember(profile.ageMonths, triedFoodIds) {
-        FoodDirectoryData.allFoods.filter { it.minAgeMonths <= profile.ageMonths && it.id !in triedFoodIds }.take(4)
     }
 
     LazyColumn(
@@ -135,160 +132,7 @@ fun RecommendationsScreen(
         ),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // 1. Header Banner
-        item {
-            Card(
-                shape = RoundedCornerShape(26.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                border = BorderStroke(1.dp, CardBorder),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(
-                            Brush.linearGradient(
-                                HeroGradient
-                            )
-                        )
-                        .padding(20.dp)
-                ) {
-                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Surface(
-                                color = OnHero.copy(alpha = 0.25f),
-                                shape = RoundedCornerShape(10.dp)
-                            ) {
-                                Row(
-                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Lightbulb,
-                                        contentDescription = null,
-                                        tint = OnHero,
-                                        modifier = Modifier.size(15.dp)
-                                    )
-                                    Spacer(modifier = Modifier.width(6.dp))
-                                    Text(
-                                        text = "BESLENME ÖNERİLERİ",
-                                        style = MaterialTheme.typography.labelSmall,
-                                        fontWeight = FontWeight.Bold,
-                                        color = OnHero,
-                                        letterSpacing = 0.5.sp
-                                    )
-                                }
-                            }
-
-                            Surface(
-                                color = OnHero.copy(alpha = 0.9f),
-                                shape = RoundedCornerShape(12.dp)
-                            ) {
-                                Text(
-                                    text = "${profile.ageMonths}. Ay Rehberi",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    fontWeight = FontWeight.ExtraBold,
-                                    color = HeroPillText,
-                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
-                                )
-                            }
-                        }
-
-                        Text(
-                            text = if (profile.name.isNotBlank()) "${profile.name} İçin Akıllı Öneriler" else "Akıllı Öneriler",
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.ExtraBold,
-                            color = OnHero
-                        )
-
-                        Text(
-                            text = "Genel beslenme kılavuzlarına dayanan ay ay beslenme, kıvam ve güvenlik önerileri.",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = OnHero.copy(alpha = 0.95f),
-                            lineHeight = 18.sp
-                        )
-                    }
-                }
-            }
-        }
-
-        // 2. Segmented Section Tabs: "Günün & Ayın Önerileri" vs "3 Gün Alerjen Takibi"
-        item {
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(18.dp),
-                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
-                border = BorderStroke(1.dp, CardBorder)
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(4.dp),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
-                ) {
-                    Surface(
-                        onClick = { selectedSectionTab = 0 },
-                        shape = RoundedCornerShape(14.dp),
-                        color = if (selectedSectionTab == 0) CoralPrimary else Color.Transparent,
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(vertical = 10.dp),
-                            horizontalArrangement = Arrangement.Center,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Lightbulb,
-                                contentDescription = null,
-                                tint = if (selectedSectionTab == 0) OnAccent else TextSecondary,
-                                modifier = Modifier.size(16.dp)
-                            )
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text(
-                                text = "Beslenme Önerileri",
-                                style = MaterialTheme.typography.labelMedium,
-                                fontWeight = if (selectedSectionTab == 0) FontWeight.Bold else FontWeight.Medium,
-                                color = if (selectedSectionTab == 0) OnAccent else TextPrimary
-                            )
-                        }
-                    }
-
-                    Surface(
-                        onClick = { selectedSectionTab = 1 },
-                        shape = RoundedCornerShape(14.dp),
-                        color = if (selectedSectionTab == 1) CoralPrimary else Color.Transparent,
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(vertical = 10.dp),
-                            horizontalArrangement = Arrangement.Center,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Science,
-                                contentDescription = null,
-                                tint = if (selectedSectionTab == 1) OnAccent else TextSecondary,
-                                modifier = Modifier.size(16.dp)
-                            )
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text(
-                                text = "3 Gün Kuralı (${tests.size})",
-                                style = MaterialTheme.typography.labelMedium,
-                                fontWeight = if (selectedSectionTab == 1) FontWeight.Bold else FontWeight.Medium,
-                                color = if (selectedSectionTab == 1) OnAccent else TextPrimary
-                            )
-                        }
-                    }
-                }
-            }
-        }
-
-        if (selectedSectionTab == 0) {
+        if (mode == "month") {
             // === TAB 0: BESLENME ÖNERİLERİ & AY AY TAVSİYELER ===
 
             // Month Goals Card
@@ -435,62 +279,6 @@ fun RecommendationsScreen(
                 }
             }
 
-            // Sıradaki Süper Besin Önerileri
-            item {
-                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Text(
-                        text = "SIRADAKİ DENENECEK SÜPER BESİNLER",
-                        style = MaterialTheme.typography.labelSmall,
-                        fontWeight = FontWeight.Bold,
-                        color = TextSecondary,
-                        letterSpacing = 1.sp
-                    )
-
-                    if (recommendedFoods.isEmpty()) Text(
-                        "Bu yaşa uygun tüm besinleri denediniz! 🎉",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = TextSecondary
-                    )
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        recommendedFoods.forEach { food ->
-                            Surface(
-                                onClick = { onSelectFood(food) },
-                                modifier = Modifier.weight(1f),
-                                shape = RoundedCornerShape(16.dp),
-                                color = MaterialTheme.colorScheme.surface,
-                                border = BorderStroke(1.dp, CardBorder)
-                            ) {
-                                Column(
-                                    modifier = Modifier.padding(12.dp),
-                                    horizontalAlignment = Alignment.CenterHorizontally
-                                ) {
-                                    akinai.minikgurme.ui.components.FoodImage(food.emoji, 36.dp)
-                                    Spacer(modifier = Modifier.height(4.dp))
-                                    Text(
-                                        text = food.name,
-                                        style = MaterialTheme.typography.labelSmall,
-                                        fontWeight = FontWeight.Bold,
-                                        color = TextPrimary,
-                                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                                        maxLines = 2,
-                                        minLines = 2
-                                    )
-                                    Text(
-                                        text = food.ageDisplay,
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = CoralDark,
-                                        fontSize = 10.sp
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
             // Sık Yapılan Hatalar & Yasaklar Kartı
             item {
                 Card(
@@ -529,6 +317,8 @@ fun RecommendationsScreen(
             }
         } else {
             // === TAB 1: 3 GÜN KURALI & ALERJEN TAKİBİ ===
+            if (highRisk) item { akinai.minikgurme.ui.components.HighRiskAllergyNotice() }
+            if (maintenance.isNotEmpty()) item { akinai.minikgurme.ui.components.AllergenMaintenanceCard(maintenance) }
             item { akinai.minikgurme.ui.components.AllergenPlanCard(tests = allTests, onStart = onStartAllergen) }
             item {
                 Row(

@@ -47,7 +47,7 @@ class FeedingViewModel(
     private val _recipeSearchQuery = MutableStateFlow("")
     val recipeSearchQuery: StateFlow<String> = _recipeSearchQuery.asStateFlow()
 
-    private val _selectedRecipeAgeFilter = MutableStateFlow("Tüm Yaşlar")
+    private val _selectedRecipeAgeFilter = MutableStateFlow("Bebeğime Uygun")
     val selectedRecipeAgeFilter: StateFlow<String> = _selectedRecipeAgeFilter.asStateFlow()
 
     private val _selectedRecipeStyleFilter = MutableStateFlow("Tümü")

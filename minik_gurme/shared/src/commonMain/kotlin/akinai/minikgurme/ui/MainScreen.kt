@@ -199,6 +199,48 @@ fun MainScreen(
         NavigationTabItem("community", "Topluluk", Icons.Filled.Forum, Icons.Outlined.Forum, "nav_community")
     )
 
+    LaunchedEffect(Unit) { akinai.minikgurme.util.AllergyRisk.load() }
+    val allergenMaintenance = remember(allAllergens, allMeals, allDiaryEntries) {
+        akinai.minikgurme.util.AllergenMaintenance.compute(allAllergens, allMeals, allDiaryEntries)
+    }
+    var foodsSection by remember { mutableStateOf("foods") } // "foods" (100 Gıda) | "allergen" (3 gün kuralı)
+    val allergenScreen: @Composable (String) -> Unit = { mode ->
+        RecommendationsScreen(
+            profile = babyProfile,
+            tests = allergenTests,
+            selectedFilter = allergenFilter,
+            onFilterChange = { viewModel.setAllergenFilter(it) },
+            onOpenAddTest = { showAddAllergenDialog = true },
+            onUpdateDay = { id, day ->
+                viewModel.updateAllergenDay(id, day)
+                scope.launch { snackbarHostState.showSnackbar(t("$day. gün kaydedildi.")) }
+            },
+            onUpdateStatus = { id, status ->
+                viewModel.updateAllergenStatus(id, status)
+                scope.launch { snackbarHostState.showSnackbar(t("Durum güncellendi: $status")) }
+            },
+            onDeleteTest = { id ->
+                viewModel.deleteAllergenTest(id)
+                scope.launch { snackbarHostState.showSnackbar(t("Besin denemesi silindi.")) }
+            },
+            onOpenReactionNote = { test ->
+                val tried = allTriedFoods.find { it.foodName.equals(test.food, ignoreCase = true) }
+                foodForReactionNote = Triple(test.food.lowercase().replace(" ", "_"), test.food, tried)
+            },
+            onSelectFood = { food ->
+                selectedFoodForDetail = food
+            },
+            allTests = allAllergens,
+            onStartAllergen = { name ->
+                viewModel.addAllergenTest(name, "")
+                scope.launch { snackbarHostState.showSnackbar(t("3 günlük deneme başladı: $name")) }
+            },
+            mode = mode,
+            maintenance = allergenMaintenance,
+            highRisk = akinai.minikgurme.util.AllergyRisk.high
+                    )
+    }
+
     Scaffold(
         modifier = Modifier.testTagsAsIds(),
         snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -235,28 +277,6 @@ fun MainScreen(
                     }
                 },
                 actions = {
-                    androidx.compose.material3.BadgedBox(
-                        badge = {
-                            val open = shoppingItems.count { !it.checked }
-                            if (open > 0) androidx.compose.material3.Badge(containerColor = CoralPrimary) {
-                                androidx.compose.material3.Text("$open")
-                            }
-                        },
-                        modifier = Modifier.padding(end = 2.dp)
-                    ) {
-                        androidx.compose.material3.IconButton(
-                            onClick = {
-                                if (currentTab != "shopping") { previousTab = currentTab; currentTab = "shopping" }
-                            },
-                            modifier = Modifier.size(40.dp).testTag("top_shopping")
-                        ) {
-                            Icon(
-                                imageVector = androidx.compose.material.icons.Icons.Filled.ShoppingCart,
-                                contentDescription = t("Alışveriş Listesi"),
-                                tint = if (currentTab == "shopping") CoralPrimary else TextSecondary
-                            )
-                        }
-                    }
                     Surface(
                         modifier = Modifier
                             .padding(end = 12.dp)
@@ -409,28 +429,40 @@ fun MainScreen(
                         }
                     )
 
-                    "foods100" -> Foods100Screen(
-                        profile = babyProfile,
-                        triedFoods = allTriedFoods,
-                        searchQuery = foodSearchQuery,
-                        selectedCategory = selectedFoodCategory,
-                        onSearchChange = { viewModel.setFoodSearchQuery(it) },
-                        onCategoryChange = { viewModel.setSelectedFoodCategory(it) },
-                        onToggleTried = { foodId, foodName, isCurrentlyTried ->
-                            viewModel.toggleFoodTried(foodId, foodName, isCurrentlyTried)
-                            scope.launch {
-                                val msg = if (isCurrentlyTried) "$foodName denenmedi olarak güncellendi." else "$foodName 100 Gıda listesinde denendi olarak işaretlendi! 🎉"
-                                snackbarHostState.showSnackbar(t(msg))
-                            }
-                        },
-                        onSelectFood = { food ->
-                            selectedFoodForDetail = food
-                        },
-                        onOpenReactionDialog = { foodId, foodName, currReaction, currSymptoms, currNotes ->
-                            val tried = allTriedFoods.find { it.foodId == foodId }
-                            foodForReactionNote = Triple(foodId, foodName, tried)
+                    "foods100" -> Column(modifier = Modifier.fillMaxSize()) {
+                        val ongoingCount = allAllergens.count { it.status == "Devam Ediyor" }
+                        SegmentedTabs(
+                            options = listOf("foods" to t("100 Gıda"), "allergen" to (t("3 Gün Kuralı") + if (ongoingCount > 0) " ($ongoingCount)" else "")),
+                            selected = foodsSection,
+                            onSelect = { foodsSection = it },
+                            tagPrefix = "foods_section_"
+                        )
+                        Box(modifier = Modifier.weight(1f)) {
+                            if (foodsSection == "allergen") allergenScreen("allergen") else
+                            Foods100Screen(
+                                profile = babyProfile,
+                                triedFoods = allTriedFoods,
+                                searchQuery = foodSearchQuery,
+                                selectedCategory = selectedFoodCategory,
+                                onSearchChange = { viewModel.setFoodSearchQuery(it) },
+                                onCategoryChange = { viewModel.setSelectedFoodCategory(it) },
+                                onToggleTried = { foodId, foodName, isCurrentlyTried ->
+                                    viewModel.toggleFoodTried(foodId, foodName, isCurrentlyTried)
+                                    scope.launch {
+                                        val msg = if (isCurrentlyTried) "$foodName denenmedi olarak güncellendi." else "$foodName 100 Gıda listesinde denendi olarak işaretlendi! 🎉"
+                                        snackbarHostState.showSnackbar(t(msg))
+                                    }
+                                },
+                                onSelectFood = { food ->
+                                    selectedFoodForDetail = food
+                                },
+                                onOpenReactionDialog = { foodId, foodName, currReaction, currSymptoms, currNotes ->
+                                    val tried = allTriedFoods.find { it.foodId == foodId }
+                                    foodForReactionNote = Triple(foodId, foodName, tried)
+                                }
+                            )
                         }
-                    )
+                    }
 
                     "recipes" -> RecipesScreen(
                         profile = babyProfile,
@@ -452,6 +484,9 @@ fun MainScreen(
                         onToggleFavorite = { recipeId ->
                             viewModel.toggleFavoriteRecipe(recipeId)
                         },
+                        shoppingCount = shoppingItems.count { !it.checked },
+                        onOpenShopping = { previousTab = currentTab; currentTab = "shopping" },
+                        isPlus = akinai.minikgurme.billing.PlusManager.isPlus,
                         onQuickAddToDiary = { recipe ->
                             viewModel.addRecipeToMeals(recipe)
                             scope.launch {
@@ -461,65 +496,15 @@ fun MainScreen(
                     )
 
                     "guide", "recommendations" -> Column(modifier = Modifier.fillMaxSize()) {
-                        // Rehber: "Bu Ay" (yaşa göre öneriler + 3 gün kuralı) ve "Rehber" (bilgi bankası) tek sekmede
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp, vertical = 8.dp)
-                                .clip(RoundedCornerShape(14.dp))
-                                .background(CardSurface)
-                                .padding(4.dp)
-                        ) {
-                            listOf("month" to "Bu Ay", "library" to "Rehber").forEach { (key, label) ->
-                                val sel = guideSection == key
-                                Box(
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .clip(RoundedCornerShape(10.dp))
-                                        .background(if (sel) CoralPrimary else Color.Transparent)
-                                        .clickable { guideSection = key }
-                                        .padding(vertical = 9.dp)
-                                        .testTag("guide_section_$key"),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text(label, fontWeight = FontWeight.Bold, color = if (sel) OnAccent else TextSecondary, style = MaterialTheme.typography.labelLarge)
-                                }
-                            }
-                        }
+                        SegmentedTabs(
+                            options = listOf("month" to t("Bu Ay"), "library" to t("Rehber")),
+                            selected = guideSection,
+                            onSelect = { guideSection = it },
+                            tagPrefix = "guide_section_"
+                        )
                         Box(modifier = Modifier.weight(1f)) {
                             if (guideSection == "month") {
-                        RecommendationsScreen(
-                        profile = babyProfile,
-                        tests = allergenTests,
-                        selectedFilter = allergenFilter,
-                        onFilterChange = { viewModel.setAllergenFilter(it) },
-                        onOpenAddTest = { showAddAllergenDialog = true },
-                        onUpdateDay = { id, day ->
-                            viewModel.updateAllergenDay(id, day)
-                            scope.launch { snackbarHostState.showSnackbar(t("$day. gün kaydedildi.")) }
-                        },
-                        onUpdateStatus = { id, status ->
-                            viewModel.updateAllergenStatus(id, status)
-                            scope.launch { snackbarHostState.showSnackbar(t("Durum güncellendi: $status")) }
-                        },
-                        onDeleteTest = { id ->
-                            viewModel.deleteAllergenTest(id)
-                            scope.launch { snackbarHostState.showSnackbar(t("Besin denemesi silindi.")) }
-                        },
-                        onOpenReactionNote = { test ->
-                            val tried = allTriedFoods.find { it.foodName.equals(test.food, ignoreCase = true) }
-                            foodForReactionNote = Triple(test.food.lowercase().replace(" ", "_"), test.food, tried)
-                        },
-                        onSelectFood = { food ->
-                            selectedFoodForDetail = food
-                        },
-                        allTests = allAllergens,
-                        triedFoodIds = allTriedFoods.filter { it.isTried }.map { it.foodId }.toSet(),
-                        onStartAllergen = { name ->
-                            viewModel.addAllergenTest(name, "")
-                            scope.launch { snackbarHostState.showSnackbar(t("3 günlük deneme başladı: $name")) }
-                        }
-                    )
+                        allergenScreen("month")
                             } else {
                         GuideScreen(
                         selectedMonth = selectedGuideMonth,
@@ -593,7 +578,8 @@ fun MainScreen(
                         onAdd = { viewModel.addManualShoppingItem(it) },
                         onToggle = { viewModel.setShoppingChecked(it.id, !it.checked) },
                         onDelete = { viewModel.deleteShoppingItem(it.id) },
-                        onClearChecked = { viewModel.clearCheckedShopping() }
+                        onClearChecked = { viewModel.clearCheckedShopping() },
+                        onClearAll = { viewModel.clearAllShopping() }
                     )
                     "growth" -> GrowthTrackingScreen(
                         profile = babyProfile,
@@ -813,5 +799,35 @@ fun MainScreen(
                 }
             }
         )
+    }
+}
+
+
+/** Sekme içi iki seçenekli düğme grubu (100 Gıda | 3 Gün Kuralı, Bu Ay | Rehber). */
+@Composable
+private fun SegmentedTabs(options: List<Pair<String, String>>, selected: String, onSelect: (String) -> Unit, tagPrefix: String) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .clip(RoundedCornerShape(14.dp))
+            .background(CardSurface)
+            .padding(4.dp)
+    ) {
+        options.forEach { (key, label) ->
+            val sel = selected == key
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(if (sel) CoralPrimary else Color.Transparent)
+                    .clickable { onSelect(key) }
+                    .padding(vertical = 9.dp)
+                    .testTag("$tagPrefix$key"),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(label, translate = false, fontWeight = FontWeight.Bold, color = if (sel) OnAccent else TextSecondary, style = MaterialTheme.typography.labelLarge)
+            }
+        }
     }
 }

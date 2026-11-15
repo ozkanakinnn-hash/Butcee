@@ -1,5 +1,12 @@
 package akinai.minikgurme.ui.screens
 
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.material3.TextButton
+import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material.icons.filled.Tune
 import akinai.minikgurme.ui.theme.*
 import androidx.compose.foundation.BorderStroke
 import akinai.minikgurme.i18n.t
@@ -93,13 +100,24 @@ fun RecipesScreen(
     onShuffleMenu: () -> Unit,
     onSelectRecipe: (BabyRecipe) -> Unit,
     onToggleFavorite: (String) -> Unit,
-    onQuickAddToDiary: (BabyRecipe) -> Unit = {}
+    onQuickAddToDiary: (BabyRecipe) -> Unit = {},
+    shoppingCount: Int = 0,
+    onOpenShopping: () -> Unit = {},
+    isPlus: Boolean = false
 ) {
+    var showFilters by remember { mutableStateOf(false) }
+    var menuSeed by rememberSaveable { mutableIntStateOf(0) }
+    // Günün menüsü: Plus'ta haftalık planın bugünü varsa o, yoksa yaşa uygun günlük seçim (Yenile ile değişir)
+    val todayMenu = remember(profile.ageMonths, menuSeed, isPlus) {
+        val fromPlan = if (isPlus) akinai.minikgurme.ui.screens.WeeklyPlan.today() else emptyMap()
+        if (fromPlan.size == 3) fromPlan else akinai.minikgurme.data.guide.PediatricRecipesData.menuFor(profile.ageMonths, menuSeed)
+    }
+    val menuFromPlan = isPlus && akinai.minikgurme.ui.screens.WeeklyPlan.today().size == 3
     val filteredRecipes by remember(searchQuery, selectedAgeFilter, selectedStyleFilter, favoriteRecipeIds, profile.ageMonths) {
         derivedStateOf {
             PediatricRecipesData.allRecipes.filter { recipe ->
                 val matchesAge = when (selectedAgeFilter) {
-                    "Bebeğime Uygun 👶" -> recipe.ageMonths <= profile.ageMonths
+                    "Bebeğime Uygun" -> recipe.ageMonths <= profile.ageMonths
                     "Tüm Yaşlar" -> true
                     "6+ Aylık" -> recipe.ageMonths == 6
                     "7+ Aylık" -> recipe.ageMonths == 7
@@ -131,8 +149,30 @@ fun RecipesScreen(
         }
     }
 
-    val ageFilters = listOf("Bebeğime Uygun 👶", "Tüm Yaşlar", "6+ Aylık", "7+ Aylık", "8+ Aylık", "9+ Aylık", "10+ Aylık", "11+ Aylık", "12+ Aylık", "Favorilerim")
+    val ageFilters = listOf("Bebeğime Uygun", "Tüm Yaşlar", "6+ Aylık", "7+ Aylık", "8+ Aylık", "9+ Aylık", "10+ Aylık", "11+ Aylık", "12+ Aylık", "Favorilerim")
     val styleFilters = listOf("Tümü", "BLW", "Püre", "Kahvaltı", "Çorba & Öğle")
+
+    if (showFilters) {
+        androidx.compose.material3.AlertDialog(
+            onDismissRequest = { showFilters = false },
+            confirmButton = { TextButton(onClick = { showFilters = false }, modifier = Modifier.testTag("recipe_filter_done")) { Text("Tamam", fontWeight = FontWeight.Bold) } },
+            dismissButton = { TextButton(onClick = { onAgeFilterChange("Bebeğime Uygun"); onStyleFilterChange("Tümü"); showFilters = false }) { Text("Sıfırla") } },
+            title = { Text("Filtrele", fontWeight = FontWeight.ExtraBold) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Text("Yaş", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold, color = TextSecondary)
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        ageFilters.filter { it != "Favorilerim" }.forEach { f -> FilterOption(f, selectedAgeFilter == f, "recipe_age_opt_$f") { onAgeFilterChange(f) } }
+                    }
+                    Text("Tür", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold, color = TextSecondary)
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        styleFilters.forEach { f -> FilterOption(f, selectedStyleFilter == f, "recipe_style_opt_$f") { onStyleFilterChange(f) } }
+                    }
+                }
+            },
+            containerColor = MaterialTheme.colorScheme.surface
+        )
+    }
 
     LazyColumn(
         modifier = Modifier
@@ -179,16 +219,26 @@ fun RecipesScreen(
                                     color = TextPrimary
                                 )
                                 Text(
-                                    text = "${profile.name} için yaşa uygun örnek menü",
+                                    text = if (menuFromPlan) t("Haftalık menünüzden") else "${profile.name} için yaşa uygun örnek menü",
                                     style = MaterialTheme.typography.bodySmall,
                                     color = TextSecondary
                                 )
                             }
                         }
 
+                        // Alışveriş listesi (üst bardan buraya taşındı) + Yenile
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                        androidx.compose.material3.BadgedBox(
+                            badge = { if (shoppingCount > 0) androidx.compose.material3.Badge(containerColor = CoralPrimary) { androidx.compose.material3.Text("$shoppingCount") } }
+                        ) {
+                            IconButton(onClick = onOpenShopping, modifier = Modifier.size(36.dp).testTag("open_shopping")) {
+                                Icon(Icons.Default.ShoppingCart, contentDescription = t("Alışveriş Listesi"), tint = TextSecondary, modifier = Modifier.size(20.dp))
+                            }
+                        }
+                        Spacer(Modifier.width(6.dp))
                         // Shuffle Menu Button
                         Surface(
-                            onClick = onShuffleMenu,
+                            onClick = { menuSeed++; onShuffleMenu() },
                             shape = RoundedCornerShape(12.dp),
                             color = CoralSoft,
                             modifier = Modifier.testTag("shuffle_menu_btn")
@@ -212,6 +262,7 @@ fun RecipesScreen(
                                 )
                             }
                         }
+                        }
                     }
 
                     // Daily Menu Items Grid (Kahvaltı, Öğle, İkindi/Akşam)
@@ -220,7 +271,7 @@ fun RecipesScreen(
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         listOf("Kahvaltı", "Öğle", "Akşam").forEach { mealTime ->
-                            val recipe = dailyMenu[mealTime]
+                            val recipe = todayMenu[mealTime]
                             if (recipe != null) {
                                 Surface(
                                     onClick = { onSelectRecipe(recipe) },
@@ -328,57 +379,44 @@ fun RecipesScreen(
             )
         }
 
-        // 3. Age Filter Chips (Matching Screenshot 7)
+        // 3. Filtreler: hızlı seçimler + "Filtrele" (yaş ve tür seçenekleri iletişim kutusunda)
         item {
-            LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                items(ageFilters) { filter ->
-                    val isSelected = selectedAgeFilter == filter
+            val extra = (if (selectedAgeFilter !in setOf("Bebeğime Uygun", "Favorilerim")) 1 else 0) + (if (selectedStyleFilter != "Tümü") 1 else 0)
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                listOf("Bebeğime Uygun", "Favorilerim").forEach { quick ->
+                    val isSelected = selectedAgeFilter == quick
                     Surface(
-                        onClick = { onAgeFilterChange(filter) },
+                        onClick = { onAgeFilterChange(if (isSelected) "Tüm Yaşlar" else quick) },
                         shape = RoundedCornerShape(14.dp),
                         color = if (isSelected) CoralPrimary else MaterialTheme.colorScheme.surface,
-                        border = BorderStroke(
-                            1.dp,
-                            if (isSelected) Color.Transparent else CardBorder
-                        ),
-                        modifier = Modifier.testTag("recipe_age_chip_$filter")
+                        border = BorderStroke(1.dp, if (isSelected) Color.Transparent else CardBorder),
+                        modifier = Modifier.testTag("recipe_age_chip_$quick")
                     ) {
                         Text(
-                            text = filter,
+                            text = quick,
                             style = MaterialTheme.typography.labelMedium,
                             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
                             color = if (isSelected) OnAccent else TextPrimary,
-                            modifier = Modifier.padding(horizontal = 14.dp, vertical = 9.dp)
+                            maxLines = 1,
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 9.dp)
                         )
                     }
                 }
-            }
-        }
-
-        // 4. Style Filter Chips (BLW vs Püre - Matching Screenshot 5)
-        item {
-            LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                items(styleFilters) { style ->
-                    val isSelected = selectedStyleFilter == style
-                    Surface(
-                        onClick = { onStyleFilterChange(style) },
-                        shape = RoundedCornerShape(12.dp),
-                        color = if (isSelected) SlateBlue else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
-                        border = BorderStroke(
-                            1.dp,
-                            if (isSelected) Color.Transparent else CardBorder
-                        )
-                    ) {
+                Spacer(Modifier.weight(1f))
+                Surface(
+                    onClick = { showFilters = true },
+                    shape = RoundedCornerShape(14.dp),
+                    color = if (extra > 0) SlateBlue else MaterialTheme.colorScheme.surface,
+                    border = BorderStroke(1.dp, if (extra > 0) Color.Transparent else CardBorder),
+                    modifier = Modifier.testTag("recipe_filter_btn")
+                ) {
+                    Row(Modifier.padding(horizontal = 12.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Default.Tune, contentDescription = null, tint = if (extra > 0) OnAccent else TextPrimary, modifier = Modifier.size(16.dp))
+                        Spacer(Modifier.width(4.dp))
                         Text(
-                            text = style,
-                            style = MaterialTheme.typography.labelSmall,
-                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                            color = if (isSelected) OnAccent else TextPrimary,
-                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp)
+                            t("Filtrele") + if (extra > 0) " ($extra)" else "", translate = false,
+                            style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold,
+                            color = if (extra > 0) OnAccent else TextPrimary, maxLines = 1
                         )
                     }
                 }
@@ -474,7 +512,7 @@ fun RecipesScreen(
                                         )
                                     }
 
-                                    if (recipe.ageMonths <= profile.ageMonths) {
+                                    if (recipe.ageMonths <= profile.ageMonths && selectedAgeFilter != "Bebeğime Uygun") {
                                         Surface(
                                             color = SageSoft,
                                             shape = RoundedCornerShape(6.dp),
@@ -605,5 +643,24 @@ fun RecipesScreen(
                 }
             }
         }
+    }
+}
+
+
+@Composable
+private fun FilterOption(label: String, selected: Boolean, tag: String, onClick: () -> Unit) {
+    Surface(
+        onClick = onClick,
+        shape = RoundedCornerShape(12.dp),
+        color = if (selected) CoralPrimary else MaterialTheme.colorScheme.surface,
+        border = BorderStroke(1.dp, if (selected) Color.Transparent else CardBorder),
+        modifier = Modifier.testTag(tag)
+    ) {
+        Text(
+            label, style = MaterialTheme.typography.labelMedium,
+            fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
+            color = if (selected) OnAccent else TextPrimary,
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
+        )
     }
 }

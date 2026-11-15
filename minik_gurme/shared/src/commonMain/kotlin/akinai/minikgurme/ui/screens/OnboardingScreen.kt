@@ -150,7 +150,7 @@ fun OnboardingScreen(
             )
             Spacer(Modifier.height(6.dp))
             Text(
-                "Önerileri bebeğinize göre hazırlayabilmemiz için birkaç bilgiye ihtiyacımız var.",
+                "Bilgileri bebeğinize göre gösterebilmemiz için birkaç bilgiye ihtiyacımız var.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = TextSecondary,
                 textAlign = TextAlign.Center

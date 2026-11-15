@@ -211,7 +211,8 @@ class AppSmokeTest {
         setOnboarded(true)
         launch("tr").use {
             compose.waitForIdle()
-            compose.onNodeWithTag("top_shopping").performClick(); compose.waitForIdle()
+            compose.onNodeWithTag("nav_recipes").performClick(); compose.waitForIdle()
+            compose.onNodeWithTag("open_shopping").performClick(); compose.waitForIdle()
             assertTrue(has("Alışveriş Listesi"))
             compose.onNodeWithTag("shopping_input").performTextInput("Avokado")
             compose.onNodeWithTag("shopping_add").performClick(); compose.waitForIdle()
@@ -309,8 +310,8 @@ class AppSmokeTest {
         setOnboarded(true)
         launch("tr").use {
             compose.waitForIdle()
-            compose.onNodeWithTag("nav_guide").performClick(); compose.waitForIdle()
-            compose.onAllNodesWithText("3 Gün Kuralı (0)")[0].performClick(); compose.waitForIdle()
+            compose.onNodeWithTag("nav_foods100").performClick(); compose.waitForIdle()
+            compose.onNodeWithTag("foods_section_allergen").performClick(); compose.waitForIdle()
             compose.onNodeWithTag("allergen_plan").performScrollTo()
             shot("tr_light_09_allergen_plan")
             compose.onNodeWithTag("allergen_plan_start").performScrollTo().performClick(); compose.waitForIdle()

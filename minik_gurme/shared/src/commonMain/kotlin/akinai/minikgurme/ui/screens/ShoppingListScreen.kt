@@ -1,5 +1,6 @@
 package akinai.minikgurme.ui.screens
 
+import androidx.compose.runtime.remember
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -57,8 +58,17 @@ fun ShoppingListScreen(
     onAdd: (String) -> Unit,
     onToggle: (ShoppingItem) -> Unit,
     onDelete: (ShoppingItem) -> Unit,
-    onClearChecked: () -> Unit
+    onClearChecked: () -> Unit,
+    onClearAll: () -> Unit = {}
 ) {
+    var confirmClearAll by remember { mutableStateOf(false) }
+    if (confirmClearAll) androidx.compose.material3.AlertDialog(
+        onDismissRequest = { confirmClearAll = false },
+        title = { Text("Alışveriş listesi temizlensin mi?", fontWeight = FontWeight.Bold) },
+        text = { Text("Listedeki tüm ürünler silinecek. Bu işlem geri alınamaz.") },
+        confirmButton = { TextButton(onClick = { confirmClearAll = false; onClearAll() }, modifier = Modifier.testTag("shopping_clear_all_confirm")) { Text("Evet, temizle", color = ReactionAllergy, fontWeight = FontWeight.Bold) } },
+        dismissButton = { TextButton(onClick = { confirmClearAll = false }) { Text("Vazgeç") } }
+    )
     var input by rememberSaveable { mutableStateOf("") }
     val remaining = items.count { !it.checked }
     val submit = { if (input.isNotBlank()) { onAdd(input); input = "" } }
@@ -81,6 +91,10 @@ fun ShoppingListScreen(
                 if (items.any { it.checked }) {
                     TextButton(onClick = onClearChecked, modifier = Modifier.testTag("shopping_clear_checked")) {
                         Text("Alınanları temizle", color = CoralDark, fontWeight = FontWeight.SemiBold)
+                    }
+                } else if (items.isNotEmpty()) {
+                    TextButton(onClick = { confirmClearAll = true }, modifier = Modifier.testTag("shopping_clear_all")) {
+                        Text("Tümünü sil", color = ReactionAllergy, fontWeight = FontWeight.SemiBold)
                     }
                 }
             }
