@@ -34,6 +34,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Lightbulb
+import androidx.compose.material.icons.filled.WarningAmber
 import androidx.compose.material.icons.filled.People
 import androidx.compose.material.icons.filled.Restaurant
 import androidx.compose.material3.Button
@@ -510,12 +511,38 @@ fun RecipeDetailBottomSheet(
                 }
             }
 
-            Text(
-                "Bu tarif genel bilgi amaçlıdır, tıbbi tavsiye değildir. Bebeğinizin alerji öyküsü, sağlık sorunu veya özel durumu varsa önce çocuk doktorunuza danışın.",
-                style = MaterialTheme.typography.labelSmall,
-                color = TextTertiary,
-                modifier = Modifier.testTag("recipe_disclaimer")
-            )
+            // Tıbbi uyarı: kırmızı, dikkat çekici kutu
+            Card(
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = ReactionAllergySoft),
+                border = BorderStroke(1.5.dp, ReactionAllergy),
+                modifier = Modifier.fillMaxWidth().testTag("recipe_disclaimer")
+            ) {
+                Row(modifier = Modifier.padding(14.dp), verticalAlignment = Alignment.Top) {
+                    Icon(
+                        imageVector = Icons.Filled.WarningAmber,
+                        contentDescription = null,
+                        tint = ReactionAllergy,
+                        modifier = Modifier.size(22.dp)
+                    )
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                        Text(
+                            "Tıbbi tavsiye değildir",
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = ReactionAllergy
+                        )
+                        Text(
+                            "Bu tarif genel bilgi amaçlıdır, tıbbi tavsiye değildir. Bebeğinizin alerji öyküsü, sağlık sorunu veya özel durumu varsa önce çocuk doktorunuza danışın.",
+                            style = MaterialTheme.typography.bodySmall,
+                            fontWeight = FontWeight.SemiBold,
+                            color = AllergyText,
+                            lineHeight = 18.sp
+                        )
+                    }
+                }
+            }
 
             // Action Buttons: Beslenme Günlüğüne Kaydet + Öğünlere Ekle
             Column(
