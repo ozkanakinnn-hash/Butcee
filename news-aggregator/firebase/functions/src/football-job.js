@@ -129,20 +129,36 @@ async function syncTodayFixtures(db, api, meta) {
   log(`Bugünün maçları (${today}): ${fixtures.length}`);
 }
 
+/** Milli maç araması bulamazsa bu kadar sonra, hata alırsa daha erken tekrar denenir. */
+const NATIONAL_RETRY_MS = 4 * 3_600_000;
+const NATIONAL_ERROR_RETRY_MS = 30 * 60_000;
+
 /**
- * Türkiye A Milli Takımı maçları (günde bir; yalnızca sağlayıcı destekliyorsa). Milli aralarda Süper Lig oynanmadığı
- * için yalnızca bugün lig maçı yoksa aranır → normal günlerde istek harcanmaz.
+ * Türkiye A Milli Takımı maçları (yalnızca sağlayıcı destekliyorsa; arama 2 istek).
+ *
+ * Gün "tamamlandı" sayılmaz: maç BULUNANA kadar gün içinde tekrar aranır (4 saatte bir, hatadan sonra 30 dk).
+ * Eskiden günde bir kez aranıyor ve sonuç ne olursa olsun gün kapatılıyordu; sabah fikstür yayımlanmamışsa
+ * ya da o an bir hata olduysa o günün maçı hiç bulunamıyordu (15 Kasım Fransa–Türkiye böyle kaçtı).
+ * Ayrıca "bugün lig maçı varsa arama" koşulu kaldırıldı: lig sorgusu beklenenden fazla maç döndürdüğünde
+ * milli maç sessizce atlanıyordu.
  */
-async function syncNationalFixtures(db, api, meta, today = fb.istanbulDate()) {
-  if (typeof api.nationalFixtures !== 'function' || meta.league_count_today > 0) {
-    await db.doc('football_meta/state').set({ national_date: today }, { merge: true });
+async function syncNationalFixtures(db, api, meta, today = fb.istanbulDate(), now = Date.now()) {
+  const metaRef = db.doc('football_meta/state');
+  if (typeof api.nationalFixtures !== 'function') {
+    await metaRef.set({ national_date: today }, { merge: true });
     meta.national_date = today;
     return 0;
   }
+  // Bugün zaten bulunduysa ya da bir sonraki deneme zamanı gelmediyse istek harcanmaz.
+  if (meta.national_date === today) return 0;
+  if (meta.national_next_ms && meta.national_next_ms > now) return 0;
+
   let fixtures = [];
+  let failed = false;
   try {
     fixtures = await api.nationalFixtures(today);
   } catch (err) {
+    failed = true;
     log(`Milli maç aranamadı: ${err.message}`);
   }
   const batch = db.batch();
@@ -150,10 +166,16 @@ async function syncNationalFixtures(db, api, meta, today = fb.istanbulDate()) {
     const doc = fb.nationalizeMatch(fb.matchDocFromFixture(f), f._q || null);
     batch.set(db.doc(`matches/${doc.fixture_id}`), { ...doc, updated_at: Timestamp.now() }, { merge: true });
   }
-  batch.set(db.doc('football_meta/state'), { national_date: today }, { merge: true });
+  const found = fixtures.length > 0;
+  const nextMs = now + (failed ? NATIONAL_ERROR_RETRY_MS : NATIONAL_RETRY_MS);
+  batch.set(metaRef, { national_next_ms: nextMs, ...(found ? { national_date: today } : {}) }, { merge: true });
   await batch.commit();
-  meta.national_date = today;
-  log(`Milli maç (${today}): ${fixtures.map((f) => `${f.teams.home.name}-${f.teams.away.name}`).join(', ') || 'yok'}`);
+  meta.national_next_ms = nextMs;
+  if (found) meta.national_date = today;
+  log(
+    `Milli maç (${today}): ${fixtures.map((f) => `${f.teams.home.name}-${f.teams.away.name}`).join(', ') || 'yok'}` +
+      (found ? '' : ` — sonraki deneme ${new Date(nextMs).toISOString()}`),
+  );
   return fixtures.length;
 }
 
@@ -235,7 +257,7 @@ async function prepare(db, api, meta) {
       await cleanupOldMatches(db);
       meta.fixtures_date = fb.istanbulDate();
     }
-    if (meta.national_date !== fb.istanbulDate()) await syncNationalFixtures(db, api, meta);
+    if (meta.national_date !== fb.istanbulDate()) await syncNationalFixtures(db, api, meta, fb.istanbulDate(), Date.now());
   } catch (err) {
     if (isPlanSeasonError(err)) {
       await metaRef.set(
@@ -367,7 +389,9 @@ async function tick(db, makeApi, messaging, now = Date.now(), { fast = false, sl
   const meta = (await metaRef.get()).data() || {};
   clockOffsetSec = Number.isFinite(meta.clock_offset_sec) ? meta.clock_offset_sec : fb.DEFAULT_CLOCK_OFFSET_SEC;
   const today = fb.istanbulDate(new Date(now));
-  const needsPrepare = meta.fixtures_date !== today || meta.national_date !== today ||
+  // Milli maç aramasının bekleme süresi dolmadıysa hazırlık turu açılmaz (her dakika boşuna çalışmasın).
+  const nationalDue = meta.national_date !== today && !(meta.national_next_ms > now);
+  const needsPrepare = meta.fixtures_date !== today || nationalDue ||
     !meta.season || !meta.teams_synced_at || now - meta.teams_synced_at.toMillis() > TEAMS_TTL_MS;
   // Highlightly'ye geçişte takım listesi bir kez yerel listeyle yenilenir (önceki sürüm API listesini yazmış olabilir).
   const forceTeams = makeApi.provider === 'highlightly' && meta.teams_source !== 'local';

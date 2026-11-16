@@ -368,3 +368,58 @@ test('milli maç: lig maçı olmayan gün Türkiye maçı bulunur; panel nationa
   assert.equal(real(sent).length, 0);
   assert.equal(panels[panels.length - 1].data.finished, '1');
 });
+
+test('milli maç araması: bulunamayınca gün kapatılmaz, aralıklarla tekrar denenir; lig maçı olsa da aranır', { skip }, async () => {
+  const { getFirestore, Timestamp } = require('firebase-admin/firestore');
+  const fb = require('../src/football');
+  const { syncNationalFixtures } = require('../src/football-job');
+  const db = getFirestore();
+  const today = fb.istanbulDate();
+  const metaRef = db.doc('football_meta/state');
+  await metaRef.set({ league_count_today: 9 }); // lig maçı olan gün bile aranmalı
+
+  const kickoff = new Date(Date.now() + 3_600_000).toISOString();
+  const fixture = {
+    fixture: { id: 777, date: kickoff, status: { short: 'NS', elapsed: null } },
+    league: { id: 77, name: 'UEFA Uluslar Ligi', round: '' },
+    teams: { home: { id: 11, name: 'France' }, away: { id: 9, name: 'Turkey' } },
+    goals: { home: null, away: null },
+    events: [],
+  };
+
+  // 1) Sabah: fikstür henüz yok → gün KAPANMAZ, tekrar denemesi planlanır
+  const t0 = Date.parse('2026-11-15T06:00:00Z');
+  const empty = { nationalFixtures: async () => [] };
+  assert.equal(await syncNationalFixtures(db, empty, {}, today, t0), 0);
+  let meta = (await metaRef.get()).data();
+  assert.equal(meta.national_date, undefined, 'bulunamayınca gün kapatılmaz');
+  assert.equal(meta.national_next_ms, t0 + 4 * 3_600_000);
+
+  // 2) Bekleme dolmadan: istek harcanmaz
+  let calls = 0;
+  const counting = { nationalFixtures: async () => { calls++; return []; } };
+  await syncNationalFixtures(db, counting, { national_next_ms: meta.national_next_ms }, today, t0 + 60_000);
+  assert.equal(calls, 0);
+
+  // 3) Hata: kısa sürede (30 dk) yeniden denenir
+  const failing = { nationalFixtures: async () => { throw new Error('HTTP 503'); } };
+  const t1 = t0 + 4 * 3_600_000;
+  await syncNationalFixtures(db, failing, {}, today, t1);
+  assert.equal((await metaRef.get()).get('national_next_ms'), t1 + 30 * 60_000);
+
+  // 4) Akşam: maç yayımlanmış → kaydedilir ve gün kapanır
+  const t2 = t1 + 60 * 60_000;
+  const ok = { nationalFixtures: async () => [{ ...fixture, _q: { awayTeamId: 9 } }] };
+  assert.equal(await syncNationalFixtures(db, ok, {}, today, t2), 1);
+  meta = (await metaRef.get()).data();
+  assert.equal(meta.national_date, today, 'bulununca gün kapanır');
+  const doc = (await db.doc('matches/777').get()).data();
+  assert.equal(doc.national, true);
+  assert.equal(doc.away.name, 'Türkiye');
+  assert.equal(doc.home.name, 'Fransa');
+
+  // 5) Aynı gün tekrar aranmaz
+  calls = 0;
+  await syncNationalFixtures(db, counting, meta, today, t2 + 5 * 3_600_000);
+  assert.equal(calls, 0);
+});
