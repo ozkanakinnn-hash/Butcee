@@ -19,6 +19,9 @@ tuzağı/magazin yok, son 3 saatte) seçer; yayıncının KENDİ haber bağlant�
 5. **Dağıt:** `deploy --only functions --project haber-68a3c`
 6. **Ayarlar:** Firestore → `app_meta` → belge kimliği `social`:
    `enabled: true` · `dry_run: true` · `channel: "@haberakisi"` · `owner_chat_id: "123456789"` · `daily_cap: 8` · `min_gap_min: 45`
+   İsteğe bağlı (telif için): `link_preview: false` (varsayılan; yayıncının görseli gösterilmez) ·
+   `allowed_sources: ["Kaynak Adı", ...]` (doluysa yalnızca bu yayıncılar paylaşılır; boşsa hepsi). Kaynak adı,
+   `social_log` kayıtlarındaki `source` alanında yazar.
 7. **Deneme:** `dry_run: true` iken hiçbir şey gönderilmez; `social_log` koleksiyonunda ne paylaşılacağı görünür.
    1–2 gün bakıp beğenirsen `dry_run: false` yap.
 

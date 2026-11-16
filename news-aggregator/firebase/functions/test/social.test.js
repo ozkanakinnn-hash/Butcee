@@ -128,3 +128,19 @@ test('tur: kanal hatası sayaç ilerletmez; jeton/kanal eksikse göndermez; sili
   assert.equal((await runSocial(fakeDb(gone), { token: 'T', fetchImpl: fakeFetch(calls2), now: NOW })).status, 'haber kaldırılmış');
   assert.equal(calls2.length, 0);
 });
+
+test('telif önlemleri: önizleme varsayılan kapalı (açılabilir); izin listesi yalnızca listedeki yayıncıları paylaşır', async () => {
+  const calls = [];
+  const db = fakeDb(world({ enabled: true, dry_run: false, channel: '@x' }));
+  await runSocial(db, { token: 'T', fetchImpl: fakeFetch(calls), now: NOW });
+  assert.equal(calls[0].body.disable_web_page_preview, true, 'varsayılan: yayıncı görseli gösterilmez');
+  const calls2 = [];
+  await runSocial(fakeDb(world({ enabled: true, dry_run: false, channel: '@x', link_preview: true })), { token: 'T', fetchImpl: fakeFetch(calls2), now: NOW });
+  assert.equal(calls2[0].body.disable_web_page_preview, false);
+
+  const stories = [story('a', { source: 'Ekonomi Gazetesi' }), story('b', { source: 'Haber Ajansı', srcs: ['1', '2', '3', '4'] })];
+  const only = { ...cfg, allowed_sources: ['ekonomi gazetesi'] }; // büyük/küçük harf farkı gözetilmez
+  assert.equal(pickStory({ stories, config: only, now: NOW }).story.id, 'a');
+  assert.equal(pickStory({ stories: [stories[1]], config: only, now: NOW }).reason, 'aday yok');
+  assert.equal(pickStory({ stories, config: cfg, now: NOW }).story.id, 'b', 'liste boşsa tüm kaynaklar');
+});

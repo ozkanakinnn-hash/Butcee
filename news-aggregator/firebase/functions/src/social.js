@@ -13,8 +13,12 @@
  *  - daha önce paylaşılmamış, haber hâlâ kayıtlı (telif kaldırma talebiyle silinen haber paylaşılmaz).
  *
  * Ayarlar `app_meta/social` belgesinde (dağıtım gerekmez):
- *   { enabled: true, dry_run: true, channel: "@kanal", owner_chat_id: "123", daily_cap: 8, min_gap_min: 45 }
- * `dry_run: true` iken hiçbir şey gönderilmez; ne paylaşılacağı `social_log` koleksiyonuna yazılır.
+ *   { enabled: true, dry_run: true, channel: "@kanal", owner_chat_id: "123", daily_cap: 8, min_gap_min: 45,
+ *     link_preview: false, allowed_sources: ["Kaynak A", "Kaynak B"] }
+ * - `dry_run: true` iken hiçbir şey gönderilmez; ne paylaşılacağı `social_log` koleksiyonuna yazılır.
+ * - `link_preview: false` (varsayılan): Telegram yayıncının görselini/açıklamasını göstermez (telif için daha güvenli).
+ * - `allowed_sources`: doluysa yalnızca bu yayıncıların (kaynak adı, büyük/küçük harf farkı gözetilmez) haberleri
+ *   paylaşılır; boşsa tüm kaynaklar.
  */
 
 const { Timestamp } = require('firebase-admin/firestore');
@@ -28,7 +32,11 @@ const POSTED_KEEP = 300;
 const X_LIMIT = 280;
 const X_URL_LENGTH = 23; // X her bağlantıyı 23 karakter sayar
 
-const DEFAULTS = { enabled: false, dry_run: true, channel: '', owner_chat_id: '', daily_cap: 8, min_gap_min: 45 };
+const DEFAULTS = {
+  enabled: false, dry_run: true, channel: '', owner_chat_id: '', daily_cap: 8, min_gap_min: 45,
+  link_preview: false, allowed_sources: [],
+};
+const norm = (x) => String(x || '').trim().toLocaleLowerCase('tr-TR');
 
 const escapeHtml = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
@@ -59,6 +67,7 @@ function xText(story) {
  */
 function pickStory({ stories = [], state = {}, config = DEFAULTS, now = Date.now() }) {
   const today = dayKey(now);
+  const allowed = (Array.isArray(config.allowed_sources) ? config.allowed_sources : []).map(norm).filter(Boolean);
   const count = state.day === today ? state.count || 0 : 0;
   const posted = state.posted || [];
   const base = { day: today, count, last_at: state.last_at || 0, posted };
@@ -70,6 +79,7 @@ function pickStory({ stories = [], state = {}, config = DEFAULTS, now = Date.now
     .filter((s) => s.url && s.title && Array.isArray(s.srcs) && s.srcs.length >= MIN_SOURCES)
     .filter((s) => now - s.last_ms <= MAX_AGE_MS && !posted.includes(s.id))
     .filter((s) => !isClickbait(s.title) && (s.br || !SKIP_CATEGORIES.has(s.cat)))
+    .filter((s) => !allowed.length || allowed.includes(norm(s.source)))
     .filter((s) => !isQuietHour(new Date(now)) || (s.br && isCritical(s.title)))
     .sort((a, b) => b.srcs.length - a.srcs.length || b.last_ms - a.last_ms);
 
@@ -83,11 +93,11 @@ function pickStory({ stories = [], state = {}, config = DEFAULTS, now = Date.now
 }
 
 /** Telegram Bot API sendMessage. Hata fırlatır (çağıran yakalar). */
-async function telegramSend(fetchImpl, token, chatId, text, { html = true } = {}) {
+async function telegramSend(fetchImpl, token, chatId, text, { html = true, preview = false } = {}) {
   const res = await fetchImpl(`https://api.telegram.org/bot${token}/sendMessage`, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ chat_id: chatId, text, ...(html ? { parse_mode: 'HTML' } : {}), disable_web_page_preview: false }),
+    body: JSON.stringify({ chat_id: chatId, text, ...(html ? { parse_mode: 'HTML' } : {}), disable_web_page_preview: !preview }),
     signal: AbortSignal.timeout(15_000),
   });
   const body = await res.json().catch(() => ({}));
@@ -119,7 +129,7 @@ async function runSocial(db, { token, fetchImpl = fetch, now = Date.now() } = {}
     return { status: 'haber kaldırılmış', id: story.id };
   }
 
-  const entry = { at: Timestamp.fromMillis(now), story_id: story.id, title: story.title, url: story.url, sources: story.srcs.length };
+  const entry = { at: Timestamp.fromMillis(now), story_id: story.id, title: story.title, url: story.url, source: story.source || '', sources: story.srcs.length };
   if (config.dry_run) {
     await db.collection('social_log').add({ ...entry, dry_run: true, telegram: telegramText(story), x: xText(story) });
     await db.doc('notify_state/social').set(nextState);
@@ -128,7 +138,7 @@ async function runSocial(db, { token, fetchImpl = fetch, now = Date.now() } = {}
 
   const errors = [];
   try {
-    await telegramSend(fetchImpl, token, config.channel, telegramText(story));
+    await telegramSend(fetchImpl, token, config.channel, telegramText(story), { preview: config.link_preview === true });
   } catch (err) {
     errors.push(err.message);
   }
