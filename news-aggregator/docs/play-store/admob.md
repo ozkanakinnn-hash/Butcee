@@ -8,8 +8,8 @@ yayın derlemesinde `--dart-define` / `ADMOB_APP_ID` ile verilir (bkz. `lib/ads/
 | Yayıncı kimliği | `pub-2835938155487054` |
 | Uygulama kimliği | `ca-app-pub-2835938155487054~3670282038` |
 | Banner (ön sayfa) | `ca-app-pub-2835938155487054/6927000769` |
-| Yerel gelişmiş (akış içi) | _bekleniyor_ |
-| Geçiş (interstitial) | _bekleniyor_ |
+| Yerel gelişmiş (akış içi) | `ca-app-pub-2835938155487054/5422347401` |
+| Geçiş (interstitial) | `ca-app-pub-2835938155487054/9170020722` |
 
 `app-ads.txt` → `firebase/hosting/public/app-ads.txt` (yayında: https://haber-68a3c.web.app/app-ads.txt)
 
@@ -20,8 +20,8 @@ cd flutter_app
 ADMOB_APP_ID=ca-app-pub-2835938155487054~3670282038 \
 flutter build appbundle --release --build-number=101 \
   --dart-define=ADMOB_BANNER_ID=ca-app-pub-2835938155487054/6927000769 \
-  --dart-define=ADMOB_NATIVE_ID=<yerel-gelişmiş> \
-  --dart-define=ADMOB_INTERSTITIAL_ID=<geçiş>
+  --dart-define=ADMOB_NATIVE_ID=ca-app-pub-2835938155487054/5422347401 \
+  --dart-define=ADMOB_INTERSTITIAL_ID=ca-app-pub-2835938155487054/9170020722
 ```
 
 - Kimlik verilmezse o reklam alanı **hiç gösterilmez** (sürüm derlemesinde test reklamı gösterilmez).
