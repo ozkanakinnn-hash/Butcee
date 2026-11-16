@@ -16,6 +16,7 @@ Son güncelleme: 13 Kasım 2026.
 | Firebase projesi | `haber-68a3c` (Blaze), bölge `europe-west1` |
 | Sunucu kodu | `news-aggregator/firebase/functions` (Node.js 22) |
 | Kod deposu | Bitbucket **`ozkan45/haber-akisi`** (dal `main`, uygulama `haberler/` klasöründe) |
+| Yedek depo | GitHub `ozkanakinnn-hash/Butcee`, dal **`claude/haber-akisi-2026-11`** (16 Kas 2026'da açıldı). ⚠️ Oradaki eski `ccr-*` dallarının geçmişi buradan **bağımsız**; o dallara zorla gönderme yapma. |
 | Yasal site | https://haber-68a3c.web.app (Firebase Hosting, `firebase/hosting/public`) |
 | Beceri notları | `.claude/skills/flutter-firebase-app/SKILL.md` — öğrenilen dersler, kullanıcı tercihleri |
 
@@ -109,7 +110,7 @@ cd ~ && rm -rf haber && unzip -o "Haber-Akisi-kodNN.zip" -d haber && cd haber/ne
 1. **Son sunucu paketi yüklendi mi?** Kullanıcıya gönderilen son paket **kod27** idi
    (goller/kartlar doğru takımın altında). 12 Kasım akşamı kod17 civarına kadar yüklendiği doğrulandı;
    kod26/kod27'nin yüklenip yüklenmediği **belirsiz** → kullanıcıya sor, gerekirse yeni paket üret.
-2. **Bitbucket API jetonu 16 Kasım 2026'da doluyor** → yenilenmezse `push-haberler.sh` çalışmaz.
+2. **Bitbucket API jetonu 16 Kasım 2026.da DOLDU** → `push-haberler.sh` çalışmıyor; yenilenmeli (güvenli form ile).
    (Atlassian → Security → API tokens, "API token with scopes", read/write:repository:bitbucket.)
 3. **v33'ten sonra uygulamada değişiklikler var** (görsel önbelleği ve hava servisi testte değiştirilebilir,
    bildirim izni Firebase'siz çökmüyor) → bir sonraki APK **v34** olmalı.
