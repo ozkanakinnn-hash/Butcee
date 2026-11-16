@@ -147,7 +147,8 @@ test('bülten: sabah 08:30 sonrası ilk çalışmada en çok kaynağın verdiği
 });
 
 test('kablo biçimi: Android veri mesajı (düğmeli bildirim için) + iOS uyarısı; tüm değerler metin', () => {
-  const m = buildNewsMessage({ categoryId: 'saglik', categoryName: 'Sağlık', articles: [art('a', 'saglik', '2026-11-06T11:00:00Z')] });
+  // Saat sabit (gündüz): gece sessiz saatte kanal 'quiet' olur ve test günün saatine bağlı kalırdı.
+  const m = buildNewsMessage({ categoryId: 'saglik', categoryName: 'Sağlık', articles: [art('a', 'saglik', '2026-11-06T11:00:00Z')], now: new Date('2026-11-06T12:00:00Z') });
   const w = toWire({ ...m, topic: undefined, condition: "'news_saglik' in topics && 'lvl_all' in topics" });
   assert.equal(w.notification, undefined);
   assert.equal(w.condition, "'news_saglik' in topics && 'lvl_all' in topics");

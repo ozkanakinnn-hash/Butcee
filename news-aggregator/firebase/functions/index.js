@@ -16,6 +16,7 @@ const { initializeApp } = require('firebase-admin/app');
 const { getFirestore } = require('firebase-admin/firestore');
 const { getMessaging } = require('firebase-admin/messaging');
 const { onSchedule } = require('firebase-functions/v2/scheduler');
+const { runSocial } = require('./src/social');
 const { setGlobalOptions } = require('firebase-functions/v2');
 const { defineSecret } = require('firebase-functions/params');
 const { logger } = require('firebase-functions');
@@ -35,6 +36,8 @@ setGlobalOptions({ region: 'europe-west1', maxInstances: 1 });
 const FOOTBALL_API_KEY = defineSecret('FOOTBALL_API_KEY');
 // Ücretsiz canlı skor: Highlightly (Basic plan, günde 100 istek). Tanımlıysa API-Football yerine kullanılır.
 const HIGHLIGHTLY_API_KEY = defineSecret('HIGHLIGHTLY_API_KEY');
+// Telegram kanalı için bot jetonu (BotFather). Yoksa kurulumda "-" girilir; paylaşım o zaman hiçbir şey yapmaz.
+const TELEGRAM_BOT_TOKEN = defineSecret('TELEGRAM_BOT_TOKEN');
 const usable = (k) => Boolean(k && k.trim() && k.trim() !== '-');
 
 exports.fetchRssFeeds = onSchedule(
@@ -44,6 +47,7 @@ exports.fetchRssFeeds = onSchedule(
     timeoutSeconds: 300,
     memory: '512MiB',
     retryCount: 0, // bir sonraki çalışma zaten 20 dk sonra
+    secrets: [TELEGRAM_BOT_TOKEN],
   },
   async () => {
     const db = getFirestore();
@@ -58,6 +62,13 @@ exports.fetchRssFeeds = onSchedule(
       logger.info('Piyasa', await updateMarket(db));
     } catch (err) {
       logger.warn('Piyasa hatası', { error: err.message });
+    }
+    try {
+      const token = TELEGRAM_BOT_TOKEN.value();
+      const r = await runSocial(db, { token: usable(token) ? token.trim() : '' });
+      if (r.status !== 'kapalı' && r.status !== 'bekle') logger.info('Sosyal paylaşım', r);
+    } catch (err) {
+      logger.warn('Sosyal paylaşım hatası', { error: err.message });
     }
   }
 );
