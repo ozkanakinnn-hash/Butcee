@@ -144,3 +144,23 @@ test('telif önlemleri: önizleme varsayılan kapalı (açılabilir); izin liste
   assert.equal(pickStory({ stories: [stories[1]], config: only, now: NOW }).reason, 'aday yok');
   assert.equal(pickStory({ stories, config: cfg, now: NOW }).story.id, 'b', 'liste boşsa tüm kaynaklar');
 });
+
+test('bağlantı testi: test_ping kanala ve özel sohbete mesaj atar, sonucu yazıp kendini kapatır; hataları bildirir', async () => {
+  const calls = [];
+  const db = fakeDb({ 'app_meta/social': { enabled: false, test_ping: true, channel: '@k', owner_chat_id: '42' } });
+  const r = await runSocial(db, { token: 'T', fetchImpl: fakeFetch(calls), now: NOW });
+  assert.equal(r.status, 'test');
+  assert.deepEqual(calls.map((c) => c.body.chat_id), ['@k', '42'], 'kapalı/deneme modunda bile gönderir');
+  assert.match(calls[0].body.text, /bağlantı testi başarılı/);
+  const saved = db.written.find(([p]) => p === 'app_meta/social')[1];
+  assert.equal(saved.test_ping, false);
+  assert.equal(saved.test_result, 'başarılı');
+
+  const bad = fakeDb({ 'app_meta/social': { test_ping: true, channel: '@k' } });
+  const r2 = await runSocial(bad, { token: 'T', fetchImpl: fakeFetch([], { fail: true }), now: NOW });
+  assert.match(r2.errors[0], /kanal: Telegram 400: chat not found/);
+  assert.match(bad.written[0][1].test_result, /chat not found/);
+
+  const none = fakeDb({ 'app_meta/social': { test_ping: true, channel: '@k' } });
+  assert.match((await runSocial(none, { token: '', fetchImpl: fakeFetch([]), now: NOW })).errors[0], /jeton yok/);
+});

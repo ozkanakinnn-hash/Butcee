@@ -22,7 +22,10 @@ tuzağı/magazin yok, son 3 saatte) seçer; yayıncının KENDİ haber bağlant�
    İsteğe bağlı (telif için): `link_preview: false` (varsayılan; yayıncının görseli gösterilmez) ·
    `allowed_sources: ["Kaynak Adı", ...]` (doluysa yalnızca bu yayıncılar paylaşılır; boşsa hepsi). Kaynak adı,
    `social_log` kayıtlarındaki `source` alanında yazar.
-7. **Deneme:** `dry_run: true` iken hiçbir şey gönderilmez; `social_log` koleksiyonunda ne paylaşılacağı görünür.
+7. **Bağlantı testi (haber beklemeden):** `app_meta/social` belgesine `test_ping` (boolean) = **true** ekleyin. En geç 20 dk
+   içinde kanala ve özel sohbetinize "✅ bağlantı testi başarılı" mesajı gelir; belgede `test_result` alanı
+   "başarılı" ya da hata metnini gösterir ve `test_ping` kendiliğinden false olur.
+8. **Deneme:** `dry_run: true` iken hiçbir şey gönderilmez; `social_log` koleksiyonunda ne paylaşılacağı görünür.
    1–2 gün bakıp beğenirsen `dry_run: false` yap.
 
 ## Davranış

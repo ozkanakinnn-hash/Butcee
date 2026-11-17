@@ -16,6 +16,8 @@
  *   { enabled: true, dry_run: true, channel: "@kanal", owner_chat_id: "123", daily_cap: 8, min_gap_min: 45,
  *     link_preview: false, allowed_sources: ["Kaynak A", "Kaynak B"] }
  * - `dry_run: true` iken hiçbir şey gönderilmez; ne paylaşılacağı `social_log` koleksiyonuna yazılır.
+ * - `test_ping: true` → bir kez kanala ve özel sohbete "bağlantı testi" mesajı gönderir (deneme modu, sessiz saat ve
+ *   haber şartı gözetmez), sonucu `test_result` alanına yazar ve kendini kapatır.
  * - `link_preview: false` (varsayılan): Telegram yayıncının görselini/açıklamasını göstermez (telif için daha güvenli).
  * - `allowed_sources`: doluysa yalnızca bu yayıncıların (kaynak adı, büyük/küçük harf farkı gözetilmez) haberleri
  *   paylaşılır; boşsa tüm kaynaklar.
@@ -111,6 +113,34 @@ async function telegramSend(fetchImpl, token, chatId, text, { html = true, previ
  */
 async function runSocial(db, { token, fetchImpl = fetch, now = Date.now() } = {}) {
   const config = { ...DEFAULTS, ...((await db.doc('app_meta/social').get()).data() || {}) };
+
+  // Bağlantı testi: jeton, kanal adı ve botun yöneticiliği haber çıkmasını beklemeden doğrulanır.
+  if (config.test_ping === true) {
+    const errors = [];
+    if (!token) errors.push('jeton yok (TELEGRAM_BOT_TOKEN tanımlı değil ya da "-")');
+    else if (!config.channel) errors.push('channel ayarı boş');
+    else {
+      const text = '✅ Haber Akışı: bağlantı testi başarılı. Önemli haberler bu kanala gelecek.';
+      try {
+        await telegramSend(fetchImpl, token, config.channel, text, { html: false });
+      } catch (err) {
+        errors.push(`kanal: ${err.message}`);
+      }
+      if (config.owner_chat_id) {
+        try {
+          await telegramSend(fetchImpl, token, config.owner_chat_id, `${text}\n(X taslakları bu sohbete gelecek.)`, { html: false });
+        } catch (err) {
+          errors.push(`özel sohbet: ${err.message}`);
+        }
+      }
+    }
+    await db.doc('app_meta/social').set(
+      { test_ping: false, test_result: errors.length ? errors.join(' | ') : 'başarılı', test_at: Timestamp.fromMillis(now) },
+      { merge: true },
+    );
+    return { status: 'test', ...(errors.length ? { errors } : {}) };
+  }
+
   if (!config.enabled) return { status: 'kapalı' };
   if (!config.dry_run && (!token || !config.channel)) return { status: 'ayar eksik' };
 
