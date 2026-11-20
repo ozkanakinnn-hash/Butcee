@@ -138,7 +138,9 @@ final class QiblaCompass: NSObject, ObservableObject, CLLocationManagerDelegate 
   @Published var authorized = false
 
   var heading: Double { QiblaCalc.norm(continuousHeading) }
-  var available: Bool { CLLocationManager.headingAvailable() }
+  var available: Bool { demo || CLLocationManager.headingAvailable() }
+  /// Simülatörde mağaza görüntüsü için sabit yön (yalnızca DEBUG, `-debug_heading 145`)
+  private var demo = false
 
   override init() {
     super.init()
@@ -149,6 +151,14 @@ final class QiblaCompass: NSObject, ObservableObject, CLLocationManagerDelegate 
   }
 
   func start() {
+    #if DEBUG
+    if UserDefaults.standard.object(forKey: "debug_heading") != nil {
+      demo = true
+      continuousHeading = UserDefaults.standard.double(forKey: "debug_heading")
+      accuracy = 5; declination = 5.9; ready = true
+      return
+    }
+    #endif
     filter.reset(); ready = false
     manager.requestWhenInUseAuthorization()
     manager.startUpdatingLocation()
