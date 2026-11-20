@@ -59,6 +59,9 @@ Play hataları: Billing kitaplığı ≥ 8 (`billing-ktx` 8.x); sürüm notu eti
 - Firebase iOS ayarı elle kopyalanmaz: `firebase_ios_config.py` servis hesabıyla (FIREBASE_SERVICE_ACCOUNT sırrı) Firebase Management API'den
   iOS uygulamasını oluşturur/bulur, `GoogleService-Info.plist` değerlerini maskeli GITHUB_ENV'e yazar → `--dart-define=FIREBASE_IOS_*`.
   APNs anahtarı (.p8) Firebase'e yalnızca konsoldan yüklenir (kullanıcı işi).
+  Telefondan yapıştırılan servis hesabı JSON'u bozuk gelir (sarılmış satırlar, `\` + satır sonu + `n`): katı JSON okuma yerine
+  sunucudaki `scripts/init-admin.js` onarım mantığı (olduğu gibi → satır sonu kaçışla → sarmayı sil, anahtarı base64'ten yeniden kur).
+- `macos-26` etiketi Kasım 2026'da kuyrukta 12+ dk sunucu alamadı → `macos-15-intel` (Xcode 26 var) kullan.
 - App Store görselleri: Play için `flutter test tool/promo/capture.dart` ile yakalanan gerçek ekranlar → Playwright ile 440×956 @3x
   iPhone çerçevesi (dynamic island, 9:41) → 1320×2868. Çerçeve ekranı yakalanan ekranın oranında olsun (alt menü kesilmesin).
 
