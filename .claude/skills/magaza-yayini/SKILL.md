@@ -49,6 +49,19 @@ Play hataları: Billing kitaplığı ≥ 8 (`billing-ktx` 8.x); sürüm notu eti
 - Sertifika sınırı hatası → developer.apple.com → Certificates'ta eski "Apple Distribution"ları iptal ettir.
 - İşlem 20–40 dk + Apple işlemesi 10–30 dk; yapı TestFlight'ta görünür. İnceleme genelde 24–48 saat.
 
+### Flutter uygulamasında (Haber Akışı kalıbı: `.github/workflows/news-ios-release.yml`)
+- `runs-on: macos-26` (Firebase iOS SDK Swift 6.2 → Xcode 26). `flutter build ios --release --no-codesign --build-name/--build-number --dart-define=…`
+  (Pod'lar + Generated.xcconfig) → imza ayarları **yalnızca Runner hedefine** pbxproj'a yazılır (CODE_SIGN_STYLE Manual, DEVELOPMENT_TEAM,
+  "Apple Distribution", PROVISIONING_PROFILE_SPECIFIER; komut satırından verilirse Pod hedefleri "does not support provisioning profiles" der)
+  → `xcodebuild -workspace Runner.xcworkspace archive` → exportArchive upload. Entitlements `aps-environment` CI'da `production` yapılır.
+- `asc_signing.py` ek özellikler: `BUNDLE_CAPABILITIES=PUSH_NOTIFICATIONS` → bundle kimliği yoksa API ile kaydedilir, yetenek açılır;
+  `REQUIRE_APP_RECORD=1` → App Store Connect'te uygulama kaydı yoksa "UYGULAMA_KAYDI_YOK" ile durur (uygulama kaydı API ile oluşturulamaz → kullanıcı New App).
+- Firebase iOS ayarı elle kopyalanmaz: `firebase_ios_config.py` servis hesabıyla (FIREBASE_SERVICE_ACCOUNT sırrı) Firebase Management API'den
+  iOS uygulamasını oluşturur/bulur, `GoogleService-Info.plist` değerlerini maskeli GITHUB_ENV'e yazar → `--dart-define=FIREBASE_IOS_*`.
+  APNs anahtarı (.p8) Firebase'e yalnızca konsoldan yüklenir (kullanıcı işi).
+- App Store görselleri: Play için `flutter test tool/promo/capture.dart` ile yakalanan gerçek ekranlar → Playwright ile 440×956 @3x
+  iPhone çerçevesi (dynamic island, 9:41) → 1320×2868. Çerçeve ekranı yakalanan ekranın oranında olsun (alt menü kesilmesin).
+
 ## C) App Store Connect'te kullanıcıyı yönlendirme (2026 arayüzü)
 Sıra (`templates/APPLE-HESAP-REHBERI.md`): Developer Program (Bireysel, 99$) → Team ID → Identifiers (App Group, App ID'ler, widget) → **Business**: Paid Apps sözleşmesi, banka, W-8BEN, DSA → New App → API anahtarı → GitHub sırları → AdMob iOS → sürüm sayfası → yükleme → Submit.
 - Menü: uygulama adının yanındaki **›** → General (App Information, App Compliance, **App Review**), Trust & Safety (**App Privacy**). Sürüm: "1.0.0 Prepare for Submission".
