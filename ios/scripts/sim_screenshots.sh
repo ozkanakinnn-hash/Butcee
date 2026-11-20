@@ -3,7 +3,7 @@
 set -x
 APP="$1"; OUT="$2"; BID=akin.ai2
 mkdir -p "$OUT"
-DEV=$(xcrun simctl list devices available | grep -E "iPhone 16 \(|iPhone 16 Pro \(|iPhone 15 \(" | head -1 | grep -oE "[0-9A-F-]{36}")
+DEV=$(xcrun simctl list devices available | grep -E "${SIM_DEVICE:-iPhone 16 \(|iPhone 16 Pro \(|iPhone 15 \(}" | head -1 | grep -oE "[0-9A-F-]{36}")
 xcrun simctl boot "$DEV"; xcrun simctl bootstatus "$DEV" -b
 xcrun simctl status_bar "$DEV" override --time "14:00" --batteryState charged --batteryLevel 100 --cellularBars 4 || true
 xcrun simctl install "$DEV" "$APP"
@@ -12,7 +12,7 @@ TODAY=$(date +%Y-%m-%d)
 shot () { # ad, argümanlar...
   local name=$1; shift
   xcrun simctl terminate "$DEV" $BID 2>/dev/null
-  xcrun simctl launch "$DEV" $BID -debug_no_ads YES -key_auto_location NO -key_language "${SHOT_LANG:-tr}" -key_onboarding_completed YES -key_user_name "Özkan" -key_province Manisa -key_district Saruhanlı "$@"
+  xcrun simctl launch "$DEV" $BID -debug_no_ads YES -qiblaCalibrationIntro NO -key_auto_location NO -key_language "${SHOT_LANG:-tr}" -key_onboarding_completed YES -key_user_name "Özkan" -key_province Manisa -key_district Saruhanlı "$@"
   sleep 14
   xcrun simctl io "$DEV" screenshot "$OUT/$name.png"
   # Çökme kontrolü
