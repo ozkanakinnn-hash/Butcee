@@ -33,6 +33,8 @@ Kıble modülü sıfırdan (Diyanet yöntemi, 141° birebir), vakitler Diyanet i
 - App Store hazırlığı: `.github/workflows/ios-release.yml` (TestFlight'a yükleme; sırlar GitHub'da), `ios-appstore-screenshots.yml` (6,9" TR/EN → `docs/appstore/raw/`), mağaza metinleri `docs/appstore/app-store-metni.md`, kullanıcı rehberi `docs/appstore/APPLE-HESAP-REHBERI.md`. iOS AdMob kimlikleri `ios/project.yml` (GAD_APP_ID / GAD_BANNER_ID) — gerçekleri kullanıcıdan bekleniyor.
 - Gizlilik politikası iOS'u kapsayacak şekilde + `support.html` hazırlandı; gh-pages'e gönderilmesi kullanıcı onayı bekliyor.
 
+- **iOS 1.0.0 (yapı 4) App Store Connect'e yüklendi** (20 Kasım, ios-release.yml). App Store Connect: uygulama oluşturuldu, TR/EN metinler, ekran görüntüleri, yaş 4+, gizlilik yanıtları, ücretsiz + Çin hariç, DSA tacir, banka (24 saatte işlenecek), W-8BEN. Team ID 86STMU2KHN. Destek sayfası gh-pages'te yayında. Kalan: TestFlight denemesi, IAP ürünleri (Paid Apps sözleşmesi aktif olunca), içerik hakları/meal kararı, AdMob iOS kimlikleri, incelemeye gönderme.
+
 ## Bekleyen işler
 1. Kapalı test "Test kullanıcısı ol" sorununu çöz (ekran görüntüleri iste).
 2. Kod 4'ü kapalı teste yükle → Firebase "Test mesajı gönder" ile bildirimi doğrula.
