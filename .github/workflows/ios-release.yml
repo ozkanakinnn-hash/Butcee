@@ -1,5 +1,6 @@
 # iOS: App Store Connect'e (TestFlight) imzalı yükleme. Mac gerekmez.
-# Elle çalıştırılır: GitHub → Actions → "iOS App Store yükleme" → Run workflow.
+# İki yolla başlar: GitHub → Actions → "iOS App Store yükleme" → Run workflow,
+# ya da ios/RELEASE_VERSION dosyasındaki sürüm numarası değiştirilip gönderildiğinde.
 #
 # Gerekli depo sırları (Settings → Secrets and variables → Actions → New repository secret):
 #   APPLE_TEAM_ID     10 karakterlik ekip kimliği (developer.apple.com → Membership details)
@@ -13,9 +14,11 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Sürüm numarası (App Store'da görünen, ör. 1.0.0)"
-        required: true
-        default: "1.0.0"
+        description: "Sürüm numarası (boş bırakılırsa ios/RELEASE_VERSION)"
+        required: false
+        default: ""
+  push:
+    paths: [ "ios/RELEASE_VERSION" ]
 
 permissions:
   contents: read
@@ -33,10 +36,16 @@ jobs:
       ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
       ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
       ASC_PRIVATE_KEY: ${{ secrets.ASC_PRIVATE_KEY }}
-      VERSION: ${{ github.event.inputs.version }}
+      INPUT_VERSION: ${{ github.event.inputs.version }}
       BUILD_NUMBER: ${{ github.run_number }}
     steps:
       - uses: actions/checkout@v5
+
+      - name: Sürüm numarası
+        run: |
+          V="${INPUT_VERSION:-$(tr -d ' \n\r' < ios/RELEASE_VERSION)}"
+          echo "VERSION=$V" >> "$GITHUB_ENV"
+          echo "Sürüm: $V, yapı: $BUILD_NUMBER"
 
       - name: Sırlar tanımlı mı
         run: |
