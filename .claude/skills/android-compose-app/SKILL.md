@@ -230,3 +230,10 @@ gradle/actions/setup-gradle@v5 → `./gradlew assembleDebug` → upload-artifact
 ## Kıble ekranı sadeleştirme kalıbı
 - Tek satır büyük durum ("Sağa 40° dönün"), sade kadran (12 ana çizgi, büyük ok, Kâbe rozeti), tek uyarı, tek satır özet + "Ayrıntılar" açılır kartı.
 - Açılışta kalibrasyon anlatımı: Bernoulli lemniskatı (x=cos t/(1+sin²t), y=sin t·cos t/(1+sin²t)) üzerinde kayan telefon simgesi + iz; sensör doğruluğu (0–3) gösterilir; "Bir daha gösterme" tercihi. Önizleme GIF'i Robolectric'te `testProgress` ile kare kare çizilir.
+
+## App Store Connect (2026 arayüzü) — kullanıcıyı yönlendirirken
+- Bölümler: uygulama adının yanındaki **›** menüsü → General (App Information, App Compliance, **App Review** = inceleme iletişim/giriş bilgisi ve taslak gönderimler), Trust & Safety (App Privacy). Sürüm sayfası: "1.0.0 Prepare for Submission".
+- "Add for Review" eksikleri kırmızı kutuda bağlantılarıyla listeler: Content Rights (App Information altta), kategori (Primary kutusu boş kalabiliyor), **Privacy Policy URL her dil için ayrı**, "Sign-in required" yanlışlıkla işaretli kalırsa kullanıcı adı/şifre ister. Sonra "Draft Submission" → **Submit for Review**.
+- Açıklamada emoji/→ "invalid characters" hatası verir. Ekran görüntüsü sekmesi yalnız "medium display" ise **1206×2622** yükle.
+- İlk sürümde ürünü olmayan Premium/IAP ekranını gizle (bayrak), yoksa 2.1 reddi riski.
+- Bireysel hesapta: Legal entity → DSA tacir → kimlik/adres belgesi; banka (Türkiye: Banka Kodu/Şube Kodu + 7 haneli hesap no, IBAN değil); W-8BEN (FTIN=TCKN, Treaty: Türkiye, 10. madde boş).

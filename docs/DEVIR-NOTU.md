@@ -35,6 +35,8 @@ Kıble modülü sıfırdan (Diyanet yöntemi, 141° birebir), vakitler Diyanet i
 
 - **iOS 1.0.0 (yapı 4) App Store Connect'e yüklendi** (20 Kasım, ios-release.yml). App Store Connect: uygulama oluşturuldu, TR/EN metinler, ekran görüntüleri, yaş 4+, gizlilik yanıtları, ücretsiz + Çin hariç, DSA tacir, banka (24 saatte işlenecek), W-8BEN. Team ID 86STMU2KHN. Destek sayfası gh-pages'te yayında. Kalan: TestFlight denemesi, IAP ürünleri (Paid Apps sözleşmesi aktif olunca), içerik hakları/meal kararı, AdMob iOS kimlikleri, incelemeye gönderme.
 
+- **20 Kasım 20:42 — iOS 1.0.0 (yapı 7) App Store incelemesine gönderildi** (meal yok, Premium gizli `PremiumManager.enabled=false`, isimsiz saate göre selamlama). Sürüm "Manually release". Sonraki: onay → Release; Premium ürünleri (aylık/yıllık/ömür boyu, önerilen 39,99/249,99/499,99 TL) Paid Apps aktif olunca oluşturulup 1.0.1 ile `enabled=true`; Android'de de meal kaldırılması kullanıcıya soruldu.
+
 ## Bekleyen işler
 1. Kapalı test "Test kullanıcısı ol" sorununu çöz (ekran görüntüleri iste).
 2. Kod 4'ü kapalı teste yükle → Firebase "Test mesajı gönder" ile bildirimi doğrula.
