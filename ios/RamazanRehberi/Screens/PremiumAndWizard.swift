@@ -119,6 +119,13 @@ struct PremiumView: View {
         Text(tr("Abonelikler, mevcut dönem bitmeden en az 24 saat önce iptal edilmezse otomatik yenilenir. Apple Kimliği ayarlarından yönetebilirsiniz.",
                 "Subscriptions renew automatically unless cancelled at least 24 hours before the end of the period. Manage them in your Apple ID settings."))
           .font(.system(size: 11)).foregroundStyle(p.onSurfaceVariant).multilineTextAlignment(.center)
+        // Apple 3.1.2: abonelik ekranında kullanım koşulları ve gizlilik politikası bağlantıları
+        HStack(spacing: 16) {
+          Link(tr("Kullanım Koşulları (EULA)", "Terms of Use (EULA)"),
+               destination: URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")!)
+          Link(tr("Gizlilik Politikası", "Privacy Policy"),
+               destination: URL(string: "https://ozkanakinnn-hash.github.io/Butcee/ezan-vakit/privacy-policy.html")!)
+        }.font(.system(size: 12, weight: .semibold))
       }.padding(20)
     }
     .screen()
