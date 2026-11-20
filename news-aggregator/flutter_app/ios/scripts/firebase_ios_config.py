@@ -14,6 +14,35 @@ import jwt
 API = "https://firebase.googleapis.com/v1beta1"
 
 
+def load_service_account(raw):
+    """Telefondan yapıştırılan JSON bozulmuş olabilir (gerçek satır sonları, fazla ters eğik çizgi).
+    Önce normal okunur; olmazsa yalnızca gereken alanlar ayıklanır ve özel anahtar PEM olarak yeniden kurulur."""
+    import re, textwrap
+
+    def clean_pem(key):
+        body = re.sub(r"-----(BEGIN|END)[A-Z ]*-----", "", key)
+        body = re.sub(r"\\n|\\", "", body)          # kaçış kalıntıları
+        body = re.sub(r"[^A-Za-z0-9+/=]", "", body)
+        return "-----BEGIN PRIVATE KEY-----\n" + "\n".join(textwrap.wrap(body, 64)) + "\n-----END PRIVATE KEY-----\n"
+
+    raw = raw.strip()
+    try:
+        sa = json.loads(raw, strict=False)
+        sa["private_key"] = clean_pem(sa["private_key"])
+        return sa
+    except (ValueError, KeyError):
+        pass
+
+    def field(name):
+        m = re.search(r'"%s"\s*:\s*"([^"]*)"' % name, raw)
+        if not m:
+            sys.exit(f"FIREBASE_SERVICE_ACCOUNT içinde '{name}' alanı bulunamadı; servis hesabı JSON'unu yeniden yapıştırın.")
+        return m.group(1)
+    pem = clean_pem(field("private_key"))
+    print("Servis hesabı JSON'u bozuk biçimli; alanlar ayıklanarak okundu.")
+    return {"client_email": field("client_email"), "project_id": field("project_id"), "private_key": pem}
+
+
 def access_token(sa):
     now = int(time.time())
     assertion = jwt.encode({"iss": sa["client_email"], "scope": "https://www.googleapis.com/auth/cloud-platform",
@@ -26,8 +55,7 @@ def access_token(sa):
 
 
 def main():
-    # Sır, anahtar metninde gerçek satır sonlarıyla yapıştırılmış olabilir → strict=False
-    sa = json.loads(os.environ["FIREBASE_SA"].strip(), strict=False)
+    sa = load_service_account(os.environ["FIREBASE_SA"])
     project = os.environ.get("FIREBASE_PROJECT") or sa["project_id"]
     bundle = os.environ["BUNDLE_ID"]
     tok = access_token(sa)
