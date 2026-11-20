@@ -31,7 +31,7 @@ Ezan & Vakit; namaz vakitlerini dakikası dakikasına gösteren, ezan okunduğun
 • Manyetik parazit ve kalibrasyon uyarıları
 
 📖 KUR'AN-I KERİM
-• 604 sayfa, sayfa sayfa okuyucu; Arapça, okunuş ve meal
+• 604 sayfa, sayfa sayfa okuyucu; Arapça metin ve okunuş
 • Hatim takibi
 
 📿 İBADET ARAÇLARI

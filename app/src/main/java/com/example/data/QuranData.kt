@@ -173,22 +173,18 @@ object QuranData {
     val withBasmala = surahNumber != 1 && surahNumber != 9
     val arabic = StringBuilder()
     val pron = StringBuilder()
-    val meal = StringBuilder()
     if (withBasmala) {
       arabic.append(BASMALA_AR).append("\n")
       pron.append("Bismillâhirrahmânirrahîm.\n")
-      meal.append("Rahmân ve Rahîm olan Allah'ın adıyla.\n")
     }
     rows.forEach { r ->
       arabic.append(r.arabic).append(" ﴿").append(toArabicDigits(r.ayah)).append("﴾ ")
       pron.append(r.ayah).append(". ").append(r.pronunciation).append("\n")
-      // Eski Diyanet baskısında birkaç ayete tek meal yazılmıştır; tekrarlar boş bırakıldı.
-      if (r.meal.isNotBlank()) meal.append(r.ayah).append(". ").append(r.meal).append("\n")
     }
     return SurahDetailContent(
       fullArabic = arabic.toString().trim(),
       fullPronunciation = pron.toString().trim(),
-      fullTranslation = meal.toString().trim()
+      fullTranslation = ""  // meal kaldırıldı
     )
   }
 

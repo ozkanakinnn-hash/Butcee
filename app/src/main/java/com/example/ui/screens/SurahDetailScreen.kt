@@ -133,9 +133,6 @@ fun SurahDetailScreen(
                 [TÜRKÇE OKUNUŞU]
                 ${surahDetail.fullPronunciation.withoutVerseNumbers()}
                 
-                [DİYANET TÜRKÇE MEALİ]
-                ${surahDetail.fullTranslation.withoutVerseNumbers()}
-                
                 🏷️ Ezan & Vakit Uygulaması
               """.trimIndent()
               val sendIntent = Intent().apply {

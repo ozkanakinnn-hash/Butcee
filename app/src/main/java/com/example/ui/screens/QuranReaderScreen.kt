@@ -93,7 +93,8 @@ fun QuranReaderScreen(startPage: Int, onNavigateBack: () -> Unit) {
   val context = LocalContext.current
   val store = remember { HatimStore(context) }
   val en = AppLanguage.isEnglish
-  val modes = if (en) listOf("Arabic", "Transliteration") else listOf("Arapça", "Okunuş", "Meal")
+  // Meal kaldırıldı (kullanım izni netleşmedi): yalnızca Arapça ve okunuş
+  val modes = if (en) listOf("Arabic", "Transliteration") else listOf("Arapça", "Okunuş")
   var mode by remember { mutableIntStateOf(0) }
   var fontStep by remember { mutableIntStateOf(store.fontStep.coerceIn(0, 2)) }
   var bookmark by remember { mutableIntStateOf(store.bookmarkPage) }
@@ -269,7 +270,7 @@ private fun QuranPage(page: Int, mode: Int, fontStep: Int, onPrev: () -> Unit, o
               )
             }
             else -> list.forEach { r ->
-              val body = if (mode == 1) (if (en) r.english else r.pronunciation) else r.meal
+              val body = if (en) r.english else r.pronunciation
               if (body.isNotBlank()) {
                 Row(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
                   Box(
