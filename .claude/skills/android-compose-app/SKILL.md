@@ -214,3 +214,18 @@ gradle/actions/setup-gradle@v5 → `./gradlew assembleDebug` → upload-artifact
 - Yapı: giriş (ikon + ad) → sahne başına ~3 sn özellik (sol başlık, sağda yükselen telefon) → kapanış çağrısı. 1920×1080, ~30 sn.
 - Play yalnızca YouTube bağlantısı alır (herkese açık/liste dışı, reklamsız). Videoda "Google Play" markasını resmi rozet olmadan yazma.
 - Dini içerikli uygulamada müziği sessiz bırak / kullanıcıya sor.
+
+## iOS → App Store (Mac'siz, GitHub Actions)
+- `ios-release.yml` kalıbı: macos-latest + en yeni Xcode → XcodeGen → `xcodebuild archive -allowProvisioningUpdates -authenticationKeyPath/-ID/-IssuerID DEVELOPMENT_TEAM=… CODE_SIGN_STYLE=Automatic` → `-exportArchive` (ExportOptions: method `app-store-connect`, destination `upload`) = doğrudan TestFlight'a yükleme. Sırlar: APPLE_TEAM_ID, ASC_KEY_ID, ASC_ISSUER_ID, ASC_PRIVATE_KEY (.p8 metni). API anahtarı **Admin** olmalı (bulut imza sertifikası). Yapı no = `github.run_number`.
+- Yüklemeyi kullanıcı yerine başlatmak için ek tetik: `ios/RELEASE_VERSION` dosyası değişince çalışsın (workflow_dispatch varsayılan dalda olmalı).
+- App Group + widget varsa developer portalda `group.<id>`, `<id>`, `<id>.widget` kimliklerini elle oluşturtmak hatayı önler.
+- Ekran görüntüsü: 6,9" (1320×2868) zorunlu → simülatör "iPhone 1x Pro Max", `simctl status_bar override --time 9:41`. @AppStorage değerleri `-anahtar DEĞER` başlatma argümanıyla ayarlanabilir (ör. açılış animasyonlarını kapatmak).
+- Abonelik ekranında (3.1.2) Kullanım Koşulları (Apple standart EULA) + Gizlilik bağlantısı ve "Satın Alımları Geri Yükle" şart; açıklamada da bu bağlantılar.
+- Gizlilik politikası iOS'u da kapsamalı (IDFA/ATT, App Store abonelik yönetimi). Destek URL'si ayrı sayfa olmalı.
+- App Privacy (AdMob): yaklaşık konum, cihaz kimliği (tracking=Evet), ürün etkileşimi, reklam verisi, çökme/performans/diğer tanılama; hiçbiri kimliğe bağlı değil.
+- Anahtar kelimelerde başka markanın adı (ör. Diyanet) kullanılmaz (2.3.7); açıklamada yalnızca iOS'ta olan özellikleri anlat (2.3.1).
+- Rehber şablonu: `docs/appstore/APPLE-HESAP-REHBERI.md` (üyelik → Team ID → kimlikler → İş: sözleşme/W-8BEN/banka/DSA → uygulama oluştur → API anahtarı → GitHub sırları → AdMob iOS → sürüm sayfası → TestFlight → inceleme).
+
+## Kıble ekranı sadeleştirme kalıbı
+- Tek satır büyük durum ("Sağa 40° dönün"), sade kadran (12 ana çizgi, büyük ok, Kâbe rozeti), tek uyarı, tek satır özet + "Ayrıntılar" açılır kartı.
+- Açılışta kalibrasyon anlatımı: Bernoulli lemniskatı (x=cos t/(1+sin²t), y=sin t·cos t/(1+sin²t)) üzerinde kayan telefon simgesi + iz; sensör doğruluğu (0–3) gösterilir; "Bir daha gösterme" tercihi. Önizleme GIF'i Robolectric'te `testProgress` ile kare kare çizilir.

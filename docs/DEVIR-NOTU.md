@@ -27,6 +27,12 @@
 ## Son yapılanlar (bu sohbet)
 Kıble modülü sıfırdan (Diyanet yöntemi, 141° birebir), vakitler Diyanet ilçe tablosundan (ezanvakti.emushaf.net), Cuma hatırlatıcısı, canlı iftar sayacı, fitre/fidye/zekât, imsakiye PDF, yedekleme, paket adı akin.ai2, ad Ezan & Vakit, SCHEDULE_EXACT_ALARM, Play Billing 8.3.0, edge-to-edge düzeltmeleri, fragment 1.8.9, Firebase + FCM kimliği kopyalama.
 
+## 20 Kasım 2026
+- Bildirim düzeltmesi 1.0.1 (kod 5) imzalı AAB'leri kullanıcıya gönderildi (Play'e yüklenecek).
+- Kıble ekranı sadeleştirildi + açılışta 8 çizme kalibrasyon animasyonu (Android + iOS). Önizleme: `docs/kible-sade-onizleme.png`, `docs/kalibrasyon-animasyonu.gif`. Henüz yeni Android sürümüne girmedi.
+- App Store hazırlığı: `.github/workflows/ios-release.yml` (TestFlight'a yükleme; sırlar GitHub'da), `ios-appstore-screenshots.yml` (6,9" TR/EN → `docs/appstore/raw/`), mağaza metinleri `docs/appstore/app-store-metni.md`, kullanıcı rehberi `docs/appstore/APPLE-HESAP-REHBERI.md`. iOS AdMob kimlikleri `ios/project.yml` (GAD_APP_ID / GAD_BANNER_ID) — gerçekleri kullanıcıdan bekleniyor.
+- Gizlilik politikası iOS'u kapsayacak şekilde + `support.html` hazırlandı; gh-pages'e gönderilmesi kullanıcı onayı bekliyor.
+
 ## Bekleyen işler
 1. Kapalı test "Test kullanıcısı ol" sorununu çöz (ekran görüntüleri iste).
 2. Kod 4'ü kapalı teste yükle → Firebase "Test mesajı gönder" ile bildirimi doğrula.
