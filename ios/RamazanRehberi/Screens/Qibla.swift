@@ -182,96 +182,133 @@ final class QiblaCompass: NSObject, ObservableObject, CLLocationManagerDelegate 
   func locationManagerShouldDisplayHeadingCalibration(_ m: CLLocationManager) -> Bool { true }
 }
 
-// MARK: - Ekran
+// MARK: - Ekran (sade)
 
 struct QiblaView: View {
   @Environment(\.palette) var p
   @EnvironmentObject var store: AppData
   @EnvironmentObject var prayers: PrayerService
   @StateObject private var compass = QiblaCompass()
-  @State private var lastAligned = false
+  @AppStorage("qiblaCalibrationIntro") private var calibrationIntro = true
+  @State private var showCalibration = false
+  @State private var showDetails = false
 
   private var en: Bool { L10n.isEnglish }
   private var coord: CLLocationCoordinate2D { compass.location?.coordinate ?? prayers.cityCoordinate }
   private let tolerance = 3.0
+  private let green = Color(hex: 0x2E7D57), gold = Color(hex: 0xC59B3C)
+
+  /// iOS derece cinsinden belirsizlik verir; Android'deki 0–3 düzeyine çevrilir.
+  private var accuracyLevel: Int {
+    guard compass.ready, compass.accuracy >= 0 else { return -1 }
+    return compass.accuracy > 25 ? 1 : (compass.accuracy > 12 ? 2 : 3)
+  }
+
+  private var qiblaTimeText: String {
+    (compass.location == nil ? DiyanetSource.kibleSaati(Date()) : nil)
+      ?? QiblaCalc.qiblaTime(coord).map { $0.formatted(date: .omitted, time: .shortened) } ?? "—"
+  }
 
   var body: some View {
     let q = QiblaCalc.trueBearing(coord)
     let turn = QiblaCalc.turn(q, compass.heading)
     let aligned = compass.ready && abs(turn) <= tolerance
-    let green = Color(hex: 0x2E7D57), gold = Color(hex: 0xC59B3C)
-    ScrollView {
-      VStack(spacing: 14) {
-        Text(compass.location != nil ? (en ? "📍 Device location (GPS)" : "📍 Cihaz konumu (GPS)") : store.locationLabel)
-          .font(.system(size: 13, weight: .semibold)).foregroundStyle(p.primary)
+    let official = compass.declination.map { QiblaCalc.diyanetPublishedAngle(trueBearing: q, currentDeclination: $0) } ?? Int(q.rounded())
+    ZStack {
+      ScrollView {
+        VStack(spacing: 12) {
+          Text(compass.location != nil ? (en ? "📍 Device location (GPS)" : "📍 Cihaz konumu (GPS)") : store.locationLabel)
+            .font(.system(size: 13, weight: .semibold)).foregroundStyle(p.primary)
 
-        // Durum
-        VStack(spacing: 4) {
-          Text(!compass.available ? (en ? "Your device has no compass" : "Cihazınızda pusula yok")
-               : !compass.ready ? (en ? "Starting compass…" : "Pusula hazırlanıyor…")
-               : aligned ? (en ? "🕋 YOU ARE FACING THE QIBLA" : "🕋 KIBLEYE DÖNDÜNÜZ")
-               : (en ? "FIND THE QIBLA" : "KIBLE YÖNÜNÜ BULUN"))
-            .font(.system(size: 17, weight: .bold))
-          if compass.ready && !aligned {
-            let d = Int(abs(turn).rounded())
-            Text(turn > 0 ? (en ? "Turn right \(d)°  ⟳" : "Sağa doğru \(d)° dönün  ⟳") : (en ? "⟲  Turn left \(d)°" : "⟲  Sola doğru \(d)° dönün"))
-              .font(.system(size: 14))
+          // Tek satır büyük durum
+          VStack(spacing: 4) {
+            Text(statusText(turn: turn, aligned: aligned))
+              .font(.system(size: aligned ? 22 : 24, weight: .bold))
+              .foregroundStyle(aligned ? green : p.onBackground)
+              .multilineTextAlignment(.center)
+            if aligned {
+              Text(en ? "You may begin your prayer." : "Huşû ile namaza durabilirsiniz.").font(.system(size: 14)).foregroundStyle(green)
+            }
           }
-          if aligned { Text(en ? "Aligned. You may begin your prayer." : "Hizalama tamam. Huşû ile namaza durabilirsiniz.").font(.system(size: 13)) }
+          .frame(maxWidth: .infinity, minHeight: 72)
+          .animation(.easeInOut(duration: 0.25), value: aligned)
+
+          dial(q: q, aligned: aligned).frame(width: 310, height: 310)
+
+          // En önemli tek uyarı
+          ZStack {
+            if let w = warning {
+              Text(w).font(.system(size: 13)).multilineTextAlignment(.center)
+                .padding(.horizontal, 12).padding(.vertical, 8)
+                .background(RoundedRectangle(cornerRadius: 12).fill(Color.red.opacity(0.15)))
+            }
+          }.frame(minHeight: 44)
+
+          Text(en ? "Qibla angle \(official)° • Qibla time \(qiblaTimeText)" : "Kıble açısı \(official)° • Kıble saati \(qiblaTimeText)")
+            .font(.system(size: 13)).foregroundStyle(p.onSurfaceVariant)
+          Button(showDetails ? (en ? "Hide details ▴" : "Ayrıntıları gizle ▴") : (en ? "Details ▾" : "Ayrıntılar ▾")) {
+            withAnimation(.easeInOut(duration: 0.2)) { showDetails.toggle() }
+          }.font(.system(size: 13, weight: .semibold))
+
+          if showDetails { details(q: q, official: official) }
         }
-        .foregroundStyle(aligned ? .white : p.onSurfaceVariant)
-        .frame(maxWidth: .infinity).padding(14)
-        .background(RoundedRectangle(cornerRadius: 18).fill(aligned ? green : p.onSurfaceVariant.opacity(0.12)))
-        .animation(.easeInOut(duration: 0.25), value: aligned)
-
-        ForEach(warnings, id: \.self) { w in
-          Text(w).font(.system(size: 13)).padding(10).frame(maxWidth: .infinity, alignment: .leading)
-            .background(RoundedRectangle(cornerRadius: 12).fill(Color.red.opacity(0.15)))
-        }
-
-        dial(q: q, aligned: aligned, green: green, gold: gold).frame(width: 300, height: 300).padding(.vertical, 6)
-        Text((en ? "Heading: " : "Telefon yönü: ") + "\(Int(compass.heading.rounded()) % 360)°")
-          .font(.system(size: 13)).foregroundStyle(p.onSurfaceVariant)
-
-        // Diyanet bilgileri
-        VStack(alignment: .leading, spacing: 8) {
-          Text(en ? "Qibla Data" : "Kıble Bilgileri").font(.system(size: 16, weight: .bold))
-          if let d = compass.declination {
-            row(en ? "Qibla angle (official calendar)" : "Kıble açısı (resmî takvim)", "\(QiblaCalc.diyanetPublishedAngle(trueBearing: q, currentDeclination: d))°", bold: true)
-          }
-          row(en ? "Qibla angle (true north)" : "Kıble açısı (gerçek kuzey)", String(format: "%.1f°", q))
-          if let d = compass.declination {
-            row(en ? "Today's hand-compass angle" : "Bugünkü el pusulası açısı", "\(QiblaCalc.diyanetAngle(trueBearing: q, declination: d))°")
-            row(en ? "Magnetic declination (today)" : "Manyetik sapma (bugün)", String(format: "%+.1f°", d))
-          }
-          row(en ? "Distance to the Kaaba" : "Kâbe'ye uzaklık", String(format: "%.0f km", QiblaCalc.distanceKm(coord)))
-          row(en ? "Today's qibla time" : "Bugünkü Kıble Saati",
-              (compass.location == nil ? DiyanetSource.kibleSaati(Date()) : nil)
-                ?? QiblaCalc.qiblaTime(coord).map { $0.formatted(date: .omitted, time: .shortened) } ?? "—", bold: true)
-          Text(en ? "At the qibla time, facing the sun means facing the qibla. Unlike a compass, the sun is not affected by magnets or metal."
-                  : "Kıble Saati'nde güneşe dönen kişi kıbleye dönmüş olur. Güneş, pusulanın aksine mıknatıs ve metalden etkilenmez; pusulayı bu saatte kontrol edebilirsiniz.")
-            .font(.system(size: 12)).foregroundStyle(p.onSurfaceVariant)
-        }.padding(16).frame(maxWidth: .infinity, alignment: .leading).card(radius: 18)
-
-        Text(en ? "Tips: hold the phone flat • remove magnetic cases • stay away from metal, speakers and cars • calibrate with a figure-8 if warned."
-                : "İpuçları: Telefonu avucunuzda yatay tutun • Mıknatıslı kılıfı çıkarın • Metal eşya, hoparlör ve araç içinden uzak durun • Uyarı çıkarsa 8 çizerek kalibre edin.")
-          .font(.system(size: 12)).multilineTextAlignment(.center).foregroundStyle(p.onSurfaceVariant)
+        .padding(16)
       }
-      .padding(16)
+      .screen()
+
+      if showCalibration {
+        CalibrationOverlay(level: accuracyLevel, en: en,
+                           onDone: { withAnimation { showCalibration = false } },
+                           onNeverShow: { calibrationIntro = false; withAnimation { showCalibration = false } })
+          .transition(.opacity)
+      }
     }
-    .screen()
     .navigationTitle(t("Kıble Bulucu"))
-    .onAppear { compass.start() }
+    .toolbar(showCalibration ? .hidden : .visible, for: .navigationBar)
+    .toolbar {
+      ToolbarItem(placement: .navigationBarTrailing) {
+        Button(en ? "🔄 Calibrate" : "🔄 Kalibre et") { withAnimation { showCalibration = true } }
+      }
+    }
+    .onAppear {
+      compass.start()
+      if calibrationIntro { showCalibration = true }
+    }
     .onDisappear { compass.stop() }
     .onChange(of: aligned) { a in if a { UIImpactFeedbackGenerator(style: .medium).impactOccurred() } }
   }
 
-  private var warnings: [String] {
-    var w: [String] = []
-    if compass.usingMagnetic { w.append(en ? "📍 Allow location access: without it the compass uses magnetic north (≈6° off in Türkiye)." : "📍 Konum iznini açın: izin yokken pusula manyetik kuzeyi kullanır (Türkiye'de ≈6° sapma).") }
-    if compass.ready && compass.accuracy > 20 { w.append(en ? "🔄 Low compass accuracy (±\(Int(compass.accuracy))°): move away from metal/magnets and calibrate with a figure-8." : "🔄 Pusula hassasiyeti düşük (±\(Int(compass.accuracy))°): metal ve mıknatıstan uzaklaşın, 8 çizerek kalibre edin.") }
-    if compass.ready && compass.jitter > 8 { w.append(en ? "〰️ Reading is unsteady; hold the phone still." : "〰️ Ölçüm dalgalanıyor; telefonu sabit tutun.") }
-    return w
+  private func statusText(turn: Double, aligned: Bool) -> String {
+    if !compass.available { return en ? "Your device has no compass" : "Cihazınızda pusula yok" }
+    if !compass.ready { return en ? "Starting compass…" : "Pusula hazırlanıyor…" }
+    if aligned { return en ? "🕋 YOU ARE FACING THE QIBLA" : "🕋 KIBLEYE DÖNDÜNÜZ" }
+    let d = Int(abs(turn).rounded())
+    return turn > 0 ? (en ? "Turn right \(d)°  ⟳" : "Sağa doğru \(d)° dönün  ⟳") : (en ? "⟲  Turn left \(d)°" : "⟲  Sola doğru \(d)° dönün")
+  }
+
+  private var warning: String? {
+    guard compass.ready else { return nil }
+    if compass.usingMagnetic { return en ? "📍 Allow location access for true north (≈6° difference)." : "📍 Gerçek kuzey için konum iznini açın (≈6° fark)." }
+    if accuracyLevel == 1 { return en ? "🔄 Compass needs calibration: tap \"Calibrate\"." : "🔄 Pusula kalibrasyon istiyor: \"Kalibre et\"e dokunun." }
+    if compass.jitter > 8 { return en ? "〰️ Hold the phone still." : "〰️ Telefonu sabit tutun." }
+    return nil
+  }
+
+  private func details(q: Double, official: Int) -> some View {
+    VStack(alignment: .leading, spacing: 8) {
+      row(en ? "Qibla angle (official calendar)" : "Kıble açısı (resmî takvim)", "\(official)°", bold: true)
+      row(en ? "Qibla angle (true north)" : "Kıble açısı (gerçek kuzey)", String(format: "%.1f°", q))
+      if let d = compass.declination {
+        row(en ? "Today's hand-compass angle" : "Bugünkü el pusulası açısı", "\(QiblaCalc.diyanetAngle(trueBearing: q, declination: d))°")
+        row(en ? "Magnetic declination (today)" : "Manyetik sapma (bugün)", String(format: "%+.1f°", d))
+      }
+      row(en ? "Distance to the Kaaba" : "Kâbe'ye uzaklık", String(format: "%.0f km", QiblaCalc.distanceKm(coord)))
+      row(en ? "Today's qibla time" : "Bugünkü Kıble Saati", qiblaTimeText, bold: true)
+      Text(en ? "At the qibla time, facing the sun means facing the qibla. Unlike a compass, the sun is not affected by magnets or metal."
+              : "Kıble Saati'nde güneşe dönen kişi kıbleye dönmüş olur. Güneş, pusulanın aksine mıknatıs ve metalden etkilenmez.")
+        .font(.system(size: 12)).foregroundStyle(p.onSurfaceVariant)
+    }
+    .padding(16).frame(maxWidth: .infinity, alignment: .leading).card(radius: 18)
   }
 
   private func row(_ l: String, _ v: String, bold: Bool = false) -> some View {
@@ -282,36 +319,157 @@ struct QiblaView: View {
     }
   }
 
-  private func dial(q: Double, aligned: Bool, green: Color, gold: Color) -> some View {
-    let ring = aligned ? green : gold
+  private func dial(q: Double, aligned: Bool) -> some View {
+    let accent = aligned ? green : gold
     return ZStack {
       ZStack {
         Circle().fill(p.surface)
-        Circle().stroke(ring, lineWidth: 4)
-        ForEach(0..<72, id: \.self) { i in
-          Rectangle().fill(i % 6 == 0 ? gold : p.onSurfaceVariant.opacity(0.35))
-            .frame(width: i % 6 == 0 ? 2.5 : 1.2, height: i % 6 == 0 ? 14 : (i % 2 == 0 ? 9 : 5))
-            .offset(y: -138).rotationEffect(.degrees(Double(i) * 5))
+        Circle().stroke(accent, lineWidth: aligned ? 6 : 3)
+        // Yalnızca 30°'lik ana çizgiler
+        ForEach(0..<12, id: \.self) { i in
+          Capsule().fill(p.onSurfaceVariant.opacity(0.35)).frame(width: 2, height: 10)
+            .offset(y: -136).rotationEffect(.degrees(Double(i) * 30))
         }
         ForEach(Array(zip(en ? ["N", "E", "S", "W"] : ["K", "D", "G", "B"], [0.0, 90, 180, 270])), id: \.0) { l, a in
-          Text(l).font(.system(size: 17, weight: .bold)).foregroundStyle(a == 0 ? Color.red : p.onBackground)
+          Text(l).font(.system(size: a == 0 ? 18 : 15, weight: a == 0 ? .bold : .semibold))
+            .foregroundStyle(a == 0 ? Color.red : p.onBackground.opacity(0.7))
             .rotationEffect(.degrees(-a + compass.continuousHeading))
-            .offset(y: -108).rotationEffect(.degrees(a))
+            .offset(y: -112).rotationEffect(.degrees(a))
         }
-        // Kıble ibresi + Kâbe rozeti
+        // Büyük kıble ibresi + Kâbe rozeti
         ZStack {
-          Capsule().fill(LinearGradient(colors: [ring.opacity(0.3), ring], startPoint: .bottom, endPoint: .top)).frame(width: 7, height: 112).offset(y: -56)
-          Image("ic_kaaba").resizable().scaledToFit().frame(width: 24, height: 24)
-            .padding(5).background(Circle().fill(ring))
+          QiblaArrow().fill(accent).frame(width: 32, height: 112).offset(y: -50)
+          Image("ic_kaaba").resizable().scaledToFit().frame(width: 26, height: 26)
+            .padding(6).background(Circle().fill(accent))
             .rotationEffect(.degrees(-q + compass.continuousHeading))
-            .offset(y: -134)
+            .offset(y: -140)
         }
         .rotationEffect(.degrees(q))
       }
       .rotationEffect(.degrees(-compass.continuousHeading))
       .animation(.interpolatingSpring(stiffness: 120, damping: 22), value: compass.continuousHeading)
-      Circle().fill(ring).frame(width: 18, height: 18)
-      Capsule().fill(aligned ? green : .red).frame(width: 4, height: 18).offset(y: -141)
+      Circle().fill(accent).frame(width: 14, height: 14)
+      Capsule().fill(aligned ? green : .red).frame(width: 5, height: 22).offset(y: -147)
     }
+  }
+}
+
+/// Ok ucu biçimli kıble ibresi.
+private struct QiblaArrow: Shape {
+  func path(in r: CGRect) -> Path {
+    var path = Path()
+    path.move(to: CGPoint(x: r.midX, y: r.minY))
+    path.addLine(to: CGPoint(x: r.maxX, y: r.maxY))
+    path.addLine(to: CGPoint(x: r.midX, y: r.maxY - r.height * 0.14))
+    path.addLine(to: CGPoint(x: r.minX, y: r.maxY))
+    path.closeSubpath()
+    return path
+  }
+}
+
+// MARK: - Kalibrasyon anlatımı (telefon havada 8 çizer)
+
+struct CalibrationOverlay: View {
+  /// -1 bekleniyor, 1 düşük, 2 orta, 3 hazır
+  let level: Int
+  let en: Bool
+  let onDone: () -> Void
+  let onNeverShow: () -> Void
+  private let gold = Color(hex: 0xC59B3C), green = Color(hex: 0x2E7D57)
+
+  var body: some View {
+    ZStack {
+      Color(hex: 0x12110E).ignoresSafeArea()
+      VStack(spacing: 16) {
+        Text(en ? "Calibrate your compass" : "Pusulayı kalibre edin").font(.system(size: 24, weight: .bold)).foregroundStyle(.white)
+        Text(en ? "For an accurate direction, slowly move the phone in a figure-8 two or three times."
+                : "Doğru yön için telefonu havada yavaşça 8 çizerek 2–3 kez çevirin.")
+          .font(.system(size: 15)).foregroundStyle(Color(hex: 0xE8DFC8)).multilineTextAlignment(.center)
+        TimelineView(.animation) { tl in
+          let t = tl.date.timeIntervalSinceReferenceDate.truncatingRemainder(dividingBy: 3.2) / 3.2
+          Canvas { ctx, size in FigureEight.draw(ctx, size: size, progress: t, gold: gold) }
+        }
+        .frame(width: 300, height: 220)
+        VStack(alignment: .leading, spacing: 8) {
+          step("1", en ? "Hold the phone in your hand." : "Telefonu avucunuza alın.")
+          step("2", en ? "Draw a large 8 in the air, turning your wrist." : "Bileğinizi çevirerek havada büyük bir 8 çizin.")
+          step("3", en ? "Keep away from magnetic cases, metal and speakers." : "Mıknatıslı kılıf, metal ve hoparlörden uzak durun.")
+        }
+        HStack(spacing: 8) {
+          Circle().fill(levelColor).frame(width: 10, height: 10)
+          Text(levelText).font(.system(size: 15, weight: .semibold)).foregroundStyle(levelColor)
+        }
+        Button(action: onDone) {
+          Text(level >= 3 ? (en ? "Find the qibla" : "Kıbleyi bul") : (en ? "OK" : "Tamam"))
+            .font(.system(size: 17, weight: .bold)).foregroundStyle(.white)
+            .frame(maxWidth: .infinity, minHeight: 50)
+            .background(RoundedRectangle(cornerRadius: 14).fill(level >= 3 ? green : gold))
+        }
+        Button(action: onNeverShow) {
+          Text(en ? "Don't show on start again" : "Açılışta bir daha gösterme").font(.system(size: 13)).foregroundStyle(Color(hex: 0xBDBDBD))
+        }
+      }
+      .padding(24)
+    }
+  }
+
+  private var levelText: String {
+    switch level {
+    case 3...: return en ? "✓ Compass ready" : "✓ Pusula hazır"
+    case 2: return en ? "Accuracy: medium, keep going" : "Hassasiyet: orta, biraz daha çizin"
+    case 0, 1: return en ? "Accuracy: low" : "Hassasiyet: düşük"
+    default: return en ? "Waiting for compass…" : "Pusula bekleniyor…"
+    }
+  }
+  private var levelColor: Color {
+    switch level { case 3...: return green; case 2: return gold; case 0, 1: return Color(hex: 0xE57373); default: return Color(hex: 0xBDBDBD) }
+  }
+
+  private func step(_ n: String, _ text: String) -> some View {
+    HStack(spacing: 10) {
+      Text(n).font(.system(size: 13, weight: .bold)).foregroundStyle(gold)
+        .frame(width: 24, height: 24).background(Circle().fill(gold.opacity(0.2)))
+      Text(text).font(.system(size: 14)).foregroundStyle(.white)
+    }
+  }
+}
+
+enum FigureEight {
+  /// Bernoulli lemniskatı (sonsuzluk / 8 eğrisi)
+  static func point(_ t: Double, center c: CGPoint, width w: Double) -> CGPoint {
+    let d = 1 + sin(t) * sin(t)
+    return CGPoint(x: c.x + cos(t) / d * w, y: c.y + sin(t) * cos(t) / d * w * 1.9)
+  }
+
+  static func draw(_ ctx: GraphicsContext, size: CGSize, progress: Double, gold: Color) {
+    let c = CGPoint(x: size.width / 2, y: size.height / 2), w = Double(size.width) * 0.42
+    var path = Path()
+    for i in 0...120 {
+      let pt = point(2 * .pi * Double(i) / 120, center: c, width: w)
+      if i == 0 { path.move(to: pt) } else { path.addLine(to: pt) }
+    }
+    ctx.stroke(path, with: .color(gold.opacity(0.35)), style: StrokeStyle(lineWidth: 3, lineCap: .round, dash: [7, 6]))
+
+    let t = 2 * .pi * progress
+    var trail = Path()
+    for i in 0...30 {
+      let pt = point(t - 1.4 * Double(30 - i) / 30, center: c, width: w)
+      if i == 0 { trail.move(to: pt) } else { trail.addLine(to: pt) }
+    }
+    ctx.stroke(trail, with: .color(gold), style: StrokeStyle(lineWidth: 5, lineCap: .round))
+
+    // Telefon simgesi: yolun yönüne göre hafifçe yatar
+    let p = point(t, center: c, width: w), q = point(t + 0.02, center: c, width: w)
+    let tilt = atan2(q.y - p.y, q.x - p.x) * 0.35
+    var phone = ctx
+    phone.translateBy(x: p.x, y: p.y)
+    phone.rotate(by: .radians(tilt))
+    let body = Path(roundedRect: CGRect(x: -21, y: -37, width: 42, height: 74), cornerRadius: 9)
+    phone.fill(body, with: .color(Color(hex: 0x2A2620)))
+    phone.stroke(body, with: .color(gold), lineWidth: 2.5)
+    var needle = Path()
+    needle.move(to: CGPoint(x: 0, y: -16)); needle.addLine(to: CGPoint(x: 6, y: 4)); needle.addLine(to: CGPoint(x: -6, y: 4)); needle.closeSubpath()
+    phone.fill(needle, with: .color(.red))
+    phone.fill(Path(ellipseIn: CGRect(x: -3, y: 9, width: 6, height: 6)), with: .color(gold))
   }
 }
