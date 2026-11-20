@@ -1,22 +1,18 @@
-2026-11-20 06:24:28.216250+0000 RamazanRehberi[9892:34008] SecTaskCopyDebugDescription: RamazanRehberi[9892]/0#-1 2026-11-20 06:24:28.538047+0000 RamazanRehberi[9892:33993] [Client] Synchronous remote object proxy returned error: Error Domain=NSCocoaErrorDomain Code=4099 "The connection to service named com.apple.commcenter.coretelephony.xpc was invalidated: failed at lookup with error 3 - No such process." UserInfo={NSDebugDescription=The connection to service named com.apple.commcenter.coretelephony.xpc was invalidated: failed at lookup with error 3 - No such process.}
-2026-11-20 06:24:34.860178+0000 RamazanRehberi[9892:33993] [Client] Synchronous remote object proxy returned error: Error Domain=NSCocoaErrorDomain Code=4099 "The connection to service named com.apple.commcenter.coretelephony.xpc was invalidated: failed at lookup with error 3 - No such process." UserInfo={NSDebugDescription=The connection to service named com.apple.commcenter.coretelephony.xpc was invalidated: failed at lookup with error 3 - No such process.}
-Test Case '-[RamazanRehberiTests.CoreTests testAutoLocationMatching]' passed (0.011 seconds).
-Test Case '-[RamazanRehberiTests.CoreTests testCleanTime]' passed (0.004 seconds).
-Test Case '-[RamazanRehberiTests.CoreTests testContentAndTranslations]' passed (0.003 seconds).
-Test Case '-[RamazanRehberiTests.CoreTests testCountdownModes]' passed (0.007 seconds).
-Test Case '-[RamazanRehberiTests.CoreTests testGreetingCardsRender]' passed (1.355 seconds).
-Test Case '-[RamazanRehberiTests.CoreTests testHeadingFilterStability]' passed (0.009 seconds).
-Test Case '-[RamazanRehberiTests.CoreTests testHolidayCountdown]' passed (0.022 seconds).
-Test Case '-[RamazanRehberiTests.CoreTests testIslamicDays2026]' passed (0.002 seconds).
+2026-11-20 14:20:51.733905+0000 RamazanRehberi[6989:30161] [Client] Synchronous remote object proxy returned error: Error Domain=NSCocoaErrorDomain Code=4099 "The connection to service named com.apple.commcenter.coretelephony.xpc was invalidated: failed at lookup with error 3 - No such process." UserInfo={NSDebugDescription=The connection to service named com.apple.commcenter.coretelephony.xpc was invalidated: failed at lookup with error 3 - No such process.}
+Test Case '-[RamazanRehberiTests.CoreTests testAutoLocationMatching]' passed (0.006 seconds).
+Test Case '-[RamazanRehberiTests.CoreTests testCleanTime]' passed (0.051 seconds).
+Test Case '-[RamazanRehberiTests.CoreTests testContentAndTranslations]' passed (0.002 seconds).
+Test Case '-[RamazanRehberiTests.CoreTests testCountdownModes]' passed (0.004 seconds).
+Test Case '-[RamazanRehberiTests.CoreTests testGreetingCardsRender]' passed (0.644 seconds).
+Test Case '-[RamazanRehberiTests.CoreTests testHeadingFilterStability]' passed (0.132 seconds).
+Test Case '-[RamazanRehberiTests.CoreTests testHolidayCountdown]' passed (1.314 seconds).
+Test Case '-[RamazanRehberiTests.CoreTests testIslamicDays2026]' passed (0.001 seconds).
 Test Case '-[RamazanRehberiTests.CoreTests testMaghribRoundedUpLikeDiyanet]' passed (0.002 seconds).
-2026-11-20 06:26:35.847509+0000 RamazanRehberi[9892:40874] [ProcessSuspension] 0x12800d870 - ProcessAssertion::acquireSync Failed to acquire RBS assertion 'XPCConnectionTerminationWatchdog' for process with PID=10064, error: (null)
-2026-11-20 06:26:35.858071+0000 RamazanRehberi[9892:40874] [ProcessSuspension] 0x12800d930 - ProcessAssertion::acquireSync Failed to acquire RBS assertion 'WebProcess NearSuspended Assertion' for process with PID=10064, error: (null)
-2026-11-20 06:26:36.866076+0000 RamazanRehberi[9892:40874] [ProcessSuspension] 0x12800d9f0 - ProcessAssertion::acquireSync Failed to acquire RBS assertion 'WebProcess NearSuspended Assertion' for process with PID=10057, error: (null)
-Test Case '-[RamazanRehberiTests.CoreTests testNotificationScheduling]' passed (4.473 seconds).
-Test Case '-[RamazanRehberiTests.CoreTests testOfflineCalcCloseToDiyanet]' passed (0.009 seconds).
+Test Case '-[RamazanRehberiTests.CoreTests testNotificationScheduling]' passed (1.578 seconds).
+Test Case '-[RamazanRehberiTests.CoreTests testOfflineCalcCloseToDiyanet]' passed (0.007 seconds).
 Test Case '-[RamazanRehberiTests.CoreTests testQiblaDiyanetMethod]' passed (0.002 seconds).
-Test Case '-[RamazanRehberiTests.CoreTests testQiblaTimeSunPointsToKaaba]' passed (0.004 seconds).
+Test Case '-[RamazanRehberiTests.CoreTests testQiblaTimeSunPointsToKaaba]' passed (0.003 seconds).
 Test Case '-[RamazanRehberiTests.CoreTests testQuranText]' passed (0.002 seconds).
 Test Case '-[RamazanRehberiTests.CoreTests testRamadanCalendar]' passed (0.002 seconds).
-Test Case '-[RamazanRehberiTests.CoreTests testStores]' passed (0.028 seconds).
+Test Case '-[RamazanRehberiTests.CoreTests testStores]' passed (0.025 seconds).
 ** TEST SUCCEEDED **
