@@ -9,6 +9,9 @@ import UserMessagingPlatform
 final class PremiumManager: ObservableObject {
   static let shared = PremiumManager()
   static let productIds = ["premium_monthly", "premium_yearly", "premium_lifetime"]
+  /// İlk App Store sürümü Premium'suz yayınlanır (ürünler App Store Connect'te henüz yok).
+  /// Ürünler oluşturulup sürümle birlikte incelemeye gönderildiğinde true yapın.
+  static let enabled = false
 
   @Published var products: [Product] = []
   @Published var purchasing = false

@@ -77,10 +77,6 @@ DAHA FAZLASI
 - 4 ana ekran widget'ı: sıradaki vakit, günün vakitleri, oruç sayacı, günün ayeti
 - Karanlık tema, 3 renk teması, Türkçe ve İngilizce
 
-PREMIUM (isteğe bağlı)
-Reklamsız kullanım için aylık, yıllık veya ömür boyu Premium. Abonelikler, dönem bitmeden en az 24 saat önce iptal edilmezse otomatik yenilenir; iPhone Ayarlar > [adınız] > Abonelikler bölümünden yönetebilirsiniz.
-Kullanım Koşulları: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/
-Gizlilik: https://ozkanakinnn-hash.github.io/Butcee/ezan-vakit/privacy-policy.html
 
 GİZLİLİK
 Hesap gerekmez. Kayıtlarınız yalnızca telefonunuzda saklanır.
@@ -141,10 +137,6 @@ WORSHIP TOOLS
 MORE
 - 4 home-screen widgets, dark mode, 3 color themes, Turkish & English
 
-PREMIUM (optional)
-Monthly, yearly or lifetime Premium removes ads. Subscriptions renew automatically unless cancelled at least 24 hours before the end of the period; manage them in Settings > [your name] > Subscriptions.
-Terms of Use: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/
-Privacy: https://ozkanakinnn-hash.github.io/Butcee/ezan-vakit/privacy-policy.html
 
 Prayer times are based on the tables published by Türkiye's Presidency of Religious Affairs (Diyanet). This app is not affiliated with Diyanet.
 ```
@@ -169,7 +161,6 @@ No account or login is required.
 Location (When In Use) is used only to pick the user's city for prayer times, to compute the qibla direction and to show nearby mosques; the user can also choose a city manually.
 The qibla compass needs a real device with a magnetometer; on the simulator it shows "Starting compass…".
 Notifications are scheduled locally on the device for prayer times; no push server is used.
-Premium (optional) removes ads: two auto-renewable subscriptions (monthly, yearly) and one non-consumable (lifetime). "Restore Purchases" is on the Premium screen, together with links to the Terms of Use and the Privacy Policy.
 Ads are served by Google AdMob; consent is collected with Google's UMP form where required, and the IDFA is used only after App Tracking Transparency permission.
 ```
 
@@ -207,7 +198,9 @@ sorularına **Hayır**. Beklenen sonuç: **4+**.
 ⚠️ Meal metninin kullanım izni (Diyanet izni ya da telifsiz bir meal) henüz netleşmedi; bu soruya "haklara sahibim" demeden önce
 bu konunun çözülmesi gerekir. Bkz. devir notu, bekleyen iş 5.
 
-## 9. Uygulama İçi Satın Almalar (Premium)
+## 9. Uygulama İçi Satın Almalar (Premium) — İLK SÜRÜMDE YOK
+
+İlk sürüm Premium'suz yayınlanır (`PremiumManager.enabled = false`). Ürünler oluşturulunca bayrağı `true` yapıp açıklamaya Premium paragrafını geri ekleyin.
 
 Önce **Ücretli Uygulamalar Sözleşmesi** (Paid Apps Agreement) imzalanmış olmalı (bkz. rehber 4. adım).
 

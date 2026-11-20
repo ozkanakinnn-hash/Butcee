@@ -120,7 +120,9 @@ struct SettingsView: View {
         }
       }
       Section {
-        NavigationLink(value: Route.premium) { Label(t("Reklamsız Premium"), systemImage: "star.fill") }
+        if PremiumManager.enabled {
+          NavigationLink(value: Route.premium) { Label(t("Reklamsız Premium"), systemImage: "star.fill") }
+        }
         NavigationLink(value: Route.notificationWizard) { Label(t("Bildirim Sihirbazı • Ezan gelmiyor mu?"), systemImage: "bell.badge") }
       }
       Section(t("Namaz Vakitleri & Hatırlatıcı Barları")) {

@@ -159,7 +159,7 @@ struct MoreHubView: View {
         LazyVGrid(columns: cols, spacing: 10) {
           ForEach(items.prefix(2)) { hubCard($0) }
         }
-        if !store.isPremium {
+        if PremiumManager.enabled && !store.isPremium {
           NavigationLink(value: Route.premium) {
             HStack(spacing: 14) {
               Text("⭐").font(.system(size: 30))
