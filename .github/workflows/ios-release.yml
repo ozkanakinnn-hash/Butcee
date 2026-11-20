@@ -29,7 +29,7 @@ concurrency:
 
 jobs:
   upload:
-    runs-on: macos-latest
+    runs-on: macos-15-intel
     timeout-minutes: 90
     env:
       APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
