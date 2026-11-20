@@ -1,0 +1,112 @@
+# iOS: App Store Connect'e (TestFlight) imzalı yükleme. Mac gerekmez.
+# Elle çalıştırılır: GitHub → Actions → "iOS App Store yükleme" → Run workflow.
+#
+# Gerekli depo sırları (Settings → Secrets and variables → Actions → New repository secret):
+#   APPLE_TEAM_ID     10 karakterlik ekip kimliği (developer.apple.com → Membership details)
+#   ASC_KEY_ID        App Store Connect API anahtar kimliği (ör. 2X9R4HXF34)
+#   ASC_ISSUER_ID     API anahtarlarının "Issuer ID" değeri (UUID)
+#   ASC_PRIVATE_KEY   İndirilen AuthKey_XXXX.p8 dosyasının tüm metni (BEGIN/END satırları dahil)
+# Anahtarın rolü "Admin" olmalı: imza sertifikasını ve profilleri Xcode bulutta kendisi oluşturur.
+name: iOS App Store yükleme
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Sürüm numarası (App Store'da görünen, ör. 1.0.0)"
+        required: true
+        default: "1.0.0"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ios-release
+  cancel-in-progress: false
+
+jobs:
+  upload:
+    runs-on: macos-latest
+    timeout-minutes: 90
+    env:
+      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+      ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+      ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+      ASC_PRIVATE_KEY: ${{ secrets.ASC_PRIVATE_KEY }}
+      VERSION: ${{ github.event.inputs.version }}
+      BUILD_NUMBER: ${{ github.run_number }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Sırlar tanımlı mı
+        run: |
+          missing=0
+          for v in APPLE_TEAM_ID ASC_KEY_ID ASC_ISSUER_ID ASC_PRIVATE_KEY; do
+            if [ -z "${!v}" ]; then echo "::error::$v sırrı tanımlı değil"; missing=1; fi
+          done
+          [[ "$VERSION" =~ ^[0-9]+\.[0-9]+(\.[0-9]+)?$ ]] || { echo "::error::Sürüm biçimi hatalı: $VERSION"; missing=1; }
+          exit $missing
+
+      - name: En yeni Xcode
+        run: |
+          sudo xcode-select -s "$(ls -d /Applications/Xcode_*.app | grep -v beta | sort -V | tail -1)"
+          xcodebuild -version
+
+      - name: Projeyi üret (XcodeGen)
+        run: |
+          brew install xcodegen
+          cd ios && xcodegen generate
+
+      - name: API anahtarını yerleştir
+        run: |
+          mkdir -p "$RUNNER_TEMP/keys"
+          KEY="$RUNNER_TEMP/keys/AuthKey_${ASC_KEY_ID}.p8"
+          printf '%s\n' "$ASC_PRIVATE_KEY" > "$KEY"
+          chmod 600 "$KEY"
+          echo "KEY_PATH=$KEY" >> "$GITHUB_ENV"
+
+      - name: Arşivle (Release, imzalı)
+        run: |
+          cd ios
+          set -o pipefail
+          xcodebuild -project RamazanRehberi.xcodeproj -scheme RamazanRehberi -configuration Release \
+            -destination 'generic/platform=iOS' -archivePath build/EzanVakit.xcarchive \
+            -skipPackagePluginValidation -skipMacroValidation \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$KEY_PATH" -authenticationKeyID "$ASC_KEY_ID" -authenticationKeyIssuerID "$ASC_ISSUER_ID" \
+            DEVELOPMENT_TEAM="$APPLE_TEAM_ID" CODE_SIGN_STYLE=Automatic \
+            MARKETING_VERSION="$VERSION" CURRENT_PROJECT_VERSION="$BUILD_NUMBER" \
+            archive 2>&1 | tee archive.log | grep -E "error:|\*\* ARCHIVE" || true
+          grep -q "ARCHIVE SUCCEEDED" archive.log
+
+      - name: Arşiv hataları
+        if: failure()
+        run: grep -E "error:|Provisioning|signing" ios/archive.log | sort -u | head -60 || true
+
+      - name: App Store Connect'e yükle
+        run: |
+          cd ios
+          cat > ExportOptions.plist <<EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0"><dict>
+            <key>method</key><string>app-store-connect</string>
+            <key>destination</key><string>upload</string>
+            <key>teamID</key><string>${APPLE_TEAM_ID}</string>
+            <key>signingStyle</key><string>automatic</string>
+            <key>uploadSymbols</key><true/>
+            <key>manageAppVersionAndBuildNumber</key><false/>
+          </dict></plist>
+          EOF
+          set -o pipefail
+          xcodebuild -exportArchive -archivePath build/EzanVakit.xcarchive -exportOptionsPlist ExportOptions.plist \
+            -exportPath build/export -allowProvisioningUpdates \
+            -authenticationKeyPath "$KEY_PATH" -authenticationKeyID "$ASC_KEY_ID" -authenticationKeyIssuerID "$ASC_ISSUER_ID" \
+            2>&1 | tee export.log | tail -30
+          grep -qE "EXPORT SUCCEEDED|Upload succeeded|Uploaded" export.log
+          echo "### ✅ Sürüm $VERSION (yapı $BUILD_NUMBER) App Store Connect'e yüklendi" >> "$GITHUB_STEP_SUMMARY"
+          echo "İşlenmesi 10–30 dk sürer; ardından TestFlight'ta ve sürüm sayfasında görünür." >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Anahtarı sil
+        if: always()
+        run: rm -rf "$RUNNER_TEMP/keys"

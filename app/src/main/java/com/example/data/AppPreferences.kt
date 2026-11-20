@@ -132,6 +132,11 @@ class AppPreferences(context: Context) {
     set(value) = prefs.edit().putInt("key_cuma_minutes_before", value).apply()
 
   /** Ramazan'da iftardan 1 saat önce bildirim çubuğunda canlı geri sayım */
+  /** Kıble ekranı açılışındaki kalibrasyon animasyonu ("Bir daha gösterme" ile kapatılır). */
+  var qiblaCalibrationIntro: Boolean
+    get() = prefs.getBoolean("key_qibla_calib_intro", true)
+    set(value) = prefs.edit().putBoolean("key_qibla_calib_intro", value).apply()
+
   var liveIftarCountdown: Boolean
     get() = prefs.getBoolean("key_live_iftar_countdown", true)
     set(value) = prefs.edit().putBoolean("key_live_iftar_countdown", value).apply()

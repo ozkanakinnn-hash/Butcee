@@ -33,6 +33,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -83,6 +84,10 @@ fun QiblaFinderScreen(
   /** Yalnızca testler için: sensör yerine sabit okuma ve konum. */
   testReading: CompassReading? = null,
   testPlace: QiblaPlace? = null,
+  /** Yalnızca testler için: kalibrasyon animasyonunu zorla göster/gizle ve karesini sabitle. */
+  showCalibrationIntro: Boolean? = null,
+  calibrationTestProgress: Float? = null,
+  showDetailsInitially: Boolean = false,
 ) {
   BackHandler { onNavigateBack() }
   val context = LocalContext.current
@@ -159,12 +164,18 @@ fun QiblaFinderScreen(
 
   val green = Color(0xFF2E7D57)
   val gold = Color(0xFFC59B3C)
-  val statusColor by animateColorAsState(if (aligned) green else MaterialTheme.colorScheme.surfaceVariant, label = "status")
+  val statusColor by animateColorAsState(if (aligned) green else MaterialTheme.colorScheme.onBackground, label = "status")
 
+  // Açılışta kalibrasyon animasyonu (testlerde yalnızca istenirse)
+  var showCalibration by remember {
+    mutableStateOf(showCalibrationIntro ?: (testReading == null && prefs.qiblaCalibrationIntro))
+  }
+  var showDetails by remember { mutableStateOf(showDetailsInitially) }
+
+  Box(modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
   Column(
-    modifier = modifier
+    modifier = Modifier
       .fillMaxSize()
-      .background(MaterialTheme.colorScheme.background)
       .verticalScroll(rememberScrollState())
       .padding(16.dp)
       .testTag("qibla_finder_screen"),
@@ -173,9 +184,14 @@ fun QiblaFinderScreen(
     // Üst çubuk
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
       IconButton(onClick = onNavigateBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = L("Geri", "Back")) }
-      Column(Modifier.padding(start = 4.dp)) {
+      Column(Modifier.padding(start = 4.dp).weight(1f)) {
         Text(L("Kıble Bulucu", "Qibla Finder"), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground)
         Text(place?.label ?: L("Konum bulunamadı", "Location unavailable"), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
+      }
+      if (place != null) {
+        TextButton(onClick = { showCalibration = true }, modifier = Modifier.testTag("qibla_calibrate_button")) {
+          Text(L("🔄 Kalibre et", "🔄 Calibrate"), fontSize = 13.sp)
+        }
       }
     }
 
@@ -193,151 +209,138 @@ fun QiblaFinderScreen(
       return@Column
     }
 
+    Spacer(Modifier.height(20.dp))
+
+    // ── Tek satır büyük durum ──
+    Column(Modifier.fillMaxWidth().height(72.dp).testTag("qibla_status"), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+      Text(
+        when {
+          !hasCompass -> L("Cihazınızda pusula sensörü yok", "Your device has no compass sensor")
+          !reading.ready -> L("Pusula hazırlanıyor…", "Starting compass…")
+          aligned -> L("🕋 KIBLEYE DÖNDÜNÜZ", "🕋 YOU ARE FACING THE QIBLA")
+          turn == null -> ""
+          turn > 0 -> L("Sağa doğru ${abs(turn).roundToInt()}° dönün  ⟳", "Turn right ${abs(turn).roundToInt()}°  ⟳")
+          else -> L("⟲  Sola doğru ${abs(turn).roundToInt()}° dönün", "⟲  Turn left ${abs(turn).roundToInt()}°")
+        },
+        fontWeight = FontWeight.Bold, fontSize = if (aligned) 22.sp else 24.sp, color = statusColor, textAlign = TextAlign.Center,
+      )
+      if (aligned) Text(L("Huşû ile namaza durabilirsiniz.", "You may begin your prayer."), fontSize = 14.sp, color = green)
+    }
+
     Spacer(Modifier.height(12.dp))
 
-    // Durum
-    Card(
-      Modifier.fillMaxWidth().testTag("qibla_status"), shape = RoundedCornerShape(18.dp),
-      colors = CardDefaults.cardColors(containerColor = statusColor),
-    ) {
-      val onStatus = if (aligned) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
-      Column(Modifier.fillMaxWidth().padding(14.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(
-          when {
-            !hasCompass -> L("Cihazınızda pusula sensörü yok", "Your device has no compass sensor")
-            !reading.ready -> L("Pusula hazırlanıyor…", "Starting compass…")
-            aligned -> L("🕋 KIBLEYE DÖNDÜNÜZ", "🕋 YOU ARE FACING THE QIBLA")
-            else -> L("KIBLE YÖNÜNÜ BULUN", "FIND THE QIBLA")
-          },
-          fontWeight = FontWeight.Bold, fontSize = 17.sp, color = onStatus,
-        )
-        if (hasCompass && reading.ready && turn != null && !aligned) {
-          val deg = abs(turn).roundToInt()
-          Text(
-            if (turn > 0) L("Sağa doğru $deg° dönün  ⟳", "Turn right $deg°  ⟳") else L("⟲  Sola doğru $deg° dönün", "⟲  Turn left $deg°"),
-            fontSize = 14.sp, color = onStatus,
-          )
-        }
-        if (aligned) Text(L("Hizalama tamam. Huşû ile namaza durabilirsiniz.", "Aligned. You may begin your prayer."), fontSize = 13.sp, color = onStatus)
-      }
-    }
-
-    // Uyarılar (kararlılığı bozan durumlar)
-    val warnings = buildList {
-      if (reading.interference) add(L("🧲 Yakında manyetik parazit var (kılıf mıknatısı, metal masa, hoparlör, araç). Bu konumdan uzaklaşın.",
-        "🧲 Magnetic interference nearby (magnetic case, metal desk, speaker, car). Move away from it."))
-      if (reading.accuracy in 0..1) add(L("🔄 Pusula kalibrasyonu gerekiyor: telefonu havada birkaç kez 8 çizerek çevirin.",
-        "🔄 Compass needs calibration: move the phone in a figure-8 a few times."))
-      if (reading.ready && reading.tiltDeg in 25.0..65.0) add(L("📱 Telefonu yere paralel (yatay) tutun.", "📱 Hold the phone flat."))
-      if (reading.ready && reading.jitterDeg > 8) add(L("〰️ Ölçüm dalgalanıyor; telefonu sabit tutun.", "〰️ Reading is unsteady; hold the phone still."))
-    }
-    warnings.forEach {
-      Spacer(Modifier.height(8.dp))
-      Text(it, fontSize = 13.sp, color = MaterialTheme.colorScheme.onErrorContainer,
-        modifier = Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.errorContainer, RoundedCornerShape(12.dp)).padding(10.dp))
-    }
-
-    Spacer(Modifier.height(18.dp))
-
-    // ── Pusula kadranı ──
+    // ── Sade pusula kadranı ──
     val dark = MaterialTheme.colorScheme.background.let { (it.red + it.green + it.blue) / 3 < 0.5f }
     val dialBg = if (dark) Color(0xFF15140F) else Color(0xFFFBF7EC)
-    val tickMinor = if (dark) Color(0xFF5B5446) else Color(0xFFD5C8AE)
+    val tick = if (dark) Color(0xFF5B5446) else Color(0xFFD5C8AE)
     val labelColor = if (dark) Color(0xFFE8DFC8) else Color(0xFF4A3B22)
-    val ring = if (aligned) green else gold
-    Box(Modifier.size(300.dp).testTag("qibla_dial"), contentAlignment = Alignment.Center) {
+    val accent = if (aligned) green else gold
+    Box(Modifier.size(310.dp).testTag("qibla_dial"), contentAlignment = Alignment.Center) {
       Canvas(Modifier.fillMaxSize()) {
         val c = Offset(size.width / 2, size.height / 2)
-        val rad = size.minDimension / 2 - 6.dp.toPx()
+        val rad = size.minDimension / 2 - 8.dp.toPx()
         drawCircle(dialBg, rad, c)
-        drawCircle(ring, rad, c, style = Stroke(4.dp.toPx()))
+        drawCircle(accent, rad, c, style = Stroke(if (aligned) 6.dp.toPx() else 3.dp.toPx()))
         rotate(dialAngle, c) {
-          for (d in 0 until 360 step 5) {
-            val major = d % 30 == 0
-            val len = if (major) 14.dp.toPx() else if (d % 10 == 0) 9.dp.toPx() else 5.dp.toPx()
+          // Yalnızca 30°'lik ana çizgiler
+          for (d in 0 until 360 step 30) {
             val a = Math.toRadians(d - 90.0)
-            drawLine(
-              if (major) gold else tickMinor,
-              Offset(c.x + (rad - 4.dp.toPx() - len) * cos(a).toFloat(), c.y + (rad - 4.dp.toPx() - len) * sin(a).toFloat()),
-              Offset(c.x + (rad - 4.dp.toPx()) * cos(a).toFloat(), c.y + (rad - 4.dp.toPx()) * sin(a).toFloat()),
-              strokeWidth = if (major) 2.5f.dp.toPx() / 1.5f else 1.2f,
-            )
+            val r1 = rad - 6.dp.toPx(); val r2 = rad - 16.dp.toPx()
+            drawLine(tick, Offset(c.x + r2 * cos(a).toFloat(), c.y + r2 * sin(a).toFloat()), Offset(c.x + r1 * cos(a).toFloat(), c.y + r1 * sin(a).toFloat()), strokeWidth = 2.dp.toPx(), cap = StrokeCap.Round)
           }
-          // Kıble ibresi (kadranla birlikte döner → her zaman Kâbe'yi gösterir)
+          // Kıble ibresi: kadranla birlikte döner → her zaman Kâbe'yi gösterir
           rotate(trueBearing.toFloat(), c) {
-            val tip = c.y - rad + 30.dp.toPx()
+            val tip = c.y - rad + 46.dp.toPx()
             val arrow = Path().apply {
               moveTo(c.x, tip)
-              lineTo(c.x + 11.dp.toPx(), c.y)
-              lineTo(c.x, c.y + 18.dp.toPx())
-              lineTo(c.x - 11.dp.toPx(), c.y)
+              lineTo(c.x + 16.dp.toPx(), c.y + 6.dp.toPx())
+              lineTo(c.x, c.y - 8.dp.toPx())
+              lineTo(c.x - 16.dp.toPx(), c.y + 6.dp.toPx())
               close()
             }
-            drawPath(arrow, if (aligned) green else gold)
-            val edge = Path().apply { moveTo(c.x, tip); lineTo(c.x + 11.dp.toPx(), c.y); lineTo(c.x, c.y); close() }
-            drawPath(edge, Color.White.copy(alpha = 0.25f))
+            drawPath(arrow, accent)
           }
         }
-        drawCircle(ring, 9.dp.toPx(), c)
-        drawCircle(dialBg, 4.dp.toPx(), c)
-        // Telefonun baktığı yön işareti (sabit, üstte)
-        val top = c.y - rad - 2.dp.toPx()
-        drawLine(if (aligned) green else Color(0xFFD32F2F), Offset(c.x, top), Offset(c.x, top + 18.dp.toPx()), strokeWidth = 4.dp.toPx(), cap = StrokeCap.Round)
+        drawCircle(accent, 7.dp.toPx(), c)
+        // Telefonun baktığı yön (sabit, üstte)
+        val top = c.y - rad - 4.dp.toPx()
+        drawLine(if (aligned) green else Color(0xFFD32F2F), Offset(c.x, top), Offset(c.x, top + 22.dp.toPx()), strokeWidth = 5.dp.toPx(), cap = StrokeCap.Round)
       }
-      // Yön harfleri ve Kâbe/Güneş rozetleri (kadranla döner)
-      val letters = listOf(L("K", "N") to 0.0, L("D", "E") to 90.0, L("G", "S") to 180.0, L("B", "W") to 270.0)
-      letters.forEach { (s, a) ->
-        DialBadge(angle = a + dialAngle, radiusDp = 108f) {
-          Text(s, fontWeight = FontWeight.Bold, fontSize = 17.sp, color = if (a == 0.0) Color(0xFFD32F2F) else labelColor)
+      DialBadge(angle = dialAngle.toDouble(), radiusDp = 112f) {
+        Text(L("K", "N"), fontWeight = FontWeight.Bold, fontSize = 18.sp, color = Color(0xFFD32F2F))
+      }
+      listOf(90.0, 180.0, 270.0).forEachIndexed { i, a ->
+        DialBadge(angle = a + dialAngle, radiusDp = 112f) {
+          Text(listOf(L("D", "E"), L("G", "S"), L("B", "W"))[i], fontWeight = FontWeight.SemiBold, fontSize = 15.sp, color = labelColor.copy(alpha = 0.7f))
         }
       }
-      DialBadge(angle = trueBearing + dialAngle, radiusDp = 134f) {
-        Box(Modifier.size(34.dp).background(if (aligned) green else gold, RoundedCornerShape(50)), contentAlignment = Alignment.Center) {
-          Text("🕋", fontSize = 18.sp)
+      DialBadge(angle = trueBearing + dialAngle, radiusDp = 140f) {
+        Box(Modifier.size(38.dp).background(accent, RoundedCornerShape(50)), contentAlignment = Alignment.Center) {
+          Text("🕋", fontSize = 20.sp)
         }
       }
-      sunAzimuth?.let { DialBadge(angle = it + dialAngle, radiusDp = 80f) { Text("☀️", fontSize = 16.sp) } }
     }
 
-    Spacer(Modifier.height(8.dp))
-    Text(
-      L("Telefon yönü: ${reading.trueHeading.roundToInt() % 360}° ${directionName(reading.trueHeading)}", "Heading: ${reading.trueHeading.roundToInt() % 360}° ${directionName(reading.trueHeading)}"),
-      fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant,
-    )
-
-    Spacer(Modifier.height(16.dp))
-
-    // ── Diyanet verileri ──
-    Card(Modifier.fillMaxWidth().testTag("qibla_diyanet_card"), shape = RoundedCornerShape(18.dp)) {
-      Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text(L("Kıble Bilgileri", "Qibla Data"), fontWeight = FontWeight.Bold, fontSize = 16.sp)
-        InfoRow(L("Kıble açısı (resmî takvim)", "Qibla angle (official calendar)"), "${diyanetAngle}°", bold = true)
-        InfoRow(L("Kıble açısı (gerçek kuzey)", "Qibla angle (true north)"), String.format(Locale.ROOT, "%.1f°", trueBearing))
-        InfoRow(L("Bugünkü el pusulası açısı", "Today's hand-compass angle"), "${QiblaCalculator.diyanetAngle(trueBearing, declination)}°")
-        InfoRow(L("Manyetik sapma (bugün)", "Magnetic declination (today)"), String.format(Locale.ROOT, "%+.1f°", declination))
-        distanceKm?.let { InfoRow(L("Kâbe'ye uzaklık", "Distance to the Kaaba"), String.format(Locale.ROOT, "%,.0f km", it)) }
-        InfoRow(L("Bugünkü Kıble Saati", "Today's qibla time"), qiblaTime ?: "—", bold = true)
-        Text(
-          L("Kıble Saati'nde güneşe dönen kişi kıbleye dönmüş olur; güneş mıknatıs ve metalden etkilenmez. Resmî takvimdeki açı, tablonun hazırlandığı yılın manyetik sapmasına göredir; bugün manyetik kuzey biraz kaydığı için el pusulasında 1–2° farklı okunur. Uygulamanın ibresi gerçek kuzeye göre hesaplandığından bu farktan etkilenmez.",
-            "At the qibla time, facing the sun means facing the qibla. The official calendar angle uses the magnetic declination of the year its table was prepared, so a hand compass today reads 1–2° differently. The app's needle uses true north and is not affected."),
-          fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
+    // ── En önemli tek uyarı ──
+    val warning = when {
+      !reading.ready || !hasCompass -> null
+      reading.interference -> L("🧲 Yakında mıknatıs veya metal var; biraz uzaklaşın.", "🧲 Magnet or metal nearby; move away a little.")
+      reading.accuracy in 0..1 -> L("🔄 Pusula kalibrasyon istiyor: \"Kalibre et\"e dokunun.", "🔄 Compass needs calibration: tap \"Calibrate\".")
+      reading.tiltDeg in 25.0..65.0 -> L("📱 Telefonu yere paralel tutun.", "📱 Hold the phone flat.")
+      reading.jitterDeg > 8 -> L("〰️ Telefonu sabit tutun.", "〰️ Hold the phone still.")
+      else -> null
+    }
+    Spacer(Modifier.height(14.dp))
+    Box(Modifier.fillMaxWidth().height(44.dp), contentAlignment = Alignment.Center) {
+      warning?.let {
+        Text(it, fontSize = 13.sp, color = MaterialTheme.colorScheme.onErrorContainer, textAlign = TextAlign.Center,
+          modifier = Modifier.background(MaterialTheme.colorScheme.errorContainer, RoundedCornerShape(12.dp)).padding(horizontal = 12.dp, vertical = 8.dp).testTag("qibla_warning"))
       }
     }
 
-    if (!(place.fromGps)) {
-      Spacer(Modifier.height(10.dp))
-      OutlinedButton(onClick = { permissionLauncher.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)) }) {
-        Text(L("📍 Daha hassas sonuç için konumumu kullan", "📍 Use my location for better accuracy"), fontSize = 12.sp)
+    // ── Kısa özet + ayrıntılar ──
+    Text(
+      L("Kıble açısı $diyanetAngle° • Kıble saati ${qiblaTime ?: "—"}", "Qibla angle $diyanetAngle° • Qibla time ${qiblaTime ?: "—"}"),
+      fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.testTag("qibla_summary"),
+    )
+    TextButton(onClick = { showDetails = !showDetails }, modifier = Modifier.testTag("qibla_details_toggle")) {
+      Text(if (showDetails) L("Ayrıntıları gizle ▴", "Hide details ▴") else L("Ayrıntılar ▾", "Details ▾"), fontSize = 13.sp)
+    }
+    if (showDetails) {
+      Card(Modifier.fillMaxWidth().testTag("qibla_diyanet_card"), shape = RoundedCornerShape(18.dp)) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+          InfoRow(L("Kıble açısı (resmî takvim)", "Qibla angle (official calendar)"), "${diyanetAngle}°", bold = true)
+          InfoRow(L("Kıble açısı (gerçek kuzey)", "Qibla angle (true north)"), String.format(Locale.ROOT, "%.1f°", trueBearing))
+          InfoRow(L("Bugünkü el pusulası açısı", "Today's hand-compass angle"), "${QiblaCalculator.diyanetAngle(trueBearing, declination)}°")
+          InfoRow(L("Manyetik sapma (bugün)", "Magnetic declination (today)"), String.format(Locale.ROOT, "%+.1f°", declination))
+          distanceKm?.let { InfoRow(L("Kâbe'ye uzaklık", "Distance to the Kaaba"), String.format(Locale.ROOT, "%,.0f km", it)) }
+          InfoRow(L("Bugünkü Kıble Saati", "Today's qibla time"), qiblaTime ?: "—", bold = true)
+          sunAzimuth?.let { InfoRow(L("Güneşin yönü (şu an)", "Sun direction (now)"), String.format(Locale.ROOT, "%.0f°", it)) }
+          Text(
+            L("Kıble Saati'nde güneşe dönen kişi kıbleye dönmüş olur; güneş mıknatıs ve metalden etkilenmez. Resmî takvimdeki açı, tablonun hazırlandığı yılın manyetik sapmasına göredir; el pusulasında bugün 1–2° farklı okunabilir. Uygulamanın ibresi gerçek kuzeye göre hesaplanır.",
+              "At the qibla time, facing the sun means facing the qibla. The official calendar angle uses the magnetic declination of the year its table was prepared, so a hand compass may read 1–2° differently today. The app's needle uses true north."),
+            fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant,
+          )
+        }
+      }
+      if (!place.fromGps) {
+        Spacer(Modifier.height(8.dp))
+        OutlinedButton(onClick = { permissionLauncher.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)) }) {
+          Text(L("📍 Daha hassas sonuç için konumumu kullan", "📍 Use my location for better accuracy"), fontSize = 12.sp)
+        }
       }
     }
+  }
 
-    Spacer(Modifier.height(12.dp))
-    Text(
-      L("İpuçları: Telefonu avucunuzda yatay tutun • Mıknatıslı kılıfı çıkarın • Metal eşya, hoparlör ve araç içinden uzak durun • Uyarı çıkarsa 8 çizerek kalibre edin.",
-        "Tips: hold the phone flat • remove magnetic cases • stay away from metal, speakers and cars • calibrate with a figure-8 if warned."),
-      fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center,
+  if (showCalibration && place != null) {
+    CalibrationOverlay(
+      accuracy = reading.accuracy,
+      animate = testReading == null,
+      testProgress = calibrationTestProgress,
+      onDone = { showCalibration = false },
+      onNeverShow = { prefs.qiblaCalibrationIntro = false; showCalibration = false },
     )
+  }
   }
 }
 

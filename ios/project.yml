@@ -10,7 +10,12 @@ settings:
     CURRENT_PROJECT_VERSION: "1"
     SWIFT_VERSION: "5.0"
     DEVELOPMENT_TEAM: ""
-    CODE_SIGN_STYLE: Manual
+    # App Store derlemesinde (ios-release.yml) ekip kimliği komut satırından verilir;
+    # Xcode imza sertifikası ve profilleri App Store Connect API anahtarıyla kendisi oluşturur.
+    CODE_SIGN_STYLE: Automatic
+    # AdMob iOS kimlikleri: gerçek kimlikler gelene kadar Google'ın test kimlikleri
+    GAD_APP_ID: ca-app-pub-3940256099942544~1458002511
+    GAD_BANNER_ID: ca-app-pub-3940256099942544/2934735716
     ENABLE_USER_SCRIPT_SANDBOXING: NO
 packages:
   GoogleMobileAds:
