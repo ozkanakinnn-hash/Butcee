@@ -1,0 +1,173 @@
+# Haber Akışı iOS: App Store Connect'e (TestFlight) imzalı yükleme. Mac, iPhone ve Codemagic gerekmez.
+# Başlatma: news-aggregator/flutter_app/ios/RELEASE_VERSION dosyasındaki sürüm değişip gönderildiğinde
+#           (ya da bu dosya varsayılan dalda olduğunda Actions → Run workflow).
+#
+# Kullanılan depo sırları (Ezan & Vakit için girilenlerin aynısı; yeniden girmeye gerek yok):
+#   APPLE_TEAM_ID, ASC_KEY_ID, ASC_ISSUER_ID, ASC_PRIVATE_KEY  → imza + yükleme (API anahtarı Admin)
+#   FIREBASE_SERVICE_ACCOUNT                                   → Firebase iOS ayarları otomatik alınır
+# İsteğe bağlı sırlar: ADMOB_IOS_APP_ID, ADMOB_BANNER_ID_IOS, ADMOB_NATIVE_ID_IOS, ADMOB_INTERSTITIAL_ID_IOS
+#   (yoksa Google test reklamları çıkar).
+#
+# Bundle kimliği (akinai.app1) yoksa Push Notifications yeteneğiyle kendiliğinden kaydedilir.
+# App Store Connect'te uygulama kaydı yoksa iş "UYGULAMA_KAYDI_YOK" diye durur: New App ile oluşturup tekrar başlatın.
+name: News iOS App Store yükleme
+
+on:
+  workflow_dispatch:
+  push:
+    paths: [ "news-aggregator/flutter_app/ios/RELEASE_VERSION" ]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: news-ios-release
+  cancel-in-progress: false
+
+jobs:
+  upload:
+    runs-on: macos-26               # Firebase iOS SDK Swift 6.2 → Xcode 26
+    timeout-minutes: 90
+    env:
+      APP_DIR: news-aggregator/flutter_app
+      BUNDLE_IDS: akinai.app1
+      BUNDLE_NAME: Haber Akisi
+      BUNDLE_CAPABILITIES: PUSH_NOTIFICATIONS
+      REQUIRE_APP_RECORD: "1"
+      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+      ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+      ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+      ASC_PRIVATE_KEY: ${{ secrets.ASC_PRIVATE_KEY }}
+      FIREBASE_SA: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+      ADMOB_IOS_APP_ID: ${{ secrets.ADMOB_IOS_APP_ID }}
+      ADMOB_BANNER_ID_IOS: ${{ secrets.ADMOB_BANNER_ID_IOS }}
+      ADMOB_NATIVE_ID_IOS: ${{ secrets.ADMOB_NATIVE_ID_IOS }}
+      ADMOB_INTERSTITIAL_ID_IOS: ${{ secrets.ADMOB_INTERSTITIAL_ID_IOS }}
+      BUILD_NUMBER: ${{ github.run_number }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Sürüm ve sırlar
+        run: |
+          V="$(tr -d ' \n\r' < $APP_DIR/ios/RELEASE_VERSION)"
+          echo "VERSION=$V" >> "$GITHUB_ENV"
+          echo "Sürüm: $V, yapı: $BUILD_NUMBER"
+          missing=0
+          for v in APPLE_TEAM_ID ASC_KEY_ID ASC_ISSUER_ID ASC_PRIVATE_KEY FIREBASE_SA; do
+            if [ -z "${!v}" ]; then echo "::error::$v sırrı tanımlı değil"; missing=1; fi
+          done
+          [[ "$V" =~ ^[0-9]+\.[0-9]+(\.[0-9]+)?$ ]] || { echo "::error::Sürüm biçimi hatalı: $V"; missing=1; }
+          exit $missing
+
+      - name: En yeni Xcode 26
+        run: |
+          sudo xcode-select -s "$(ls -d /Applications/Xcode_26*.app | grep -v beta | sort -V | tail -1)"
+          xcodebuild -version
+
+      - name: API anahtarı ve Python
+        run: |
+          mkdir -p "$RUNNER_TEMP/keys"
+          KEY="$RUNNER_TEMP/keys/AuthKey_${ASC_KEY_ID}.p8"
+          python3 - "$KEY" <<'PY'
+          import os, re, sys, textwrap
+          body = re.sub(r"-----(BEGIN|END)[A-Z ]*-----", "", os.environ["ASC_PRIVATE_KEY"])
+          body = re.sub(r"[^A-Za-z0-9+/=]", "", body)
+          if len(body) < 100:
+              sys.exit("ASC_PRIVATE_KEY çok kısa görünüyor.")
+          open(sys.argv[1], "w").write("-----BEGIN PRIVATE KEY-----\n" + "\n".join(textwrap.wrap(body, 64)) + "\n-----END PRIVATE KEY-----\n")
+          PY
+          chmod 600 "$KEY"
+          openssl pkey -in "$KEY" -noout 2>/dev/null || { echo "::error::ASC_PRIVATE_KEY geçerli bir özel anahtar değil."; exit 1; }
+          echo "KEY_PATH=$KEY" >> "$GITHUB_ENV"
+          python3 -m venv "$RUNNER_TEMP/venv"
+          "$RUNNER_TEMP/venv/bin/pip" install -q "PyJWT[crypto]"
+
+      - name: Firebase iOS ayarları (otomatik)
+        env:
+          BUNDLE_ID: akinai.app1
+        run: '"$RUNNER_TEMP/venv/bin/python" $APP_DIR/ios/scripts/firebase_ios_config.py'
+
+      - name: Bundle kimliği, geçici dağıtım sertifikası ve App Store profili
+        run: '"$RUNNER_TEMP/venv/bin/python" $APP_DIR/ios/scripts/asc_signing.py setup "$RUNNER_TEMP/signing"'
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Flutter derlemesi (Pod'lar + Dart kodu)
+        working-directory: ${{ env.APP_DIR }}
+        run: |
+          if [ -n "$ADMOB_IOS_APP_ID" ]; then
+            sed -i '' "s|^ADMOB_APP_ID = .*|ADMOB_APP_ID = $ADMOB_IOS_APP_ID|" ios/Flutter/Release.xcconfig
+          else
+            echo "::warning::ADMOB_IOS_APP_ID yok: Google test reklam kimliği kullanılıyor."
+          fi
+          flutter pub get
+          flutter build ios --release --no-codesign --build-name="$VERSION" --build-number="$BUILD_NUMBER" \
+            --dart-define=FIREBASE_IOS_API_KEY="$FIREBASE_IOS_API_KEY" \
+            --dart-define=FIREBASE_IOS_APP_ID="$FIREBASE_IOS_APP_ID" \
+            --dart-define=FIREBASE_IOS_SENDER_ID="$FIREBASE_IOS_SENDER_ID" \
+            --dart-define=FIREBASE_IOS_STORAGE_BUCKET="$FIREBASE_IOS_STORAGE_BUCKET" \
+            --dart-define=FIREBASE_IOS_PROJECT_ID="$FIREBASE_IOS_PROJECT_ID" \
+            --dart-define=ADMOB_BANNER_ID_IOS="$ADMOB_BANNER_ID_IOS" \
+            --dart-define=ADMOB_NATIVE_ID_IOS="$ADMOB_NATIVE_ID_IOS" \
+            --dart-define=ADMOB_INTERSTITIAL_ID_IOS="$ADMOB_INTERSTITIAL_ID_IOS"
+
+      - name: Runner hedefine elle imza ayarı (yalnız bu derlemede)
+        working-directory: ${{ env.APP_DIR }}
+        run: |
+          # Pod hedeflerine dokunmamak için ayarlar komut satırından değil, yalnızca Runner hedefine yazılır.
+          python3 - <<'PY'
+          import os, re
+          p = "ios/Runner.xcodeproj/project.pbxproj"
+          s = open(p).read()
+          add = ('CODE_SIGN_STYLE = Manual;\n\t\t\t\tDEVELOPMENT_TEAM = %s;\n\t\t\t\t'
+                 'CODE_SIGN_IDENTITY = "Apple Distribution";\n\t\t\t\t"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Distribution";\n\t\t\t\t'
+                 'PROVISIONING_PROFILE_SPECIFIER = "%s";\n\t\t\t\tPRODUCT_BUNDLE_IDENTIFIER = akinai.app1;'
+                 % (os.environ["APPLE_TEAM_ID"], os.environ["APP_PROFILE"]))
+          s, n = re.subn(r"PRODUCT_BUNDLE_IDENTIFIER = akinai\.app1;", add, s)
+          assert n >= 1, "Runner hedefi bulunamadı"
+          open(p, "w").write(s)
+          print(f"{n} yapılandırma güncellendi")
+          e = "ios/Runner/Runner.entitlements"
+          open(e, "w").write(open(e).read().replace("<string>development</string>", "<string>production</string>"))
+          PY
+
+      - name: Arşivle (imzalı)
+        working-directory: ${{ env.APP_DIR }}/ios
+        run: |
+          set -o pipefail
+          xcodebuild -workspace Runner.xcworkspace -scheme Runner -configuration Release \
+            -destination 'generic/platform=iOS' -archivePath build/Runner.xcarchive \
+            OTHER_CODE_SIGN_FLAGS="--keychain $SIGN_KEYCHAIN" \
+            archive 2>&1 | tee archive.log | grep -E "error:|\*\* ARCHIVE" || true
+          grep -q "ARCHIVE SUCCEEDED" archive.log
+
+      - name: Arşiv hataları
+        if: failure()
+        run: grep -E "error:|Provisioning|signing" $APP_DIR/ios/archive.log | sort -u | head -60 || true
+
+      - name: App Store Connect'e yükle
+        working-directory: ${{ env.APP_DIR }}/ios
+        run: |
+          python3 - "$RUNNER_TEMP/signing/profiles.json" <<'PY'
+          import json, os, plistlib, sys
+          plistlib.dump({"method": "app-store-connect", "destination": "upload", "teamID": os.environ["APPLE_TEAM_ID"],
+                         "signingStyle": "manual", "signingCertificate": "Apple Distribution",
+                         "provisioningProfiles": json.load(open(sys.argv[1])), "uploadSymbols": True,
+                         "manageAppVersionAndBuildNumber": False}, open("ExportOptions.plist", "wb"))
+          PY
+          set -o pipefail
+          xcodebuild -exportArchive -archivePath build/Runner.xcarchive -exportOptionsPlist ExportOptions.plist \
+            -exportPath build/export -allowProvisioningUpdates \
+            -authenticationKeyPath "$KEY_PATH" -authenticationKeyID "$ASC_KEY_ID" -authenticationKeyIssuerID "$ASC_ISSUER_ID" \
+            2>&1 | tee export.log | tail -30
+          grep -qE "EXPORT SUCCEEDED|Upload succeeded|Uploaded" export.log
+          echo "### ✅ Haber Akışı $VERSION (yapı $BUILD_NUMBER) App Store Connect'e yüklendi" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Geçici sertifika ve profili sil
+        if: always()
+        run: |
+          [ -x "$RUNNER_TEMP/venv/bin/python" ] && "$RUNNER_TEMP/venv/bin/python" $APP_DIR/ios/scripts/asc_signing.py cleanup "$RUNNER_TEMP/signing" || true
+          rm -rf "$RUNNER_TEMP/keys" "$RUNNER_TEMP/signing"

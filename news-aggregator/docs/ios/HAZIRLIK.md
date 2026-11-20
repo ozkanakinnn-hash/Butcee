@@ -6,7 +6,10 @@ Bundle ID: **`akinai.app1`** (Android paket adıyla aynı) · Sürüm 1.0.0 · i
 - `flutter_app/ios/`: Info.plist (TR/EN, konum/ATT metinleri, `remote-notification`, SKAdNetwork, AdMob), `Runner.entitlements` (`aps-environment`), 19 simge (`docs/brand/logo.svg`), iPhone-only.
 - Bildirim izni + FCM konuları (iOS'ta APNs jetonu beklenir), ön planda yerel bildirim, App Check (App Attest), platforma göre AdMob kimlikleri.
 - Sunucu: maç olay uyarıları (gol, kırmızı kart, devre arası, maç sonu) iOS'a `apns` ile normal bildirim gider; gece 00:00–08:00 sessiz/pasif.
-- Derleme: `.github/workflows/news-ios-build.yml` (imzasız doğrulama) ve `codemagic.yaml` (imzalı → TestFlight).
+- Derleme: `.github/workflows/news-ios-build.yml` (imzasız doğrulama) ve **`.github/workflows/news-ios-release.yml`** (imzalı → App Store Connect/TestFlight; Mac, iPhone ve Codemagic gerekmez). `codemagic.yaml` yedek olarak duruyor, kullanılmıyor.
+- İmzalı yükleme Ezan & Vakit'teki çalışan yöntemle aynı: App Store Connect API anahtarıyla geçici dağıtım sertifikası + App Store profili oluşturulur, iş bitince silinir (`ios/scripts/asc_signing.py`). Bundle kimliği `akinai.app1` yoksa **Push Notifications** yeteneğiyle kendiliğinden kaydedilir.
+- Firebase iOS ayarları (`GoogleService-Info.plist` değerleri) derleme sırasında depodaki `FIREBASE_SERVICE_ACCOUNT` ile otomatik alınır; Firebase'de iOS uygulaması yoksa oluşturulur (`ios/scripts/firebase_ios_config.py`). Elle kopyalama yok.
+- App Store ekran görüntüleri hazır: `docs/ios/ekran-goruntuleri/` (7 adet, 1320×2868; `olustur.js` ile yeniden üretilir).
 
 ## iOS'ta olmayanlar (dürüst liste)
 - **Canlı skor paneli (kilit ekranı, zaman çizelgesi) yalnızca Android'dedir.** iOS'ta aynı olay uyarıları normal bildirim olarak gelir. iOS karşılığı "Live Activities" ayrı bir yerel uzantı gerektirir (sonraki sürüm işi).
@@ -15,15 +18,24 @@ Bundle ID: **`akinai.app1`** (Android paket adıyla aynı) · Sürüm 1.0.0 · i
 - Mağaza açıklamasında canlı panel iOS için **yazılmamalı** (aşağıdaki metin buna göre).
 
 ## SENİN yapacakların (sırayla)
-1. **Apple Developer Program** (99 $/yıl): developer.apple.com/programs → kayıt. Onay 1–2 gün sürebilir.
-2. **App Store Connect → Uygulamalarım → +** : ad "Haber Akışı", dil Türkçe, **Bundle ID `akinai.app1`** (önce developer.apple.com → Identifiers'ta oluştur; **Push Notifications** yeteneğini işaretle), SKU `akinai-app1`.
-3. **APNs anahtarı**: developer.apple.com → Keys → + → "Apple Push Notifications service (APNs)" → indir (**.p8**, bir kez indirilir) + Key ID + Team ID not al.
-4. **Firebase Console** (`haber-68a3c`) → Proje ayarları → Uygulamalarım → **iOS uygulaması ekle** (bundle `akinai.app1`). Ardından Cloud Messaging sekmesi → **APNs kimlik doğrulama anahtarı** → .p8 + Key ID + Team ID yükle. `GoogleService-Info.plist` içinden şu 4 değeri not et: `API_KEY`, `GOOGLE_APP_ID`, `GCM_SENDER_ID`, `STORAGE_BUCKET` (bunları sohbete yazma; Codemagic'e gir).
-5. **AdMob** → Uygulamalar → Uygulama ekle → **iOS** → uygulama kimliği + 3 reklam birimi (banner, yerel gelişmiş, geçiş). *(Hazır olana kadar test reklamı çıkar.)*
-6. **Codemagic** (codemagic.io, GitHub ile giriş, depoyu bağla): Team integrations → App Store Connect → API anahtarı (App Store Connect → Kullanıcılar ve Erişim → Anahtarlar, rol "App Manager") oluşturup adını `Codemagic` ver. Environment variables → grup **`haber_akisi_ios`** (secure): `FIREBASE_IOS_API_KEY`, `FIREBASE_IOS_APP_ID`, `FIREBASE_IOS_SENDER_ID`, `FIREBASE_IOS_STORAGE_BUCKET`, `ADMOB_IOS_APP_ID`, `ADMOB_BANNER_ID_IOS`, `ADMOB_NATIVE_ID_IOS`, `ADMOB_INTERSTITIAL_ID_IOS`, `APP_STORE_APPLE_ID` (App Store Connect → uygulama → Genel bilgiler → Apple ID, sayı). Code signing identities → iOS → "Automatic" ile dağıtım sertifikası/profil oluştur.
-7. Codemagic'te **haber-akisi-ios** iş akışını başlat → IPA TestFlight'a gider. (Birkaç iterasyon gerekebilir; hata günlüğünü bana gönder.)
-8. **TestFlight**: kendi iPhone'unda dene (bildirim izni, haber akışı, reklam, hava durumu).
-9. Mağaza girişini doldur (aşağıdaki metinler), ekran görüntülerini yükle, **İncelemeye gönder**.
+Apple geliştirici hesabı, sözleşmeler, banka/vergi ve GitHub sırları (APPLE_TEAM_ID, ASC_KEY_ID, ASC_ISSUER_ID, ASC_PRIVATE_KEY)
+Ezan & Vakit için zaten yapıldı; aynı depoda olduğu için **tekrar gerekmez**.
+
+1. **Uygulama kaydı:** App Store Connect → **Apps → + → New App**
+   - Platform iOS · Ad **Haber Akışı** (alınmışsa *Haber Akışı: Gündem*) · Dil Türkçe
+   - Bundle ID: listeden **akinai.app1** (ilk yükleme denemesi kimliği kendisi kaydeder; listede yoksa bana söyle)
+   - SKU `akinai-app1` · Kullanıcı erişimi: Tam erişim
+2. **Bildirim anahtarı (APNs):** developer.apple.com → **Certificates, Identifiers & Profiles → Keys → +**
+   - Ad `Haber Akisi Push`, **Apple Push Notifications service (APNs)** kutusunu işaretle → Continue → Register → **Download** (.p8, bir kez iner)
+   - Firebase Console → `haber-68a3c` → ⚙︎ **Proje ayarları → Cloud Messaging** → **Apple uygulaması yapılandırması** (akinai.app1)
+     → **APNs kimlik doğrulama anahtarı → Yükle**: .p8 dosyası + Key ID + Team ID. (Firebase iOS uygulamasını ilk yükleme kendisi ekler.)
+   - Bu adım olmadan iOS'ta bildirim gelmez; uygulamanın geri kalanı çalışır.
+3. **AdMob (iOS):** admob.google.com → Uygulamalar → Uygulama ekle → **iOS** ("App Store'da yayında mı?" → Hayır), ad Haber Akışı
+   → uygulama kimliği + 3 reklam birimi (**Banner**, **Yerel gelişmiş**, **Geçiş**). Kimlikleri bana gönder (gizli değiller);
+   gelene kadar Google test reklamı çıkar.
+4. Yüklemeyi bana "başlat" diyerek ya da `news-aggregator/flutter_app/ios/RELEASE_VERSION` dosyasındaki sürümü değiştirerek başlat.
+   20–40 dk sürer, sonra yapı **TestFlight**'ta görünür.
+5. Sürüm sayfasını aşağıdaki metinlerle doldur, `docs/ios/ekran-goruntuleri/` görsellerini yükle, yapıyı seç → **Add for Review → Submit for Review**.
 
 ## App Store girişi
 
@@ -101,9 +113,10 @@ Demo hesap: gerekmez.
 Haber toplayıcılar bazen "yalnızca web sarmalayıcı" itirazı alır. Önlem: uygulamanın yerel özellikleri (kişiselleştirilmiş akış, bildirim yoğunluğu, tekilleştirme, piyasa/hava panelleri, spor bildirimleri) inceleme notuna ve açıklamaya yazıldı.
 
 ## Ekran görüntüleri
+**Hazır:** `docs/ios/ekran-goruntuleri/` — 7 görsel, 1320×2868 (6,9"), uygulamanın gerçek ekranlarından (sahte örnek veriyle). Canlı skor paneli iOS görsellerinde yok.
 App Store iPhone 6,9" (1320×2868) zorunlu; 6,5" (1284×2778) de kabul. Android tanıtım görselleri (`docs/play-store/tanitim-gorselleri/`, 1080×1920) iOS'ta **kullanılamaz** (oran farklı, canlı panel görseli yanıltıcı olur). iOS için gerçek ekranlar iPhone/simülatörden alınmalı ya da `tool/promo` yöntemi 1320×2868 boyutuyla yeniden çalıştırılabilir (canlı panel karesi hariç).
 
 ## Sonra
 - App Check: Firebase → App Check → iOS uygulaması → **App Attest** sağlayıcısını etkinleştir (zorunlu kılma kapalı kalsın).
 - AdMob: iOS uygulamasını App Store girişine bağla; `app-ads.txt` zaten yayında.
-- Sürüm numarası: `pubspec.yaml` `1.0.0+100`; Codemagic yapı numarasını otomatik artırır.
+- Sürüm: `ios/RELEASE_VERSION` (App Store sürümü), yapı numarası = iş akışının çalışma sayısı (otomatik artar).
