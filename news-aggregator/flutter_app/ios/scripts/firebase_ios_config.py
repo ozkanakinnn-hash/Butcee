@@ -26,7 +26,8 @@ def access_token(sa):
 
 
 def main():
-    sa = json.loads(os.environ["FIREBASE_SA"])
+    # Sır, anahtar metninde gerçek satır sonlarıyla yapıştırılmış olabilir → strict=False
+    sa = json.loads(os.environ["FIREBASE_SA"].strip(), strict=False)
     project = os.environ.get("FIREBASE_PROJECT") or sa["project_id"]
     bundle = os.environ["BUNDLE_ID"]
     tok = access_token(sa)

@@ -15,7 +15,7 @@ name: News iOS App Store yükleme
 on:
   workflow_dispatch:
   push:
-    paths: [ "news-aggregator/flutter_app/ios/RELEASE_VERSION", ".github/workflows/news-ios-release.yml" ]
+    paths: [ "news-aggregator/flutter_app/ios/RELEASE_VERSION", "news-aggregator/flutter_app/ios/scripts/**", ".github/workflows/news-ios-release.yml" ]
 
 permissions:
   contents: read
