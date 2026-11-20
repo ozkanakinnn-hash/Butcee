@@ -15,7 +15,7 @@ name: News iOS App Store yükleme
 on:
   workflow_dispatch:
   push:
-    paths: [ "news-aggregator/flutter_app/ios/RELEASE_VERSION" ]
+    paths: [ "news-aggregator/flutter_app/ios/RELEASE_VERSION", ".github/workflows/news-ios-release.yml" ]
 
 permissions:
   contents: read
@@ -26,7 +26,7 @@ concurrency:
 
 jobs:
   upload:
-    runs-on: macos-26               # Firebase iOS SDK Swift 6.2 → Xcode 26
+    runs-on: macos-15-intel         # macos-26 kuyrukta sunucu alamadı (Kasım 2026); bu imajda da Xcode 26 var
     timeout-minutes: 90
     env:
       APP_DIR: news-aggregator/flutter_app
