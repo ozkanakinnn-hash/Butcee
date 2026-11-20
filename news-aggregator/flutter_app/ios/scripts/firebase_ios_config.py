@@ -14,33 +14,74 @@ import jwt
 API = "https://firebase.googleapis.com/v1beta1"
 
 
-def load_service_account(raw):
-    """Telefondan yapıştırılan JSON bozulmuş olabilir (gerçek satır sonları, fazla ters eğik çizgi).
-    Önce normal okunur; olmazsa yalnızca gereken alanlar ayıklanır ve özel anahtar PEM olarak yeniden kurulur."""
+def _fix_newlines_in_strings(text, mode):
+    """JSON dizgeleri içindeki ham satır sonlarını onarır (sunucudaki scripts/init-admin.js ile aynı mantık).
+    'escape': satır sonu → \\n (kaçışlar gerçek satır sonuna dönmüş); 'remove': satır sonu silinir (düzenleyici satırı sarmış)."""
+    out, in_str, esc = [], False, False
+    for ch in text:
+        brk = ch in "\r\n"
+        if not in_str:
+            if ch == '"':
+                in_str = True
+            out.append(ch)
+            continue
+        if brk:
+            if mode == "escape" and ch == "\n" and not esc:
+                out.append("\\n")
+            continue
+        if esc:
+            esc = False
+            out.append(ch)
+            continue
+        if ch == "\\":
+            esc = True
+        elif ch == '"':
+            in_str = False
+        elif ch == "\t":
+            out.append("\\t")
+            continue
+        out.append(ch)
+    return "".join(out)
+
+
+def _normalize_key(raw):
     import re, textwrap
-
-    def clean_pem(key):
-        body = re.sub(r"-----(BEGIN|END)[A-Z ]*-----", "", key)
-        body = re.sub(r"\\n|\\", "", body)          # kaçış kalıntıları
-        body = re.sub(r"[^A-Za-z0-9+/=]", "", body)
-        return "-----BEGIN PRIVATE KEY-----\n" + "\n".join(textwrap.wrap(body, 64)) + "\n-----END PRIVATE KEY-----\n"
-
-    raw = raw.strip()
+    from cryptography.hazmat.primitives import serialization
+    m = re.search(r"-----BEGIN ([A-Z ]+)-----([\s\S]*?)-----END \1-----", raw.replace("\\n", "\n"))
+    if not m:
+        return None
+    body = re.sub(r"[^A-Za-z0-9+/=]", "", m.group(2))
+    pem = f"-----BEGIN {m.group(1)}-----\n" + "\n".join(textwrap.wrap(body, 64)) + f"\n-----END {m.group(1)}-----\n"
     try:
-        sa = json.loads(raw, strict=False)
-        sa["private_key"] = clean_pem(sa["private_key"])
-        return sa
-    except (ValueError, KeyError):
-        pass
+        serialization.load_pem_private_key(pem.encode(), None)
+        return pem
+    except ValueError:
+        return None
 
-    def field(name):
-        m = re.search(r'"%s"\s*:\s*"([^"]*)"' % name, raw)
-        if not m:
-            sys.exit(f"FIREBASE_SERVICE_ACCOUNT içinde '{name}' alanı bulunamadı; servis hesabı JSON'unu yeniden yapıştırın.")
-        return m.group(1)
-    pem = clean_pem(field("private_key"))
-    print("Servis hesabı JSON'u bozuk biçimli; alanlar ayıklanarak okundu.")
-    return {"client_email": field("client_email"), "project_id": field("project_id"), "private_key": pem}
+
+def load_service_account(raw):
+    """Telefondan kopyalanan servis hesabı JSON'u sık bozulur; sunucunun okuyucusuyla aynı onarımlar denenir."""
+    text = raw.lstrip("\ufeff").strip()
+    failures = []
+    for label, cand in (("olduğu gibi", text), ("satır sonları kaçışlandı", _fix_newlines_in_strings(text, "escape")),
+                        ("sarma satır sonları silindi", _fix_newlines_in_strings(text, "remove"))):
+        try:
+            sa = json.loads(cand, strict=False)
+        except ValueError as e:
+            failures.append(f"{label}: {type(e).__name__} (konum {getattr(e, 'pos', '?')})")
+            continue
+        for k, v in list(sa.items()):
+            if k != "private_key" and isinstance(v, str):
+                sa[k] = "".join(v.split("\\\n")).replace("\r", "").replace("\n", "").strip()
+        pem = _normalize_key(sa.get("private_key", ""))
+        if not (pem and sa.get("client_email") and sa.get("project_id")):
+            failures.append(f"{label}: JSON okundu ama anahtar/e-posta/proje geçersiz")
+            continue
+        if label != "olduğu gibi":
+            print(f"Uyarı: servis hesabı metni onarıldı ({label}).")
+        sa["private_key"] = pem
+        return sa
+    sys.exit("FIREBASE_SERVICE_ACCOUNT okunamadı:\n  " + "\n  ".join(failures))
 
 
 def access_token(sa):
