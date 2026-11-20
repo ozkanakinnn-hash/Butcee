@@ -14,7 +14,7 @@ Bu klasör kendi kendine yeter. Yeni depoda: `bash .claude/skills/magaza-yayini/
 
 ## Kalıcı kurallar
 - Paket adı: `akin.ai<N>` (Android applicationId = iOS bundle id; widget `akin.ai<N>.widget`, App Group `group.akin.ai<N>`).
-  1) Haber Akışı (`com.haberakisi.haber_akisi`) 2) Ezan & Vakit (`akin.ai2`) → yeni uygulama `akin.ai3`. Yayından sonra değişmez: kullanıcıya teyit ettir.
+  1) Haber Akışı (`akinai.app1` — eski düzen; Flutter, kodu `claude/haber-akisi-2026-11` dalında `news-aggregator/`) 2) Ezan & Vakit (`akin.ai2`) → yeni uygulama `akin.ai3`. Yayından sonra değişmez: kullanıcıya teyit ettir.
 - Gizli dosyalar ASLA depoya girmez, şifre sohbete/loga yazılmaz: `*.jks`, şifre dosyası, `google-services.json`, `.p8`. Kullanıcıya "değerleri sohbete yazma, yalnızca GitHub sırlarına gir" de.
 - Gizlilik/destek sayfaları: `ozkanakinnn-hash/Butcee` deposu `gh-pages` dalı, uygulama başına klasör → `https://ozkanakinnn-hash.github.io/Butcee/<uygulama>/privacy-policy.html` ve `support.html`. gh-pages'e göndermek için kullanıcıdan açık izin al.
 - Açıklamada yalnız o platformda olan özellikleri yaz (Apple 2.3.1). Başka markanın adını anahtar kelimeye koyma.
