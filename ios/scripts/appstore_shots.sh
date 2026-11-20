@@ -21,6 +21,11 @@ shot () { # dil, ad, argümanlar...
     -key_onboarding_completed YES -key_user_name "Özkan" -key_province Manisa -key_district Saruhanlı "$@"
   sleep 14
   xcrun simctl io "$DEV" screenshot "$OUT/$lang/$name.png"
+  # Boş (henüz çizilmemiş) ekran yakalandıysa biraz bekleyip yeniden çek
+  for i in 1 2 3; do
+    [ "$(stat -f%z "$OUT/$lang/$name.png")" -gt 200000 ] && break
+    sleep 8; xcrun simctl io "$DEV" screenshot "$OUT/$lang/$name.png"
+  done
 }
 for L in tr en; do
   shot $L 01_ana_sayfa -key_theme_mode DARK

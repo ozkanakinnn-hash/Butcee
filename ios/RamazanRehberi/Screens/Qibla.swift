@@ -155,7 +155,7 @@ final class QiblaCompass: NSObject, ObservableObject, CLLocationManagerDelegate 
     if UserDefaults.standard.object(forKey: "debug_heading") != nil {
       demo = true
       continuousHeading = UserDefaults.standard.double(forKey: "debug_heading")
-      accuracy = 5; declination = 5.9; ready = true
+      accuracy = 5; declination = 5.5; ready = true
       return
     }
     #endif
