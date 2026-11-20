@@ -8,6 +8,27 @@ tuzağı/magazin yok, son 3 saatte) seçer; yayıncının KENDİ haber bağlant�
 | Telegram kanalı | Bot API ile otomatik | Ücretsiz |
 | X (Twitter) | Özel sohbete **kopyala-yapıştır metin** (≤280, bağlantı 23 sayılır) | Ücretsiz (elle) |
 | X API ile otomatik | Yapılmadı — X API'si ücretli (kullandıkça öde, Şubat 2026) | Ücretli |
+| **X otomatik (Make + Buffer)** | Sunucu → Make webhook → Google Tablolar kaydı → Buffer → X | Ücretsiz planlar |
+
+## X otomatik: Make + Google Tablolar + Buffer
+Telegram botu aradan çıkar (bot kendi mesajlarını göremediği için Make'in Telegram tetikleyicisi bu iş için uygun değil).
+Seçimi yine sunucu yapar; aynı haber hem Telegram'a hem X'e gider (biri kapalıysa yalnızca diğerine).
+
+1. **Buffer:** buffer.com → Connect a channel → **X** → hesabı bağla.
+2. **Google Tablolar:** `Haber Akışı X` adlı tablo, ilk satır: `zaman | baslik | kaynak | kaynak_sayisi | link | metin | deneme`
+3. **Make:** Create a new scenario →
+   - **Webhooks → Custom webhook** → Add → ad `haber-x` → adresi kopyala.
+   - **Google Sheets → Add a Row** → tabloyu seç → sütunları webhook alanlarıyla eşle.
+   - **Buffer → Create a Status Update** (profil: X) → Text = `metin`. Aradaki bağlantıya **filtre**: `deneme` = `false`
+     (bağlantı testi örneği X'e gitmesin).
+   - Zamanlama **Immediately**, senaryo **ON**.
+4. **Firestore → app_meta/social** belgesine ekle: `x_webhook` (string, Make adresi) · `x_enabled` (boolean) = true.
+5. **Örnek veri:** Make'te webhook modülünde **Redetermine data structure** → `app_meta/social` belgesinde `test_ping` = true.
+   En geç 20 dk içinde örnek kayıt (deneme: true) gelir, Make alanları öğrenir; tabloda bir test satırı görünür.
+6. Gerçek paylaşım `dry_run: false` ve `enabled: true` iken başlar. Günlük sınır/aralık/gece sessizliği X için de geçerli.
+
+Webhook alanları: `zaman, baslik, kaynak, kaynak_sayisi, link, metin (≤280, bağlantı dahil), haber_id, deneme`.
+Kapatmak: `x_enabled: false`. Make ücretsiz planı ayda 1.000 işlem: günde 8 paylaşım × 3 modül ≈ 720 işlem.
 
 ## Kurulum
 1. **Bot:** Telegram → @BotFather → `/newbot` → ad "Haber Akışı", kullanıcı adı `...bot` ile bitmeli → **jeton** (GİZLİ).

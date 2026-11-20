@@ -21,6 +21,10 @@
  * - `link_preview: false` (varsayılan): Telegram yayıncının görselini/açıklamasını göstermez (telif için daha güvenli).
  * - `allowed_sources`: doluysa yalnızca bu yayıncıların (kaynak adı, büyük/küçük harf farkı gözetilmez) haberleri
  *   paylaşılır; boşsa tüm kaynaklar.
+ * - X otomatik (ücretsiz yol): `x_enabled: true` + `x_webhook: "https://hook.eu1.make.com/..."` → seçilen haber
+ *   Make senaryosuna JSON olarak gider (Make → Google Tablolar kaydı → Buffer → X). Telegram'dan bağımsızdır:
+ *   kanal/jeton boşsa yalnızca X'e gider. `test_ping` webhook'a da örnek (deneme: true) bir kayıt yollar; Make'te
+ *   "Redetermine data structure" bu örnekle alanları öğrenir.
  */
 
 const { Timestamp } = require('firebase-admin/firestore');
@@ -36,8 +40,10 @@ const X_URL_LENGTH = 23; // X her bağlantıyı 23 karakter sayar
 
 const DEFAULTS = {
   enabled: false, dry_run: true, channel: '', owner_chat_id: '', daily_cap: 8, min_gap_min: 45,
-  link_preview: false, allowed_sources: [],
+  link_preview: false, allowed_sources: [], x_enabled: false, x_webhook: '',
 };
+const xReady = (config) => config.x_enabled === true && /^https:\/\/[^\s]+$/.test(String(config.x_webhook || ''));
+const telegramReady = (config, token) => Boolean(token && config.channel);
 const norm = (x) => String(x || '').trim().toLocaleLowerCase('tr-TR');
 
 const escapeHtml = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -107,6 +113,31 @@ async function telegramSend(fetchImpl, token, chatId, text, { html = true, previ
   return body;
 }
 
+/** Make (ya da benzeri) webhook'una X paylaşımı için kayıt gönderir. Hata fırlatır. */
+function xPayload(story, now, extra = {}) {
+  return {
+    zaman: new Intl.DateTimeFormat('tr-TR', { timeZone: 'Europe/Istanbul', dateStyle: 'short', timeStyle: 'short' }).format(new Date(now)),
+    baslik: story.title,
+    kaynak: story.source || '',
+    kaynak_sayisi: story.srcs.length,
+    link: story.url,
+    metin: xText(story),
+    haber_id: story.id,
+    deneme: false,
+    ...extra,
+  };
+}
+
+async function webhookSend(fetchImpl, url, payload) {
+  const res = await fetchImpl(url, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(payload),
+    signal: AbortSignal.timeout(15_000),
+  });
+  if (!res.ok) throw new Error(`webhook ${res.status}`);
+}
+
 /**
  * Bir tur: ayarları ve hikâyeleri okur, uygunsa bir haber paylaşır.
  * @returns {Promise<{status: string, ...}>}
@@ -117,8 +148,17 @@ async function runSocial(db, { token, fetchImpl = fetch, now = Date.now() } = {}
   // Bağlantı testi: jeton, kanal adı ve botun yöneticiliği haber çıkmasını beklemeden doğrulanır.
   if (config.test_ping === true) {
     const errors = [];
-    if (!token) errors.push('jeton yok (TELEGRAM_BOT_TOKEN tanımlı değil ya da "-")');
-    else if (!config.channel) errors.push('channel ayarı boş');
+    if (xReady(config)) {
+      const sample = { id: 'test', title: 'Haber Akışı bağlantı testi', url: 'https://haber-68a3c.web.app', source: 'Haber Akışı', srcs: ['test'] };
+      try {
+        await webhookSend(fetchImpl, config.x_webhook, xPayload(sample, now, { deneme: true }));
+      } catch (err) {
+        errors.push(`x webhook: ${err.message}`);
+      }
+    }
+    if (!token) {
+      if (!xReady(config)) errors.push('jeton yok (TELEGRAM_BOT_TOKEN tanımlı değil ya da "-")');
+    } else if (!config.channel) errors.push('channel ayarı boş');
     else {
       const text = '✅ Haber Akışı: bağlantı testi başarılı. Önemli haberler bu kanala gelecek.';
       try {
@@ -142,7 +182,7 @@ async function runSocial(db, { token, fetchImpl = fetch, now = Date.now() } = {}
   }
 
   if (!config.enabled) return { status: 'kapalı' };
-  if (!config.dry_run && (!token || !config.channel)) return { status: 'ayar eksik' };
+  if (!config.dry_run && !telegramReady(config, token) && !xReady(config)) return { status: 'ayar eksik' };
 
   const [newsSnap, stateSnap] = await Promise.all([db.doc('notify_state/news').get(), db.doc('notify_state/social').get()]);
   const { story, nextState, reason } = pickStory({
@@ -167,23 +207,35 @@ async function runSocial(db, { token, fetchImpl = fetch, now = Date.now() } = {}
   }
 
   const errors = [];
-  try {
-    await telegramSend(fetchImpl, token, config.channel, telegramText(story), { preview: config.link_preview === true });
-  } catch (err) {
-    errors.push(err.message);
+  let delivered = 0;
+  if (telegramReady(config, token)) {
+    try {
+      await telegramSend(fetchImpl, token, config.channel, telegramText(story), { preview: config.link_preview === true });
+      delivered++;
+    } catch (err) {
+      errors.push(err.message);
+    }
   }
-  if (config.owner_chat_id) {
+  if (xReady(config)) {
+    try {
+      await webhookSend(fetchImpl, config.x_webhook, xPayload(story, now));
+      delivered++;
+    } catch (err) {
+      errors.push(`x: ${err.message}`);
+    }
+  }
+  if (token && config.owner_chat_id && !xReady(config)) {
     try {
       await telegramSend(fetchImpl, token, config.owner_chat_id, `X için hazır metin:\n\n${xText(story)}`, { html: false });
     } catch (err) {
       errors.push(`x taslağı: ${err.message}`);
     }
   }
-  const channelFailed = errors.some((e) => !e.startsWith('x taslağı'));
-  // Kanal gönderimi başarısızsa sayaç ilerlemez (bir sonraki turda yeniden denenir)
+  // Hiçbir hedefe gidemediyse sayaç ilerlemez (bir sonraki turda yeniden denenir)
+  const channelFailed = delivered === 0;
   if (!channelFailed) await db.doc('notify_state/social').set(nextState);
   await db.collection('social_log').add({ ...entry, dry_run: false, ...(errors.length ? { errors } : {}) });
   return channelFailed ? { status: 'hata', errors } : { status: 'gönderildi', title: story.title, ...(errors.length ? { errors } : {}) };
 }
 
-module.exports = { pickStory, telegramText, xText, telegramSend, runSocial, MIN_SOURCES, DEFAULTS };
+module.exports = { pickStory, telegramText, xText, xPayload, telegramSend, runSocial, MIN_SOURCES, DEFAULTS };
