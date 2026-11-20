@@ -1,7 +1,7 @@
 # App Store Connect — Ezan & Vakit (iOS) mağaza bilgileri
 
 Bu dosyadaki metinleri App Store Connect'teki ilgili alanlara **kopyala-yapıştır** yapın.
-Uzunluk sınırları kontrol edildi. Açıklama yalnızca **iOS sürümünde bulunan** özellikleri anlatır;
+Uzunluk sınırları kontrol edildi. Açıklama yalnızca **iOS sürümünde bulunan** özellikleri anlatır. App Store açıklamada emoji ve "→" gibi işaretleri kabul etmez ("invalid characters" hatası);
 Apple, uygulamada olmayan bir özelliği anlatan metni reddeder (Kural 2.3.1).
 
 ---
@@ -46,43 +46,43 @@ namaz,kıble,iftar,sahur,oruç,kuran,imsak,zikirmatik,cami,dua,hatim,kandil,esma
 ```
 Ezan & Vakit; namaz vakitlerini dakikası dakikasına gösteren, ezan vaktinde haber veren ve Ramazan'ı kolaylaştıran sade bir yardımcıdır.
 
-🕌 NAMAZ VAKİTLERİ VE EZAN
-• Türkiye'deki tüm il ve ilçeler için resmî ilçe takvimiyle aynı vakitler
-• İmsak, Güneş, Öğle, İkindi, Akşam ve Yatsı için ezan sesli bildirim
-• Konumunuzla otomatik il/ilçe seçimi, dünya şehirleri için de vakitler
-• İnternet olmadan 30 gün doğru vakit
+NAMAZ VAKİTLERİ VE EZAN
+- Türkiye'deki tüm il ve ilçeler için resmî ilçe takvimiyle aynı vakitler
+- İmsak, Güneş, Öğle, İkindi, Akşam ve Yatsı için ezan sesli bildirim
+- Konumunuzla otomatik il/ilçe seçimi, dünya şehirleri için de vakitler
+- İnternet olmadan 30 gün doğru vakit
 
-🌙 RAMAZAN VE ORUÇ
-• İftar ve sahur geri sayımı
-• Sahur davulu ve iftar hatırlatıcısı
-• Oruç takibi, kaza ve nafile oruç sayacı
-• Her gün farklı oruç bilgisi, iftar ve sahur menüleri
+RAMAZAN VE ORUÇ
+- İftar ve sahur geri sayımı
+- Sahur davulu ve iftar hatırlatıcısı
+- Oruç takibi, kaza ve nafile oruç sayacı
+- Her gün farklı oruç bilgisi, iftar ve sahur menüleri
 
-🧭 SADE KIBLE PUSULASI
-• Büyük, anlaşılır pusula: kaç derece döneceğiniz tek bakışta
-• Açılışta 8 çizme kalibrasyon anlatımı
-• Kıble Saati: güneşe bakarak pusulasız kontrol
+SADE KIBLE PUSULASI
+- Büyük, anlaşılır pusula: kaç derece döneceğiniz tek bakışta
+- Açılışta 8 çizme kalibrasyon anlatımı
+- Kıble Saati: güneşe bakarak pusulasız kontrol
 
-📖 KUR'AN-I KERİM
-• Sayfa sayfa okuyucu; Arapça, okunuş ve meal
-• Hatim takibi
+KUR'AN-I KERİM
+- Sayfa sayfa okuyucu; Arapça, okunuş ve meal
+- Hatim takibi
 
-📿 İBADET ARAÇLARI
-• Zikirmatik, Esmâü'l-Hüsnâ, kaza namazı takibi
-• Kandil duaları ve mübarek gün hatırlatmaları
-• Yakındaki camiler
-• Cuma, kandil ve bayram tebrik kartları
+İBADET ARAÇLARI
+- Zikirmatik, Esmâü'l-Hüsnâ, kaza namazı takibi
+- Kandil duaları ve mübarek gün hatırlatmaları
+- Yakındaki camiler
+- Cuma, kandil ve bayram tebrik kartları
 
-✨ DAHA FAZLASI
-• 4 ana ekran widget'ı: sıradaki vakit, günün vakitleri, oruç sayacı, günün ayeti
-• Karanlık tema, 3 renk teması, Türkçe ve İngilizce
+DAHA FAZLASI
+- 4 ana ekran widget'ı: sıradaki vakit, günün vakitleri, oruç sayacı, günün ayeti
+- Karanlık tema, 3 renk teması, Türkçe ve İngilizce
 
-⭐ PREMIUM (isteğe bağlı)
-Reklamsız kullanım için aylık, yıllık veya ömür boyu Premium. Abonelikler, dönem bitmeden en az 24 saat önce iptal edilmezse otomatik yenilenir; Ayarlar → [adınız] → Abonelikler bölümünden yönetebilirsiniz.
+PREMIUM (isteğe bağlı)
+Reklamsız kullanım için aylık, yıllık veya ömür boyu Premium. Abonelikler, dönem bitmeden en az 24 saat önce iptal edilmezse otomatik yenilenir; iPhone Ayarlar > [adınız] > Abonelikler bölümünden yönetebilirsiniz.
 Kullanım Koşulları: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/
 Gizlilik: https://ozkanakinnn-hash.github.io/Butcee/ezan-vakit/privacy-policy.html
 
-🔒 GİZLİLİK
+GİZLİLİK
 Hesap gerekmez. Kayıtlarınız yalnızca telefonunuzda saklanır.
 
 Not: Vakitler, Diyanet İşleri Başkanlığı'nın yayımladığı tablolar esas alınarak gösterilir. Bu uygulama Diyanet İşleri Başkanlığı ile bağlantılı değildir.
@@ -90,8 +90,8 @@ Not: Vakitler, Diyanet İşleri Başkanlığı'nın yayımladığı tablolar esa
 
 **Bu sürümdeki yenilikler (What's New)** — ilk sürümde istenmez; sonraki sürümler için örnek:
 ```
-• Sadeleştirilmiş kıble pusulası ve açılışta kalibrasyon anlatımı
-• Hata düzeltmeleri ve iyileştirmeler
+- Sadeleştirilmiş kıble pusulası ve açılışta kalibrasyon anlatımı
+- Hata düzeltmeleri ve iyileştirmeler
 ```
 
 ---
@@ -114,35 +114,35 @@ salah,adhan,azan,qibla,ramadan,iftar,suhoor,quran,muslim,islam,mosque,dhikr,fast
 ```
 Ezan & Vakit shows accurate prayer times, plays the adhan on time and makes Ramadan easier.
 
-🕌 PRAYER TIMES & ADHAN
-• Official district times for every city and district in Türkiye, plus cities worldwide
-• Adhan notifications for Fajr, Sunrise, Dhuhr, Asr, Maghrib and Isha
-• Automatic location; 30 days of accurate times offline
+PRAYER TIMES & ADHAN
+- Official district times for every city and district in Türkiye, plus cities worldwide
+- Adhan notifications for Fajr, Sunrise, Dhuhr, Asr, Maghrib and Isha
+- Automatic location; 30 days of accurate times offline
 
-🌙 RAMADAN & FASTING
-• Iftar and suhoor countdown, suhoor drum and iftar reminder
-• Fasting tracker with missed and voluntary fasts
-• A daily fasting tip and iftar & suhoor menus
+RAMADAN & FASTING
+- Iftar and suhoor countdown, suhoor drum and iftar reminder
+- Fasting tracker with missed and voluntary fasts
+- A daily fasting tip and iftar & suhoor menus
 
-🧭 SIMPLE QIBLA COMPASS
-• A large, clear compass that tells you how many degrees to turn
-• Figure-8 calibration guide on start
-• Qibla time: check the direction with the sun, no compass needed
+SIMPLE QIBLA COMPASS
+- A large, clear compass that tells you how many degrees to turn
+- Figure-8 calibration guide on start
+- Qibla time: check the direction with the sun, no compass needed
 
-📖 THE QURAN
-• Page-by-page reader with Arabic, transliteration and meaning
-• Khatm tracker
+THE QURAN
+- Page-by-page reader with Arabic, transliteration and meaning
+- Khatm tracker
 
-📿 WORSHIP TOOLS
-• Dhikr counter, the 99 Names, missed-prayer tracker
-• Kandil prayers and blessed-day reminders, nearby mosques
-• Friday, Kandil and Eid greeting cards
+WORSHIP TOOLS
+- Dhikr counter, the 99 Names, missed-prayer tracker
+- Kandil prayers and blessed-day reminders, nearby mosques
+- Friday, Kandil and Eid greeting cards
 
-✨ MORE
-• 4 home-screen widgets, dark mode, 3 color themes, Turkish & English
+MORE
+- 4 home-screen widgets, dark mode, 3 color themes, Turkish & English
 
-⭐ PREMIUM (optional)
-Monthly, yearly or lifetime Premium removes ads. Subscriptions renew automatically unless cancelled at least 24 hours before the end of the period; manage them in Settings → [your name] → Subscriptions.
+PREMIUM (optional)
+Monthly, yearly or lifetime Premium removes ads. Subscriptions renew automatically unless cancelled at least 24 hours before the end of the period; manage them in Settings > [your name] > Subscriptions.
 Terms of Use: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/
 Privacy: https://ozkanakinnn-hash.github.io/Butcee/ezan-vakit/privacy-policy.html
 
