@@ -7,7 +7,8 @@
 #   ASC_KEY_ID        App Store Connect API anahtar kimliği (ör. 2X9R4HXF34)
 #   ASC_ISSUER_ID     API anahtarlarının "Issuer ID" değeri (UUID)
 #   ASC_PRIVATE_KEY   İndirilen AuthKey_XXXX.p8 dosyasının tüm metni (BEGIN/END satırları dahil)
-# Anahtarın rolü "Admin" olmalı: imza sertifikasını ve profilleri Xcode bulutta kendisi oluşturur.
+# Anahtarın rolü "Admin" olmalı: her çalışmada geçici bir dağıtım sertifikası ve App Store profilleri
+# oluşturulur (cihaz kaydı gerekmez), iş bitince silinir. Bkz. ios/scripts/asc_signing.py
 name: iOS App Store yükleme
 
 on:
@@ -91,6 +92,14 @@ jobs:
           echo "Anahtar biçimi geçerli."
           echo "KEY_PATH=$KEY" >> "$GITHUB_ENV"
 
+      - name: Geçici dağıtım sertifikası ve App Store profilleri
+        env:
+          BUNDLE_IDS: akin.ai2,akin.ai2.widget
+        run: |
+          python3 -m venv "$RUNNER_TEMP/venv"
+          "$RUNNER_TEMP/venv/bin/pip" install -q "PyJWT[crypto]"
+          "$RUNNER_TEMP/venv/bin/python" ios/scripts/asc_signing.py setup "$RUNNER_TEMP/signing"
+
       - name: Arşivle (Release, imzalı)
         run: |
           cd ios
@@ -98,9 +107,9 @@ jobs:
           xcodebuild -project RamazanRehberi.xcodeproj -scheme RamazanRehberi -configuration Release \
             -destination 'generic/platform=iOS' -archivePath build/EzanVakit.xcarchive \
             -skipPackagePluginValidation -skipMacroValidation \
-            -allowProvisioningUpdates \
-            -authenticationKeyPath "$KEY_PATH" -authenticationKeyID "$ASC_KEY_ID" -authenticationKeyIssuerID "$ASC_ISSUER_ID" \
-            DEVELOPMENT_TEAM="$APPLE_TEAM_ID" CODE_SIGN_STYLE=Automatic \
+            DEVELOPMENT_TEAM="$APPLE_TEAM_ID" CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY="Apple Distribution" \
+            OTHER_CODE_SIGN_FLAGS="--keychain $SIGN_KEYCHAIN" \
+            APP_PROFILE="$APP_PROFILE" WIDGET_PROFILE="$WIDGET_PROFILE" \
             MARKETING_VERSION="$VERSION" CURRENT_PROJECT_VERSION="$BUILD_NUMBER" \
             archive 2>&1 | tee archive.log | grep -E "error:|\*\* ARCHIVE" || true
           grep -q "ARCHIVE SUCCEEDED" archive.log
@@ -119,7 +128,12 @@ jobs:
             <key>method</key><string>app-store-connect</string>
             <key>destination</key><string>upload</string>
             <key>teamID</key><string>${APPLE_TEAM_ID}</string>
-            <key>signingStyle</key><string>automatic</string>
+            <key>signingStyle</key><string>manual</string>
+            <key>signingCertificate</key><string>Apple Distribution</string>
+            <key>provisioningProfiles</key><dict>
+              <key>akin.ai2</key><string>${APP_PROFILE}</string>
+              <key>akin.ai2.widget</key><string>${WIDGET_PROFILE}</string>
+            </dict>
             <key>uploadSymbols</key><true/>
             <key>manageAppVersionAndBuildNumber</key><false/>
           </dict></plist>
@@ -133,6 +147,11 @@ jobs:
           echo "### ✅ Sürüm $VERSION (yapı $BUILD_NUMBER) App Store Connect'e yüklendi" >> "$GITHUB_STEP_SUMMARY"
           echo "İşlenmesi 10–30 dk sürer; ardından TestFlight'ta ve sürüm sayfasında görünür." >> "$GITHUB_STEP_SUMMARY"
 
+      - name: Geçici sertifika ve profilleri sil
+        if: always()
+        run: |
+          [ -x "$RUNNER_TEMP/venv/bin/python" ] && "$RUNNER_TEMP/venv/bin/python" ios/scripts/asc_signing.py cleanup "$RUNNER_TEMP/signing" || true
+
       - name: Anahtarı sil
         if: always()
-        run: rm -rf "$RUNNER_TEMP/keys"
+        run: rm -rf "$RUNNER_TEMP/keys" "$RUNNER_TEMP/signing"

@@ -40,6 +40,8 @@ targets:
         TARGETED_DEVICE_FAMILY: "1"
         INFOPLIST_FILE: RamazanRehberi/Info.plist
         CODE_SIGN_ENTITLEMENTS: RamazanRehberi/RamazanRehberi.entitlements
+        # App Store derlemesinde ios-release.yml verir (imzasız derlemelerde boş kalır)
+        PROVISIONING_PROFILE_SPECIFIER: "$(APP_PROFILE)"
         OTHER_LDFLAGS: ["-ObjC"]
     dependencies:
       - package: GoogleMobileAds
@@ -77,4 +79,5 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: akin.ai2.widget
         INFOPLIST_FILE: RamazanWidget/Info.plist
         CODE_SIGN_ENTITLEMENTS: RamazanWidget/RamazanWidget.entitlements
+        PROVISIONING_PROFILE_SPECIFIER: "$(WIDGET_PROFILE)"
         SWIFT_ACTIVE_COMPILATION_CONDITIONS: WIDGET
