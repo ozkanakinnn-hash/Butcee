@@ -199,7 +199,8 @@ struct QuranReaderView: View {
     let first = rows.first
     let surahName = first.flatMap { r in AppContent.shared.surahs[safe: r.surah - 1]?.nameTurkish } ?? ""
     VStack(spacing: 10) {
-      PillTabs(items: [t("Arapça"), t("Okunuş"), t("Meal")], selection: $mode).padding(.horizontal, 16)
+      // Meal ilk sürümde yok (kullanım izni netleşmedi): yalnızca Arapça ve okunuş
+      PillTabs(items: [t("Arapça"), t("Okunuş")], selection: $mode).padding(.horizontal, 16)
       TabView(selection: $page) {
         ForEach(1...QuranText.pageCount, id: \.self) { pg in
           QuranPageView(page: pg, mode: mode, fontStep: store.readerFontStep)
@@ -257,7 +258,7 @@ struct QuranPageView: View {
               ForEach(items, id: \.ayah) { r in
                 HStack(alignment: .top, spacing: 10) {
                   Text("\(r.ayah)").font(.system(size: 11, weight: .bold)).foregroundStyle(p.primary).frame(width: 24)
-                  Text(mode == 1 ? (L10n.isEnglish ? r.english : r.pronunciation) : (L10n.isEnglish ? r.english : r.meal))
+                  Text(L10n.isEnglish ? r.english : r.pronunciation)
                     .font(.system(size: 17 * scale)).fixedSize(horizontal: false, vertical: true)
                 }
               }

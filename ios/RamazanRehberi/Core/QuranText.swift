@@ -1,6 +1,6 @@
 import Foundation
 
-/// Kur'an metni: quran.tsv (sure, ayet, Arapça, Türkçe okunuş, İngilizce okunuş, Diyanet meali, sayfa, cüz).
+/// Kur'an metni: quran.tsv (sure, ayet, Arapça, Türkçe okunuş, İngilizce okunuş, meal [şimdilik boş], sayfa, cüz).
 final class QuranText {
   static let shared = QuranText()
   static let pageCount = 604

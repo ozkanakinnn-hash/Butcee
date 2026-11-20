@@ -64,7 +64,7 @@ SADE KIBLE PUSULASI
 - Kıble Saati: güneşe bakarak pusulasız kontrol
 
 KUR'AN-I KERİM
-- Sayfa sayfa okuyucu; Arapça, okunuş ve meal
+- Sayfa sayfa okuyucu; Arapça metin ve okunuş
 - Hatim takibi
 
 İBADET ARAÇLARI
@@ -130,7 +130,7 @@ SIMPLE QIBLA COMPASS
 - Qibla time: check the direction with the sun, no compass needed
 
 THE QURAN
-- Page-by-page reader with Arabic, transliteration and meaning
+- Page-by-page reader with Arabic text and transliteration
 - Khatm tracker
 
 WORSHIP TOOLS
@@ -203,7 +203,7 @@ sorularına **Hayır**. Beklenen sonuç: **4+**.
 
 ## 8. İçerik hakları (Content Rights)
 
-"Uygulama üçüncü taraf içerik içeriyor mu?" → **Evet** (Kur'an meali ve namaz vakti verileri).
+"Uygulama üçüncü taraf içerik içeriyor mu?" → **Evet** (namaz vakti verileri, Kur'an Arapça metni ve okunuşu). Meal ilk iOS sürümünden kaldırıldı.
 ⚠️ Meal metninin kullanım izni (Diyanet izni ya da telifsiz bir meal) henüz netleşmedi; bu soruya "haklara sahibim" demeden önce
 bu konunun çözülmesi gerekir. Bkz. devir notu, bekleyen iş 5.
 

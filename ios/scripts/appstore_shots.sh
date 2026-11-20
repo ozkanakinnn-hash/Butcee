@@ -1,5 +1,5 @@
 #!/bin/bash
-# App Store için 6,9" (1320×2868) ekran görüntüleri: Türkçe ve İngilizce.
+# App Store için 6,9" (1320×2868) ekran görüntüleri: Türkçe ve İngilizce (Kur'an: Arapça/Okunuş, meal yok).
 # Kullanım: appstore_shots.sh <App.app yolu> <çıktı klasörü>
 set -x
 APP="$1"; OUT="$2"; BID=akin.ai2
