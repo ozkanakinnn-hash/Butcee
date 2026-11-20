@@ -70,8 +70,25 @@ jobs:
         run: |
           mkdir -p "$RUNNER_TEMP/keys"
           KEY="$RUNNER_TEMP/keys/AuthKey_${ASC_KEY_ID}.p8"
-          printf '%s\n' "$ASC_PRIVATE_KEY" > "$KEY"
+          # Telefondan kopyalanan anahtar tek satıra dönmüş / boşluk-gizli karakter almış olabilir:
+          # başlık ve gövdeyi ayıklayıp standart PEM (64 karakterlik satırlar) olarak yeniden yaz.
+          python3 - "$KEY" <<'PY'
+          import os, re, sys, textwrap
+          raw = os.environ["ASC_PRIVATE_KEY"]
+          body = re.sub(r"-----(BEGIN|END)[A-Z ]*-----", "", raw)
+          body = re.sub(r"[^A-Za-z0-9+/=]", "", body)
+          if len(body) < 100:
+              sys.exit("ASC_PRIVATE_KEY çok kısa görünüyor (%d karakter); .p8 dosyasının tamamını yapıştırın." % len(body))
+          pem = "-----BEGIN PRIVATE KEY-----\n" + "\n".join(textwrap.wrap(body, 64)) + "\n-----END PRIVATE KEY-----\n"
+          open(sys.argv[1], "w").write(pem)
+          print("Anahtar gövdesi: %d karakter, %d satır" % (len(body), pem.count("\n") - 2))
+          PY
           chmod 600 "$KEY"
+          if ! openssl pkey -in "$KEY" -noout 2>/dev/null; then
+            echo "::error::ASC_PRIVATE_KEY geçerli bir özel anahtar değil. .p8 dosyasının içeriğini GitHub'a yeniden yapıştırın."
+            exit 1
+          fi
+          echo "Anahtar biçimi geçerli."
           echo "KEY_PATH=$KEY" >> "$GITHUB_ENV"
 
       - name: Arşivle (Release, imzalı)
