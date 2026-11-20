@@ -1,0 +1,145 @@
+# iOS: App Store Connect'e (TestFlight) imzalı yükleme. Mac ve iPhone gerekmez.
+# ŞABLON — yeni projede .github/workflows/ios-release.yml olarak kopyala, aşağıdaki "AYARLAR" bölümünü doldur.
+#
+# Başlatma: GitHub → Actions → "iOS App Store yükleme" → Run workflow
+#           ya da ios/RELEASE_VERSION dosyasındaki sürüm değişip gönderildiğinde.
+#
+# Depo sırları (Settings → Secrets and variables → Actions):
+#   APPLE_TEAM_ID, ASC_KEY_ID, ASC_ISSUER_ID, ASC_PRIVATE_KEY (.p8 dosyasının tüm metni)
+#   Aynı Apple hesabındaki her uygulama için aynı değerler; ama sırlar depoya özeldir, her depoya ayrıca girilir.
+#   API anahtarı "Admin" rolünde olmalı (geçici dağıtım sertifikası oluşturur, iş bitince siler).
+name: iOS App Store yükleme
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Sürüm numarası (boş bırakılırsa ios/RELEASE_VERSION)"
+        required: false
+        default: ""
+  push:
+    paths: [ "ios/RELEASE_VERSION" ]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ios-release
+  cancel-in-progress: false
+
+jobs:
+  upload:
+    runs-on: macos-15-intel        # macos-latest 2026'da runner alamayıp 15 dk sonra iptal oldu
+    timeout-minutes: 90
+    env:
+      # ---------------- AYARLAR ----------------
+      IOS_DIR: ios                          # project.yml'in olduğu klasör
+      PROJECT: MyApp.xcodeproj              # XcodeGen'in ürettiği proje
+      SCHEME: MyApp
+      BUNDLE_IDS: akin.ai3,akin.ai3.widget  # ilki ana uygulama; uzantı yoksa yalnız akin.ai3
+      # -----------------------------------------
+      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+      ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+      ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+      ASC_PRIVATE_KEY: ${{ secrets.ASC_PRIVATE_KEY }}
+      INPUT_VERSION: ${{ github.event.inputs.version }}
+      BUILD_NUMBER: ${{ github.run_number }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Sürüm numarası
+        run: |
+          V="${INPUT_VERSION:-$(tr -d ' \n\r' < $IOS_DIR/RELEASE_VERSION)}"
+          echo "VERSION=$V" >> "$GITHUB_ENV"
+          echo "Sürüm: $V, yapı: $BUILD_NUMBER"
+
+      - name: Sırlar tanımlı mı
+        run: |
+          missing=0
+          for v in APPLE_TEAM_ID ASC_KEY_ID ASC_ISSUER_ID ASC_PRIVATE_KEY; do
+            if [ -z "${!v}" ]; then echo "::error::$v sırrı tanımlı değil"; missing=1; fi
+          done
+          [[ "$VERSION" =~ ^[0-9]+\.[0-9]+(\.[0-9]+)?$ ]] || { echo "::error::Sürüm biçimi hatalı: $VERSION"; missing=1; }
+          exit $missing
+
+      - name: En yeni Xcode
+        run: |
+          sudo xcode-select -s "$(ls -d /Applications/Xcode_*.app | grep -v beta | sort -V | tail -1)"
+          xcodebuild -version
+
+      - name: Projeyi üret (XcodeGen)
+        run: |
+          brew install xcodegen
+          cd $IOS_DIR && xcodegen generate
+
+      - name: API anahtarını yerleştir
+        run: |
+          mkdir -p "$RUNNER_TEMP/keys"
+          KEY="$RUNNER_TEMP/keys/AuthKey_${ASC_KEY_ID}.p8"
+          # Telefondan kopyalanan anahtar tek satıra dönmüş olabilir: standart PEM olarak yeniden yaz.
+          python3 - "$KEY" <<'PY'
+          import os, re, sys, textwrap
+          raw = os.environ["ASC_PRIVATE_KEY"]
+          body = re.sub(r"-----(BEGIN|END)[A-Z ]*-----", "", raw)
+          body = re.sub(r"[^A-Za-z0-9+/=]", "", body)
+          if len(body) < 100:
+              sys.exit("ASC_PRIVATE_KEY çok kısa görünüyor (%d karakter); .p8 dosyasının tamamını yapıştırın." % len(body))
+          pem = "-----BEGIN PRIVATE KEY-----\n" + "\n".join(textwrap.wrap(body, 64)) + "\n-----END PRIVATE KEY-----\n"
+          open(sys.argv[1], "w").write(pem)
+          PY
+          chmod 600 "$KEY"
+          openssl pkey -in "$KEY" -noout 2>/dev/null || { echo "::error::ASC_PRIVATE_KEY geçerli bir özel anahtar değil."; exit 1; }
+          echo "KEY_PATH=$KEY" >> "$GITHUB_ENV"
+
+      - name: Geçici dağıtım sertifikası ve App Store profilleri
+        run: |
+          python3 -m venv "$RUNNER_TEMP/venv"
+          "$RUNNER_TEMP/venv/bin/pip" install -q "PyJWT[crypto]"
+          "$RUNNER_TEMP/venv/bin/python" $IOS_DIR/scripts/asc_signing.py setup "$RUNNER_TEMP/signing"
+
+      - name: Arşivle (Release, imzalı)
+        run: |
+          cd $IOS_DIR
+          set -o pipefail
+          # project.yml'de her hedefte: PROVISIONING_PROFILE_SPECIFIER: "$(APP_PROFILE)" / "$(PROFILE_2)" …
+          xcodebuild -project "$PROJECT" -scheme "$SCHEME" -configuration Release \
+            -destination 'generic/platform=iOS' -archivePath build/App.xcarchive \
+            -skipPackagePluginValidation -skipMacroValidation \
+            DEVELOPMENT_TEAM="$APPLE_TEAM_ID" CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY="Apple Distribution" \
+            OTHER_CODE_SIGN_FLAGS="--keychain $SIGN_KEYCHAIN" \
+            APP_PROFILE="$APP_PROFILE" PROFILE_2="${PROFILE_2:-}" PROFILE_3="${PROFILE_3:-}" WIDGET_PROFILE="${WIDGET_PROFILE:-}" \
+            MARKETING_VERSION="$VERSION" CURRENT_PROJECT_VERSION="$BUILD_NUMBER" \
+            archive 2>&1 | tee archive.log | grep -E "error:|\*\* ARCHIVE" || true
+          grep -q "ARCHIVE SUCCEEDED" archive.log
+
+      - name: Arşiv hataları
+        if: failure()
+        run: grep -E "error:|Provisioning|signing" $IOS_DIR/archive.log | sort -u | head -60 || true
+
+      - name: App Store Connect'e yükle
+        run: |
+          cd $IOS_DIR
+          python3 - "$RUNNER_TEMP/signing/profiles.json" <<'PY'
+          import json, os, plistlib, sys
+          profiles = json.load(open(sys.argv[1]))
+          plistlib.dump({"method": "app-store-connect", "destination": "upload", "teamID": os.environ["APPLE_TEAM_ID"],
+                         "signingStyle": "manual", "signingCertificate": "Apple Distribution",
+                         "provisioningProfiles": profiles, "uploadSymbols": True,
+                         "manageAppVersionAndBuildNumber": False}, open("ExportOptions.plist", "wb"))
+          PY
+          set -o pipefail
+          xcodebuild -exportArchive -archivePath build/App.xcarchive -exportOptionsPlist ExportOptions.plist \
+            -exportPath build/export -allowProvisioningUpdates \
+            -authenticationKeyPath "$KEY_PATH" -authenticationKeyID "$ASC_KEY_ID" -authenticationKeyIssuerID "$ASC_ISSUER_ID" \
+            2>&1 | tee export.log | tail -30
+          grep -qE "EXPORT SUCCEEDED|Upload succeeded|Uploaded" export.log
+          echo "### ✅ Sürüm $VERSION (yapı $BUILD_NUMBER) App Store Connect'e yüklendi" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Geçici sertifika ve profilleri sil
+        if: always()
+        run: |
+          [ -x "$RUNNER_TEMP/venv/bin/python" ] && "$RUNNER_TEMP/venv/bin/python" $IOS_DIR/scripts/asc_signing.py cleanup "$RUNNER_TEMP/signing" || true
+
+      - name: Anahtarı sil
+        if: always()
+        run: rm -rf "$RUNNER_TEMP/keys" "$RUNNER_TEMP/signing"

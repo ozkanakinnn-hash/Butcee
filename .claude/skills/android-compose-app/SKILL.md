@@ -108,6 +108,7 @@ gradle/actions/setup-gradle@v5 → `./gradlew assembleDebug` → upload-artifact
 - FCM push gecikiyorsa sunucudan `priority: high` gönder (normal öncelik Doze'da bekletilir).
 
 ## Play Store yayın hazırlığı (her uygulamada kontrol et)
+> Yayın adımları (AAB, güncelleme kontrolü, Mac'siz App Store yüklemesi, App Store Connect yönlendirmesi) ayrı beceride: **`magaza-yayini`** (`.claude/skills/magaza-yayini/`, başka depoya `kur.sh` ile kopyalanır).
 - Paket adı (applicationId) ilk yüklemeden sonra değişmez: geçici/şablon adları yayından önce değiştir.
 - **Kullanıcının paket adı kuralı:** `akin.ai<N>` — N = uygulama sıra numarası, küçük harf (Android applicationId = iOS bundle id; iOS App Group `group.akin.ai<N>`, widget `akin.ai<N>.widget`). Uygulamalar: 1) Haber Akışı (`com.haberakisi.haber_akisi`, eski ad), 2) Ramazan Rehberi (`akin.ai2`). Yeni uygulamada sıradaki numarayı kullan (3. uygulama `akin.ai3`); paket adı yayından sonra değişmediği için kullanıcıya teyit ettir; Wear sürümü aynı applicationId'yi kullanır. Firebase `google-services.json` bu ada göre indirilmeli.
 - Play politikası: `USE_EXACT_ALARM` yalnızca alarm saati/takvim uygulamalarına; namaz/hatırlatıcı uygulamalarında `SCHEDULE_EXACT_ALARM` kullan + izin yoksa Ayarlar'da uyarı ve `ACTION_REQUEST_SCHEDULE_EXACT_ALARM` düğmesi.
