@@ -106,6 +106,18 @@ cd ~ && rm -rf haber && unzip -o "Haber-Akisi-kodNN.zip" -d haber && cd haber/ne
 
 ## 5. Durum: ne bekliyor
 
+### iOS (20 Kasım 2026)
+- **1.0.0 (yapı 6) App Store Connect'e yüklendi** — `.github/workflows/news-ios-release.yml` (Mac'siz, Codemagic'siz; macos-15-intel).
+  Yeniden yüklemek: `flutter_app/ios/RELEASE_VERSION` değiştir ya da Actions'tan workflow_dispatch (ref: bu dal).
+- Bundle `akinai.app1` (Push açık) ve Firebase iOS uygulaması otomatik oluşturuldu; APNs anahtarı Firebase'e yüklendi (kullanıcı).
+- App Store kaydı oluşturuldu. Bekleyen: sürüm sayfası (metinler `docs/ios/HAZIRLIK.md`, görseller `docs/ios/ekran-goruntuleri/`),
+  AdMob iOS kimlikleri (gelene kadar test reklamı), TestFlight denemesi, incelemeye gönderme.
+
+### X otomasyonu (kod33)
+- `social.js`: `x_enabled` + `x_webhook` → Make (Webhook → Google Tablolar → filtre deneme=false → Buffer → X). Belge: `docs/SOSYAL_PAYLASIM.md`.
+- Kullanıcıya **kod33** sunucu paketi gönderildi; yüklenip yüklenmediğini ve test_ping sonucunu kontrol et.
+
+
 ### ⚠️ Önce bakılacaklar
 1. **Son sunucu paketi yüklendi mi?** Kullanıcıya gönderilen son paket **kod27** idi
    (goller/kartlar doğru takımın altında). 12 Kasım akşamı kod17 civarına kadar yüklendiği doğrulandı;
