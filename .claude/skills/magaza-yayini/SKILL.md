@@ -49,7 +49,7 @@ Play hataları: Billing kitaplığı ≥ 8 (`billing-ktx` 8.x); sürüm notu eti
 - Sertifika sınırı hatası → developer.apple.com → Certificates'ta eski "Apple Distribution"ları iptal ettir.
 - İşlem 20–40 dk + Apple işlemesi 10–30 dk; yapı TestFlight'ta görünür. İnceleme genelde 24–48 saat.
 
-### Flutter uygulamasında (Haber Akışı kalıbı: `.github/workflows/news-ios-release.yml`)
+### Flutter uygulamasında (Haber Akışı kalıbı: `.github/workflows/news-ios-release.yml`) — ÇALIŞTI: 1.0.0 (yapı 6) 20 Kasım 2026, ~24 dk
 - `runs-on: macos-26` (Firebase iOS SDK Swift 6.2 → Xcode 26). `flutter build ios --release --no-codesign --build-name/--build-number --dart-define=…`
   (Pod'lar + Generated.xcconfig) → imza ayarları **yalnızca Runner hedefine** pbxproj'a yazılır (CODE_SIGN_STYLE Manual, DEVELOPMENT_TEAM,
   "Apple Distribution", PROVISIONING_PROFILE_SPECIFIER; komut satırından verilirse Pod hedefleri "does not support provisioning profiles" der)
