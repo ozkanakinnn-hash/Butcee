@@ -251,3 +251,19 @@ test('zaman çizelgesi ve panel uyarısı: sarı kart sessiz, gol/kırmızı/dev
   const prev = { ...m, yellow_cards: [m.yellow_cards[0]] };
   assert.deepEqual(fb.diffMatch(prev, m).map((e) => e.type), ['yellow_card']);
 });
+
+test('iOS: olay uyarısı apns bildirimi olarak gider; uyarı yoksa apns yok; gece pasif ve sessiz', () => {
+  const m = {
+    fixture_id: 9, league: { name: 'Süper Lig' },
+    home: { id: 'besiktas', name: 'Beşiktaş', short: 'BJK', colors: ['#111111'] },
+    away: { id: 'galatasaray', name: 'Galatasaray', short: 'GS', colors: ['#FFB300'] },
+    goals: { home: 1, away: 0 }, status: { short: '1H', elapsed: 10 }, is_finished: false,
+  };
+  assert.equal(fb.buildLiveMessage(m, 1000).apns, undefined);
+  const loud = fb.buildLiveMessage(m, 1000, { alert: 'goal', alert_title: 'GOL', alert_body: 'BJK 1-0 GS', alert_quiet: '0' }).apns;
+  assert.equal(loud.payload.aps.alert.title, 'GOL');
+  assert.equal(loud.payload.aps.sound, 'default');
+  const quiet = fb.buildLiveMessage(m, 1000, { alert: 'goal', alert_title: 'GOL', alert_body: 'x', alert_quiet: '1' }).apns;
+  assert.equal(quiet.payload.aps.sound, undefined);
+  assert.equal(quiet.payload.aps['interruption-level'], 'passive');
+});

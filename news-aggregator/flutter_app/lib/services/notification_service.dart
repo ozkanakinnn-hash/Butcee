@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart' show defaultTargetPlatform, TargetPlatform;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show MethodChannel;
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -124,7 +125,15 @@ class NotificationService {
     FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
 
     await _local.initialize(
-      settings: const InitializationSettings(android: AndroidInitializationSettings('ic_stat_news')),
+      settings: const InitializationSettings(
+        android: AndroidInitializationSettings('ic_stat_news'),
+        // İzin Firebase Messaging ile istenir (requestPermission); burada sorulmaz.
+        iOS: DarwinInitializationSettings(
+          requestAlertPermission: false,
+          requestBadgePermission: false,
+          requestSoundPermission: false,
+        ),
+      ),
       onDidReceiveNotificationResponse: (r) => _handlePayload(r.payload),
     );
     final android = _local.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
@@ -214,6 +223,7 @@ class NotificationService {
           tag: n.android?.tag,
           styleInformation: BigTextStyleInformation(n.body ?? ''),
         ),
+        iOS: const DarwinNotificationDetails(presentAlert: true, presentBanner: true, presentList: true, presentSound: true),
       ),
     );
   }
@@ -261,6 +271,7 @@ class NotificationService {
               color: o.observance.color,
               styleInformation: BigTextStyleInformation(o.body(english: english)),
             ),
+            iOS: const DarwinNotificationDetails(presentAlert: true, presentBanner: true, presentList: true, presentSound: true),
           ),
         );
       }
@@ -316,6 +327,15 @@ class NotificationService {
   bool _syncing = false;
   bool _again = false;
 
+  /// iOS'ta konu aboneliği APNs jetonu gelmeden çalışmaz; kısa süre beklenir.
+  Future<bool> _waitForApnsToken(FirebaseMessaging messaging) async {
+    for (var i = 0; i < 10; i++) {
+      if (await messaging.getAPNSToken() != null) return true;
+      await Future<void>.delayed(const Duration(milliseconds: 500));
+    }
+    return false;
+  }
+
   /// Ayarlara göre FCM konularına abone olur / abonelikten çıkar (yalnızca fark).
   Future<void> syncTopics() async {
     final settings = _settings;
@@ -331,6 +351,10 @@ class NotificationService {
         final desired = settings.desiredTopics;
         final current = settings.subscribedTopics;
         final messaging = FirebaseMessaging.instance;
+        if (defaultTargetPlatform == TargetPlatform.iOS && !await _waitForApnsToken(messaging)) {
+          // Bildirim izni yok ya da APNs henüz hazır değil: abonelik sonra (izin verilince) yeniden denenir.
+          return;
+        }
         for (final t in desired.difference(current)) {
           await messaging.subscribeToTopic(t);
         }

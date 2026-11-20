@@ -1,0 +1,4 @@
+#include "Generated.xcconfig"
+
+// AdMob iOS uygulama kimliği. Varsayılan: Google test kimliği. Yayın derlemesinde CI bu satırı gerçek kimlikle değiştirir.
+ADMOB_APP_ID = ca-app-pub-3940256099942544~1458002511

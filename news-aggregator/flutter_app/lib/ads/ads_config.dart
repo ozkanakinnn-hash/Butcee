@@ -11,20 +11,27 @@ class AdsConfig {
   AdsConfig._();
 
   // Google'ın Android test kimlikleri: https://developers.google.com/admob/android/test-ads
-  static const _testBanner = 'ca-app-pub-3940256099942544/9214589741';
-  static const _testNative = 'ca-app-pub-3940256099942544/2247696110';
-  static const _testInterstitial = 'ca-app-pub-3940256099942544/1033173712';
+  static bool get _ios => defaultTargetPlatform == TargetPlatform.iOS;
 
+  static String get _testBanner => _ios ? 'ca-app-pub-3940256099942544/2435281174' : 'ca-app-pub-3940256099942544/9214589741';
+  static String get _testNative => _ios ? 'ca-app-pub-3940256099942544/3986624511' : 'ca-app-pub-3940256099942544/2247696110';
+  static String get _testInterstitial =>
+      _ios ? 'ca-app-pub-3940256099942544/4411468910' : 'ca-app-pub-3940256099942544/1033173712';
+
+  // iOS için ayrı reklam birimleri: ADMOB_*_ID_IOS (AdMob'da iOS uygulaması ayrı kaydedilir).
   static const _banner = String.fromEnvironment('ADMOB_BANNER_ID');
   static const _native = String.fromEnvironment('ADMOB_NATIVE_ID');
   static const _interstitial = String.fromEnvironment('ADMOB_INTERSTITIAL_ID');
+  static const _bannerIos = String.fromEnvironment('ADMOB_BANNER_ID_IOS');
+  static const _nativeIos = String.fromEnvironment('ADMOB_NATIVE_ID_IOS');
+  static const _interstitialIos = String.fromEnvironment('ADMOB_INTERSTITIAL_ID_IOS');
 
   static String? _pick(String real, String test) => kReleaseMode ? (real.isEmpty ? null : real) : test;
 
   /// Kimlik verilmemiş mağaza sürümünde o reklam alanı hiç gösterilmez.
-  static String? get bannerId => _pick(_banner, _testBanner);
-  static String? get nativeId => _pick(_native, _testNative);
-  static String? get interstitialId => _pick(_interstitial, _testInterstitial);
+  static String? get bannerId => _pick(_ios ? _bannerIos : _banner, _testBanner);
+  static String? get nativeId => _pick(_ios ? _nativeIos : _native, _testNative);
+  static String? get interstitialId => _pick(_ios ? _interstitialIos : _interstitial, _testInterstitial);
 
   /// Akışta her kaç haberden sonra bir doğal reklam.
   static const nativeEvery = 6;

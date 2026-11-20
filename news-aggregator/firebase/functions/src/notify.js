@@ -362,7 +362,16 @@ function toWire(m) {
     ...(m.topic ? { topic: m.topic } : { condition: m.condition }),
     data,
     android: { priority: (m.android && m.android.priority) || 'normal', collapseKey: m.android && m.android.collapseKey, ttl: 6 * 3_600_000 },
-    apns: { payload: { aps: { alert: { title: n.title, body: n.body || '' }, sound: 'default' } } },
+    apns: {
+      headers: { 'apns-priority': an.channelId === 'quiet' ? '5' : '10' },
+      payload: {
+        aps: {
+          alert: { title: n.title, body: n.body || '' },
+          // Gece (quiet kanalı): sessiz ve pasif; aksi halde varsayılan ses.
+          ...(an.channelId === 'quiet' ? { 'interruption-level': 'passive' } : { sound: 'default' }),
+        },
+      },
+    },
   };
 }
 

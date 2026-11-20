@@ -1,0 +1,41 @@
+name: News iOS derleme doğrulaması
+
+# İmzasız iOS derlemesi: kodun ve Pod/SwiftPM bağımlılıklarının macOS'ta derlendiğini doğrular.
+# (İmzalı TestFlight/App Store derlemesi Codemagic'te: codemagic.yaml)
+on:
+  push:
+    branches: ["claude/haber-akisi-2026-11"]
+    paths:
+      - "news-aggregator/flutter_app/**"
+      - ".github/workflows/news-ios-build.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: news-ios-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  ios:
+    runs-on: macos-15
+    timeout-minutes: 60
+    defaults:
+      run:
+        working-directory: news-aggregator/flutter_app
+    steps:
+      - uses: actions/checkout@v5
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter --version
+      - run: flutter pub get
+      - run: flutter analyze
+      - name: iOS derlemesi (imzasız)
+        run: flutter build ios --release --no-codesign --build-number=${{ github.run_number }}
+      - name: Çıktı özeti
+        run: |
+          ls -la build/ios/iphoneos/
+          du -sh build/ios/iphoneos/Runner.app

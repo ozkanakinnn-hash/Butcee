@@ -338,6 +338,7 @@ function buildMatchMessage(event, match, now = new Date(), { ignoreQuiet = false
         color: '#0B1F3A',
       },
     },
+    apns: apnsAlert(titlePrefix + title, body, quiet, `match_${match.fixture_id}`),
   };
 }
 
@@ -486,6 +487,21 @@ function liveClock(match, now) {
  * Canlı skor paneli verisi (yalnızca VERİ mesajı; bildirimi telefondaki LiveScoreNotifier.kt çizer ve yerinde günceller).
  * Her skor turunda canlı maçlar için gönderilir; maç bitince bir kez `finished: '1'`. Bildirim geçmişine yazılmaz.
  */
+/** iOS bildirim yükü. quiet: ses yok, "pasif" kesinti düzeyi (kilit ekranını uyandırmaz). */
+function apnsAlert(title, body, quiet, threadId) {
+  return {
+    headers: { 'apns-priority': quiet ? '5' : '10' },
+    payload: {
+      aps: {
+        alert: { title, body },
+        'thread-id': threadId,
+        'interruption-level': quiet ? 'passive' : 'time-sensitive',
+        ...(quiet ? {} : { sound: 'default' }),
+      },
+    },
+  };
+}
+
 function buildLiveMessage(match, now = Date.now(), alert = null) {
   const condition = match.national
     ? `'${NATIONAL_TOPIC}' in topics`
@@ -530,6 +546,8 @@ function buildLiveMessage(match, now = Date.now(), alert = null) {
         : '',
     },
     android: { priority: 'high', ttl: 10 * 60 * 1000, collapseKey: `live_${match.fixture_id}` },
+    // iOS'ta canlı panel yok: olay uyarısı normal bildirim olarak gider (gece sessiz → sessiz/pasif).
+    ...(alert && alert.alert ? { apns: apnsAlert(alert.alert_title, alert.alert_body, alert.alert_quiet === '1', `live_${match.fixture_id}`) } : {}),
   };
 }
 

@@ -30,20 +30,42 @@ void _setupCrashReporting() {
   };
 }
 
+/// iOS Firebase seçenekleri (yalnızca iOS'ta ve değerler verilmişse); aksi halde null → plist/json kullanılır.
+FirebaseOptions? _iosOptions() {
+  if (defaultTargetPlatform != TargetPlatform.iOS) return null;
+  const apiKey = String.fromEnvironment('FIREBASE_IOS_API_KEY');
+  const appId = String.fromEnvironment('FIREBASE_IOS_APP_ID');
+  const senderId = String.fromEnvironment('FIREBASE_IOS_SENDER_ID');
+  const projectId = String.fromEnvironment('FIREBASE_IOS_PROJECT_ID', defaultValue: 'haber-68a3c');
+  if (apiKey.isEmpty || appId.isEmpty || senderId.isEmpty) return null;
+  return const FirebaseOptions(
+    apiKey: apiKey,
+    appId: appId,
+    messagingSenderId: senderId,
+    projectId: projectId,
+    storageBucket: String.fromEnvironment('FIREBASE_IOS_STORAGE_BUCKET'),
+    iosBundleId: 'akinai.app1',
+  );
+}
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final settings = await AppSettings.load();
 
   var firebaseReady = true;
   try {
-    // android/app/google-services.json varsa seçenekler oradan okunur.
-    await Firebase.initializeApp();
+    // Android: android/app/google-services.json. iOS: GoogleService-Info.plist varsa oradan, yoksa
+    // derleme anında verilen --dart-define=FIREBASE_IOS_* değerlerinden (depo herkese açık; anahtar commit edilmez).
+    await Firebase.initializeApp(options: _iosOptions());
     AppStorage.configure(); // Firestore ve görsel önbellek sınırları
     _setupCrashReporting();
-    // App Check: istekler Play Integrity ile doğrulanır. Konsolda "zorunlu" yapılana kadar yalnızca ölçülür;
-    // zorunlu kılma YALNIZCA uygulama Play Store'dan dağıtılırken açılmalı (yan yüklenen APK doğrulanamaz).
+    // App Check: Android'de Play Integrity, iOS'ta App Attest (yedek: DeviceCheck). Konsolda "zorunlu" yapılana
+    // kadar yalnızca ölçülür; zorunlu kılma YALNIZCA mağaza dağıtımı başladığında açılmalı.
     FirebaseAppCheck.instance
-        .activate(providerAndroid: kReleaseMode ? const AndroidPlayIntegrityProvider() : const AndroidDebugProvider())
+        .activate(
+          providerAndroid: kReleaseMode ? const AndroidPlayIntegrityProvider() : const AndroidDebugProvider(),
+          providerApple: kReleaseMode ? const AppleAppAttestWithDeviceCheckFallbackProvider() : const AppleDebugProvider(),
+        )
         .catchError((Object e) => debugPrint('App Check başlatılamadı: $e'));
   } catch (e) {
     debugPrint('Firebase başlatılamadı: $e');
