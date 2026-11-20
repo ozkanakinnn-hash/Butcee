@@ -27,6 +27,8 @@ enum L10n {
     "Ayet & Dua": "Verse & Dua",
     "Dahası": "More",
     "Merhaba": "Hello",
+    "Hayırlı Sabahlar": "Good Morning", "Hayırlı Günler": "Good Day",
+    "Hayırlı Akşamlar": "Good Evening", "Hayırlı Geceler": "Good Night",
     "Değerli Kardeşimiz": "Dear Friend",
     "Yakındaki Camiler": "Nearby Mosques",
     "Harita & yol tarifi": "Map & directions",

@@ -61,6 +61,19 @@ struct HomeView: View {
     .animation(.easeInOut, value: locator.lastMessage)
   }
 
+  static func timeGreeting(_ date: Date = Date()) -> String {
+    var hour = Calendar.current.component(.hour, from: date)
+    #if DEBUG
+    if UserDefaults.standard.object(forKey: "debug_hour") != nil { hour = UserDefaults.standard.integer(forKey: "debug_hour") }  // mağaza görüntüleri
+    #endif
+    switch hour {
+    case 5..<11: return t("Hayırlı Sabahlar")
+    case 11..<17: return t("Hayırlı Günler")
+    case 17..<22: return t("Hayırlı Akşamlar")
+    default: return t("Hayırlı Geceler")
+    }
+  }
+
   private func header(name: String) -> some View {
     VStack(alignment: .leading, spacing: 10) {
       HStack(spacing: 8) {
@@ -79,7 +92,8 @@ struct HomeView: View {
           Image(systemName: "gearshape.fill").font(.system(size: 20)).foregroundStyle(p.onBackground).frame(width: 36, height: 36)
         }
       }
-      Text("\(t("Merhaba")), \(name) 👋").font(.system(size: 27, weight: .bold))
+      // İsim girilmemişse günün saatine göre selamlama (ör. "Hayırlı Akşamlar")
+      Text(store.userName.isEmpty ? Self.timeGreeting() : "\(t("Merhaba")), \(name) 👋").font(.system(size: 27, weight: .bold))
     }
     .padding(.top, 8)
   }
