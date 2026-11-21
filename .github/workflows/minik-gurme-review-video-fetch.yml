@@ -23,7 +23,7 @@ jobs:
           ID=$(tr -dc 'A-Za-z0-9_-' < "$D/drive-id.txt")
           curl -fsSL -o "$D/ham.mp4" "https://drive.usercontent.google.com/download?id=${ID}&export=download&confirm=t"
           ls -la "$D/ham.mp4"
-          file "$D/ham.mp4" | grep -qiE "mp4|iso media|quicktime" || { echo "İndirilen dosya video değil: Drive'da paylaşım 'Bağlantıya sahip olan herkes' olmalı"; exit 1; }
+          file -b "$D/ham.mp4" | grep -qiE "mp4|iso media|quicktime" || { echo "İndirilen dosya video değil: Drive'da paylaşım 'Bağlantıya sahip olan herkes' olmalı"; exit 1; }
       - name: Kaydet
         run: |
           git config user.name "github-actions[bot]"
