@@ -1,0 +1,33 @@
+# Minik Gurme: gerçek iPhone'da çekilen inceleme videosunu Google Drive'dan alır (bağlantıya sahip herkes görebilmeli)
+# ve depoya ham olarak kaydeder: docs/store/appstore/inceleme-video/ham.mp4
+name: Minik Gurme inceleme videosunu Drive'dan al
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["ccr-2e754343-d9gh2t"]
+    paths:
+      - "minik_gurme/docs/store/appstore/inceleme-video/drive-id.txt"
+
+permissions:
+  contents: write
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: İndir
+        run: |
+          D=minik_gurme/docs/store/appstore/inceleme-video
+          ID=$(tr -dc 'A-Za-z0-9_-' < "$D/drive-id.txt")
+          curl -fsSL -o "$D/ham.mp4" "https://drive.usercontent.google.com/download?id=${ID}&export=download&confirm=t"
+          ls -la "$D/ham.mp4"
+          file "$D/ham.mp4" | grep -qiE "mp4|iso media|quicktime" || { echo "İndirilen dosya video değil: Drive'da paylaşım 'Bağlantıya sahip olan herkes' olmalı"; exit 1; }
+      - name: Kaydet
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add minik_gurme/docs/store/appstore/inceleme-video/ham.mp4
+          git commit -m "Minik Gurme inceleme videosu (iPhone, ham) [skip ci]"
+          for i in 1 2 3; do git pull --rebase --autostash origin "${GITHUB_REF_NAME}" && git push origin "HEAD:${GITHUB_REF_NAME}" && exit 0; sleep 5; done; exit 1
