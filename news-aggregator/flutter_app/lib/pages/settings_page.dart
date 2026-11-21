@@ -235,6 +235,16 @@ class _SettingsPageState extends State<SettingsPage> with WidgetsBindingObserver
                 onChanged: (v) => settings.setLiveScorePanel(v),
               ),
             SwitchListTile(
+              secondary: const Icon(Icons.crisis_alert_outlined),
+              title: Text(s.earthquakeAlerts),
+              subtitle: Text(s.earthquakeAlertsDesc),
+              value: settings.earthquakeAlerts,
+              onChanged: (v) async {
+                await settings.setEarthquakeAlerts(v);
+                if (v && notifGranted != true) await _requestNotifications();
+              },
+            ),
+            SwitchListTile(
               secondary: const Icon(Icons.flag_outlined),
               title: Text(s.observanceNotifications),
               subtitle: Text(s.observanceNotificationsDesc),
@@ -324,7 +334,6 @@ class _SettingsPageState extends State<SettingsPage> with WidgetsBindingObserver
                 children: [
                   for (final (l, label, icon) in [
                     (FeedLayout.standard, s.layoutStandard, Icons.view_agenda_outlined),
-                    (FeedLayout.large, s.layoutLarge, Icons.crop_landscape_outlined),
                     (FeedLayout.compact, s.layoutCompact, Icons.view_headline_rounded),
                   ])
                     RadioListTile<FeedLayout>(value: l, title: Text(label), secondary: Icon(icon)),

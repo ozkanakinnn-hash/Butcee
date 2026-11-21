@@ -112,16 +112,16 @@ class S {
   String get notifLevel => _t('Bildirim yoğunluğu', 'Notification frequency');
   String get notifLevelImportant => _t('Sadece önemli', 'Important only');
   String get notifLevelImportantDesc =>
-      _t('Birçok kaynağın doğruladığı son dakikalar ve bültenler · günde ~4–6', 'Major breaking news confirmed by several sources and bulletins · ~4–6/day');
+      _t('Birçok kaynağın doğruladığı son dakikalar + sabah/akşam gündemi · günde ~3–6', 'Major breaking news confirmed by several sources + morning/evening briefing · ~3–6/day');
   String get notifLevelBalanced => _t('Dengeli (önerilen)', 'Balanced (recommended)');
   String get notifLevelBalancedDesc =>
-      _t('Önemli son dakikalar + ilgi alanlarından saatte en fazla 1 özet · günde ~8–12', 'Major breaking + at most one digest per hour · ~8–12/day');
+      _t('Önemli son dakikalar + ilgi alanlarından en çok 3 saatte bir özet · günde ~5–8', 'Major breaking + a digest at most every 3 hours · ~5–8/day');
   String get notifLevelAll => _t('Tümü', 'Everything');
   String get notifLevelAllDesc =>
-      _t('Her son dakika ve sık kategori özetleri · günde 20+', 'Every breaking story and frequent digests · 20+/day');
-  String get bulletins => _t('Günlük bültenler', 'Daily bulletins');
+      _t('Her son dakika ve daha sık özetler · günde ~15', 'Every breaking story and more frequent digests · ~15/day');
+  String get bulletins => _t('5 dakikada gündem', 'The day in 5 minutes');
   String get bulletinsDesc =>
-      _t('Sabah 08:30, öğle 13:00 ve akşam 19:00 günün öne çıkanları', 'Top stories at 08:30, 13:00 and 19:00');
+      _t('Sabah 08:30 ve akşam 19:00: en çok kaynağın verdiği haberler', 'At 08:30 and 19:00: the most widely reported stories');
   String get matchNotifications => _t('Maç ve gol bildirimleri', 'Match & goal alerts');
   String get matchNotificationsDesc => _t(
     'Takımlarının golleri (sesli), maç başlangıcı, devre ve sonuç.',
@@ -138,6 +138,28 @@ class S {
 
   // Futbol
   String get myTeams => _t('Takımların', 'Your teams');
+  // Kimler verdi
+  String inSources(int n) => _t('$n kaynakta', 'in $n sources');
+  String get whoReported => _t('Bu haberi kimler verdi?', 'Who reported this?');
+  String whoReportedDesc(int n) =>
+      _t('Aynı olayı $n farklı yayıncı haberleştirdi.', '$n different publishers covered the same story.');
+
+  // Gündem (sabah/akşam)
+  String get briefingMorning => _t('Sabah gündemi', 'Morning briefing');
+  String get briefingEvening => _t('Akşam gündemi', 'Evening briefing');
+  String get briefingSubtitle => _t('5 dakikada gündem', 'The day in 5 minutes');
+  String get briefingEmpty => _t('Gündem özeti 08:30 ve 19:00\'da hazırlanır.', 'Briefings are prepared at 08:30 and 19:00.');
+
+  // Deprem
+  String get earthquakeAlerts => _t('Deprem uyarıları', 'Earthquake alerts');
+  String get earthquakeAlertsDesc =>
+      _t('4,5 ve üzeri depremler anında (gece de). Kaynak: AFAD', 'Magnitude 4.5+ instantly (also at night). Source: AFAD');
+  String get recentQuakes => _t('Son depremler', 'Recent earthquakes');
+  String get quakesEmpty => _t('Son 6 saatte 3,0 ve üzeri deprem yok.', 'No 3.0+ earthquakes in the last 6 hours.');
+  String get moreCategories => _t('Diğer kategoriler', 'More categories');
+  String get rateTitle => _t('Haber Akışı\'nı beğendin mi?', 'Enjoying Haber Akışı?');
+  String sharedVia(String link) => _t('Haber Akışı ile paylaşıldı: $link', 'Shared via Haber Akışı: $link');
+
   String get notifDiagnostics => _t('Bildirim tanılama', 'Notification diagnostics');
   String get notifDiagnosticsDesc =>
       _t('Bildirim gelmiyorsa: durum, jeton ve abonelikler', 'If notifications do not arrive: status, token and topics');

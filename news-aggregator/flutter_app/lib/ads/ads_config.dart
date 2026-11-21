@@ -37,7 +37,7 @@ class AdsConfig {
   static const nativeEvery = 6;
 
   /// Geçiş reklamı: her kaç haber okumasında bir ve iki geçiş reklamı arasında en az ne kadar süre.
-  static const interstitialEveryReads = 4;
+  static const interstitialEveryReads = 8; // okuma deneyimi ve mağaza puanı için seyrek
   static const interstitialMinGap = Duration(minutes: 3);
 
   /// Alt banner (alt menünün üstünde).

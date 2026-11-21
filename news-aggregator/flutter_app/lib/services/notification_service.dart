@@ -29,7 +29,12 @@ sealed class NotificationTarget {
   const NotificationTarget();
 
   static NotificationTarget? fromData(Map<String, dynamic> data) {
+    // Sabah/akşam gündem bildirimi: yeni sürüm gündem ekranını açar (eski sürümler ilk haberi açıyordu).
+    final briefing = data['briefing_id'] as String?;
+    if (briefing != null && briefing.isNotEmpty) return BriefingTarget(briefing);
     switch (data['type']) {
+      case 'earthquake':
+        return const QuakesTarget();
       case 'article':
         final url = data['url'] as String?;
         if (url == null || url.isEmpty) return null;
@@ -47,6 +52,15 @@ class ArticleTarget extends NotificationTarget {
   final String url;
   final String title;
   final String source;
+}
+
+class BriefingTarget extends NotificationTarget {
+  const BriefingTarget(this.id);
+  final String id;
+}
+
+class QuakesTarget extends NotificationTarget {
+  const QuakesTarget();
 }
 
 class MatchTarget extends NotificationTarget {
@@ -446,6 +460,7 @@ class NotificationService {
           await messaging.unsubscribeFromTopic(t);
         }
         await settings.setSubscribedTopics(desired);
+        lastTopicError = null; // başarılı abonelik: eski hata tanılamada görünmesin
         if (defaultTargetPlatform == TargetPlatform.iOS) {
           await (await SharedPreferences.getInstance()).setBool(_iosTopicsResetKey, true);
         }

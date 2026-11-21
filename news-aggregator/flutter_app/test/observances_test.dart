@@ -55,9 +55,11 @@ void main() {
     expect(all.map((e) => e.observance.id), containsAll(['berat', 'kadir-gecesi', 'mevlid']));
   });
 
-  test('sıradan bir günde gün yok; ayar varsayılan açık', () async {
+  test('sıradan bir günde gün yok; ayar varsayılan KAPALI, açmış kullanıcının seçimi korunur', () async {
     expect(observanceOn(DateTime(2026, 11, 6)), isNull);
     SharedPreferences.setMockInitialValues({});
+    expect((await AppSettings.load()).observanceNotifications, isFalse);
+    SharedPreferences.setMockInitialValues({'notify_observances': true});
     expect((await AppSettings.load()).observanceNotifications, isTrue);
   });
 

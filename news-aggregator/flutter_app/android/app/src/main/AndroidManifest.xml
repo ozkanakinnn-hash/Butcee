@@ -74,6 +74,17 @@
         <receiver
             android:name=".LiveTickReceiver"
             android:exported="false" />
+        <!-- Ana ekran widget'ı (gündem başlıkları) -->
+        <receiver
+            android:name=".NewsWidgetProvider"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/news_widget_info" />
+        </receiver>
         <!-- Bildirimdeki "Daha az bildirim" düğmesi -->
         <receiver
             android:name=".LessNotificationsReceiver"

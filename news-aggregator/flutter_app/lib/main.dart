@@ -13,8 +13,11 @@ import 'utils/storage.dart';
 import 'l10n/app_strings.dart';
 import 'pages/root_shell.dart';
 import 'pages/article_webview_page.dart';
+import 'pages/briefing_page.dart';
+import 'pages/quakes_page.dart';
 import 'pages/interests_page.dart';
 import 'pages/match_detail_page.dart';
+import 'services/news_widget.dart';
 import 'services/notification_service.dart';
 import 'services/team_follow_sync.dart';
 import 'theme.dart';
@@ -80,6 +83,9 @@ Future<void> main() async {
     NotificationService.instance.init(settings).catchError((Object e) => debugPrint('Bildirim başlatılamadı: $e'));
     // Takip edilen takımlar → isimsiz sayaç (sunucu yalnızca bu takımların maçlarına canlı skor isteği harcar)
     TeamFollowSync(settings).start();
+    // Android ana ekran widget'ı: açılışta ve uygulama her öne geldiğinde gündem başlıkları
+    NewsWidget.refresh();
+    AppLifecycleListener(onResume: NewsWidget.refresh);
   }
   // Reklamlar: önce onay (UMP), sonra AdMob. İlk kare çizildikten sonra; hata uygulamayı durdurmaz.
   // NO_ADS: yalnızca App Review ekran kaydı derlemesi (otomatik test, onay penceresine dokunamaz).
@@ -99,6 +105,10 @@ void _openTarget(NotificationTarget target) {
       nav.push(ArticleWebViewPage.route(url: url, sourceName: source, articleTitle: title));
     case MatchTarget(:final fixtureId):
       nav.push(MaterialPageRoute<void>(builder: (_) => MatchDetailPage(fixtureId: fixtureId)));
+    case BriefingTarget(:final id):
+      nav.push(BriefingPage.route(id: id));
+    case QuakesTarget():
+      nav.push(QuakesPage.route());
   }
 }
 

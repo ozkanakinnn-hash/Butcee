@@ -203,7 +203,62 @@ class _Meta extends StatelessWidget {
             style: style,
           ),
         ),
+        if (article.alsoBy.length >= 2) ...[
+          const SizedBox(width: 8),
+          _SourcesChip(sources: article.alsoBy),
+        ],
       ],
+    );
+  }
+}
+
+/// "3 kaynakta" rozeti: dokununca aynı olayı veren yayıncıların listesi.
+class _SourcesChip extends StatelessWidget {
+  const _SourcesChip({required this.sources});
+
+  final List<String> sources;
+
+  @override
+  Widget build(BuildContext context) {
+    final s = S.of(context);
+    final scheme = Theme.of(context).colorScheme;
+    return InkWell(
+      borderRadius: BorderRadius.circular(10),
+      onTap: () => showModalBottomSheet<void>(
+        context: context,
+        showDragHandle: true,
+        builder: (ctx) => SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(s.whoReported, style: Theme.of(ctx).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
+                const SizedBox(height: 4),
+                Text(s.whoReportedDesc(sources.length), style: Theme.of(ctx).textTheme.bodySmall),
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [for (final src in sources) Chip(label: Text(src), visualDensity: VisualDensity.compact)],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+        decoration: BoxDecoration(
+          color: scheme.primaryContainer,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Text(
+          s.inSources(sources.length),
+          style: Theme.of(context).textTheme.labelSmall?.copyWith(color: scheme.onPrimaryContainer, fontWeight: FontWeight.w700),
+        ),
+      ),
     );
   }
 }

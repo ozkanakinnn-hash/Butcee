@@ -31,6 +31,7 @@ class AppSettings extends ChangeNotifier {
   static const _topicsKey = 'subscribed_topics';
   static const _layoutKey = 'feed_layout';
   static const _observanceKey = 'notify_observances';
+  static const _quakeKey = 'notify_earthquakes';
   // Android tarafı (LiveScoreNotifier.kt) aynı anahtarı "flutter.liveScorePanel" olarak okur — adı değiştirme.
   static const _liveScoreKey = 'liveScorePanel';
   static const _recentSearchKey = 'recent_searches';
@@ -108,7 +109,14 @@ class AppSettings extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Sabah / öğle / akşam bültenleri.
+  /// Deprem uyarıları (M≥4,5, sunucu 'deprem' konusuna gönderir). Varsayılan açık.
+  bool get earthquakeAlerts => _prefs.getBool(_quakeKey) ?? true;
+  Future<void> setEarthquakeAlerts(bool v) async {
+    await _prefs.setBool(_quakeKey, v);
+    notifyListeners();
+  }
+
+  /// Sabah ve akşam "5 dakikada gündem".
   bool get bulletins => _prefs.getBool(_bulletinKey) ?? true;
   Future<void> setBulletins(bool v) async {
     await _prefs.setBool(_bulletinKey, v);
@@ -159,6 +167,7 @@ class AppSettings extends ChangeNotifier {
       for (final t in followedTeams) 'team_$t',
     // Türkiye milli maçları: futbol ilgisi seçili ve canlı skor paneli açık olanlara (sunucu: football.js NATIONAL_TOPIC)
     if (followsFootball && liveScorePanel) 'national_tr',
+    if (earthquakeAlerts) 'deprem',
   };
 
   /// En son abone olunan konular (fark hesaplamak için; NotificationService kullanır).
@@ -166,8 +175,11 @@ class AppSettings extends ChangeNotifier {
   Future<void> setSubscribedTopics(Set<String> topics) => _prefs.setStringList(_topicsKey, topics.toList());
 
   // ── Haber dizilimi ───────────────────────────────────────────────────────
-  FeedLayout get feedLayout =>
-      FeedLayout.values.firstWhere((l) => l.name == _prefs.getString(_layoutKey), orElse: () => FeedLayout.standard);
+  /// Sade: iki dizilim (standart / kompakt). Eski "büyük kart" seçimi standarda döner.
+  FeedLayout get feedLayout {
+    final l = FeedLayout.values.firstWhere((l) => l.name == _prefs.getString(_layoutKey), orElse: () => FeedLayout.standard);
+    return l == FeedLayout.large ? FeedLayout.standard : l;
+  }
 
   Future<void> setFeedLayout(FeedLayout layout) async {
     await _prefs.setString(_layoutKey, layout.name);
@@ -187,8 +199,9 @@ class AppSettings extends ChangeNotifier {
   Future<void> clearRecentSearches() => _prefs.remove(_recentSearchKey);
 
   // ── Bayram ve anma günleri ───────────────────────────────────────────────
-  /// Resmi bayramlarda kutlama, anma günlerinde anma bildirimi (varsayılan açık).
-  bool get observanceNotifications => _prefs.getBool(_observanceKey) ?? true;
+  /// Resmi bayramlarda kutlama, anma günlerinde anma bildirimi. Haber uygulamasında beklenmediği için varsayılan
+  /// KAPALI (açmış kullanıcının seçimi korunur).
+  bool get observanceNotifications => _prefs.getBool(_observanceKey) ?? false;
   Future<void> setObservanceNotifications(bool v) async {
     await _prefs.setBool(_observanceKey, v);
     notifyListeners();
