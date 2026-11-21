@@ -54,9 +54,10 @@ class NewsRepository {
       if (category != null) base = base.where('category_id', isEqualTo: category.reference);
       base = base.orderBy('published_at', descending: true);
     }
-    // Kategori sekmelerinde (Gündem vb.) Son Dakika olarak işaretlenmiş haberler gösterilmez —
-    // onlar Son Dakika sekmesinde. Elenenler yüzünden sayfa kısa kalmasın diye en fazla 3 tur doldurulur.
-    final hideBreaking = category != null && !breakingTab;
+    // Son Dakika olarak işaretlenmiş haberler Gündem'de gösterilmez; elenenler yüzünden sayfa kısa kalmasın diye
+    // en fazla 3 tur doldurulur. Yalnızca Gündem'de gizlenir (Gündem ile Son Dakika aynı haberleri tekrar etmesin). Konu sekmelerinde
+    // (Ekonomi, Spor…) son dakika olan haber de görünür; yoksa bu sekmeler boş kalıyordu.
+    final hideBreaking = category != null && !breakingTab && category.id == 'gundem';
     final items = <ArticlesRecord>[];
     var cursor = startAfter;
     var hasMore = true;

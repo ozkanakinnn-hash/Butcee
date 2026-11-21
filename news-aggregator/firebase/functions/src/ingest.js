@@ -100,6 +100,19 @@ function dedupeWithinBatch(articles) {
   });
 }
 
+const existingEntry = (snap, candidate) => {
+  const cat = snap.get('category_id');
+  return {
+    ref: snap.ref,
+    hasBreaking: snap.get('breaking_at') != null,
+    categoryId: cat ? (typeof cat === 'string' ? cat.split('/').pop() : cat.id) : null,
+    candidate,
+  };
+};
+
+/** Genel kategoriler: haber aynı zamanda konu kategorisinde (Ekonomi, Spor…) yayınlanmışsa oraya taşınır. */
+const GENERAL_CATEGORY_IDS = new Set(['gundem', BREAKING_CATEGORY_ID]);
+
 /**
  * Adayları veritabanıyla karşılaştırır.
  * @returns {{fresh: Array, existing: Array<{ref, hasBreaking: boolean, candidate}>}}
@@ -110,24 +123,24 @@ async function findExisting(db, articles) {
   const col = db.collection('articles');
   const existing = [];
 
-  const snaps = await db.getAll(...articles.map((a) => col.doc(a.id)), { fieldMask: ['content_hash', 'breaking_at'] });
+  const snaps = await db.getAll(...articles.map((a) => col.doc(a.id)), { fieldMask: ['content_hash', 'breaking_at', 'category_id'] });
   const byId = new Map(snaps.filter((s) => s.exists).map((s) => [s.id, s]));
   let remaining = [];
   for (const a of articles) {
     const snap = byId.get(a.id);
-    if (snap) existing.push({ ref: snap.ref, hasBreaking: snap.get('breaking_at') != null, candidate: a });
+    if (snap) existing.push(existingEntry(snap, a));
     else remaining.push(a);
   }
 
   const byHash = new Map();
   for (const hashes of chunk(remaining.map((a) => a.data.content_hash), FIRESTORE_IN_LIMIT)) {
-    const qs = await col.where('content_hash', 'in', hashes).select('content_hash', 'breaking_at').get();
+    const qs = await col.where('content_hash', 'in', hashes).select('content_hash', 'breaking_at', 'category_id').get();
     qs.forEach((d) => byHash.set(d.get('content_hash'), d));
   }
   const fresh = [];
   for (const a of remaining) {
     const snap = byHash.get(a.data.content_hash);
-    if (snap) existing.push({ ref: snap.ref, hasBreaking: snap.get('breaking_at') != null, candidate: a });
+    if (snap) existing.push(existingEntry(snap, a));
     else fresh.push(a);
   }
   return { fresh, existing };
@@ -147,6 +160,21 @@ async function markBreaking(db, existing) {
   if (targets.length === 0) return 0;
   const batch = db.batch();
   targets.forEach((e) => batch.update(e.ref, { breaking_at: e.candidate.data.published_at }));
+  await batch.commit();
+  return targets.length;
+}
+
+/**
+ * Yayıncılar aynı haberi hem genel (Gündem/Son Dakika) hem konu akışında (Ekonomi vb.) yayınlar.
+ * Haber önce genel akıştan kaydedildiyse konu kategorisi boş kalıyordu → konu kategorisine taşınır.
+ * Son Dakika sekmesi `breaking_at` alanına baktığı için taşınan haber orada da görünmeye devam eder.
+ */
+async function reassignToTopicCategory(db, existing, categoryRef) {
+  if (!categoryRef || GENERAL_CATEGORY_IDS.has(categoryRef.id)) return 0;
+  const targets = existing.filter((e) => !e.categoryId || GENERAL_CATEGORY_IDS.has(e.categoryId));
+  if (targets.length === 0) return 0;
+  const batch = db.batch();
+  targets.forEach((e) => batch.update(e.ref, { category_id: categoryRef }));
   await batch.commit();
   return targets.length;
 }
@@ -234,6 +262,10 @@ async function ingestSource(db, sourceDoc, categories, { fetchImpl, now = new Da
     // Bildirim modülü için: bu çalışmada yazılan haberler ve Son Dakika olarak işaretlenenler.
     result.addedArticles = [];
     result.added = await writeArticles(db, fresh, (a) => result.addedArticles.push(a));
+    if (!source.is_breaking) {
+      const moved = await reassignToTopicCategory(db, existing, categoryRef);
+      if (moved) result.movedToCategory = moved;
+    }
     if (source.is_breaking) {
       result.markedBreaking = await markBreaking(db, existing);
       result.breakingArticles = [
