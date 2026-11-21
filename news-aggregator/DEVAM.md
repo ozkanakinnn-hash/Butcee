@@ -111,7 +111,7 @@ cd ~ && rm -rf haber && unzip -o "Haber-Akisi-kodNN.zip" -d haber && cd haber/ne
   Yeniden yüklemek: `flutter_app/ios/RELEASE_VERSION` değiştir ya da Actions'tan workflow_dispatch (ref: bu dal).
 - Bundle `akinai.app1` (Push açık) ve Firebase iOS uygulaması otomatik oluşturuldu; APNs anahtarı Firebase'e yüklendi (kullanıcı).
 - App Store kaydı oluşturuldu (Apple ID 6837488791). 21 Kasım: App Information, yaş (4+), Content Rights, fiyat (Free), App Privacy, sürüm 1.0.0 metinleri, inceleme notu, yapı 6 tamam; 9 görsel (1206×2622) gönderildi. Çin listeden çıkarılıyor (güvenlik değerlendirmesi şartı).
-  **KULLANICI KARARI: incelemeye gönderme, diğer uygulamanın (Ezan & Vakit iOS) sonucu gelince birlikte gönder.**
+  **21 Kasım 04:15 incelemeye gönderildi (1.0.0 yapı 6), Çin hariç.** Sonucu bekleniyor; red gelirse mesajı al, 4.2 (minimum işlevsellik) riskine karşı inceleme notu hazır.
 - Eski bekleyenler: sürüm sayfası (metinler `docs/ios/HAZIRLIK.md`, görseller `docs/ios/ekran-goruntuleri/`),
   AdMob iOS kimlikleri (gelene kadar test reklamı), TestFlight denemesi, incelemeye gönderme.
 
