@@ -8,6 +8,13 @@ on:
         description: "Güncelledikten sonra yeniden incelemeye gönder (1/0)"
         required: false
         default: "0"
+  # Not ya da video değişince yalnızca not ve eki günceller (yeniden gönderim elle, resubmit=1 ile)
+  push:
+    branches: ["claude/haber-akisi-2026-11"]
+    paths:
+      - "news-aggregator/docs/ios/inceleme-video/notes.txt"
+      - "news-aggregator/docs/ios/inceleme-video/haber-akisi-review.mp4"
+      - ".github/workflows/news-ios-review-reply.yml"
 
 permissions:
   contents: read
