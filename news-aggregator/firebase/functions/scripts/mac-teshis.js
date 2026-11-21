@@ -14,6 +14,7 @@
  */
 
 const { getFirestore, FieldValue, Timestamp } = require('firebase-admin/firestore');
+const { getMessaging } = require('firebase-admin/messaging');
 const { initAdmin } = require('./init-admin');
 const fb = require('../src/football');
 const job = require('../src/football-job');
@@ -24,6 +25,7 @@ const tsMs = (t) => (t && t.toMillis ? t.toMillis() : null);
 
 async function main() {
   const fix = process.argv.includes('--duzelt');
+  const send = process.argv.includes('--gonder');
   initAdmin();
   const db = getFirestore();
   const now = Date.now();
@@ -63,6 +65,23 @@ async function main() {
     if (meta.req_day === today && (meta.req_used || 0) >= 100) steps.push(`out-of-requests: req_used=${meta.req_used}`);
   }
   steps.forEach((s) => console.log(`  - ${s}`));
+
+  // --gonder: takip edilen canlı/başlamak üzere maçların panelini ŞİMDİ gönder ve FCM cevabını yazdır
+  if (send) {
+    const live = inv.length ? inv : active;
+    if (!live.length) console.log('\n(--gonder: gönderilecek maç yok)');
+    for (const m of live) {
+      const msg = fb.buildLiveMessage(m, Date.now());
+      try {
+        const res = await getMessaging().sendEach([msg]);
+        const r = res.responses[0];
+        console.log(`\n=== Panel gönderimi ${m.home.id}-${m.away.id} → koşul ${msg.condition} ===`);
+        console.log(r.success ? `  ✔ FCM kabul etti (mesaj ${r.messageId})` : `  ✘ FCM reddetti: ${r.error && r.error.code} ${r.error && r.error.message}`);
+      } catch (err) {
+        console.log(`  ✘ Gönderilemedi: ${err.message}`);
+      }
+    }
+  }
 
   const key = (process.env.HIGHLIGHTLY_API_KEY || '').trim();
   if (!key || key === '-') {
