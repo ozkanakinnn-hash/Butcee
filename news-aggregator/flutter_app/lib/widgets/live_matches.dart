@@ -45,8 +45,8 @@ class LiveMatchesStrip extends StatelessWidget {
 }
 
 /// Tam genişlik maç kartı:
-///   [ev sahibi]      CANLI 67'      [deplasman]
-///                     2  –  1
+///                    CANLI 67'
+///   ● YFK             2  –  1             MSK ●
 ///   21' A. Yılmaz                   39' C. Şahin
 ///   58' M. Arslan (P)
 class MatchCard extends StatelessWidget {
@@ -70,21 +70,33 @@ class MatchCard extends StatelessWidget {
     final homeGoals = m.goals.where((g) => g.teamId == m.home.id).toList();
     final awayGoals = m.goals.where((g) => g.teamId == m.away.id).toList();
 
-    Widget team(MatchTeam t, CrossAxisAlignment align) => Column(
-      crossAxisAlignment: align,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        _TeamBadge(team: t),
-        const SizedBox(height: 6),
-        Text(
-          t.name,
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-          textAlign: align == CrossAxisAlignment.start ? TextAlign.left : TextAlign.right,
-          style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700, height: 1.2),
+    // Yalnızca takım kısaltması (YFK, MSK…) + takım rengi noktası; tam ad ekran okuyucuya söylenir.
+    Widget team(MatchTeam t, CrossAxisAlignment align) {
+      final start = align == CrossAxisAlignment.start;
+      final dot = Container(
+        width: 10,
+        height: 10,
+        decoration: BoxDecoration(
+          color: t.colors.isNotEmpty ? t.colors.first : muted,
+          shape: BoxShape.circle,
+          border: Border.all(color: theme.colorScheme.outlineVariant, width: 0.5),
         ),
-      ],
-    );
+      );
+      final code = Text(
+        t.code,
+        maxLines: 1,
+        softWrap: false,
+        overflow: TextOverflow.fade,
+        semanticsLabel: t.name,
+        style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900, letterSpacing: 0.5),
+      );
+      return Row(
+        mainAxisAlignment: start ? MainAxisAlignment.start : MainAxisAlignment.end,
+        children: start
+            ? [dot, const SizedBox(width: 8), Flexible(child: code)]
+            : [Flexible(child: code), const SizedBox(width: 8), dot],
+      );
+    }
 
     Widget goals(List<GoalEvent> list, CrossAxisAlignment align) => Column(
       crossAxisAlignment: align,
@@ -169,7 +181,7 @@ class MatchCard extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Expanded(child: team(m.home, CrossAxisAlignment.start)),
                   Padding(
@@ -204,29 +216,6 @@ class MatchCard extends StatelessWidget {
             ],
           ),
         ),
-      ),
-    );
-  }
-}
-
-/// Takım rozeti: logo yoksa takım renkleriyle kısa kod.
-class _TeamBadge extends StatelessWidget {
-  const _TeamBadge({required this.team});
-
-  final MatchTeam team;
-
-  @override
-  Widget build(BuildContext context) {
-    final bg = team.colors.isNotEmpty ? team.colors.first : Theme.of(context).colorScheme.surfaceContainerHighest;
-    final fg = team.colors.length > 1 ? team.colors[1] : Theme.of(context).colorScheme.onSurface;
-    return Container(
-      width: 36,
-      height: 36,
-      alignment: Alignment.center,
-      decoration: BoxDecoration(color: bg, shape: BoxShape.circle),
-      child: Text(
-        team.code.length > 3 ? team.code.substring(0, 3) : team.code,
-        style: TextStyle(color: fg, fontSize: 11, fontWeight: FontWeight.w900, letterSpacing: 0.2),
       ),
     );
   }

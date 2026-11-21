@@ -212,7 +212,9 @@ void main() {
     expect(find.text("CANLI 67'"), findsOneWidget);
     expect(find.text('2'), findsOneWidget);
     expect(find.text('1'), findsOneWidget);
-    await tester.tap(find.text('Galatasaray'));
+    // Kartta yalnızca takım kısaltmaları
+    expect(find.text('Galatasaray'), findsNothing);
+    await tester.tap(find.text('GS'));
     expect(tapped?.fixtureId, 77);
   });
 
