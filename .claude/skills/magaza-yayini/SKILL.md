@@ -94,3 +94,12 @@ Sıra (`templates/APPLE-HESAP-REHBERI.md`): Developer Program (Bireysel, 99$) �
 - [ ] AAB'ler gönderildi + Play adımları + sürüm notu metni
 - [ ] Mağaza metni değiştiyse kopyalanabilir blok
 - [ ] Öğrenilen yeni hata/çözümü bu dosyaya ekle
+
+## App Review "2.1 Information Needed" (ekran kaydı + 6 soru) — kanıtlanmış yol
+- Apple **gerçek cihazda** ekran kaydı ister; simülatör kaydı (XCUITest/integration_test + `simctl recordVideo`) 1,5 saat sürüyor ve klavye tanıtımı, boş topluluk gibi engellere takılıyor → **kullanıcıya TestFlight ile ödünç iPhone'da çektir**.
+- TestFlight: ASC → App → TestFlight → **Create Group** (Internal) → Testers (+) kendisi → davet maili; bağlantıyı herhangi bir tarayıcıda açınca 8 haneli kod çıkar. iPhone'da TestFlight → **Kodu Kullan** (ikinci uygulamada: sağ üst profil simgesi → Kodu Kullan). Telefondaki Apple hesabı başkasının olabilir.
+- Videoya giren adımları madde madde ver: uygulamayı kapalıyken kaydı başlat, ilk açılış, ana ekranlar, UGC varsa **başka kullanıcının** gönderisinde Şikâyet/Engelle (kullanıcı Android'den gönderi yazar) ve hesap silmeyi **onaylayarak** göster.
+- Video alma: Google Drive bağlantısı 10 MB'a kadar indirir; büyükse dosyayı "Bağlantıya sahip herkes" yapıp GitHub Actions'ta `drive.usercontent.google.com/download?id=..&confirm=t` ile indir (bu ortamda drive.google.com engelli). WhatsApp'tan geçen video 384×832'ye düşer ama kabul edilir.
+- Not + ek: ASC API (`appStoreReviewDetails` PATCH notes, `appStoreReviewAttachments`) çalışıyor. Notta "physical iPhone, TestFlight build X" yaz.
+- **Yeniden gönderim API'den olmuyor** (409 "Version is not ready"): sürümü videodaki derlemeye bağla (Build → eskiyi (–), yeniyi ekle), App Review'da Apple mesajına **Reply**, sonra **Resubmit to App Review** (kullanıcı UI'da yapar) → "Waiting for Review".
+- `workflow_dispatch`-only iş akışı varsayılan olmayan dalda kayıtlı değildir (404): bir kez `push` tetikleyicisiyle gönder, sonra sayısal workflow id ile dispatch et.
