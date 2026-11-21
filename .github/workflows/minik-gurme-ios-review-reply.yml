@@ -8,6 +8,13 @@ on:
         description: "Güncelledikten sonra yeniden incelemeye gönder (1/0)"
         required: false
         default: "0"
+  # Not ya da video değişince yalnızca not ve ekleri günceller (yeniden gönderim elle, resubmit=1 ile)
+  push:
+    branches: ["ccr-2e754343-d9gh2t"]
+    paths:
+      - "minik_gurme/docs/store/appstore/inceleme-video/notes.txt"
+      - "minik_gurme/docs/store/appstore/inceleme-video/*.mp4"
+      - ".github/workflows/minik-gurme-ios-review-reply.yml"
 
 permissions:
   contents: read
@@ -21,7 +28,7 @@ jobs:
       ASC_PRIVATE_KEY: ${{ secrets.ASC_PRIVATE_KEY }}
       BUNDLE_ID: akinai.minikgurme
       NOTES_FILE: minik_gurme/docs/store/appstore/inceleme-video/notes.txt
-      ATTACHMENT: minik_gurme/docs/store/appstore/inceleme-video/minik-gurme-review.mp4
+      ATTACHMENT: minik_gurme/docs/store/appstore/inceleme-video/minik-gurme-review.mp4,minik_gurme/docs/store/appstore/inceleme-video/minik-gurme-review-2-report-block-delete.mp4
       RESUBMIT: ${{ github.event.inputs.resubmit }}
     steps:
       - uses: actions/checkout@v5

@@ -58,8 +58,9 @@ def main():
                    "relationships": {"appStoreVersion": {"data": {"type": "appStoreVersions", "id": ver["id"]}}}}})["data"]
     print("Not güncellendi (", len(notes), "karakter )")
 
-    att = os.environ.get("ATTACHMENT")
-    if att and os.path.exists(att):
+    for att in [a.strip() for a in os.environ.get("ATTACHMENT", "").split(",") if a.strip()]:
+        if not os.path.exists(att):
+            sys.exit(f"Ek bulunamadı: {att}")
         # Aynı adlı eski eki sil
         for a in call("GET", f"/appStoreReviewDetails/{det['id']}/appStoreReviewAttachments").get("data", []):
             if a["attributes"].get("fileName") == os.path.basename(att):
