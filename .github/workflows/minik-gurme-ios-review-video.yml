@@ -3,11 +3,6 @@ name: Minik Gurme iOS inceleme videosu
 
 on:
   workflow_dispatch:
-  push:
-    paths:
-      - "minik_gurme/iosApp/ReviewUITests/**"
-      - "minik_gurme/iosApp/review.yml"
-      - ".github/workflows/minik-gurme-ios-review-video.yml"
 
 permissions:
   contents: write
