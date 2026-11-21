@@ -5,6 +5,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:haber_akisi/main.dart' as app;
+import 'package:haber_akisi/widgets/article_card.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -49,6 +50,24 @@ void main() {
       await wait(t, 1500);
     });
 
+    await step('haberi yayıncının sitesinde aç', () async {
+      final cards = find.byType(ArticleCard);
+      for (var i = 0; i < 20 && cards.evaluate().isEmpty; i++) {
+        await wait(t, 500);
+      }
+      await t.tap(cards.first);
+      await wait(t, 10000); // yayıncının sayfası yüklensin
+      await t.drag(find.byType(Scrollable).last, const Offset(0, -500));
+      await wait(t, 2500);
+      final close = find.byIcon(Icons.close);
+      if (close.evaluate().isNotEmpty) {
+        await t.tap(close.first);
+      } else {
+        app.navigatorKey.currentState?.maybePop();
+      }
+      await wait(t, 2000);
+    });
+
     await step('kategori sekmeleri', () async {
       final tabs = find.byType(Tab);
       for (final i in [1, 2, 3]) {
@@ -59,27 +78,6 @@ void main() {
       }
       await t.tap(tabs.first);
       await wait(t, 2500);
-    });
-
-    await step('haberi yayıncının sitesinde aç', () async {
-      final cards = find.byType(InkWell);
-      // İlk görünür haber kartı (üst kısımdaki hava/skor kartlarını atlamak için birkaç aday dene)
-      for (var i = 0; i < cards.evaluate().length && i < 12; i++) {
-        final w = cards.at(i);
-        final size = t.getSize(w);
-        if (size.height > 90 && size.width > 300) {
-          await t.tap(w);
-          break;
-        }
-      }
-      await wait(t, 9000);
-      final close = find.byIcon(Icons.close);
-      if (close.evaluate().isNotEmpty) {
-        await t.tap(close.first);
-      } else {
-        app.navigatorKey.currentState?.maybePop();
-      }
-      await wait(t, 2000);
     });
 
     await step('piyasa ve hava paneli', () async {
