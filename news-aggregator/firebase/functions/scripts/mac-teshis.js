@@ -23,7 +23,27 @@ const { Highlightly } = require('../src/football-highlightly');
 const ist = (ms) => new Intl.DateTimeFormat('tr-TR', { timeZone: 'Europe/Istanbul', dateStyle: 'short', timeStyle: 'medium' }).format(new Date(ms));
 const tsMs = (t) => (t && t.toMillis ? t.toMillis() : null);
 
+/** --deneme <konu>: haber bildirimiyle aynı biçimde (Android veri + iOS apns uyarısı) tek deneme bildirimi. */
+async function testTopic(topic) {
+  const { toWire } = require('../src/notify');
+  const msg = toWire({
+    topic,
+    notification: { title: '🔔 Haber Akışı deneme', body: `Bu bir deneme bildirimidir (${topic}). Geldiyse bildirim zinciri çalışıyor.` },
+    data: { type: 'test' },
+    android: { priority: 'high', notification: { channelId: 'breaking_news', tag: 'deneme' } },
+  });
+  const res = await getMessaging().sendEach([msg]);
+  const r = res.responses[0];
+  console.log(`\n=== Deneme bildirimi → konu "${topic}" ===`);
+  console.log(r.success ? `  ✔ FCM kabul etti (${r.messageId}). Konuya abone her cihaza gitmeli.` : `  ✘ FCM reddetti: ${r.error && r.error.code} ${r.error && r.error.message}`);
+}
+
 async function main() {
+  const di = process.argv.indexOf('--deneme');
+  if (di > 0) {
+    initAdmin();
+    return testTopic(process.argv[di + 1] || 'team_galatasaray');
+  }
   const fix = process.argv.includes('--duzelt');
   const send = process.argv.includes('--gonder');
   initAdmin();
