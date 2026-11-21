@@ -366,3 +366,14 @@ Gerçek widget'ları `flutter test` içinde render edip PNG yaz (flutter_app/too
 - AdMob iOS: ayrı uygulama + ayrı birim kimlikleri; test kimlikleri platforma göre (banner 2435281174, native 3986624511, interstitial 4411468910).
 - Doğrulama: yerelde derlenemez → GitHub Actions `macos-15` + `flutter build ios --release --no-codesign` (public depoda ücretsiz); imzalı TestFlight için Codemagic (`codemagic.yaml`, App Store Connect API anahtarı). Apple Developer hesabı (99 $/yıl), APNs anahtarı ve Firebase iOS uygulaması kullanıcı tarafında yapılır → adım adım rehber `docs/ios/HAZIRLIK.md`.
 - Mağaza riski: 4.2 "minimum işlevsellik" (haber sarmalayıcı) → yerel özellikleri inceleme notunda say.
+
+## 28. iOS'ta HİÇ bildirim gelmiyorsa (2026-11-21, Haber Akışı yapı 6–10)
+- Belirti: izin "authorized", ama `getAPNSToken()` null → FCM jetonu yok → konu aboneliği boş. Android çalışır.
+- Kök neden: Mac'siz CI'da (xcodebuild archive, manuel imza) imzalı uygulamada `aps-environment` YOKTU; profilde vardı.
+  Teşhis: `codesign -d --entitlements - --xml Runner.app | plutil -p -` ve `security cms -D -i embedded.mobileprovision`.
+- Çözüm (news-ios-release.yml): arşivden sonra imzada yoksa profilin Entitlements'ıyla (keychain-access-groups silinerek)
+  `codesign -f -s <Apple Distribution> --entitlements ent.plist --generate-entitlement-der Runner.app`; doğrula, yoksa yüklemeyi durdur.
+- Uygulamaya "Bildirim tanılama" ekranı koy (izin, APNs jetonu, FCM jetonu, istenen/abone konular, son hata, AppDelegate'ten
+  `flutter.apns_status`): uzaktan teşhisi dakikalara indirir. Sunucuda `--deneme <konu>` / `--jeton <fcm>` deneme gönderimi.
+- Firebase iOS SDK 13 (firebase_messaging 17): konu aboneliğinden önce `register()` + APNs jetonunu bekle; jeton geç gelirse
+  öne gelince/`onRegistered`'da yeniden dene; abonelik hatasını Crashlytics'e yaz.
