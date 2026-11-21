@@ -29,56 +29,78 @@ const categories = new Map([
 const byLevel = (messages, level) => messages.filter((m) => (m.condition || '').endsWith(`'${level}' in topics`));
 const cats = new Map([...categories, ['gundem', { name: 'Gündem' }], ['ekonomi', { name: 'Ekonomi' }], ['dunya', { name: 'Dünya' }]]);
 
-test('tek kategori: "Tümü" ve "Dengeli" seviyelerine ayrı koşulla gider, "Sadece önemli"ye gitmez', () => {
-  const results = [
-    { addedArticles: [art('a', 'saglik', '2026-11-06T10:00:00Z'), art('b', 'saglik', '2026-11-06T11:30:00Z')] },
-    { addedArticles: [art('c', 'saglik', '2026-11-06T11:00:00Z')] },
-  ];
+// Aynı olayı farklı yayıncılar verdi → tek hikâye, birden çok kaynak (özete yalnız bunlar girer)
+const multi = (id, cat, iso, title, sources) =>
+  sources.map((src, i) => art(`${id}${i}`, cat, iso, { title, source_name: src }));
+
+test('özet: yalnız 2+ kaynaklı hikâye girer, başlıkta haber sayısı YOK, kaynak sayısı yazar', () => {
+  const results = [{ addedArticles: [
+    ...multi('s', 'saglik', '2026-11-06T11:30:00Z', 'Sağlık Bakanlığı yeni aşı takvimini açıkladı', ['AA', 'NTV']),
+    art('t', 'saglik', '2026-11-06T11:40:00Z', { title: 'Tek kaynaklı rutin sağlık haberi yayımlandı' }),
+  ] }];
   const { messages, nextState } = planNotifications({ results, categories, state: {}, now: NOW });
-  assert.equal(messages.length, 2);
   const [all] = byLevel(messages, 'lvl_all');
-  assert.equal(all.condition, "'news_saglik' in topics && 'lvl_all' in topics");
   assert.equal(all.notification.title, 'Sağlık');
-  assert.equal(all.notification.body, 'Başlık b\nKaynak: Kaynak · ve 2 haber daha');
-  assert.equal(all.android.notification.channelId, 'news');
+  assert.match(all.notification.body, /^Sağlık Bakanlığı yeni aşı takvimini açıkladı/);
+  assert.match(all.notification.body, /2 kaynakta$/);
   assert.equal(byLevel(messages, 'lvl_balanced').length, 1);
   assert.ok(!messages.some((m) => /lvl_important|'calm'/.test(m.condition || '')));
   assert.equal(nextState.all.last_sent.saglik, NOW);
-  assert.deepEqual(nextState.balanced.pending, {});
 });
 
-test('çok kategori → TEK özet; "Tümü" 18 dk, "Dengeli" 60 dk aralıkla', () => {
+test('özet: yalnız tek kaynaklı haber varsa bildirim gitmez', () => {
+  const results = [{ addedArticles: [art('a', 'saglik', '2026-11-06T11:30:00Z'), art('b', 'spor', '2026-11-06T11:31:00Z')] }];
+  const { messages } = planNotifications({ results, categories, state: {}, now: NOW });
+  assert.equal(messages.length, 0);
+});
+
+test('çok kategori → TEK özet "Gündemin öne çıkanları"; Tümü 90 dk, Dengeli 3 saat aralıkla', () => {
   const results = [{ addedArticles: [
-    art('g', 'gundem', '2026-11-06T11:58:00Z', { source_name: 'NTV' }),
-    art('e', 'ekonomi', '2026-11-06T11:57:00Z', { source_name: 'AA' }),
-    art('d', 'dunya', '2026-11-06T11:56:00Z', { source_name: 'NTV' }),
-    art('s', 'spor', '2026-11-06T11:40:00Z', { source_name: 'A Spor' }),
+    ...multi('g', 'gundem', '2026-11-06T11:58:00Z', 'Meclis yeni vergi paketini kabul etti', ['NTV', 'AA']),
+    ...multi('e', 'ekonomi', '2026-11-06T11:57:00Z', 'Merkez Bankası politika faizini sabit tuttu', ['AA', 'Habertürk', 'NTV']),
   ] }];
   const first = planNotifications({ results, categories: cats, state: {}, now: NOW });
   const [d] = byLevel(first.messages, 'lvl_all');
-  assert.equal(d.notification.title, '📰 3 yeni haber');
-  assert.equal(d.notification.body, 'Gündem: Başlık g\nEkonomi: Başlık e\nDünya: Başlık d\nKaynak: NTV, AA');
-  assert.equal(d.condition, "('news_gundem' in topics || 'news_ekonomi' in topics || 'news_dunya' in topics) && 'lvl_all' in topics");
-  assert.deepEqual(Object.keys(first.nextState.all.pending), ['spor']);
-
-  const t20 = planNotifications({ results: [], categories: cats, state: first.nextState, now: NOW + 20 * 60_000 });
-  assert.equal(byLevel(t20.messages, 'lvl_all').length, 1, 'Tümü: 20 dk sonra sıradaki');
-  assert.equal(byLevel(t20.messages, 'lvl_balanced').length, 0, 'Dengeli: 60 dk dolmadı');
-  const t61 = planNotifications({ results: [], categories: cats, state: t20.nextState, now: NOW + 61 * 60_000 });
-  assert.equal(byLevel(t61.messages, 'lvl_balanced').length, 1);
+  assert.equal(d.notification.title, '📰 Gündemin öne çıkanları');
+  assert.ok(!/\d+ yeni haber/.test(d.notification.title));
+  assert.match(d.notification.body, /^Ekonomi: Merkez Bankası/, 'en çok kaynaklı önce');
+  const more = [{ addedArticles: multi('h', 'dunya', '2026-11-06T12:10:00Z', 'Avrupa Birliği zirvesi sona erdi', ['AA', 'BBC']) }];
+  const t60 = planNotifications({ results: more, categories: cats, state: first.nextState, now: NOW + 60 * 60_000 });
+  assert.equal(byLevel(t60.messages, 'lvl_all').length, 0, 'Tümü: 90 dk dolmadı');
+  const t95 = planNotifications({ results: [], categories: cats, state: t60.nextState, now: NOW + 95 * 60_000 });
+  assert.equal(byLevel(t95.messages, 'lvl_all').length, 1);
+  assert.equal(byLevel(t95.messages, 'lvl_balanced').length, 0, 'Dengeli: 3 saat dolmadı');
 });
 
-test('"Dengeli" günde en fazla 6 özet; gün değişince sıfırlanır', () => {
-  // Aynı gün içinde sınır
-  const st = { balanced: { day: '2026-11-06', count: 6 } };
-  const r = planNotifications({ results: [{ addedArticles: [art('y', 'saglik', '2026-11-06T11:59:00Z')] }], categories, state: st, now: NOW });
+test('özet gece (23:00–08:00) ve bülten saatine yakın gitmez; gece kuyruk boşaltılır', () => {
+  const night = Date.parse('2026-11-06T21:30:00Z'); // İstanbul 00:30
+  const results = [{ addedArticles: multi('n', 'saglik', '2026-11-06T21:20:00Z', 'Hastanelerde yeni randevu sistemi başladı', ['AA', 'NTV']) }];
+  const r = planNotifications({ results, categories, state: {}, now: night });
+  assert.equal(r.messages.filter((m) => m.condition && /lvl_(all|balanced)/.test(m.condition)).length, 0);
+  assert.deepEqual(r.nextState.all.pending, {});
+  const nearBulletin = Date.parse('2026-11-06T15:30:00Z'); // 18:30, akşam gündemine 30 dk
+  const r2 = planNotifications({ results, categories, state: {}, now: nearBulletin });
+  assert.equal(byLevel(r2.messages, 'lvl_all').length, 0);
+});
+
+test('"Dengeli" günde en fazla 4 özet; gün değişince sıfırlanır', () => {
+  const st = { balanced: { day: '2026-11-06', count: 4 } };
+  const results = [{ addedArticles: multi('y', 'saglik', '2026-11-06T11:59:00Z', 'Grip vakaları okullarda artış gösterdi', ['AA', 'NTV']) }];
+  const r = planNotifications({ results, categories, state: st, now: NOW });
   assert.equal(byLevel(r.messages, 'lvl_balanced').length, 0);
-  assert.equal(byLevel(r.messages, 'lvl_all').length, 1, 'Tümü seviyesinde sınır yok');
-  // Ertesi gün sayaç sıfırlanır
-  const tomorrow = Date.parse('2026-11-07T09:00:00Z');
-  const r2 = planNotifications({ results: [{ addedArticles: [art('z', 'spor', '2026-11-07T08:59:00Z')] }], categories, state: st, now: tomorrow });
+  assert.equal(byLevel(r.messages, 'lvl_all').length, 1);
+  const tomorrow = Date.parse('2026-11-07T09:00:00Z'); // 12:00
+  const r2 = planNotifications({ results: [{ addedArticles: multi('z', 'spor', '2026-11-07T08:59:00Z', 'Milli takım aday kadrosu açıklandı', ['A Spor', 'NTV']) }], categories, state: st, now: tomorrow });
   assert.equal(byLevel(r2.messages, 'lvl_balanced').length, 1);
   assert.equal(r2.nextState.balanced.count, 1);
+});
+
+test('kimler verdi: yayıncı sayısı artan hikâye için kaynak listesi güncellenir', () => {
+  const results = [{ addedArticles: multi('k', 'gundem', '2026-11-06T11:30:00Z', 'Valilik kar tatili kararını duyurdu', ['AA', 'NTV', 'CNN Türk']) }];
+  const r = planNotifications({ results, categories: cats, state: {}, now: NOW });
+  assert.deepEqual(r.sourceUpdates, [{ id: 'k0', srcs: ['AA', 'NTV', 'CNN Türk'] }]);
+  const again = planNotifications({ results: [], categories: cats, state: r.nextState, now: NOW + 60_000 });
+  assert.deepEqual(again.sourceUpdates, [], 'değişmeyen hikâye yeniden yazılmaz');
 });
 
 test('tıklama tuzağı/magazin başlıkları bildirime girmez', () => {
@@ -137,9 +159,13 @@ test('bülten: sabah 08:30 sonrası ilk çalışmada en çok kaynağın verdiği
   const r = planNotifications({ results: [], categories, state: { stories, bulletin: { last_ms: morning - 12 * 3_600_000 } }, now: morning });
   const b = r.messages.filter((m) => m.topic === 'bulletin');
   assert.equal(b.length, 1);
-  assert.equal(b[0].notification.title, '☀️ Sabah Bülteni');
+  assert.equal(b[0].notification.title, '☀️ 5 dakikada gündem');
   assert.equal(b[0].notification.body, '• Merkez Bankası faizi indirdi\n• Derbide kazanan Galatasaray\nKaynak: AA, A Spor');
-  assert.equal(r.nextState.bulletin.last, '2026-11-07#0');
+  assert.equal(r.nextState.bulletin.last, '2026-11-07#am');
+  assert.equal(b[0].data.briefing_id, '2026-11-07-am');
+  assert.equal(r.briefing.id, '2026-11-07-am');
+  assert.equal(r.briefing.items[0].source_count, 3);
+  assert.deepEqual(r.briefing.items.map((x) => x.id), ['m1', 'm2'], 'magazin tıklama tuzağı gündeme girmez');
   const again = planNotifications({ results: [], categories, state: r.nextState, now: morning + 20 * 60_000 });
   assert.equal(again.messages.filter((m) => m.topic === 'bulletin').length, 0, 'aynı bülten ikinci kez gitmez');
   const late = planNotifications({ results: [], categories, state: { stories }, now: at('2026-11-07T08:00:00Z') }); // 11:00
@@ -167,14 +193,14 @@ test('gönderim: durum kaydedilir, FCM hatası çekimi bozmaz', async () => {
     collection: () => ({ doc: (id) => ({ id }) }),
     batch: () => ({ set: (ref, data) => logged.push({ id: ref.id, data }), commit: async () => {} }),
   };
-  const results = [{ addedArticles: [art('a', 'saglik', '2026-11-06T11:00:00Z')] }];
+  const results = [{ addedArticles: multi('a', 'saglik', '2026-11-06T11:00:00Z', 'Sağlıkta yeni dönem başladı bugün', ['AA', 'NTV']) }];
   const okMessaging = { sendEach: async (msgs) => ({ successCount: msgs.length, failureCount: 0, responses: msgs.map(() => ({ success: true })) }) };
   const r = await sendNewsNotifications(db, results, categories, { messaging: okMessaging, now: NOW });
   assert.equal(r.sent, 2, 'Tümü + Dengeli');
   assert.equal(saved.length, 1);
   assert.equal(logged.length, 2, 'gönderilen bildirim Bildirimler sekmesi için kaydedilir');
   assert.deepEqual(logged[0].data.topics, ['news_saglik'], 'seviye konusu kayda girmez');
-  assert.equal(logged[0].data.url, 'https://ornek.com/a');
+  assert.equal(logged[0].data.url, 'https://ornek.com/a0');
 
   const badMessaging = { sendEach: async () => { throw new Error('ağ hatası'); } };
   const r2 = await sendNewsNotifications(db, results, categories, { messaging: badMessaging, now: NOW });
