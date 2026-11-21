@@ -203,6 +203,8 @@ class NotificationService {
   Future<void> _showForeground(RemoteMessage m) async {
     final n = m.notification;
     if (n == null) return;
+    // iOS canlı skor: sistem tek bildirimi yerinde günceller; uygulama açıkken her güncellemeyi ayrıca gösterme.
+    if (m.data['type'] == 'match_live') return;
     final channelId = n.android?.channelId ?? 'news';
     final channel = channels.firstWhere((c) => c.id == channelId, orElse: () => channels.first);
     await _local.show(
