@@ -115,7 +115,9 @@ cd ~ && rm -rf haber && unzip -o "Haber-Akisi-kodNN.zip" -d haber && cd haber/ne
 
 ### X otomasyonu (kod33)
 - `social.js`: `x_enabled` + `x_webhook` → Make (Webhook → Google Tablolar → filtre deneme=false → Buffer → X). Belge: `docs/SOSYAL_PAYLASIM.md`.
-- Kullanıcıya **kod33** sunucu paketi gönderildi; yüklenip yüklenmediğini ve test_ping sonucunu kontrol et.
+- **kod33 yüklendi** (21 Kasım 04:03, Cloud Shell, Deploy complete).
+- `notifyBreakingNews` fonksiyonu projede var ama depoda YOK (kaynağı bilinmiyor, günde ~600 çalışma); silme sorusuna N denildi. Çift bildirim olursa incele.
+- Make: tek webhook `haber-x` (eski webhook'lar silindi).
 
 
 ### ⚠️ Önce bakılacaklar
