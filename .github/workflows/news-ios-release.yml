@@ -144,6 +144,15 @@ jobs:
             archive 2>&1 | tee archive.log | grep -E "error:|\*\* ARCHIVE" || true
           grep -q "ARCHIVE SUCCEEDED" archive.log
 
+      - name: İmzalı uygulamanın yetkileri (push için aps-environment olmalı)
+        working-directory: ${{ env.APP_DIR }}/ios
+        run: |
+          APP=build/Runner.xcarchive/Products/Applications/Runner.app
+          codesign -d --entitlements - --xml "$APP" 2>/dev/null | plutil -p - || codesign -d --entitlements - "$APP"
+          echo "--- gömülü profil ---"
+          security cms -D -i "$APP/embedded.mobileprovision" > /tmp/prof.plist && plutil -extract Entitlements xml1 -o - /tmp/prof.plist | grep -A1 -E "aps-environment|application-identifier" || true
+          codesign -d --entitlements - --xml "$APP" 2>/dev/null | grep -q "aps-environment" || echo "::warning::İmzalı uygulamada aps-environment YOK — push çalışmaz"
+
       - name: Arşiv hataları
         if: failure()
         run: grep -E "error:|Provisioning|signing" $APP_DIR/ios/archive.log | sort -u | head -60 || true

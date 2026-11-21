@@ -358,8 +358,14 @@ class NotificationService {
     return [
       ('Platform', defaultTargetPlatform.name),
       ('İzin', await safe(() async => (await m.getNotificationSettings()).authorizationStatus.name)),
-      if (defaultTargetPlatform == TargetPlatform.iOS)
+      if (defaultTargetPlatform == TargetPlatform.iOS) ...[
         ('APNs jetonu', await safe(() async => (await m.getAPNSToken()) == null ? 'YOK' : 'var')),
+        ('Apple kaydı', await safe(() async {
+          final p = await SharedPreferences.getInstance();
+          await p.reload();
+          return p.getString('apns_status') ?? 'cevap yok (kayıt hiç istenmedi ya da cevap gelmedi)';
+        })),
+      ],
       // ignore: deprecated_member_use
       ('FCM jetonu', await safe(() async => (await m.getToken()) ?? 'YOK')),
       ('İstenen konular', (settings?.desiredTopics.toList() ?? const <String>[]).join(', ')),
@@ -371,6 +377,7 @@ class NotificationService {
   /// Tüm konulara baştan abone ol (tanılama ekranındaki düğme).
   Future<void> resubscribeAll() async {
     lastTopicError = null;
+    _apnsRetried = false;
     await _settings?.setSubscribedTopics(<String>{});
     await syncTopics();
   }
@@ -382,8 +389,23 @@ class NotificationService {
       if (await messaging.getAPNSToken() != null) return true;
       await Future<void>.delayed(const Duration(milliseconds: 500));
     }
+    // İzin verilmiş ama jeton yok: Apple'a push kaydını yeniden iste (karar verilmiş izinde pencere açılmaz;
+    // eklenti registerForRemoteNotifications çağırır). Oturum başına bir kez.
+    if (!_apnsRetried) {
+      _apnsRetried = true;
+      final st = (await messaging.getNotificationSettings()).authorizationStatus;
+      if (st == AuthorizationStatus.authorized || st == AuthorizationStatus.provisional) {
+        await messaging.requestPermission();
+        for (var i = 0; i < 20; i++) {
+          if (await messaging.getAPNSToken() != null) return true;
+          await Future<void>.delayed(const Duration(milliseconds: 500));
+        }
+      }
+    }
     return false;
   }
+
+  bool _apnsRetried = false;
 
   /// Ayarlara göre FCM konularına abone olur / abonelikten çıkar (yalnızca fark).
   Future<void> syncTopics() async {
