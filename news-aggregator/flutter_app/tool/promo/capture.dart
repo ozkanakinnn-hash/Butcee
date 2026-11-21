@@ -309,7 +309,7 @@ Future<void> _seed(FakeFirebaseFirestore db) async {
       '$img/haber-ekonomi.jpg',
       'ekonomi',
       22,
-      false,
+      true,
     ),
     (
       'a3',
@@ -318,7 +318,7 @@ Future<void> _seed(FakeFirebaseFirestore db) async {
       '$img/haber-futbol.jpg',
       'futbol',
       48,
-      false,
+      true,
     ),
     (
       'a4',
@@ -345,7 +345,7 @@ Future<void> _seed(FakeFirebaseFirestore db) async {
       '$img/haber-altin.jpg',
       'ekonomi',
       160,
-      false,
+      true,
     ),
     (
       'a6',
