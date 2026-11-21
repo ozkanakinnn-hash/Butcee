@@ -1,0 +1,8 @@
+[REVIEW] ✔ akışı kaydır
+[REVIEW] ✔ kategori sekmeleri
+[REVIEW] ✔ haberi yayıncının sitesinde aç
+[REVIEW] ✔ piyasa ve hava paneli
+[REVIEW] ✔ arama
+[REVIEW] ✔ bildirimler
+[REVIEW] ✔ ilgi alanları
+[REVIEW] ✔ ayarlar

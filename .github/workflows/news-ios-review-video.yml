@@ -1,0 +1,92 @@
+# Haber Akışı: App Review için ekran kaydı (iPhone simülatörü, gerçek veri). integration_test/review_flow_test.dart
+# uygulamayı canlı oynatır; simctl recordVideo ekranı kaydeder → docs/ios/inceleme-video/haber-akisi-review.mp4
+name: News iOS inceleme videosu
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: news-review-video
+  cancel-in-progress: true
+
+jobs:
+  video:
+    runs-on: macos-15-intel
+    timeout-minutes: 90
+    env:
+      APP_DIR: news-aggregator/flutter_app
+      FIREBASE_SA: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+    steps:
+      - uses: actions/checkout@v5
+      - name: En yeni Xcode 26
+        run: |
+          sudo xcode-select -s "$(ls -d /Applications/Xcode_26*.app | grep -v beta | sort -V | tail -1)"
+          xcodebuild -version
+      - name: Firebase iOS ayarları
+        env:
+          BUNDLE_ID: akinai.app1
+        run: |
+          python3 -m venv "$RUNNER_TEMP/venv" && "$RUNNER_TEMP/venv/bin/pip" install -q "PyJWT[crypto]"
+          "$RUNNER_TEMP/venv/bin/python" $APP_DIR/ios/scripts/firebase_ios_config.py
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Simülatör (en yeni iOS, iPhone), konum İstanbul
+        run: |
+          UDID=$(xcrun simctl list devices available -j | python3 -c '
+          import json,sys,re
+          d=json.load(sys.stdin)["devices"]
+          best=None
+          for rt,devs in d.items():
+              m=re.search(r"iOS-(\d+)-(\d+)",rt)
+              if not m: continue
+              v=(int(m[1]),int(m[2]))
+              for x in devs:
+                  if not x["name"].startswith("iPhone"): continue
+                  score=(v, "Pro" in x["name"] and "Max" not in x["name"], x["name"])
+                  if best is None or score>best[0]: best=(score,x["udid"],x["name"],rt)
+          print(best[1]); print(best[2],best[3],file=sys.stderr)')
+          echo "UDID=$UDID" >> "$GITHUB_ENV"
+          xcrun simctl boot "$UDID" || true
+          xcrun simctl bootstatus "$UDID" -b
+          xcrun simctl status_bar "$UDID" override --time "9:41" --batteryState charged --batteryLevel 100 --cellularBars 4 --wifiBars 3 || true
+          xcrun simctl location "$UDID" set 41.0082,28.9784 || true
+          xcrun simctl privacy "$UDID" grant location akinai.app1 || true
+          # Klavye ilk kullanım ipuçları videoda görünmesin
+          xcrun simctl spawn "$UDID" defaults write com.apple.keyboard.preferences DidShowContinuousPathIntroduction -bool true || true
+          xcrun simctl spawn "$UDID" defaults write com.apple.Preferences DidShowContinuousPathIntroduction -bool true || true
+      - name: Ön derleme (kayıt başlamadan)
+        working-directory: ${{ env.APP_DIR }}
+        run: |
+          flutter pub get
+          flutter build ios --simulator --debug \
+            --dart-define=FIREBASE_IOS_API_KEY="$FIREBASE_IOS_API_KEY" --dart-define=FIREBASE_IOS_APP_ID="$FIREBASE_IOS_APP_ID" \
+            --dart-define=FIREBASE_IOS_SENDER_ID="$FIREBASE_IOS_SENDER_ID" --dart-define=FIREBASE_IOS_STORAGE_BUCKET="$FIREBASE_IOS_STORAGE_BUCKET" \
+            --dart-define=FIREBASE_IOS_PROJECT_ID="$FIREBASE_IOS_PROJECT_ID" --dart-define=NO_ADS=true 2>&1 | tail -5
+      - name: Akışı oynat ve kaydet
+        working-directory: ${{ env.APP_DIR }}
+        run: |
+          OUT="$RUNNER_TEMP/review.mp4"
+          xcrun simctl io "$UDID" recordVideo --codec=h264 --force "$OUT" &
+          REC=$!
+          sleep 3
+          flutter test integration_test/review_flow_test.dart -d "$UDID" \
+            --dart-define=FIREBASE_IOS_API_KEY="$FIREBASE_IOS_API_KEY" --dart-define=FIREBASE_IOS_APP_ID="$FIREBASE_IOS_APP_ID" \
+            --dart-define=FIREBASE_IOS_SENDER_ID="$FIREBASE_IOS_SENDER_ID" --dart-define=FIREBASE_IOS_STORAGE_BUCKET="$FIREBASE_IOS_STORAGE_BUCKET" \
+            --dart-define=FIREBASE_IOS_PROJECT_ID="$FIREBASE_IOS_PROJECT_ID" --dart-define=NO_ADS=true 2>&1 | tee "$RUNNER_TEMP/test.log" | grep -E "REVIEW|All tests|Some tests|Error|error:" || true
+          kill -INT $REC; wait $REC || true
+          ls -la "$OUT"
+          mkdir -p "$GITHUB_WORKSPACE/news-aggregator/docs/ios/inceleme-video"
+          cp "$OUT" "$GITHUB_WORKSPACE/news-aggregator/docs/ios/inceleme-video/haber-akisi-review.mp4"
+          grep "\[REVIEW\]" "$RUNNER_TEMP/test.log" > "$GITHUB_WORKSPACE/news-aggregator/docs/ios/inceleme-video/adimlar.txt" || true
+      - name: Kaydet
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add news-aggregator/docs/ios/inceleme-video
+          git commit -m "App Review ekran kaydı (simülatör) [skip ci]" || exit 0
+          for i in 1 2 3; do git pull --rebase --autostash origin "${GITHUB_REF_NAME}" && git push origin "HEAD:${GITHUB_REF_NAME}" && exit 0; sleep 5; done; exit 1
