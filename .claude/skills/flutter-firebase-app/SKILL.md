@@ -377,3 +377,9 @@ Gerçek widget'ları `flutter test` içinde render edip PNG yaz (flutter_app/too
   `flutter.apns_status`): uzaktan teşhisi dakikalara indirir. Sunucuda `--deneme <konu>` / `--jeton <fcm>` deneme gönderimi.
 - Firebase iOS SDK 13 (firebase_messaging 17): konu aboneliğinden önce `register()` + APNs jetonunu bekle; jeton geç gelirse
   öne gelince/`onRegistered`'da yeniden dene; abonelik hatasını Crashlytics'e yaz.
+- ⚠️ APNs ANAHTARI (asıl son engel, 2026-11-21): (1) Apple'da anahtar oluştururken APNs → Configure → Environment
+  **"Sandbox & Production"** seç (varsayılan/sonradan değiştirilemeyen "Sandbox" TestFlight/App Store'da çalışmaz).
+  (2) Firebase → Proje ayarları → Cloud Messaging → Apple app'te İKİ yuva var: "Development APNs auth key" ve
+  "Production APNs auth key" — aynı .p8'i **İKİSİNE DE** yükle (telefonda Upload düğmesi sağda gizli kalır).
+  Belirti: `--jeton` denemesi → `messaging/third-party-auth-error Invalid APNs credential`; konu gönderimi "kabul" der ama iPhone'a gelmez.
+  Kullanıcıya iOS push kurulumunda bu iki noktayı BAŞTAN söyle.
