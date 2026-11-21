@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart' show defaultTargetPlatform, TargetPlatform;
 import 'package:flutter/material.dart';
@@ -163,7 +164,15 @@ class NotificationService {
       if (native != null) WidgetsBinding.instance.addPostFrameCallback((_) => _handlePayload(native));
     } catch (_) {}
     // Bildirimdeki "Daha az bildirim" düğmesi ayarı uygulama dışında değiştirir → öne gelince yeniden oku.
-    _lifecycle = AppLifecycleListener(onResume: settings.reloadFromDisk);
+    _lifecycle = AppLifecycleListener(onResume: () {
+      settings.reloadFromDisk();
+      // iOS: abonelik APNs jetonu gelmeden yapılamaz; eksik kaldıysa uygulama her öne geldiğinde tamamlanır.
+      if (defaultTargetPlatform == TargetPlatform.iOS) syncTopics();
+    });
+    // iOS: jeton (izin verildikten sonra) geç gelebilir → geldiği an abone ol.
+    if (defaultTargetPlatform == TargetPlatform.iOS) {
+      FirebaseMessaging.instance.onRegistered.listen((_) => syncTopics());
+    }
 
     final launch = await _local.getNotificationAppLaunchDetails();
     if (launch?.didNotificationLaunchApp ?? false) {
@@ -329,6 +338,9 @@ class NotificationService {
   bool _syncing = false;
   bool _again = false;
 
+  static const _iosTopicsResetKey = 'ios_topics_reset_v2';
+  bool _iosRegistered = false;
+
   /// iOS'ta konu aboneliği APNs jetonu gelmeden çalışmaz; kısa süre beklenir.
   Future<bool> _waitForApnsToken(FirebaseMessaging messaging) async {
     for (var i = 0; i < 10; i++) {
@@ -351,11 +363,24 @@ class NotificationService {
       do {
         _again = false;
         final desired = settings.desiredTopics;
-        final current = settings.subscribedTopics;
+        var current = settings.subscribedTopics;
         final messaging = FirebaseMessaging.instance;
-        if (defaultTargetPlatform == TargetPlatform.iOS && !await _waitForApnsToken(messaging)) {
-          // Bildirim izni yok ya da APNs henüz hazır değil: abonelik sonra (izin verilince) yeniden denenir.
-          return;
+        if (defaultTargetPlatform == TargetPlatform.iOS) {
+          if (!await _waitForApnsToken(messaging)) {
+            // Bildirim izni yok ya da APNs henüz hazır değil: abonelik sonra (izin/öne gelme) yeniden denenir.
+            return;
+          }
+          // Firebase iOS SDK 13: cihaz FCM'e açıkça kaydedilir (jeton artık kendiliğinden oluşmayabilir).
+          // Oturum başına bir kez (register → onRegistered → syncTopics döngüsü olmasın).
+          if (!_iosRegistered) {
+            _iosRegistered = true;
+            await messaging.register();
+            // ignore: deprecated_member_use
+            await messaging.getToken();
+          }
+          // İlk sürümler aboneliği sessizce kaçırmış olabilir → bir kez tüm konular yeniden kurulur.
+          final prefs = await SharedPreferences.getInstance();
+          if (prefs.getBool(_iosTopicsResetKey) != true) current = <String>{};
         }
         for (final t in desired.difference(current)) {
           await messaging.subscribeToTopic(t);
@@ -364,9 +389,16 @@ class NotificationService {
           await messaging.unsubscribeFromTopic(t);
         }
         await settings.setSubscribedTopics(desired);
+        if (defaultTargetPlatform == TargetPlatform.iOS) {
+          await (await SharedPreferences.getInstance()).setBool(_iosTopicsResetKey, true);
+        }
       } while (_again);
-    } catch (e) {
+    } catch (e, st) {
       debugPrint('Bildirim konuları güncellenemedi: $e');
+      // Mağaza sürümünde görünür olsun (Crashlytics → ölümcül olmayan hata)
+      try {
+        FirebaseCrashlytics.instance.recordError(e, st, reason: 'Bildirim konu aboneliği');
+      } catch (_) {}
     } finally {
       _syncing = false;
     }
