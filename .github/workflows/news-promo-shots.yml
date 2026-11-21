@@ -1,0 +1,59 @@
+# Haber Akışı: uygulamanın gerçek ekranlarını sahte veriyle yakalar (tool/promo/capture.dart) → docs/ios/ekranlar-ham
+# iPhone 6,3" boyutu: 402×874 @3 = 1206×2622. Çerçeveli App Store görselleri: docs/ios/ekran-goruntuleri/olustur.js
+name: News tanıtım ekranları
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["claude/haber-akisi-2026-11"]
+    paths:
+      - "news-aggregator/flutter_app/tool/promo/**"
+      - ".github/workflows/news-promo-shots.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: news-promo-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  shots:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    defaults:
+      run:
+        working-directory: news-aggregator/flutter_app
+    steps:
+      - uses: actions/checkout@v5
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: Ekranları yakala
+        env:
+          PROMO_W: "402"
+          PROMO_H: "874"
+          PROMO_DPR: "3"
+          PROMO_CITY: "İstanbul"
+        run: |
+          export PROMO_OUT="$GITHUB_WORKSPACE/news-aggregator/docs/ios/ekranlar-ham"
+          bash tool/promo/yakala.sh | tee "$RUNNER_TEMP/sonuc.txt"
+          mkdir -p "$RUNNER_TEMP/loglar" && mv "$PROMO_OUT"/*.log "$RUNNER_TEMP/loglar/" || true
+          ! grep -q "YAKALANAMADI" "$RUNNER_TEMP/sonuc.txt"
+      - name: Günlükler
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: promo-loglar
+          path: ${{ runner.temp }}/loglar
+      - name: Kaydet
+        if: success()
+        working-directory: .
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add news-aggregator/docs/ios/ekranlar-ham
+          git commit -m "Tanıtım ekranları (iPhone 6,3\") [skip ci]" || exit 0
+          for i in 1 2 3; do git pull --rebase --autostash origin "${GITHUB_REF_NAME}" && git push origin "HEAD:${GITHUB_REF_NAME}" && exit 0; sleep 5; done; exit 1
