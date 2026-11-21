@@ -6,10 +6,12 @@ import '../ads/ads_service.dart';
 import '../app_settings.dart';
 import '../config.dart';
 import '../l10n/app_strings.dart';
+import '../services/library_store.dart';
 import '../services/notification_service.dart';
 import '../utils/storage.dart';
 import '../services/weather_service.dart';
 import 'interests_page.dart';
+import 'library_page.dart';
 import 'team_picker_page.dart';
 
 /// Ayarlar & yasal uyumluluk: dil seçimi, gizlilik/kullanım koşulları ve "Uyar-Kaldır" bildirimi.
@@ -132,6 +134,40 @@ class _SettingsPageState extends State<SettingsPage> with WidgetsBindingObserver
               onTap: () =>
                   Navigator.of(context)
                       .push(MaterialPageRoute<void>(builder: (_) => InterestsPage(settings: settings))),
+            ),
+            const Divider(),
+            _Header(s.myLibrary),
+            ListenableBuilder(
+              listenable: LibraryStore.instance,
+              builder: (context, _) {
+                final lib = LibraryStore.instance;
+                return Column(
+                  children: [
+                    ListTile(
+                      leading: const Icon(Icons.bookmarks_outlined),
+                      title: Text(s.savedArticles),
+                      trailing: Text('${lib.saved.length}'),
+                      onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const SavedPage())),
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.history_rounded),
+                      title: Text(s.readingHistory),
+                      trailing: const Icon(Icons.chevron_right_rounded),
+                      onTap: () =>
+                          Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const HistoryPage())),
+                    ),
+                    ListTile(
+                      key: const ValueKey('settings-muted'),
+                      leading: const Icon(Icons.visibility_off_outlined),
+                      title: Text(s.mutedSources),
+                      subtitle: Text(s.mutedSourcesCount(lib.mutedSources.length)),
+                      trailing: const Icon(Icons.chevron_right_rounded),
+                      onTap: () =>
+                          Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const MutedSourcesPage())),
+                    ),
+                  ],
+                );
+              },
             ),
             const Divider(),
             _Header(s.notifications),

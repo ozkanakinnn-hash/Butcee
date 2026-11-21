@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 
 import '../backend/schema/articles_record.dart';
 import '../l10n/app_strings.dart';
+import '../services/library_store.dart';
 import '../utils/storage.dart';
 import '../utils/time_ago.dart';
+import 'article_actions.dart';
 
 /// Haber kartı.
 /// - Normal: solda başlık + "kaynak · zaman", sağda kare kapak görseli.
@@ -17,6 +19,8 @@ class ArticleCard extends StatelessWidget {
     this.fallbackIcon,
     this.featured = false,
     this.compact = false,
+    this.showActions = true,
+    this.dimWhenRead = true,
   });
 
   final ArticlesRecord article;
@@ -27,9 +31,22 @@ class ArticleCard extends StatelessWidget {
   /// Görselsiz sade satır.
   final bool compact;
 
+  /// Kaydet düğmesi ve "⋮" seçenekler menüsü.
+  final bool showActions;
+
+  /// Okunan haberin başlığı soluk gösterilir (Geçmiş ekranında kapalı).
+  final bool dimWhenRead;
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => ListenableBuilder(
+    listenable: LibraryStore.instance,
+    builder: (context, _) => _build(context),
+  );
+
+  Widget _build(BuildContext context) {
     final theme = Theme.of(context);
+    final read = dimWhenRead && LibraryStore.instance.isRead(article);
+    final titleColor = read ? theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.75) : null;
     final s = S.of(context);
     final muted = theme.colorScheme.onSurfaceVariant;
 
@@ -69,7 +86,15 @@ class ArticleCard extends StatelessWidget {
             errorWidget: (_, _, _) => placeholder,
           );
 
-    final meta = _Meta(article: article, time: timeAgo(article.publishedAt, s), color: muted);
+    final metaLine = _Meta(article: article, time: timeAgo(article.publishedAt, s), color: muted);
+    final meta = showActions
+        ? Row(
+            children: [
+              Expanded(child: metaLine),
+              _Actions(article: article, color: muted),
+            ],
+          )
+        : metaLine;
 
     if (compact) {
       return InkWell(
@@ -83,9 +108,9 @@ class ArticleCard extends StatelessWidget {
                 article.title,
                 maxLines: 3,
                 overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700, height: 1.28),
+                style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700, height: 1.28, color: titleColor),
               ),
-              const SizedBox(height: 6),
+              const SizedBox(height: 2),
               meta,
             ],
           ),
@@ -111,6 +136,7 @@ class ArticleCard extends StatelessWidget {
                 maxLines: 3,
                 overflow: TextOverflow.ellipsis,
                 style: theme.textTheme.titleLarge?.copyWith(
+                  color: titleColor,
                   fontWeight: FontWeight.w800,
                   height: 1.22,
                   letterSpacing: -0.2,
@@ -125,7 +151,7 @@ class ArticleCard extends StatelessWidget {
                   style: theme.textTheme.bodyMedium?.copyWith(color: muted, height: 1.35),
                 ),
               ],
-              const SizedBox(height: 8),
+              const SizedBox(height: 4),
               meta,
             ],
           ),
@@ -148,9 +174,9 @@ class ArticleCard extends StatelessWidget {
                     article.title,
                     maxLines: 3,
                     overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700, height: 1.28),
+                    style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700, height: 1.28, color: titleColor),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 4),
                   meta,
                 ],
               ),
@@ -163,6 +189,47 @@ class ArticleCard extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Kart altındaki seçenekler: kayıtlıysa küçük yer imi işareti + "⋮" (kaydet, paylaş, kaynağı gizle).
+class _Actions extends StatelessWidget {
+  const _Actions({required this.article, required this.color});
+
+  final ArticlesRecord article;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    final s = S.of(context);
+    final saved = LibraryStore.instance.isSaved(article);
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (saved)
+          Padding(
+            padding: const EdgeInsets.only(left: 6),
+            child: Icon(
+              Icons.bookmark_rounded,
+              key: ValueKey('saved-mark-${article.id}'),
+              size: 16,
+              color: Theme.of(context).colorScheme.primary,
+              semanticLabel: s.savedArticles,
+            ),
+          ),
+        IconButton(
+          key: ValueKey('more-${article.id}'),
+          constraints: const BoxConstraints.tightFor(width: 32, height: 28),
+          padding: EdgeInsets.zero,
+          iconSize: 20,
+          visualDensity: VisualDensity.compact,
+          tooltip: s.moreOptions,
+          color: color,
+          icon: const Icon(Icons.more_vert_rounded),
+          onPressed: () => showArticleOptions(context, article),
+        ),
+      ],
     );
   }
 }

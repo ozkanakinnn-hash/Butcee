@@ -15,6 +15,7 @@ import 'pages/root_shell.dart';
 import 'pages/article_webview_page.dart';
 import 'pages/interests_page.dart';
 import 'pages/match_detail_page.dart';
+import 'services/library_store.dart';
 import 'services/notification_service.dart';
 import 'services/team_follow_sync.dart';
 import 'theme.dart';
@@ -51,6 +52,7 @@ FirebaseOptions? _iosOptions() {
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final settings = await AppSettings.load();
+  await LibraryStore.load(); // kaydedilenler, okuma geçmişi, gizlenen kaynaklar (cihazda)
 
   var firebaseReady = true;
   try {

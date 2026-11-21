@@ -5,21 +5,22 @@ import 'package:flutter/material.dart';
 
 import '../ads/ad_widgets.dart';
 import '../ads/ads_config.dart';
-import '../ads/ads_service.dart';
 import '../app_settings.dart';
 import '../backend/news_repository.dart';
 import '../backend/schema/articles_record.dart';
 import '../backend/schema/categories_record.dart';
 import '../backend/schema/football_records.dart';
+import '../services/library_store.dart';
 import '../services/weather_service.dart';
 import '../widgets/live_matches.dart';
 import '../widgets/observance_banner.dart';
 import '../widgets/market_panel.dart';
 import '../widgets/weather_card.dart';
 import '../l10n/app_strings.dart';
+import '../widgets/article_actions.dart';
 import '../widgets/article_card.dart';
+import '../widgets/offline_banner.dart';
 import '../widgets/category_icons.dart';
-import 'article_webview_page.dart';
 import 'match_detail_page.dart';
 import 'team_picker_page.dart';
 
@@ -329,13 +330,6 @@ class _ArticleFeedState extends State<ArticleFeed> with AutomaticKeepAliveClient
     }
   }
 
-  Future<void> _open(ArticlesRecord a) async {
-    await Navigator.of(context)
-        .push(ArticleWebViewPage.route(url: a.originalUrl, sourceName: a.sourceName, articleTitle: a.title));
-    // Haber kapanıp akışa dönülünce: belirli aralıkla geçiş reklamı (doğal geçiş noktası).
-    AdsService.instance.onArticleClosed();
-  }
-
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -363,18 +357,35 @@ class _ArticleFeedState extends State<ArticleFeed> with AutomaticKeepAliveClient
       );
     }
 
+    return ListenableBuilder(
+      listenable: LibraryStore.instance,
+      builder: (context, _) => _list(context, s, icon),
+    );
+  }
+
+  Widget _list(BuildContext context, S s, IconData icon) {
+    // Kullanıcının gizlediği kaynaklar akışta gösterilmez.
+    final items = _items.where(LibraryStore.instance.isVisible).toList();
+    // İnternet yokken önbellekteki haberler gösteriliyorsa üstte bilgi şeridi.
+    final offline = _error != null;
     return RefreshIndicator(
       onRefresh: _refresh,
       child: ListView.separated(
         controller: _scroll,
         physics: const AlwaysScrollableScrollPhysics(),
-        itemCount: _items.length + 2,
+        itemCount: items.length + 2,
         separatorBuilder: (_, i) => i <= 1 ? const SizedBox.shrink() : const Divider(indent: 20, endIndent: 20),
         itemBuilder: (context, index) {
-          if (index == 0) return widget.header ?? const SizedBox.shrink();
+          if (index == 0) {
+            if (!offline) return widget.header ?? const SizedBox.shrink();
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [OfflineBanner(onRetry: _refresh), ?widget.header],
+            );
+          }
           final i = index - 1;
-          if (i == _items.length) return _footer(s);
-          final a = _items[i];
+          if (i == items.length) return _footer(s);
+          final a = items[i];
           final layout = widget.layout;
           final card = ArticleCard(
             article: a,
@@ -382,7 +393,7 @@ class _ArticleFeedState extends State<ArticleFeed> with AutomaticKeepAliveClient
             compact: layout == FeedLayout.compact,
             featured:
                 a.imageUrl.isNotEmpty && (layout == FeedLayout.large || (layout == FeedLayout.standard && i == 0)),
-            onTap: () => _open(a),
+            onTap: () => openArticle(context, a),
           );
           // Her N haberden sonra akış içi doğal reklam (yüklenemezse yer kaplamaz).
           if ((i + 1) % AdsConfig.nativeEvery != 0) return card;

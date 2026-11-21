@@ -26,11 +26,14 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:haber_akisi/app_settings.dart';
 import 'package:haber_akisi/backend/news_repository.dart';
+import 'package:haber_akisi/backend/schema/categories_record.dart';
 import 'package:haber_akisi/pages/interests_page.dart';
+import 'package:haber_akisi/pages/library_page.dart';
 import 'package:haber_akisi/pages/match_detail_page.dart';
 import 'package:haber_akisi/pages/notifications_page.dart';
 import 'package:haber_akisi/pages/root_shell.dart';
 import 'package:haber_akisi/pages/settings_page.dart';
+import 'package:haber_akisi/services/library_store.dart';
 import 'package:haber_akisi/services/weather_service.dart';
 import 'package:haber_akisi/theme.dart';
 import 'package:haber_akisi/pages/search_page.dart';
@@ -74,9 +77,11 @@ void main() {
       'flutter.liveScorePanel': true,
       'flutter.language': 'tr',
       'flutter.recent_searches': ['altın', 'derbi', 'ulaşım'],
+      ..._libraryPrefs(),
     });
     _mockPlugins();
     final settings = await AppSettings.load();
+    await LibraryStore.load();
     final db = FakeFirebaseFirestore();
     await _seed(db);
     final repo = NewsRepository(firestore: db);
@@ -113,6 +118,31 @@ void main() {
           await t.tap(find.text('Son Dakika').first);
           await _settle(t);
         });
+      // ── 1.0.1: Kitaplığım ──
+      case '10-kaydedilenler':
+        await _shot(tester, only, _app(const SavedPage()));
+      case '11-gecmis':
+        await _shot(tester, only, _app(const HistoryPage()));
+      case '12-haber-menusu':
+        await _shot(tester, only, _app(RootShell(settings: settings, repository: repo)), after: (t) async {
+          await t.drag(find.byType(Scrollable).at(1), const Offset(0, -520));
+          await _settle(t);
+          await t.tap(find.byKey(const ValueKey('more-a2')));
+          await _settle(t);
+        });
+      case '13-kitapligim':
+        await _shot(tester, only, _app(SettingsPage(settings: settings)));
+      case '14-gizlenen-kaynaklar':
+        await _shot(tester, only, _app(const MutedSourcesPage()));
+      case '15-cevrimdisi':
+        await _shot(tester, only, _app(RootShell(settings: settings, repository: _OfflineRepo(db))));
+      case '16-menu':
+        await _shot(tester, only, _app(RootShell(settings: settings, repository: repo)), after: (t) async {
+          await t.tap(find.byIcon(Icons.menu_rounded));
+          await _settle(t);
+          await t.drag(find.byType(Scrollable).last, const Offset(0, -600));
+          await _settle(t);
+        });
       default:
         throw ArgumentError('Bilinmeyen ekran: $only');
     }
@@ -121,6 +151,55 @@ void main() {
     // Not: testWidgets gövdesi sahte zaman bölgesinde çalışır; burada Future.delayed BEKLENMEZ (asla dönmez).
     exit(0);
   });
+}
+
+/// Kitaplık örnek verisi (cihazdaki SharedPreferences biçiminde): kaydedilenler, okuma geçmişi, gizlenen kaynaklar.
+Map<String, Object> _libraryPrefs() {
+  const img = 'https://gorsel.local';
+  final now = DateTime.now();
+  Map<String, Object> e(String id, String title, String source, String logo, String image, int pubMin, DateTime at) => {
+    'id': id,
+    't': title,
+    'u': 'https://ornek.local/$id',
+    if (image.isNotEmpty) 'i': image,
+    'src': source,
+    'l': logo,
+    'p': now.subtract(Duration(minutes: pubMin)).millisecondsSinceEpoch,
+    'at': at.millisecondsSinceEpoch,
+  };
+  final a1 = e('a1', 'Şehir içi ulaşımda yeni dönem: kart yerine telefonla geçiş bugün başladı', 'Haber Ajansı',
+      '$img/logo-a.png', '$img/haber-sehir.jpg', 6, now.subtract(const Duration(minutes: 3)));
+  final a2 = e('a2', 'Piyasalarda gün sonu: altın yükselişini sürdürdü, kurlar yatay seyretti', 'Ekonomi Gazetesi',
+      '$img/logo-b.png', '$img/haber-ekonomi.jpg', 22, now.subtract(const Duration(minutes: 15)));
+  final a3 = e('a3', 'Ligde haftanın maçı nefes kesti: üç puan uzatma dakikalarında geldi', 'Spor Servisi',
+      '$img/logo-c.png', '$img/haber-futbol.jpg', 48, now.subtract(const Duration(minutes: 40)));
+  final a4 = e('a4', 'Yerli yazılım girişimi yeni yatırım turunu tamamladı', 'Teknoloji Masası', '$img/logo-a.png',
+      '$img/haber-teknoloji.jpg', 75, now.subtract(const Duration(hours: 2)));
+  final a6 = e('a6', 'Araştırma: düzenli yürüyüş uyku kalitesini belirgin biçimde artırıyor', 'Bilim Bülteni',
+      '$img/logo-b.png', '', 130, now.subtract(const Duration(days: 1, hours: 2)));
+  final a7 = e('a7', 'Altın fiyatları haftaya rekorla başladı: gram altında yeni zirve', 'Ekonomi Gazetesi',
+      '$img/logo-b.png', '$img/haber-altin.jpg', 160, now.subtract(const Duration(days: 1, hours: 5)));
+  return {
+    'flutter.library_saved': jsonEncode([a1, a7, a4, a6]),
+    'flutter.library_history': jsonEncode([a3, a2, a4, a6, a7]),
+    'flutter.library_muted_sources': ['Magazin Dünyası', 'Tık Haber'],
+  };
+}
+
+/// İnternet yokmuş gibi: ağdan çekme hata verir, önbellekten (burada sahte veritabanından) okuma çalışır.
+class _OfflineRepo extends NewsRepository {
+  const _OfflineRepo(FakeFirebaseFirestore db) : super(firestore: db);
+
+  @override
+  Future<ArticlePage> fetchArticles({
+    CategoriesRecord? category,
+    DocumentSnapshot<Map<String, dynamic>>? startAfter,
+    int pageSize = 20,
+    bool fromCache = false,
+  }) {
+    if (!fromCache) return Future.error(StateError('çevrimdışı'));
+    return super.fetchArticles(category: category, startAfter: startAfter, pageSize: pageSize);
+  }
 }
 
 Widget _app(Widget home, {bool dark = false}) => MaterialApp(

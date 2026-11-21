@@ -2,14 +2,14 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import '../ads/ads_service.dart';
 import '../app_settings.dart';
 import '../backend/news_repository.dart';
 import '../backend/schema/articles_record.dart';
 import '../l10n/app_strings.dart';
+import '../services/library_store.dart';
 import '../utils/search_text.dart';
+import '../widgets/article_actions.dart';
 import '../widgets/article_card.dart';
-import 'article_webview_page.dart';
 
 /// Haberlerde arama (son 30 günün haberleri, başlık ve kaynak adında).
 class SearchPage extends StatefulWidget {
@@ -134,7 +134,7 @@ class _SearchPageState extends State<SearchPage> {
             child: Text(s.searchIndexNotReady, style: TextStyle(color: muted)),
           );
         }
-        final list = snap.data ?? const [];
+        final list = (snap.data ?? const <ArticlesRecord>[]).where(LibraryStore.instance.isVisible).toList();
         if (list.isEmpty) {
           return Padding(
             padding: const EdgeInsets.all(24),
@@ -150,9 +150,7 @@ class _SearchPageState extends State<SearchPage> {
               article: a,
               onTap: () {
                 widget.settings.addRecentSearch(_query);
-                Navigator.of(context)
-                    .push(ArticleWebViewPage.route(url: a.originalUrl, sourceName: a.sourceName, articleTitle: a.title))
-                    .then((_) => AdsService.instance.onArticleClosed());
+                openArticle(context, a);
               },
             );
           },

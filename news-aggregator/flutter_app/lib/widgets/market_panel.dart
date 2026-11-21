@@ -4,7 +4,9 @@ import '../app_settings.dart';
 import '../backend/news_repository.dart';
 import '../backend/schema/extra_records.dart';
 import '../l10n/app_strings.dart';
+import '../pages/library_page.dart';
 import '../pages/settings_page.dart';
+import '../services/library_store.dart';
 import '../services/weather_service.dart';
 import 'weather_card.dart';
 
@@ -103,6 +105,32 @@ class MarketPanel extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             const Divider(),
+            ListenableBuilder(
+              listenable: LibraryStore.instance,
+              builder: (context, _) => ListTile(
+                key: const ValueKey('menu-saved'),
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(Icons.bookmarks_outlined),
+                title: Text(s.savedArticles),
+                trailing: LibraryStore.instance.saved.isEmpty
+                    ? null
+                    : Badge(label: Text('${LibraryStore.instance.saved.length}')),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const SavedPage()));
+                },
+              ),
+            ),
+            ListTile(
+              key: const ValueKey('menu-history'),
+              contentPadding: EdgeInsets.zero,
+              leading: const Icon(Icons.history_rounded),
+              title: Text(s.readingHistory),
+              onTap: () {
+                Navigator.of(context).pop();
+                Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const HistoryPage()));
+              },
+            ),
             ListTile(
               contentPadding: EdgeInsets.zero,
               leading: const Icon(Icons.settings_outlined),

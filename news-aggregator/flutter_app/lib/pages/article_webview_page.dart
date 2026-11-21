@@ -4,7 +4,10 @@ import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
+import '../backend/schema/articles_record.dart';
 import '../l10n/app_strings.dart';
+import '../services/library_store.dart';
+import '../widgets/article_actions.dart';
 
 /// Haberi orijinal sitesinde, uygulama içi tarayıcıda (WebView) açan tam ekran sayfa.
 ///
@@ -20,7 +23,10 @@ import '../l10n/app_strings.dart';
 /// Üst bar: solda "X" (kapat), ortada kaynak adı + kilit simgesi (https), sağda paylaş ve menü.
 /// Telif açısından içerik kopyalanmaz; site kendi tasarımı ve reklamlarıyla gösterilir.
 class ArticleWebViewPage extends StatefulWidget {
-  const ArticleWebViewPage({super.key, required this.url, this.sourceName = '', this.articleTitle = ''});
+  const ArticleWebViewPage({super.key, required this.url, this.sourceName = '', this.articleTitle = '', this.article});
+
+  /// Verilirse üst barda "Kaydet" düğmesi gösterilir.
+  final ArticlesRecord? article;
 
   /// Açılacak haber adresi (articles.original_url).
   final String url;
@@ -31,10 +37,11 @@ class ArticleWebViewPage extends StatefulWidget {
   /// Paylaşım metninde kullanılacak başlık (articles.title).
   final String articleTitle;
 
-  static Route<void> route({required String url, String sourceName = '', String articleTitle = ''}) =>
+  static Route<void> route({required String url, String sourceName = '', String articleTitle = '', ArticlesRecord? article}) =>
       MaterialPageRoute<void>(
         fullscreenDialog: true, // Aşağıdan açılır, solda "X" gösterilir.
-        builder: (_) => ArticleWebViewPage(url: url, sourceName: sourceName, articleTitle: articleTitle),
+        builder: (_) =>
+            ArticleWebViewPage(url: url, sourceName: sourceName, articleTitle: articleTitle, article: article),
       );
 
   @override
@@ -194,6 +201,18 @@ class _ArticleWebViewPageState extends State<ArticleWebViewPage> {
             ],
           ),
           actions: [
+            if (widget.article != null)
+              ListenableBuilder(
+                listenable: LibraryStore.instance,
+                builder: (context, _) {
+                  final saved = LibraryStore.instance.isSaved(widget.article!);
+                  return IconButton(
+                    icon: Icon(saved ? Icons.bookmark_rounded : Icons.bookmark_border_rounded),
+                    tooltip: saved ? s.unsave : s.save,
+                    onPressed: () => toggleSavedWithFeedback(context, widget.article!),
+                  );
+                },
+              ),
             IconButton(icon: const Icon(Icons.share_outlined), tooltip: s.share, onPressed: _share),
             PopupMenuButton<_MenuAction>(
               onSelected: _onMenu,

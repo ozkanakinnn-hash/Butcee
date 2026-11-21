@@ -225,4 +225,56 @@ class S {
     'android/app/google-services.json dosyasını ekleyip uygulamayı yeniden derleyin. Ayrıntılar README dosyasında.',
     'Add android/app/google-services.json and rebuild the app. See README for details.',
   );
+
+  // Kitaplığım: kaydedilenler, okuma geçmişi, gizlenen kaynaklar, çevrimdışı
+  String get myLibrary => _t('Kitaplığım', 'My library');
+  String get save => _t('Kaydet', 'Save');
+  String get unsave => _t('Kaydedilenlerden çıkar', 'Remove from saved');
+  String get savedToast => _t('Kaydedilenlere eklendi', 'Saved for later');
+  String get unsavedToast => _t('Kaydedilenlerden çıkarıldı', 'Removed from saved');
+  String get undo => _t('Geri al', 'Undo');
+  String get moreOptions => _t('Seçenekler', 'More options');
+  String get savedArticles => _t('Kaydedilenler', 'Saved');
+  String savedHint(int n) => _t(
+    '$n haber · Kaldırmak için sola ya da sağa kaydırın. Kayıtlar yalnızca bu cihazda tutulur.',
+    '$n articles · Swipe left or right to remove. Saved items stay on this device only.',
+  );
+  String get savedEmptyTitle => _t('Henüz kaydedilen haber yok', 'Nothing saved yet');
+  String get savedEmptyBody => _t(
+    'Haber kartındaki ⋮ menüsünden ya da haberi okurken üstteki yer imi simgesinden "Kaydet"e dokunun; sonra okumak istedikleriniz burada toplanır.',
+    'Tap "Save" in a story\'s ⋮ menu or the bookmark icon while reading; stories you want to read later collect here.',
+  );
+  String get readingHistory => _t('Okuma geçmişi', 'Reading history');
+  String get historyHint => _t(
+    'Son açtığınız haberler. Okunan haberler akışta soluk görünür. Geçmiş yalnızca bu cihazda tutulur.',
+    'Stories you opened recently. Read stories appear dimmed in the feed. History stays on this device only.',
+  );
+  String get historyEmptyTitle => _t('Geçmiş boş', 'No history yet');
+  String get historyEmptyBody => _t('Açtığınız haberler burada listelenir.', 'Stories you open will be listed here.');
+  String get yesterdayTitle => _t('Dün', 'Yesterday');
+  String get earlier => _t('Daha önce', 'Earlier');
+  String get clearHistory => _t('Geçmişi temizle', 'Clear history');
+  String get clearHistoryConfirm => _t(
+    'Okuma geçmişinin tamamı silinsin mi? Kaydedilen haberler etkilenmez.',
+    'Delete your whole reading history? Saved stories are not affected.',
+  );
+  String get cancel => _t('Vazgeç', 'Cancel');
+  String get mutedSources => _t('Gizlenen kaynaklar', 'Hidden sources');
+  String mutedSourcesCount(int n) => n == 0 ? _t('Yok', 'None') : _t('$n kaynak', '$n sources');
+  String muteSource(String name) => _t('$name haberlerini gösterme', 'Hide stories from $name');
+  String get muteSourceHint =>
+      _t('Ayarlar > Gizlenen kaynaklar\'dan geri alabilirsiniz', 'You can undo this in Settings > Hidden sources');
+  String sourceMuted(String name) => _t('$name gizlendi', '$name hidden');
+  String get mutedHint => _t(
+    'Bu kaynakların haberleri akışta ve aramada gösterilmez.',
+    'Stories from these sources are hidden from the feed and search.',
+  );
+  String get mutedEmptyTitle => _t('Gizlenen kaynak yok', 'No hidden sources');
+  String get mutedEmptyBody => _t(
+    'Bir haberin ⋮ menüsünden "… haberlerini gösterme" ile kaynağı gizleyebilirsiniz.',
+    'Use "Hide stories from …" in a story\'s ⋮ menu to hide a source.',
+  );
+  String get show => _t('Göster', 'Show');
+  String get offlineTitle => _t('Çevrimdışısınız', "You're offline");
+  String get offlineBody => _t('Son yüklenen haberler gösteriliyor', 'Showing the last loaded stories');
 }

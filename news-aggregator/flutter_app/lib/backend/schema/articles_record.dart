@@ -2,8 +2,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 /// `articles` koleksiyonu (Cloud Function'ın RSS'ten çektiği haberler).
 class ArticlesRecord {
-  ArticlesRecord._(this.reference, Map<String, dynamic> data)
-    : title = data['title'] as String? ?? '',
+  ArticlesRecord._(this.reference, Map<String, dynamic> data, {String? id})
+    : id = id ?? reference?.id ?? '',
+      title = data['title'] as String? ?? '',
       summary = data['summary'] as String? ?? '',
       imageUrl = data['image_url'] as String? ?? '',
       originalUrl = data['original_url'] as String? ?? '',
@@ -20,7 +21,31 @@ class ArticlesRecord {
   factory ArticlesRecord.fromSnapshot(DocumentSnapshot<Map<String, dynamic>> snap) =>
       ArticlesRecord._(snap.reference, snap.data() ?? const {});
 
-  final DocumentReference<Map<String, dynamic>> reference;
+  /// Cihazda saklanan kopyadan (Kaydedilenler / Geçmiş) — Firestore gerekmez.
+  factory ArticlesRecord.local({
+    required String id,
+    required String title,
+    required String originalUrl,
+    String summary = '',
+    String imageUrl = '',
+    String sourceName = '',
+    String sourceLogoUrl = '',
+    DateTime? publishedAt,
+  }) => ArticlesRecord._(null, {
+    'title': title,
+    'summary': summary,
+    'image_url': imageUrl,
+    'original_url': originalUrl,
+    'source_name': sourceName,
+    'source_logo_url': sourceLogoUrl,
+    if (publishedAt != null) 'published_at': Timestamp.fromDate(publishedAt),
+  }, id: id);
+
+  /// Cihazda saklanan (kaydedilen / geçmiş) haberlerde null.
+  final DocumentReference<Map<String, dynamic>>? reference;
+
+  /// Belge kimliği (normalleştirilmiş adresin özeti); cihazdaki kayıtlarda da aynı kimlik kullanılır.
+  final String id;
   final String title;
   final String summary;
   final String imageUrl;
