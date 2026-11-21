@@ -276,6 +276,13 @@ private fun AccessBanner(canWrite: Boolean, onOpenPaywall: () -> Unit, onNeedJoi
     }
 }
 
+/** Yalnızca -mgDemo ile açılan inceleme/ekran kaydı akışında: şikâyet/engelleme menüsünü göstermek için yerel örnek gönderi (sunucuya yazılmaz). */
+private fun demoSamplePost(topic: String) = CommunityPost(
+    id = "demo-sample", topic = topic, uid = "demo-sample-user", nick = "Demo parent",
+    text = "Sample post from another parent (demo only). How did your baby react to yogurt?",
+    createdAt = 1_700_000_000_000L, lang = "en"
+)
+
 @Composable
 private fun Feed(
     topic: String,
@@ -290,7 +297,7 @@ private fun Feed(
     val backend = Community.backend
     val state by produceState<Load<List<CommunityPost>>>(Load.Loading, topic, backend) {
         value = Load.Loading
-        backend.posts(topic).catch { value = Load.Failed }.collect { value = Load.Ready(it) }
+        backend.posts(topic).catch { value = Load.Failed }.collect { value = Load.Ready(if (akinai.minikgurme.ui.TestHooks.demoProfile) it + demoSamplePost(topic) else it) }
     }
     Box(Modifier.fillMaxSize()) {
         Column(Modifier.fillMaxSize()) {

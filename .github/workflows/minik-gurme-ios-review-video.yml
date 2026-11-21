@@ -47,6 +47,9 @@ jobs:
           xcrun simctl boot "$UDID" || true
           xcrun simctl bootstatus "$UDID" -b
           xcrun simctl status_bar "$UDID" override --time "9:41" --batteryState charged --batteryLevel 100 --cellularBars 4 --wifiBars 3 || true
+          # Klavye "kaydırarak yaz" tanıtımı videoda görünmesin
+          xcrun simctl spawn "$UDID" defaults write com.apple.keyboard.preferences DidShowContinuousPathIntroduction -bool true || true
+          xcrun simctl spawn "$UDID" defaults write com.apple.Preferences DidShowContinuousPathIntroduction -bool true || true
       - name: Proje ve derleme (test için)
         run: |
           brew install xcodegen
@@ -69,7 +72,7 @@ jobs:
           REC=$!
           sleep 3
           xcodebuild -project MinikGurme.xcodeproj -scheme MinikGurmeReview -destination "id=$UDID" \
-            -derivedDataPath build/dd test-without-building 2>&1 | tee test.log | grep -E "REVIEW|Test Case|TEST" || true
+            -derivedDataPath build/dd test-without-building 2>&1 | tee test.log | grep -E "REVIEW|Test Case|TEST|error:|Failed|failed" || true
           kill -INT $REC; wait $REC || true
           ls -la "$OUT"
           D="$GITHUB_WORKSPACE/minik_gurme/docs/store/appstore/inceleme-video"

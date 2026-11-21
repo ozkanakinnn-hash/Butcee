@@ -27,6 +27,12 @@ final class ReviewFlowUITests: XCTestCase {
         tap(c, "Vazgeç", wait: 2)
     }
 
+    /// Simülatörün "kaydırarak yazma" tanıtım ekranı klavyeyi kapatır; varsa "Continue" ile geçilir.
+    private func dismissKeyboardTip() {
+        let c = app.buttons["Continue"]
+        if c.waitForExistence(timeout: 2) { c.tap(); print("REVIEW ✔ keyboard tip"); pause(1) }
+    }
+
     func testReviewFlow() {
         continueAfterFailure = true
         app.launchArguments = ["-mgDemo", "1", "-mgLang", "en"]
@@ -43,7 +49,8 @@ final class ReviewFlowUITests: XCTestCase {
         tap(el("nav_community"), "community", wait: 4)
         if tap(el("community_open_join"), "join banner") {
             let nick = el("community_nick")
-            if nick.waitForExistence(timeout: 8) { nick.tap(); nick.typeText("AppReview"); pause(1.5) }
+            if nick.waitForExistence(timeout: 8) { nick.tap(); pause(1.5); dismissKeyboardTip(); nick.typeText("AppReview"); pause(1.5) }
+            dismissKeyboardTip()
             tap(el("community_accept"), "accept rules")
             tap(el("community_join"), "join", wait: 5)
         }
@@ -52,19 +59,22 @@ final class ReviewFlowUITests: XCTestCase {
         if tap(el("community_new_post"), "new post") {
             let input = el("community_post_input")
             if input.waitForExistence(timeout: 8) {
-                input.tap(); input.typeText("Test post from App Review demo. Our baby tried avocado today!"); pause(2)
+                input.tap(); pause(1.5); dismissKeyboardTip(); input.typeText("Test post from App Review demo. Our baby tried avocado today!"); pause(2)
                 app.swipeUp(); pause(1)
                 tap(el("community_post_send"), "send post", wait: 4)
             }
         }
 
         // Şikâyet ve engelleme (başka bir gönderide; pencereler gösterilip vazgeçilir)
-        tap(prefix("menu_post_"), "post menu", wait: 1.5)
+        let other = el("menu_post_demo-sample")
+        for _ in 0..<3 where !other.isHittable { app.swipeUp(); pause(1) }
+        tap(other, "post menu", wait: 1.5)
         if tap(el("menu_report"), "report", wait: 3) { cancelDialog() }
-        tap(prefix("menu_post_"), "post menu", wait: 1.5)
+        tap(other, "post menu", wait: 1.5)
         if tap(el("menu_block"), "block", wait: 3) { cancelDialog() }
 
         // Gönderi ayrıntısı ve yorumlar
+        for _ in 0..<3 { app.swipeDown(); pause(0.8) }
         tap(prefix("community_post_"), "open post", wait: 3)
         tap(el("community_back"), "back", wait: 2)
 
