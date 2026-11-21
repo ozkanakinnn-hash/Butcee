@@ -201,8 +201,9 @@ fun SettingsScreen(
             Text("Ayarlar", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.ExtraBold, color = TextPrimary)
         }
 
-        // --- Plus ---
-        Box(
+        // --- Plus --- (satış kapalı platformda gizli)
+        val sellsPlus = PlusManager.purchasesEnabled
+        if (sellsPlus) Box(
             modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(Brush.linearGradient(HeroGradient))
                 .clickable { onOpenPaywall() }.padding(16.dp).testTag("settings_plus")
         ) {
@@ -217,7 +218,7 @@ fun SettingsScreen(
                 Icon(Icons.Filled.ChevronRight, contentDescription = null, tint = OnHero)
             }
         }
-        Section("Plus özellikleri") {
+        if (sellsPlus) Section("Plus özellikleri") {
             SettingRow(Icons.Filled.CalendarMonth, "Haftalık menü planlayıcı", "7 günlük plan ve alışveriş listesi", tag = "settings_planner", locked = !isPlus) { if (isPlus) onOpenPlanner() else onOpenPaywall() }
             HorizontalDivider(color = DividerColor, modifier = Modifier.padding(vertical = 4.dp))
             SettingRow(Icons.Filled.PictureAsPdf, "Doktor raporu (PDF)", "Büyüme, alerjen ve tepkiler; paylaşın", tag = "settings_report", locked = !isPlus) {
@@ -253,8 +254,10 @@ fun SettingsScreen(
                 akinai.minikgurme.util.AllergyRisk.high,
                 "toggle_high_risk"
             ) { akinai.minikgurme.util.AllergyRisk.set(it) }
-            HorizontalDivider(color = DividerColor, modifier = Modifier.padding(vertical = 4.dp))
-            SettingRow(Icons.Filled.Add, "Bebek ekle", "İkizler ve kardeşler için ayrı profil", tag = "settings_add_baby", locked = !isPlus) { if (isPlus) onAddBaby() else onOpenPaywall() }
+            if (sellsPlus) {
+                HorizontalDivider(color = DividerColor, modifier = Modifier.padding(vertical = 4.dp))
+                SettingRow(Icons.Filled.Add, "Bebek ekle", "İkizler ve kardeşler için ayrı profil", tag = "settings_add_baby", locked = !isPlus) { if (isPlus) onAddBaby() else onOpenPaywall() }
+            }
         }
 
         Section("Görünüm") {
@@ -270,9 +273,11 @@ fun SettingsScreen(
             ToggleRow("Alerjen kontrolü", "Devam eden 3 gün denemesi varsa her akşam 19:00", allergenOn, "toggle_allergen") {
                 allergenOn = it; if (it) ensureNotifPermission(); Reminders.setAllergen(it)
             }
-            HorizontalDivider(color = DividerColor, modifier = Modifier.padding(vertical = 4.dp))
-            ToggleRow("Öğün hatırlatıcıları", "08:30 · 12:30 · 18:00", mealsOn && isPlus, "toggle_meals", locked = !isPlus) {
-                if (!isPlus) onOpenPaywall() else { mealsOn = it; if (it) ensureNotifPermission(); Reminders.setMeals(it) }
+            if (sellsPlus) {
+                HorizontalDivider(color = DividerColor, modifier = Modifier.padding(vertical = 4.dp))
+                ToggleRow("Öğün hatırlatıcıları", "08:30 · 12:30 · 18:00", mealsOn && isPlus, "toggle_meals", locked = !isPlus) {
+                    if (!isPlus) onOpenPaywall() else { mealsOn = it; if (it) ensureNotifPermission(); Reminders.setMeals(it) }
+                }
             }
         }
 

@@ -126,7 +126,8 @@ fun CommunityScreen(
     PlatformBackHandler(enabled = view != "feed") { view = if (view == "join") afterJoin.takeIf { it.startsWith("post:") } ?: "feed" else "feed" }
 
     // Okumak herkese açık; yazmak (gönderi/yorum) Plus'a özel olabilir. Beğeni ve şikâyet için katılmak yeterli.
-    val canWrite = !CommunityConfig.WRITE_PLUS_ONLY || isPlus
+    // Plus satılmayan platformda (iOS ilk sürüm) yazmak herkese açık; satın alınamayan kilit gösterilmez.
+    val canWrite = !CommunityConfig.WRITE_PLUS_ONLY || isPlus || !akinai.minikgurme.billing.PlusManager.purchasesEnabled
     val requireJoin: (String) -> Unit = { back -> afterJoin = back; view = "join" }
     val openCompose = {
         when {

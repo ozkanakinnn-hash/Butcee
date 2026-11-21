@@ -21,6 +21,13 @@ object PlusManager {
         fun setDebugOverride(on: Boolean) {}
     }
 
+    /**
+     * Plus satışı bu platformda açık mı. iOS ilk sürüm abonelik ürünleri olmadan yayınlanır (`IosStore.PURCHASES_ENABLED`):
+     * kapalıyken Plus kartı, kilitli Plus satırları ve "Plus'a geç" düğmeleri GÖSTERİLMEZ (Apple 2.1/3.1.1: satın alınamayan
+     * kilitli özellik gösterilmez); toplulukta yazmak herkese açık olur. Android'de her zaman true.
+     */
+    var purchasesEnabled by mutableStateOf(true)
+
     /** Plus etkin mi (Compose durumu; değişince ekranlar güncellenir). Platform günceller. */
     var isPlus by mutableStateOf(false)
     var plans by mutableStateOf<List<Plan>>(emptyList())

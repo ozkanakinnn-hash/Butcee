@@ -13,7 +13,15 @@ object LegalTexts {
     private val contact get() = CONTACT_EMAIL.ifBlank { "[iletişim e-postası]" }
     private val contactEn get() = CONTACT_EMAIL.ifBlank { "[contact e-mail]" }
 
-    fun privacy(lang: String): List<Pair<String, String>> = if (lang == "en") listOf(
+    /** Plus satılmayan platformda (iOS ilk sürüm) satın alma bölümleri gösterilmez (metinler Google Play'e atıf yapıyor). */
+    private val purchaseSections = setOf("Purchases", "Satın almalar", "Minik Gurme Plus")
+    private fun List<Pair<String, String>>.forPlatform() =
+        if (akinai.minikgurme.billing.PlusManager.purchasesEnabled) this else filter { it.first !in purchaseSections }
+
+    fun privacy(lang: String): List<Pair<String, String>> = privacyAll(lang).forPlatform()
+    fun terms(lang: String): List<Pair<String, String>> = termsAll(lang).forPlatform()
+
+    private fun privacyAll(lang: String): List<Pair<String, String>> = if (lang == "en") listOf(
         "Privacy Policy" to "Last updated: $UPDATED. This policy explains how the Minik Gurme app (“the app”) handles your information.",
         "Baby data stays on your phone" to "Everything you enter about your baby — name, age, sex, weight, height, meals, reactions, allergen trials and notes — is stored only on your device. It is never sent to our servers or to the Parent Community. The app has no analytics and no advertising.",
         "Parent Community" to "Anyone can read the community without an account; posts are public within the app. If you choose to join the optional Parent Community, an anonymous account is created with Google Firebase (no e-mail or phone number). We then process: your nickname, the posts and comments you write, your likes, reports you submit and the time of each post. This content is visible to other community members. It is stored on Google Firebase servers in the EU (Frankfurt, europe-west3) and processed by Google as our data processor. Purpose: providing the community and keeping it safe (moderation). Legal basis: your explicit consent when joining (KVKK art. 5, GDPR art. 6(1)(a)). Content stays until you delete it; you can delete a post or comment at any time, and Settings › Community › Delete my community account removes all your posts, comments and the account. Do not share health details that identify you or your baby.",
@@ -39,7 +47,7 @@ object LegalTexts {
         "İletişim" to contact,
     )
 
-    fun terms(lang: String): List<Pair<String, String>> = if (lang == "en") listOf(
+    private fun termsAll(lang: String): List<Pair<String, String>> = if (lang == "en") listOf(
         "Terms of Use" to "Last updated: $UPDATED. By using the app you accept these terms.",
         "Not medical advice" to "The app is for feeding tracking and general information on starting solid foods only. It is not medical advice and does not diagnose, treat or prevent any condition. Always consult your paediatrician; in an emergency (difficulty breathing, swelling of the face or throat) call emergency services immediately.",
         "Your responsibility" to "You are responsible for the accuracy of the data you enter and for decisions about your baby's feeding. Food textures, portions and allergen introduction must be adapted to your baby with your doctor.",

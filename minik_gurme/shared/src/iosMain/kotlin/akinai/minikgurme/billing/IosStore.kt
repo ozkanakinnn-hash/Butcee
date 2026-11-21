@@ -20,7 +20,12 @@ object IosStore : PlusManager.Store {
 
     private val productIds = listOf(PlusManager.PRODUCT_YEARLY, PlusManager.PRODUCT_MONTHLY)
 
+    /** İlk App Store sürümü aboneliksiz: ürünler App Store Connect'te oluşturulunca true yapın. */
+    const val PURCHASES_ENABLED = false
+
     fun start() {
+        PlusManager.purchasesEnabled = PURCHASES_ENABLED
+        if (!PURCHASES_ENABLED) return
         PlusManager.store = this
         StoreEvents.loadCache()
         StoreEvents.onPlusChanged = { IosReminders.reschedule() }
