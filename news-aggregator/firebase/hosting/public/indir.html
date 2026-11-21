@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Haber Akışı — Uygulamayı indir</title>
+<meta name="description" content="Gündem tek akışta: son dakika, canlı skor, döviz, deprem uyarısı. Android ve iPhone için ücretsiz.">
+<link rel="icon" href="/favicon.svg">
+<link rel="stylesheet" href="/style.css">
+<script>
+  // Telefona göre mağazaya yönlendir (masaüstünde iki bağlantı görünür)
+  (function () {
+    var ua = navigator.userAgent || '';
+    var play = 'https://play.google.com/store/apps/details?id=akinai.app1&referrer=utm_source%3Dpaylasim';
+    var ios = 'https://apps.apple.com/app/id6837488791';
+    if (/android/i.test(ua)) location.replace(play);
+    else if (/iphone|ipad|ipod/i.test(ua)) location.replace(ios);
+  })();
+</script>
+</head>
+<body>
+<main style="max-width:560px;margin:48px auto;padding:0 20px;text-align:center">
+  <h1>Haber Akışı</h1>
+  <p>Gündem tek akışta: birden çok kaynağın doğruladığı son dakika, sabah ve akşam "5 dakikada gündem", canlı skor, döviz ve deprem uyarısı.</p>
+  <p><a href="https://play.google.com/store/apps/details?id=akinai.app1&amp;referrer=utm_source%3Dpaylasim">Google Play'den indir</a></p>
+  <p><a href="https://apps.apple.com/app/id6837488791">App Store'dan indir</a></p>
+</main>
+</body>
+</html>

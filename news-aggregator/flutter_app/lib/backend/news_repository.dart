@@ -25,6 +25,13 @@ class NewsRepository {
 
   FirebaseFirestore get _db => firestore ?? FirebaseFirestore.instance;
 
+  /// "5 dakikada gündem": [id] boşsa en sonuncusu (briefings/latest).
+  Stream<Map<String, dynamic>?> watchBriefing([String? id]) =>
+      _db.doc('briefings/${(id == null || id.isEmpty) ? 'latest' : id}').snapshots().map((d) => d.data());
+
+  /// Son depremler (quakes/latest; sunucu 2 dakikada bir yeniler).
+  Stream<Map<String, dynamic>?> watchQuakes() => _db.doc('quakes/latest').snapshots().map((d) => d.data());
+
   /// Kategori sekmeleri: order_index'e göre sıralı, canlı dinlenir.
   Stream<List<CategoriesRecord>> watchCategories() => _db
       .collection('categories')

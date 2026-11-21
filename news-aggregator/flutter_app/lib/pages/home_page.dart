@@ -15,7 +15,7 @@ import '../services/weather_service.dart';
 import '../widgets/live_matches.dart';
 import '../widgets/observance_banner.dart';
 import '../widgets/market_panel.dart';
-import '../widgets/weather_card.dart';
+import '../widgets/info_strip.dart';
 import '../l10n/app_strings.dart';
 import '../widgets/article_actions.dart';
 import '../widgets/article_card.dart';
@@ -124,7 +124,7 @@ class HomePage extends StatelessWidget {
   }
 }
 
-/// "Tümü" sekmesinin üstü: hava durumu kartı + takip edilen takımların canlı maçları.
+/// "Tümü" sekmesinin üstü: tek satır bilgi şeridi (gündem · depremler · hava) + takip edilen takımların canlı maçları.
 class _AllHeader extends StatelessWidget {
   const _AllHeader({required this.settings, required this.repository});
 
@@ -137,7 +137,7 @@ class _AllHeader extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         const ObservanceBanner(),
-        if (settings.weatherEnabled) WeatherCard(service: WeatherService.shared),
+        InfoStrip(showWeather: settings.weatherEnabled),
         if (settings.followsFootball && settings.followedTeams.isNotEmpty)
           _MatchesStream(
             settings: settings,

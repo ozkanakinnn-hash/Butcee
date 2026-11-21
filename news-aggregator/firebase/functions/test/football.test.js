@@ -252,18 +252,28 @@ test('zaman çizelgesi ve panel uyarısı: sarı kart sessiz, gol/kırmızı/dev
   assert.deepEqual(fb.diffMatch(prev, m).map((e) => e.type), ['yellow_card']);
 });
 
-test('iOS: olay uyarısı apns bildirimi olarak gider; uyarı yoksa apns yok; gece pasif ve sessiz', () => {
+test('iOS: canlı skor tek bildirim olarak yerinde güncellenir; olayda sesli, arada sessiz/pasif', () => {
   const m = {
     fixture_id: 9, league: { name: 'Süper Lig' },
-    home: { id: 'besiktas', name: 'Beşiktaş', short: 'BJK', colors: ['#111111'] },
-    away: { id: 'galatasaray', name: 'Galatasaray', short: 'GS', colors: ['#FFB300'] },
-    goals: { home: 1, away: 0 }, status: { short: '1H', elapsed: 10 }, is_finished: false,
+    home: { id: 'galatasaray', name: 'Galatasaray', short: 'GS', colors: ['#A90432'] },
+    away: { id: 'samsunspor', name: 'Samsunspor', short: 'SAM', colors: ['#E30613'] },
+    goals: { home: 1, away: 0 }, status: { short: '1H', elapsed: 27 }, is_live: true, is_finished: false,
+    goal_events: [{ minute: 20, extra: 0, team_id: 'galatasaray', player: 'Oyuncu A', detail: 'Normal Goal' }],
   };
-  assert.equal(fb.buildLiveMessage(m, 1000).apns, undefined);
-  const loud = fb.buildLiveMessage(m, 1000, { alert: 'goal', alert_title: 'GOL', alert_body: 'BJK 1-0 GS', alert_quiet: '0' }).apns;
-  assert.equal(loud.payload.aps.alert.title, 'GOL');
-  assert.equal(loud.payload.aps.sound, 'default');
-  const quiet = fb.buildLiveMessage(m, 1000, { alert: 'goal', alert_title: 'GOL', alert_body: 'x', alert_quiet: '1' }).apns;
+  const quiet = fb.buildLiveMessage(m, 1000).apns;
+  assert.equal(quiet.headers['apns-collapse-id'], 'live_9');
+  assert.equal(quiet.payload.aps.alert.title, "GS 1-0 SAM · 27'");
+  assert.match(quiet.payload.aps.alert.body, /GS: ⚽ 20' Oyuncu A/);
   assert.equal(quiet.payload.aps.sound, undefined);
   assert.equal(quiet.payload.aps['interruption-level'], 'passive');
+  const loud = fb.buildLiveMessage(m, 1000, { alert: 'goal', alert_title: 'GOL! Galatasaray', alert_body: 'x', alert_quiet: '0' }).apns;
+  assert.equal(loud.headers['apns-collapse-id'], 'live_9');
+  assert.equal(loud.payload.aps.sound, 'default');
+  assert.match(loud.payload.aps.alert.body, /^GOL! Galatasaray/);
+  const night = fb.buildLiveMessage(m, 1000, { alert: 'goal', alert_title: 'GOL', alert_body: 'x', alert_quiet: '1' }).apns;
+  assert.equal(night.payload.aps.sound, undefined);
+  const ht = fb.buildLiveMessage({ ...m, status: { short: 'HT', elapsed: 45 } }, 1000).apns;
+  assert.match(ht.payload.aps.alert.title, /devre arası$/);
+  const ft = fb.buildLiveMessage({ ...m, status: { short: 'FT', elapsed: 90 }, is_live: false, is_finished: true }, 1000).apns;
+  assert.match(ft.payload.aps.alert.title, /maç sonu$/);
 });

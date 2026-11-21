@@ -502,6 +502,42 @@ function apnsAlert(title, body, quiet, threadId) {
   };
 }
 
+/**
+ * iPhone canlı skor bildirimi (uygulama güncellemesi gerektirmez): `apns-collapse-id` aynı kaldıkça iOS önceki
+ * bildirimin YERİNE yenisini koyar. Olay (gol, kırmızı kart, devre, sonuç, başlama) sesli; ara güncellemeler sessiz
+ * ve "pasif" (ekranı uyandırmaz). Gece sessiz saatte olaylar da sessiz.
+ */
+function iosLiveApns(match, now, alert = null) {
+  const s = (match.status && match.status.short) || 'NS';
+  const kickoff = match.kickoff && match.kickoff.toDate
+    ? new Intl.DateTimeFormat('tr-TR', { timeZone: TIMEZONE, hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(match.kickoff.toDate())
+    : '';
+  const side = (t) => `${t.flag ? t.flag + ' ' : ''}${shortOf(t)}`;
+  const score = s === 'NS' ? 'vs' : `${match.goals.home ?? 0}-${match.goals.away ?? 0}`;
+  const clock = s === 'NS' ? (kickoff ? `başlama ${kickoff}` : 'başlamadı')
+    : s === 'HT' ? 'devre arası'
+      : FINISHED.has(s) ? 'maç sonu'
+        : `${liveClock(match, now).elapsed}'`;
+  const title = `${side(match.home)} ${score} ${side(match.away)} · ${clock}`;
+  const scorers = ['home', 'away']
+    .map((k) => ((match.goal_events || []).some((g) => g.team_id === match[k].id) || (match.red_cards || []).some((c) => c.team_id === match[k].id)
+      ? `${shortOf(match[k])}: ${scorerLine(match, k)}` : ''))
+    .filter(Boolean);
+  const loud = !!(alert && alert.alert) && alert.alert_quiet !== '1';
+  const body = [loud || (alert && alert.alert) ? alert.alert_title : '', ...scorers].filter(Boolean).join('\n') || panelHeadline(match);
+  return {
+    headers: { 'apns-priority': loud ? '10' : '5', 'apns-collapse-id': `live_${match.fixture_id}` },
+    payload: {
+      aps: {
+        alert: { title, body },
+        'thread-id': `live_${match.fixture_id}`,
+        'interruption-level': loud ? 'time-sensitive' : 'passive',
+        ...(loud ? { sound: 'default' } : {}),
+      },
+    },
+  };
+}
+
 function buildLiveMessage(match, now = Date.now(), alert = null) {
   const condition = match.national
     ? `'${NATIONAL_TOPIC}' in topics`
@@ -546,8 +582,8 @@ function buildLiveMessage(match, now = Date.now(), alert = null) {
         : '',
     },
     android: { priority: 'high', ttl: 10 * 60 * 1000, collapseKey: `live_${match.fixture_id}` },
-    // iOS'ta canlı panel yok: olay uyarısı normal bildirim olarak gider (gece sessiz → sessiz/pasif).
-    ...(alert && alert.alert ? { apns: apnsAlert(alert.alert_title, alert.alert_body, alert.alert_quiet === '1', `live_${match.fixture_id}`) } : {}),
+    // iOS: Android panelinin karşılığı — maç başına TEK bildirim, aynı collapse-id ile yerinde güncellenir.
+    apns: iosLiveApns(match, now, alert),
   };
 }
 

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart' show defaultTargetPlatform, TargetPlatform;
 import 'package:flutter/material.dart';
@@ -28,7 +29,12 @@ sealed class NotificationTarget {
   const NotificationTarget();
 
   static NotificationTarget? fromData(Map<String, dynamic> data) {
+    // Sabah/akşam gündem bildirimi: yeni sürüm gündem ekranını açar (eski sürümler ilk haberi açıyordu).
+    final briefing = data['briefing_id'] as String?;
+    if (briefing != null && briefing.isNotEmpty) return BriefingTarget(briefing);
     switch (data['type']) {
+      case 'earthquake':
+        return const QuakesTarget();
       case 'article':
         final url = data['url'] as String?;
         if (url == null || url.isEmpty) return null;
@@ -46,6 +52,15 @@ class ArticleTarget extends NotificationTarget {
   final String url;
   final String title;
   final String source;
+}
+
+class BriefingTarget extends NotificationTarget {
+  const BriefingTarget(this.id);
+  final String id;
+}
+
+class QuakesTarget extends NotificationTarget {
+  const QuakesTarget();
 }
 
 class MatchTarget extends NotificationTarget {
@@ -163,7 +178,15 @@ class NotificationService {
       if (native != null) WidgetsBinding.instance.addPostFrameCallback((_) => _handlePayload(native));
     } catch (_) {}
     // Bildirimdeki "Daha az bildirim" düğmesi ayarı uygulama dışında değiştirir → öne gelince yeniden oku.
-    _lifecycle = AppLifecycleListener(onResume: settings.reloadFromDisk);
+    _lifecycle = AppLifecycleListener(onResume: () {
+      settings.reloadFromDisk();
+      // iOS: abonelik APNs jetonu gelmeden yapılamaz; eksik kaldıysa uygulama her öne geldiğinde tamamlanır.
+      if (defaultTargetPlatform == TargetPlatform.iOS) syncTopics();
+    });
+    // iOS: jeton (izin verildikten sonra) geç gelebilir → geldiği an abone ol.
+    if (defaultTargetPlatform == TargetPlatform.iOS) {
+      FirebaseMessaging.instance.onRegistered.listen((_) => syncTopics());
+    }
 
     final launch = await _local.getNotificationAppLaunchDetails();
     if (launch?.didNotificationLaunchApp ?? false) {
@@ -203,6 +226,8 @@ class NotificationService {
   Future<void> _showForeground(RemoteMessage m) async {
     final n = m.notification;
     if (n == null) return;
+    // iOS canlı skor: sistem tek bildirimi yerinde günceller; uygulama açıkken her güncellemeyi ayrıca gösterme.
+    if (m.data['type'] == 'match_live') return;
     final channelId = n.android?.channelId ?? 'news';
     final channel = channels.firstWhere((c) => c.id == channelId, orElse: () => channels.first);
     await _local.show(
@@ -327,14 +352,74 @@ class NotificationService {
   bool _syncing = false;
   bool _again = false;
 
+  static const _iosTopicsResetKey = 'ios_topics_reset_v2';
+
+  /// Son konu aboneliği hatası (tanılama ekranı için).
+  String? lastTopicError;
+
+  /// Bildirim tanılama: izin, APNs/FCM jetonu, abone konular, son hata. Kopyalanıp destekle paylaşılır.
+  Future<List<(String, String)>> diagnostics() async {
+    final m = FirebaseMessaging.instance;
+    Future<String> safe(Future<String> Function() f) async {
+      try {
+        return await f().timeout(const Duration(seconds: 10));
+      } catch (e) {
+        return 'HATA: $e';
+      }
+    }
+
+    final settings = _settings;
+    return [
+      ('Platform', defaultTargetPlatform.name),
+      ('İzin', await safe(() async => (await m.getNotificationSettings()).authorizationStatus.name)),
+      if (defaultTargetPlatform == TargetPlatform.iOS) ...[
+        ('APNs jetonu', await safe(() async => (await m.getAPNSToken()) == null ? 'YOK' : 'var')),
+        ('Apple kaydı', await safe(() async {
+          final p = await SharedPreferences.getInstance();
+          await p.reload();
+          return p.getString('apns_status') ?? 'cevap yok (kayıt hiç istenmedi ya da cevap gelmedi)';
+        })),
+      ],
+      // ignore: deprecated_member_use
+      ('FCM jetonu', await safe(() async => (await m.getToken()) ?? 'YOK')),
+      ('İstenen konular', (settings?.desiredTopics.toList() ?? const <String>[]).join(', ')),
+      ('Abone konular', (settings?.subscribedTopics.toList() ?? const <String>[]).join(', ')),
+      ('Son hata', lastTopicError ?? '-'),
+    ];
+  }
+
+  /// Tüm konulara baştan abone ol (tanılama ekranındaki düğme).
+  Future<void> resubscribeAll() async {
+    lastTopicError = null;
+    _apnsRetried = false;
+    await _settings?.setSubscribedTopics(<String>{});
+    await syncTopics();
+  }
+  bool _iosRegistered = false;
+
   /// iOS'ta konu aboneliği APNs jetonu gelmeden çalışmaz; kısa süre beklenir.
   Future<bool> _waitForApnsToken(FirebaseMessaging messaging) async {
     for (var i = 0; i < 10; i++) {
       if (await messaging.getAPNSToken() != null) return true;
       await Future<void>.delayed(const Duration(milliseconds: 500));
     }
+    // İzin verilmiş ama jeton yok: Apple'a push kaydını yeniden iste (karar verilmiş izinde pencere açılmaz;
+    // eklenti registerForRemoteNotifications çağırır). Oturum başına bir kez.
+    if (!_apnsRetried) {
+      _apnsRetried = true;
+      final st = (await messaging.getNotificationSettings()).authorizationStatus;
+      if (st == AuthorizationStatus.authorized || st == AuthorizationStatus.provisional) {
+        await messaging.requestPermission();
+        for (var i = 0; i < 20; i++) {
+          if (await messaging.getAPNSToken() != null) return true;
+          await Future<void>.delayed(const Duration(milliseconds: 500));
+        }
+      }
+    }
     return false;
   }
+
+  bool _apnsRetried = false;
 
   /// Ayarlara göre FCM konularına abone olur / abonelikten çıkar (yalnızca fark).
   Future<void> syncTopics() async {
@@ -349,11 +434,24 @@ class NotificationService {
       do {
         _again = false;
         final desired = settings.desiredTopics;
-        final current = settings.subscribedTopics;
+        var current = settings.subscribedTopics;
         final messaging = FirebaseMessaging.instance;
-        if (defaultTargetPlatform == TargetPlatform.iOS && !await _waitForApnsToken(messaging)) {
-          // Bildirim izni yok ya da APNs henüz hazır değil: abonelik sonra (izin verilince) yeniden denenir.
-          return;
+        if (defaultTargetPlatform == TargetPlatform.iOS) {
+          if (!await _waitForApnsToken(messaging)) {
+            // Bildirim izni yok ya da APNs henüz hazır değil: abonelik sonra (izin/öne gelme) yeniden denenir.
+            return;
+          }
+          // Firebase iOS SDK 13: cihaz FCM'e açıkça kaydedilir (jeton artık kendiliğinden oluşmayabilir).
+          // Oturum başına bir kez (register → onRegistered → syncTopics döngüsü olmasın).
+          if (!_iosRegistered) {
+            _iosRegistered = true;
+            await messaging.register();
+            // ignore: deprecated_member_use
+            await messaging.getToken();
+          }
+          // İlk sürümler aboneliği sessizce kaçırmış olabilir → bir kez tüm konular yeniden kurulur.
+          final prefs = await SharedPreferences.getInstance();
+          if (prefs.getBool(_iosTopicsResetKey) != true) current = <String>{};
         }
         for (final t in desired.difference(current)) {
           await messaging.subscribeToTopic(t);
@@ -362,9 +460,18 @@ class NotificationService {
           await messaging.unsubscribeFromTopic(t);
         }
         await settings.setSubscribedTopics(desired);
+        lastTopicError = null; // başarılı abonelik: eski hata tanılamada görünmesin
+        if (defaultTargetPlatform == TargetPlatform.iOS) {
+          await (await SharedPreferences.getInstance()).setBool(_iosTopicsResetKey, true);
+        }
       } while (_again);
-    } catch (e) {
+    } catch (e, st) {
       debugPrint('Bildirim konuları güncellenemedi: $e');
+      lastTopicError = '$e';
+      // Mağaza sürümünde görünür olsun (Crashlytics → ölümcül olmayan hata)
+      try {
+        FirebaseCrashlytics.instance.recordError(e, st, reason: 'Bildirim konu aboneliği');
+      } catch (_) {}
     } finally {
       _syncing = false;
     }

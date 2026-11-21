@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show Clipboard, ClipboardData;
 import 'package:geolocator/geolocator.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -111,6 +112,40 @@ class _SettingsPageState extends State<SettingsPage> with WidgetsBindingObserver
             ),
       onTap: ok ? null : (blocked ? NotificationService.openSystemSettings : onRequest),
       iconColor: ok ? null : theme.colorScheme.primary,
+    );
+  }
+
+  Future<void> _showDiagnostics() async {
+    final s = S.of(context);
+    var rows = await NotificationService.instance.diagnostics();
+    if (!mounted) return;
+    String text() => rows.map((r) => '${r.$1}: ${r.$2}').join('\n');
+    await showDialog<void>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialog) => AlertDialog(
+          title: Text(s.notifDiagnostics),
+          content: SingleChildScrollView(child: SelectableText(text(), style: const TextStyle(fontSize: 13))),
+          actions: [
+            TextButton(
+              onPressed: () async {
+                await NotificationService.instance.resubscribeAll();
+                rows = await NotificationService.instance.diagnostics();
+                setDialog(() {});
+              },
+              child: Text(s.resubscribe),
+            ),
+            TextButton(
+              onPressed: () {
+                Clipboard.setData(ClipboardData(text: text()));
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(s.copied)));
+              },
+              child: Text(s.copy),
+            ),
+            TextButton(onPressed: () => Navigator.of(ctx).pop(), child: Text(s.close)),
+          ],
+        ),
+      ),
     );
   }
 
@@ -236,6 +271,16 @@ class _SettingsPageState extends State<SettingsPage> with WidgetsBindingObserver
                 onChanged: (v) => settings.setLiveScorePanel(v),
               ),
             SwitchListTile(
+              secondary: const Icon(Icons.crisis_alert_outlined),
+              title: Text(s.earthquakeAlerts),
+              subtitle: Text(s.earthquakeAlertsDesc),
+              value: settings.earthquakeAlerts,
+              onChanged: (v) async {
+                await settings.setEarthquakeAlerts(v);
+                if (v && notifGranted != true) await _requestNotifications();
+              },
+            ),
+            SwitchListTile(
               secondary: const Icon(Icons.flag_outlined),
               title: Text(s.observanceNotifications),
               subtitle: Text(s.observanceNotificationsDesc),
@@ -257,6 +302,12 @@ class _SettingsPageState extends State<SettingsPage> with WidgetsBindingObserver
                     Navigator.of(context)
                         .push(MaterialPageRoute<void>(builder: (_) => TeamPickerPage(settings: settings))),
               ),
+            ListTile(
+              leading: const Icon(Icons.troubleshoot_outlined),
+              title: Text(s.notifDiagnostics),
+              subtitle: Text(s.notifDiagnosticsDesc),
+              onTap: _showDiagnostics,
+            ),
             const Divider(),
             _Header(s.location),
             _permissionTile(
@@ -319,7 +370,6 @@ class _SettingsPageState extends State<SettingsPage> with WidgetsBindingObserver
                 children: [
                   for (final (l, label, icon) in [
                     (FeedLayout.standard, s.layoutStandard, Icons.view_agenda_outlined),
-                    (FeedLayout.large, s.layoutLarge, Icons.crop_landscape_outlined),
                     (FeedLayout.compact, s.layoutCompact, Icons.view_headline_rounded),
                   ])
                     RadioListTile<FeedLayout>(value: l, title: Text(label), secondary: Icon(icon)),

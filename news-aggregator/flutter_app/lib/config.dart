@@ -10,6 +10,9 @@ class AppConfig {
   /// Yasal sayfaların yayınlandığı site (Firebase Hosting: firebase/hosting/public).
   static const siteUrl = 'https://haber-68a3c.web.app';
 
+  /// Paylaşımlarda indirme bağlantısı (telefona göre Play Store / App Store'a yönlendirir).
+  static const downloadUrl = '$siteUrl/indir';
+
   /// Telif hakkı sahiplerinin içerik kaldırma talebi göndereceği adres ("Uyar-Kaldır").
   /// tool/fill-legal.sh iletişim e-postasıyla doldurur.
   static const copyrightEmail = 'haberakisinfo@gmail.com';

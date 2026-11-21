@@ -41,6 +41,10 @@ class _InterestsPageState extends State<InterestsPage> {
   late List<String> _selected = List.of(widget.settings.interests);
   late final Stream<List<CategoriesRecord>> _categories = widget.repository.watchCategories();
 
+  /// Keşfet listesinde her zaman görünen ana kategoriler; diğerleri katlı.
+  static const _mainCategories = {'son-dakika', 'gundem', 'ekonomi', 'dunya', 'spor', 'futbol', 'teknoloji', 'saglik'};
+  bool _showMore = false;
+
   /// Sunucuda var olan kategori kimlikleri (önerilenlerden silinmiş olanlar sayılmaz/kaydedilmez).
   Set<String> _known = const {};
 
@@ -92,7 +96,9 @@ class _InterestsPageState extends State<InterestsPage> {
         _known = byId.keys.toSet();
         // Sunucuda artık olmayan kategoriler listeden düşer.
         final followed = _selected.where(byId.containsKey).toList();
-        final others = all.where((c) => !_selected.contains(c.id)).toList();
+        // Sadelik: keşfet listesinde önce ana kategoriler; diğerleri "Diğer kategoriler" altında katlı.
+        final others = all.where((c) => !_selected.contains(c.id) && (_showMore || _mainCategories.contains(c.id))).toList();
+        final hiddenCount = all.where((c) => !_selected.contains(c.id) && !_mainCategories.contains(c.id)).length;
 
         return Scaffold(
           appBar: AppBar(
@@ -214,6 +220,18 @@ class _InterestsPageState extends State<InterestsPage> {
                             ),
                           );
                         },
+                      ),
+                    if (hiddenCount > 0)
+                      SliverToBoxAdapter(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          child: TextButton.icon(
+                            style: TextButton.styleFrom(alignment: Alignment.centerLeft),
+                            icon: Icon(_showMore ? Icons.expand_less_rounded : Icons.expand_more_rounded),
+                            label: Text(_showMore ? s.close : '${s.moreCategories} ($hiddenCount)'),
+                            onPressed: () => setState(() => _showMore = !_showMore),
+                          ),
+                        ),
                       ),
                     const SliverToBoxAdapter(child: SizedBox(height: 96)),
                   ],

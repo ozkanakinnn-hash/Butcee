@@ -80,6 +80,16 @@ exports.cleanupOldArticles = onSchedule(
   }
 );
 
+// Deprem uyarısı: 2 dakikada bir AFAD (yedek EMSC); M≥4.5 'deprem' konusuna, M≥5 son dakika abonelerine de.
+exports.earthquakeTick = onSchedule(
+  { schedule: 'every 2 minutes', timeZone: 'Europe/Istanbul', timeoutSeconds: 60, memory: '256MiB', retryCount: 0 },
+  async () => {
+    const { runEarthquake } = require('./src/earthquake');
+    const r = await runEarthquake(getFirestore(), getMessaging());
+    if (r.status !== 'tamam' || (r.alerts && r.alerts.length)) logger.info('Deprem', r);
+  }
+);
+
 exports.footballTick = onSchedule(
   {
     schedule: 'every 1 minutes',
@@ -104,6 +114,7 @@ exports.footballTick = onSchedule(
     }
     // fast: istek hakkı yeterliyse görev içinde 15 sn'de bir kontrol (ücretli planda gol anında)
     const result = await tick(getFirestore(), makeApi, getMessaging(), Date.now(), { fast: true });
-    if (!['idle', 'waiting-kickoff', 'throttled'].includes(result)) logger.info('Futbol', { result });
+    // Maç günü teşhisi: yalnızca hiç maç yokken sessiz (bekleme/kısıtlama nedenleri de günlükte görünsün)
+    if (result !== 'idle') console.log(`Futbol turu: ${result}`);
   }
 );

@@ -118,3 +118,16 @@ test('Sport API adresi önce denenir; abonelik yoksa (403) Football API adresine
   assert.equal(await ok.findLeague(), 5);
   assert.match(hosts[hosts.length - 1], /^https:\/\/sports\.highlightly\.net\/football\/leagues/);
 });
+
+test('istemci: lig kimliği ve adres önceden biliniyorsa (Firestore önbelleği) /leagues çökmez, istek harcamaz', async () => {
+  // Gerçek hata (Kasım 2026): footballTick takım listesi 7 günden eskiyken her dakika
+  // "Cannot read properties of undefined (reading 'name')" ile çöküyordu.
+  let calls = 0;
+  const api = new Highlightly({ key: 'k', fetchImpl: async () => { calls += 1; return Response.json({ data: [] }); } });
+  api.leagueId = 71;
+  api.base = 'https://sports.highlightly.net/football';
+  const leagues = await api.get('/leagues', { id: 203, current: 'true' });
+  assert.equal(leagues[0].league.id, 71);
+  assert.ok(leagues[0].seasons[0].year >= 2025);
+  assert.equal(calls, 0);
+});

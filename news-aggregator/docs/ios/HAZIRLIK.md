@@ -42,7 +42,7 @@ Ezan & Vakit için zaten yapıldı; aynı depoda olduğu için **tekrar gerekmez
 | Alan | Değer |
 |---|---|
 | Ad (≤30) | Haber Akışı |
-| Alt başlık (≤30) | Gündem, skor ve piyasa tek akışta |
+| Alt başlık (≤30) | Son dakika, gündem, deprem |
 | Kategori | Haberler (ikincil: Spor) |
 | Yaş derecelendirmesi | 4+ (şiddet/uygunsuz içerik yok; haber bağlantıları web içeriğidir → "sınırsız web erişimi" **Hayır**, uygulama içi web görünümü yalnız yayıncı haber sayfaları) |
 | Gizlilik politikası URL | https://haber-68a3c.web.app/gizlilik |
@@ -52,7 +52,7 @@ Ezan & Vakit için zaten yapıldı; aynı depoda olduğu için **tekrar gerekmez
 | Fiyat | Ücretsiz |
 | Dağıtım | Türkiye (+ isteğe bağlı diğer ülkeler) |
 
-**Anahtar kelimeler (≤100):** `haber,son dakika,gündem,canlı skor,süper lig,döviz,altın,hava durumu,spor,ekonomi`
+**Anahtar kelimeler (≤100):** `haber,son dakika,gündem,deprem,canlı skor,süper lig,döviz,altın,spor,ekonomi`
 
 **Tanıtım metni (≤170):** Önemli haberler az ve öz bildirimle gelir. İlgi alanlarını seç; gün içinde sadece gerçekten önemli gelişmeleri al.
 

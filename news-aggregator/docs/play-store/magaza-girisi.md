@@ -5,7 +5,7 @@ Play Console → **Büyüme → Mağaza varlığı → Ana mağaza girişi**. Va
 ## Uygulama ayrıntıları
 | Alan | Değer |
 |---|---|
-| Uygulama adı (≤30) | Haber Akışı |
+| Uygulama adı (≤30) | Haber Akışı: Son Dakika, Skor |
 | Kategori | Haber ve Dergi |
 | Etiketler | Haberler, Yerel haberler, Spor |
 | E-posta | haberakisinfo@gmail.com |
@@ -14,7 +14,7 @@ Play Console → **Büyüme → Mağaza varlığı → Ana mağaza girişi**. Va
 | Gizlilik politikası | https://haber-68a3c.web.app/gizlilik |
 
 ## Kısa açıklama (≤80)
-- **TR:** Gündem tek akışta: son dakika, canlı skor, döviz, altın ve hava durumu.
+- **TR:** Son dakika, 5 dakikada gündem, canlı skor, deprem uyarısı ve döviz tek akışta.
 - **EN:** Turkish news in one feed: breaking news, live scores, FX, gold and weather.
 
 ## Tam açıklama — Türkçe (≤4000)
@@ -29,7 +29,9 @@ Haber Akışı, Türkiye'nin önde gelen haber kaynaklarından başlıkları tek
 
 🔔 AZ AMA ÖNEMLİ BİLDİRİMLER
 • Birden çok kaynağın doğruladığı önemli son dakika gelişmeleri
-• Sabah, öğle ve akşam günün öne çıkanlarını özetleyen bültenler
+• Sabah ve akşam "5 dakikada gündem": en çok kaynağın verdiği haberler
+• Her haberde "Bu haberi kimler verdi?": aynı olayı veren yayıncılar
+• Deprem uyarısı: 4,5 ve üzeri depremler anında (Kaynak: AFAD)
 • Bildirim yoğunluğunu siz seçin: Sadece önemli, Dengeli veya Tümü
 • Gece 00:00–08:00 arası sessiz; deprem ve afet gibi olağanüstü durumlar hariç
 • Bildirimdeki "Daha az bildirim" düğmesiyle tek dokunuşla sakinleşin
@@ -38,6 +40,9 @@ Haber Akışı, Türkiye'nin önde gelen haber kaynaklarından başlıkları tek
 • Takip ettiğiniz Süper Lig takımlarının ve A Milli Takım'ın maçları bildirim alanında canlı
 • Kilit ekranında skor ve dakika; aşağı kaydırınca goller ve kartlar
 • Gol, kırmızı kart, devre arası ve maç sonu anında uyarı; başlama düdüğü
+
+📱 ANA EKRAN WIDGET'I (Android)
+• Gündemin başlıkları uygulamayı açmadan ana ekranda
 
 💱 PİYASA VE HAVA DURUMU
 • Dolar ve Euro (TCMB gösterge kurları), gram ve ons altın
@@ -64,7 +69,9 @@ Haber Akışı brings headlines from Türkiye's leading news sources into one cl
 
 🔔 FEWER, MORE IMPORTANT NOTIFICATIONS
 • Major breaking news confirmed by several sources
-• Morning, noon and evening bulletins with the top stories
+• Morning and evening "The day in 5 minutes" briefings
+• "Who reported this?" on every story: the publishers covering the same event
+• Earthquake alerts: magnitude 4.5+ instantly (source: AFAD)
 • Choose your frequency: Important only, Balanced or Everything
 • Quiet hours 00:00–08:00, except emergencies such as earthquakes
 • One tap "Fewer notifications" button right on the notification

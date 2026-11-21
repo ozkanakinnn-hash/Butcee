@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 import '../backend/schema/articles_record.dart';
+import '../config.dart';
 import '../l10n/app_strings.dart';
 import '../services/library_store.dart';
 import '../widgets/article_actions.dart';
@@ -115,9 +116,13 @@ class _ArticleWebViewPageState extends State<ArticleWebViewPage> {
   Future<void> _share() async {
     final s = S.of(context);
     final box = context.findRenderObject() as RenderBox?;
-    final text = widget.articleTitle.isEmpty
-        ? '${_safeUri(widget.url)}'
-        : '${widget.articleTitle}\n${_safeUri(widget.url)}';
+    // Haberin bağlantısı + uygulamanın indirme bağlantısı (ücretsiz tanıtım).
+    final text = [
+      if (widget.articleTitle.isNotEmpty) widget.articleTitle,
+      '${_safeUri(widget.url)}',
+      '',
+      s.sharedVia(AppConfig.downloadUrl),
+    ].join('\n');
     await SharePlus.instance.share(
       ShareParams(
         text: text,

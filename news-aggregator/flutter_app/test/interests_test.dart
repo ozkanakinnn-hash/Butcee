@@ -88,6 +88,11 @@ void main() {
     await tester.pumpWidget(_app(InterestsPage(settings: settings, repository: await _repo())));
     await tester.pumpAndSettle();
 
+    // Ana olmayan kategoriler "Diğer kategoriler" altında katlı
+    expect(find.byTooltip('Yaşam ekle'), findsNothing);
+    await tester.tap(find.textContaining('Diğer kategoriler'));
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(find.byTooltip('Yaşam ekle'), 200);
     await tester.tap(find.byTooltip('Yaşam ekle'));
     await tester.pumpAndSettle();
     expect(settings.interests, ['gundem', 'yasam']);

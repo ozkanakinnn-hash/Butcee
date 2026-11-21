@@ -64,21 +64,24 @@ void main() {
     final s = await AppSettings.load();
     const lvl = {'lvl_balanced', 'calm', 'bulletin'}; // varsayılan: Dengeli + bültenler
     const tr = 'national_tr'; // canlı skor paneli açık → milli maçlar
-    expect(s.desiredTopics, {'news_gundem', 'news_futbol', ...lvl, 'team_galatasaray', 'team_fenerbahce', tr});
+    const dq = 'deprem'; // deprem uyarıları varsayılan açık (haber bildirimlerinden bağımsız)
+    expect(s.desiredTopics, {'news_gundem', 'news_futbol', ...lvl, 'team_galatasaray', 'team_fenerbahce', tr, dq});
     await s.setNotifLevel(NotifLevel.important);
     await s.setBulletins(false);
-    expect(s.desiredTopics, {'news_gundem', 'news_futbol', 'lvl_important', 'calm', 'team_galatasaray', 'team_fenerbahce', tr});
+    expect(s.desiredTopics, {'news_gundem', 'news_futbol', 'lvl_important', 'calm', 'team_galatasaray', 'team_fenerbahce', tr, dq});
     await s.setNotifLevel(NotifLevel.all);
     expect(s.desiredTopics.where((t) => t.startsWith('lvl_') || t == 'calm'), {'lvl_all'});
     await s.setNotifLevel(NotifLevel.balanced);
     await s.setBulletins(true);
     await s.setMatchNotifications(false);
-    expect(s.desiredTopics, {'news_gundem', 'news_futbol', ...lvl, tr});
+    expect(s.desiredTopics, {'news_gundem', 'news_futbol', ...lvl, tr, dq});
     await s.setMatchNotifications(true);
     await s.setNewsNotifications(false);
-    expect(s.desiredTopics, {'team_galatasaray', 'team_fenerbahce', tr}, reason: 'futbol seçili → milli maç paneli');
+    expect(s.desiredTopics, {'team_galatasaray', 'team_fenerbahce', tr, dq}, reason: 'futbol seçili → milli maç paneli');
     await s.setInterests(['gundem']); // futbol bırakılınca takım bildirimleri de durur
-    expect(s.desiredTopics, isEmpty, reason: 'futbol seçili değilse milli maç paneli de yok');
+    expect(s.desiredTopics, {dq}, reason: 'futbol seçili değilse milli maç paneli de yok');
+    await s.setEarthquakeAlerts(false);
+    expect(s.desiredTopics, isEmpty, reason: 'deprem uyarısı kapatılabilir');
     await s.setInterests(['futbol']);
     await s.setLiveScorePanel(false);
     expect(s.desiredTopics.contains(tr), isFalse, reason: 'panel kapalıysa yok');

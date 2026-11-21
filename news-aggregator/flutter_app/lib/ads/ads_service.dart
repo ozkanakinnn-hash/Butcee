@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
+import '../services/review_service.dart';
+
 import 'ads_config.dart';
 
 /// Reklamlar: Google UMP onayı (GDPR/KVKK), AdMob başlatma ve geçiş reklamı sıklık sınırı.
@@ -81,6 +83,7 @@ class AdsService extends ChangeNotifier {
 
   /// Okunan haber sayacı → gerekirse geçiş reklamı. Haber ekranı kapanıp akışa dönülünce çağrılır.
   void onArticleClosed() {
+    ReviewService.instance.onArticleRead(); // mağaza puanı isteği (bir kez, 5 okumadan sonra)
     if (!_ready) return;
     _reads++;
     final ad = _interstitial;

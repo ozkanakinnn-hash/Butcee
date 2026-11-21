@@ -14,7 +14,8 @@ class ArticlesRecord {
       publishedAt = (data['published_at'] as Timestamp?)?.toDate(),
       contentHash = data['content_hash'] as String? ?? '',
       breakingAt = (data['breaking_at'] as Timestamp?)?.toDate(),
-      topicOnly = data['topic_only'] as bool? ?? false;
+      topicOnly = data['topic_only'] as bool? ?? false,
+      alsoBy = ((data['also_by'] as List?) ?? const []).whereType<String>().toList();
 
   static CollectionReference<Map<String, dynamic>> get collection => FirebaseFirestore.instance.collection('articles');
 
@@ -62,6 +63,9 @@ class ArticlesRecord {
 
   /// Yalnızca kendi konu sekmesinde gösterilir (ör. Investing → yalnızca Ekonomi); son dakikaysa her yerde.
   final bool topicOnly;
+
+  /// "Bu haberi kimler verdi?": aynı olayı veren yayıncılar (sunucu 2+ kaynakta yazar). Boşsa tek kaynak.
+  final List<String> alsoBy;
 
   /// "Tümü" akışında görünür mü?
   bool get showInAllFeed => !topicOnly || isBreaking;

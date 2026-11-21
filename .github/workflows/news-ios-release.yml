@@ -144,6 +144,31 @@ jobs:
             archive 2>&1 | tee archive.log | grep -E "error:|\*\* ARCHIVE" || true
           grep -q "ARCHIVE SUCCEEDED" archive.log
 
+      - name: Push yetkisi (aps-environment) imzada olmalı
+        working-directory: ${{ env.APP_DIR }}/ios
+        run: |
+          APP=build/Runner.xcarchive/Products/Applications/Runner.app
+          echo "--- Xcode ayarları ---"
+          xcodebuild -workspace Runner.xcworkspace -scheme Runner -configuration Release -showBuildSettings 2>/dev/null \
+            | grep -E "^ *(CODE_SIGN_ENTITLEMENTS|CODE_SIGN_STYLE|CODE_SIGN_ALLOW_ENTITLEMENTS_MODIFICATION) " || true
+          grep -iE "entitlements" archive.log | sort -u | head -15 || true
+          echo "--- arşivdeki imza ---"
+          codesign -d --entitlements - --xml "$APP" 2>/dev/null | plutil -p - || true
+          if ! codesign -d --entitlements - --xml "$APP" 2>/dev/null | grep -q aps-environment; then
+            echo "::warning::Xcode imzaya aps-environment koymadı; profilin yetkileriyle yeniden imzalanıyor"
+            security cms -D -i "$APP/embedded.mobileprovision" > "$RUNNER_TEMP/prof.plist"
+            plutil -extract Entitlements xml1 -o "$RUNNER_TEMP/ent.plist" "$RUNNER_TEMP/prof.plist"
+            /usr/libexec/PlistBuddy -c "Delete :keychain-access-groups" "$RUNNER_TEMP/ent.plist" 2>/dev/null || true
+            IDENT=$(security find-identity -v -p codesigning "$SIGN_KEYCHAIN" | awk '/Apple Distribution/{print $2; exit}')
+            codesign -f -s "$IDENT" --keychain "$SIGN_KEYCHAIN" --entitlements "$RUNNER_TEMP/ent.plist" --generate-entitlement-der "$APP"
+            echo "--- yeniden imzalanmış ---"
+            codesign -d --entitlements - --xml "$APP" 2>/dev/null | plutil -p -
+          fi
+          codesign --verify --strict "$APP"
+          codesign -d --entitlements - --xml "$APP" 2>/dev/null | grep -q aps-environment \
+            || { echo "::error::İmzalı uygulamada aps-environment yok — push çalışmaz, yükleme durduruldu"; exit 1; }
+          echo "✔ aps-environment imzada"
+
       - name: Arşiv hataları
         if: failure()
         run: grep -E "error:|Provisioning|signing" $APP_DIR/ios/archive.log | sort -u | head -60 || true
