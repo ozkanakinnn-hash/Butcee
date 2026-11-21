@@ -104,6 +104,7 @@ exports.footballTick = onSchedule(
     }
     // fast: istek hakkı yeterliyse görev içinde 15 sn'de bir kontrol (ücretli planda gol anında)
     const result = await tick(getFirestore(), makeApi, getMessaging(), Date.now(), { fast: true });
-    if (!['idle', 'waiting-kickoff', 'throttled'].includes(result)) logger.info('Futbol', { result });
+    // Maç günü teşhisi: yalnızca hiç maç yokken sessiz (bekleme/kısıtlama nedenleri de günlükte görünsün)
+    if (result !== 'idle') console.log(`Futbol turu: ${result}`);
   }
 );

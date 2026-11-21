@@ -340,12 +340,19 @@ async function pollOnce(db, api, messaging, active) {
   if (panels.length) {
     try {
       const res = await messaging.sendEach(panels);
-      log(`Canlı skor paneli: ${res.successCount} güncellendi`);
+      log(`Canlı skor paneli: ${res.successCount}/${panels.length} gönderildi${failures(res)}`);
     } catch (err) {
       log(`Canlı skor paneli gönderilemedi: ${err.message}`);
     }
   }
   return activeMatches(db);
+}
+
+/** FCM sendEach sonucundaki hataların kısa özeti (günlük için). */
+function failures(res) {
+  if (!res || !res.failureCount) return '';
+  const errs = res.responses.filter((r) => !r.success).map((r) => (r.error && (r.error.code || r.error.message)) || '?');
+  return ` | REDDEDİLEN ${res.failureCount}: ${[...new Set(errs)].join(', ')}`;
 }
 
 /** Başlamak üzere olan maçlar için panel (kayıtlı bilgiyle, istek yok); maç başına bir kez. */
@@ -355,7 +362,8 @@ async function sendPrematchPanels(db, messaging, active, now = Date.now()) {
     m.kickoff.toMillis() - now <= PREMATCH_PANEL_MS && m.kickoff.toMillis() > now - 5 * 60_000);
   if (!pre.length) return 0;
   try {
-    await messaging.sendEach(pre.map((m) => fb.buildLiveMessage(m, now)));
+    const res = await messaging.sendEach(pre.map((m) => fb.buildLiveMessage(m, now)));
+    if (res && res.failureCount) log(`Maç öncesi panel reddedildi:${failures(res)}`);
     const batch = db.batch();
     pre.forEach((m) => batch.set(db.doc(`matches/${m.fixture_id}`), { prematch_sent: true }, { merge: true }));
     await batch.commit();
