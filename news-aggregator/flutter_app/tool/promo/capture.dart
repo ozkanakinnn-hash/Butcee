@@ -33,14 +33,18 @@ import 'package:haber_akisi/pages/root_shell.dart';
 import 'package:haber_akisi/pages/settings_page.dart';
 import 'package:haber_akisi/services/weather_service.dart';
 import 'package:haber_akisi/theme.dart';
+import 'package:haber_akisi/pages/search_page.dart';
+import 'package:haber_akisi/utils/search_text.dart';
 import 'package:haber_akisi/utils/storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Telefon ekranı (mantıksal piksel) ve yoğunluk: 720×1500 PNG.
 /// Test ortamında GPU yok; 3x yoğunlukta piksele dökme dakikalar sürüyordu. 2x, çerçeveye yerleşen
 /// ~684 piksel genişlik için fazlasıyla yeterli.
-const _screen = Size(360, 750);
-const _dpr = 2.0;
+/// iOS (App Store) için: PROMO_W=402 PROMO_H=874 PROMO_DPR=3 → 1206×2622 (iPhone 6,3").
+final _screen = Size(double.parse(Platform.environment['PROMO_W'] ?? '360'), double.parse(Platform.environment['PROMO_H'] ?? '750'));
+final _dpr = double.parse(Platform.environment['PROMO_DPR'] ?? '2');
+final _city = Platform.environment['PROMO_CITY'] ?? 'İstanbul';
 
 final _outDir = Platform.environment['PROMO_OUT'] ?? 'build/promo';
 final _captureKey = GlobalKey();
@@ -69,6 +73,7 @@ void main() {
       'flutter.notify_bulletins': true,
       'flutter.liveScorePanel': true,
       'flutter.language': 'tr',
+      'flutter.recent_searches': ['altın', 'derbi', 'ulaşım'],
     });
     _mockPlugins();
     final settings = await AppSettings.load();
@@ -97,6 +102,17 @@ void main() {
         await _shot(tester, only, _app(NotificationsPage(settings: settings, repository: repo)));
       case '07-akis-koyu':
         await _shot(tester, only, _app(RootShell(settings: settings, repository: repo), dark: true));
+      case '08-arama':
+        await _shot(tester, only, _app(SearchPage(settings: settings, repository: repo)), after: (t) async {
+          await t.enterText(find.byType(TextField), 'altın');
+          await t.pump(const Duration(milliseconds: 600)); // arama gecikmesi (debounce)
+          await _settle(t);
+        });
+      case '09-son-dakika':
+        await _shot(tester, only, _app(RootShell(settings: settings, repository: repo)), after: (t) async {
+          await t.tap(find.text('Son Dakika').first);
+          await _settle(t);
+        });
       default:
         throw ArgumentError('Bilinmeyen ekran: $only');
     }
@@ -199,7 +215,15 @@ Future<void> _loadFonts() async {
 // ── Görseller ──────────────────────────────────────────────────────────────
 Map<String, String> _localImages() {
   final path = Platform.environment['PROMO_IMAGES'];
-  if (path == null) return const {};
+  if (path == null) {
+    // Varsayılan: depodaki telifsiz çizimler (tool/promo/images) → https://gorsel.local/<dosya>
+    final dir = Directory('tool/promo/images');
+    if (!dir.existsSync()) return const {};
+    return {
+      for (final f in dir.listSync().whereType<File>())
+        'https://gorsel.local/${f.uri.pathSegments.last}': f.absolute.path,
+    };
+  }
   return (jsonDecode(File(path).readAsStringSync()) as Map).cast<String, String>();
 }
 
@@ -229,8 +253,14 @@ class _FileCache implements BaseCacheManager {
 class _FixedWeather extends WeatherService {
   @override
   Future<Weather?> current({Locale? locale}) async =>
-      const Weather(place: 'Saruhanlı', temperature: 19, symbol: 'partlycloudy_day');
+      Weather(place: _city, temperature: 19, symbol: 'partlycloudy_day');
 }
+
+/// Sunucunun yazdığı arama anahtarları: kelimelerin 3–10 harflik ön ekleri (katlanmış).
+List<String> _keywords(String text) => {
+  for (final w in foldForSearch(text).split(' '))
+    for (var n = 3; n <= w.length && n <= 10; n++) w.substring(0, n),
+}.toList();
 
 // ── Sahte veri ─────────────────────────────────────────────────────────────
 /// Gerçek haber/yayıncı/oyuncu adı KULLANILMAZ (telif ve kişilik hakkı): hepsi temsilidir.
@@ -309,6 +339,15 @@ Future<void> _seed(FakeFirebaseFirestore db) async {
       false,
     ),
     (
+      'a7',
+      'Altın fiyatları haftaya rekorla başladı: gram altında yeni zirve',
+      '',
+      '$img/haber-altin.jpg',
+      'ekonomi',
+      160,
+      false,
+    ),
+    (
       'a6',
       'Araştırma: düzenli yürüyüş uyku kalitesini belirgin biçimde artırıyor',
       '',
@@ -324,6 +363,7 @@ Future<void> _seed(FakeFirebaseFirestore db) async {
     ('Spor Servisi', '$img/logo-c.png'),
     ('Teknoloji Masası', '$img/logo-a.png'),
     ('Spor Servisi', '$img/logo-c.png'),
+    ('Ekonomi Gazetesi', '$img/logo-b.png'),
     ('Bilim Bülteni', '$img/logo-b.png'),
   ];
   for (var i = 0; i < articles.length; i++) {
@@ -340,6 +380,7 @@ Future<void> _seed(FakeFirebaseFirestore db) async {
       'category_id': db.doc('categories/$cat'),
       'published_at': Timestamp.fromDate(at),
       'content_hash': id,
+      'search_keywords': _keywords('$title $source'),
       if (breaking) 'breaking_at': Timestamp.fromDate(at),
     });
   }
