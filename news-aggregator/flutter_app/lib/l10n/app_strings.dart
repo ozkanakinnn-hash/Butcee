@@ -138,6 +138,12 @@ class S {
 
   // Futbol
   String get myTeams => _t('Takımların', 'Your teams');
+  String get notifDiagnostics => _t('Bildirim tanılama', 'Notification diagnostics');
+  String get notifDiagnosticsDesc =>
+      _t('Bildirim gelmiyorsa: durum, jeton ve abonelikler', 'If notifications do not arrive: status, token and topics');
+  String get copy => _t('Kopyala', 'Copy');
+  String get copied => _t('Kopyalandı', 'Copied');
+  String get resubscribe => _t('Yeniden abone ol', 'Resubscribe');
   String get chooseTeams => _t('Takımını seç', 'Choose your team');
   String get chooseTeamsDesc => _t(
     'Seçtiğin takımların canlı skorunu görürsün, golde sesli bildirim alırsın.',

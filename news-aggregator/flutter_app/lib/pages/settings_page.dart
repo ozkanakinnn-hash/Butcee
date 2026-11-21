@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show Clipboard, ClipboardData;
 import 'package:geolocator/geolocator.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -112,6 +113,40 @@ class _SettingsPageState extends State<SettingsPage> with WidgetsBindingObserver
     );
   }
 
+  Future<void> _showDiagnostics() async {
+    final s = S.of(context);
+    var rows = await NotificationService.instance.diagnostics();
+    if (!mounted) return;
+    String text() => rows.map((r) => '${r.$1}: ${r.$2}').join('\n');
+    await showDialog<void>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialog) => AlertDialog(
+          title: Text(s.notifDiagnostics),
+          content: SingleChildScrollView(child: SelectableText(text(), style: const TextStyle(fontSize: 13))),
+          actions: [
+            TextButton(
+              onPressed: () async {
+                await NotificationService.instance.resubscribeAll();
+                rows = await NotificationService.instance.diagnostics();
+                setDialog(() {});
+              },
+              child: Text(s.resubscribe),
+            ),
+            TextButton(
+              onPressed: () {
+                Clipboard.setData(ClipboardData(text: text()));
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(s.copied)));
+              },
+              child: Text(s.copy),
+            ),
+            TextButton(onPressed: () => Navigator.of(ctx).pop(), child: Text(s.close)),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final s = S.of(context);
@@ -221,6 +256,12 @@ class _SettingsPageState extends State<SettingsPage> with WidgetsBindingObserver
                     Navigator.of(context)
                         .push(MaterialPageRoute<void>(builder: (_) => TeamPickerPage(settings: settings))),
               ),
+            ListTile(
+              leading: const Icon(Icons.troubleshoot_outlined),
+              title: Text(s.notifDiagnostics),
+              subtitle: Text(s.notifDiagnosticsDesc),
+              onTap: _showDiagnostics,
+            ),
             const Divider(),
             _Header(s.location),
             _permissionTile(

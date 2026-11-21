@@ -24,21 +24,30 @@ const ist = (ms) => new Intl.DateTimeFormat('tr-TR', { timeZone: 'Europe/Istanbu
 const tsMs = (t) => (t && t.toMillis ? t.toMillis() : null);
 
 /** --deneme <konu>: haber bildirimiyle aynı biçimde (Android veri + iOS apns uyarısı) tek deneme bildirimi. */
-async function testTopic(topic) {
+async function testTopic(topic, token = null) {
   const { toWire } = require('../src/notify');
   const msg = toWire({
-    topic,
+    topic: token ? undefined : topic,
     notification: { title: '🔔 Haber Akışı deneme', body: `Bu bir deneme bildirimidir (${topic}). Geldiyse bildirim zinciri çalışıyor.` },
     data: { type: 'test' },
     android: { priority: 'high', notification: { channelId: 'breaking_news', tag: 'deneme' } },
   });
+  if (token) {
+    delete msg.condition;
+    msg.token = token;
+  }
   const res = await getMessaging().sendEach([msg]);
   const r = res.responses[0];
-  console.log(`\n=== Deneme bildirimi → konu "${topic}" ===`);
+  console.log(`\n=== Deneme bildirimi → ${token ? 'DOĞRUDAN cihaz jetonu' : `konu "${topic}"`} ===`);
   console.log(r.success ? `  ✔ FCM kabul etti (${r.messageId}). Konuya abone her cihaza gitmeli.` : `  ✘ FCM reddetti: ${r.error && r.error.code} ${r.error && r.error.message}`);
 }
 
 async function main() {
+  const ji = process.argv.indexOf('--jeton');
+  if (ji > 0) {
+    initAdmin();
+    return testTopic('jeton', process.argv[ji + 1]);
+  }
   const di = process.argv.indexOf('--deneme');
   if (di > 0) {
     initAdmin();

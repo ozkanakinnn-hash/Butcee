@@ -339,6 +339,41 @@ class NotificationService {
   bool _again = false;
 
   static const _iosTopicsResetKey = 'ios_topics_reset_v2';
+
+  /// Son konu aboneliği hatası (tanılama ekranı için).
+  String? lastTopicError;
+
+  /// Bildirim tanılama: izin, APNs/FCM jetonu, abone konular, son hata. Kopyalanıp destekle paylaşılır.
+  Future<List<(String, String)>> diagnostics() async {
+    final m = FirebaseMessaging.instance;
+    Future<String> safe(Future<String> Function() f) async {
+      try {
+        return await f().timeout(const Duration(seconds: 10));
+      } catch (e) {
+        return 'HATA: $e';
+      }
+    }
+
+    final settings = _settings;
+    return [
+      ('Platform', defaultTargetPlatform.name),
+      ('İzin', await safe(() async => (await m.getNotificationSettings()).authorizationStatus.name)),
+      if (defaultTargetPlatform == TargetPlatform.iOS)
+        ('APNs jetonu', await safe(() async => (await m.getAPNSToken()) == null ? 'YOK' : 'var')),
+      // ignore: deprecated_member_use
+      ('FCM jetonu', await safe(() async => (await m.getToken()) ?? 'YOK')),
+      ('İstenen konular', (settings?.desiredTopics.toList() ?? const <String>[]).join(', ')),
+      ('Abone konular', (settings?.subscribedTopics.toList() ?? const <String>[]).join(', ')),
+      ('Son hata', lastTopicError ?? '-'),
+    ];
+  }
+
+  /// Tüm konulara baştan abone ol (tanılama ekranındaki düğme).
+  Future<void> resubscribeAll() async {
+    lastTopicError = null;
+    await _settings?.setSubscribedTopics(<String>{});
+    await syncTopics();
+  }
   bool _iosRegistered = false;
 
   /// iOS'ta konu aboneliği APNs jetonu gelmeden çalışmaz; kısa süre beklenir.
@@ -395,6 +430,7 @@ class NotificationService {
       } while (_again);
     } catch (e, st) {
       debugPrint('Bildirim konuları güncellenemedi: $e');
+      lastTopicError = '$e';
       // Mağaza sürümünde görünür olsun (Crashlytics → ölümcül olmayan hata)
       try {
         FirebaseCrashlytics.instance.recordError(e, st, reason: 'Bildirim konu aboneliği');
