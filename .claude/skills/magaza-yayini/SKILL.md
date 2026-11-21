@@ -65,7 +65,13 @@ Play hataları: Billing kitaplığı ≥ 8 (`billing-ktx` 8.x); sürüm notu eti
 - App Store görselleri: Play için `flutter test tool/promo/capture.dart` ile yakalanan gerçek ekranlar → Playwright ile 440×956 @3x
   iPhone çerçevesi (dynamic island, 9:41) → 1320×2868. Çerçeve ekranı yakalanan ekranın oranında olsun (alt menü kesilmesin).
 
-## C) App Store Connect'te kullanıcıyı yönlendirme (2026 arayüzü)
+### Kotlin Multiplatform (Compose MP) uygulamasında (Minik Gurme kalıbı: `.github/workflows/minik-gurme-ios-release.yml`) — ÇALIŞTI 21 Kasım 2026
+- `macos-15-intel` + `actions/setup-java` 21 + XcodeGen; `local.properties`'e `sdk.dir=$ANDROID_HOME` (Gradle projesi Android eklentisi ister).
+  Xcode ön-derleme betiği `./gradlew :shared:embedAndSignAppleFrameworkForXcode` çalıştırır; tek hedef olduğu için imza ayarları komut satırından
+  (`CODE_SIGN_STYLE=Manual … PROVISIONING_PROFILE_SPECIFIER=$APP_PROFILE`). Kotlin/Native yayın derlemesi Intel'de ~30 dk → timeout 120.
+- İlk sürüm aboneliksiz: ortak kodda `PlusManager.purchasesEnabled` bayrağı; iOS'ta kapalıyken kilitli/satın alınamayan öğe gösterme (Apple 2.1/3.1.1).
+- Mağaza görselleri: Robolectric ekran testinin kopyası `qualifiers = "w402dp-h874dp-xxhdpi"` → doğrudan 1206×2622 ham ekran.
+'te kullanıcıyı yönlendirme (2026 arayüzü)
 Sıra (`templates/APPLE-HESAP-REHBERI.md`): Developer Program (Bireysel, 99$) → Team ID → Identifiers (App Group, App ID'ler, widget) → **Business**: Paid Apps sözleşmesi, banka, W-8BEN, DSA → New App → API anahtarı → GitHub sırları → AdMob iOS → sürüm sayfası → yükleme → Submit.
 - Menü: uygulama adının yanındaki **›** → General (App Information, App Compliance, **App Review**), Trust & Safety (**App Privacy**). Sürüm: "1.0.0 Prepare for Submission".
 - "Add for Review" eksik listesi: Content Rights, Primary Category (boş kalabiliyor), **Privacy Policy URL her dil için ayrı**, "Sign-in required" işaretli kalmışsa kaldır. Sonra **Draft Submission → Submit for Review**.
