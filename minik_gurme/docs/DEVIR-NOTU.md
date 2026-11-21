@@ -25,6 +25,12 @@ minik_gurme/
 Özellikler: Bugün, 100 Gıda (100 ayrı 3D görsel), Tarifler, Rehber (Bu Ay + bilgi bankası), Topluluk (Firebase forum; okumak herkese açık, yazmak Plus'a özel), büyüme takibi (WHO), alerjen planı, çoklu bebek (Plus), haftalık menü (Plus), doktor raporu PDF (Plus), yedek/geri yükle, bildirimler, açık/koyu tema.
 Test: `./gradlew --no-daemon --no-configuration-cache --max-workers=2 :app:testDebugUnitTest` (ANDROID_HOME=/opt/android-sdk; Maven 429 olursa yeniden dene) → ~45 test, hepsi yeşil. iOS klib kontrolü: `:shared:compileKotlinIosArm64 :shared:compileKotlinIosSimulatorArm64`.
 
+## iOS App Store (21 Kasım 2026)
+- **1.0.0 (yapı 2) App Store Connect'e yüklendi** — `.github/workflows/minik-gurme-ios-release.yml` (GitHub Actions `macos-15-intel`, Mac/Codemagic'siz; arşiv ~30 dk). Yeniden: `minik_gurme/iosApp/RELEASE_VERSION` değiştir ya da Run workflow (ref bu dal).
+- App Store Connect: Apple ID **6837536740**, ad "Minik Gurme: Ek Gıda Takibi", TR + EN, 13+, Çin hariç, gizlilik/yaş/kategori/metinler girildi; görseller `docs/store/appstore/{tr,en}` (1206×2622, `olustur.js`, ham: `IosStoreScreenshotsTest`). Rehber: `docs/store/APP-STORE.md`.
+- **İlk iOS sürümü Plus'sız:** `IosStore.PURCHASES_ENABLED = false` → `PlusManager.purchasesEnabled` false: Plus kartı/kilitli satırlar/"Plus'a geç" gizli, toplulukta yazma herkese açık, yasal metinlerde satın alma bölümleri yok. Abonelik ürünleri oluşturulunca true yapıp 1.0.1.
+- Kalan: yapıyı sürüme seç → Add for Review → Submit.
+
 ## Durum
 **Bitti:** Android uygulaması; Play Store web sayfaları (GitHub Pages yayında: https://ozkanakinnn-hash.github.io/Butcee/minik-gurme/ — gizlilik, koşullar, hesap-silme); mağaza görselleri + metinleri (`docs/store`, TR/EN, 7 ekran görüntüsü, öne çıkan görsel, tanıtım görselleri); iPhone uygulaması **Codemagic simülatöründe derlendi ve açıldı** (ilk ekran doğrulandı); iPhone'da bildirimler, topluluk (Firebase REST), yedek, PDF, Plus kodu (StoreKit 2 + `StoreEvents`) yazıldı.
 **Doğrulanmadı:** iPhone'da onboarding sonrası ekranlar, bildirim izni, yedek, PDF, gerçek Plus satın alma (Apple üyeliği gerekir). Android release (R8) APK'sı iOS hazırlığı değişikliklerinden sonra **hiç derlenip telefonda denenmedi** (CI emülatör duman testi yeşildi).
