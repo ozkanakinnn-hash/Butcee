@@ -1,0 +1,26 @@
+# İnceleme videosu için proje: ana proje + UI test hedefi. Yalnızca CI'da (xcodegen generate --spec review.yml).
+include:
+  - project.yml
+targets:
+  MinikGurmeReviewUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: ReviewUITests
+    dependencies:
+      - target: MinikGurme
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: akinai.minikgurme.reviewuitests
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_TARGET_NAME: MinikGurme
+        SWIFT_VERSION: "5.0"
+schemes:
+  MinikGurmeReview:
+    build:
+      targets:
+        MinikGurme: all
+        MinikGurmeReviewUITests: [test]
+    test:
+      targets:
+        - MinikGurmeReviewUITests

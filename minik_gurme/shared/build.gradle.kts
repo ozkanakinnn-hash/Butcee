@@ -16,7 +16,8 @@ kotlin {
     experimentalProperties["android.experimental.kmp.enableAndroidResources"] = true
   }
 
-  listOf(iosArm64(), iosSimulatorArm64()).forEach { target ->
+  // iosX64: yalnızca Intel Mac simülatörü (GitHub macos-15-intel'de inceleme videosu); App Store derlemesi arm64.
+  listOf(iosArm64(), iosSimulatorArm64(), iosX64()).forEach { target ->
     target.binaries.framework {
       baseName = "Shared"
       isStatic = true
@@ -65,4 +66,5 @@ dependencies {
   add("kspAndroid", libs.androidx.room.compiler)
   add("kspIosArm64", libs.androidx.room.compiler)
   add("kspIosSimulatorArm64", libs.androidx.room.compiler)
+  add("kspIosX64", libs.androidx.room.compiler)
 }

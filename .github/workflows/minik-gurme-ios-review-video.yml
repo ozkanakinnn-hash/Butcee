@@ -1,0 +1,84 @@
+# Minik Gurme: App Review ekran kaydı (iPhone simülatörü, Intel → iosX64). XCUITest akışı: iosApp/ReviewUITests
+name: Minik Gurme iOS inceleme videosu
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "minik_gurme/iosApp/ReviewUITests/**"
+      - "minik_gurme/iosApp/review.yml"
+      - ".github/workflows/minik-gurme-ios-review-video.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: minik-review-video
+  cancel-in-progress: true
+
+jobs:
+  video:
+    runs-on: macos-15-intel
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - name: En yeni Xcode 26
+        run: |
+          sudo xcode-select -s "$(ls -d /Applications/Xcode_26*.app | grep -v beta | sort -V | tail -1)"
+          xcodebuild -version
+      - name: Simülatör (en yeni iOS, iPhone)
+        run: |
+          UDID=$(xcrun simctl list devices available -j | python3 -c '
+          import json,sys,re
+          d=json.load(sys.stdin)["devices"]; best=None
+          for rt,devs in d.items():
+              m=re.search(r"iOS-(\d+)-(\d+)",rt)
+              if not m: continue
+              for x in devs:
+                  if not x["name"].startswith("iPhone"): continue
+                  s=((int(m[1]),int(m[2])),"Pro" in x["name"] and "Max" not in x["name"],x["name"])
+                  if best is None or s>best[0]: best=(s,x["udid"],x["name"])
+          print(best[1]); print(best[2],file=sys.stderr)')
+          echo "UDID=$UDID" >> "$GITHUB_ENV"
+          xcrun simctl boot "$UDID" || true
+          xcrun simctl bootstatus "$UDID" -b
+          xcrun simctl status_bar "$UDID" override --time "9:41" --batteryState charged --batteryLevel 100 --cellularBars 4 --wifiBars 3 || true
+      - name: Proje ve derleme (test için)
+        run: |
+          brew install xcodegen
+          echo "sdk.dir=${ANDROID_HOME:-$ANDROID_SDK_ROOT}" > minik_gurme/local.properties
+          cd minik_gurme/iosApp && xcodegen generate --spec review.yml
+          set -o pipefail
+          xcodebuild -project MinikGurme.xcodeproj -scheme MinikGurmeReview -destination "id=$UDID" \
+            -derivedDataPath build/dd ARCHS=x86_64 ONLY_ACTIVE_ARCH=YES CODE_SIGNING_ALLOWED=NO \
+            build-for-testing 2>&1 | tee build.log | grep -E "error:|^e: |\*\* TEST BUILD" || true
+          grep -q "TEST BUILD SUCCEEDED" build.log
+      - name: Derleme hataları
+        if: failure()
+        run: |
+          grep -E "error:|^e: |What went wrong" -A3 minik_gurme/iosApp/build.log | head -80 || true
+      - name: Akışı oynat ve kaydet
+        working-directory: minik_gurme/iosApp
+        run: |
+          OUT="$RUNNER_TEMP/review.mp4"
+          xcrun simctl io "$UDID" recordVideo --codec=h264 --force "$OUT" &
+          REC=$!
+          sleep 3
+          xcodebuild -project MinikGurme.xcodeproj -scheme MinikGurmeReview -destination "id=$UDID" \
+            -derivedDataPath build/dd test-without-building 2>&1 | tee test.log | grep -E "REVIEW|Test Case|TEST" || true
+          kill -INT $REC; wait $REC || true
+          ls -la "$OUT"
+          D="$GITHUB_WORKSPACE/minik_gurme/docs/store/appstore/inceleme-video"
+          mkdir -p "$D" && cp "$OUT" "$D/minik-gurme-review.mp4"
+          grep "REVIEW" test.log > "$D/adimlar.txt" || true
+      - name: Kaydet
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add minik_gurme/docs/store/appstore/inceleme-video
+          git commit -m "Minik Gurme App Review ekran kaydı (simülatör) [skip ci]" || exit 0
+          for i in 1 2 3; do git pull --rebase --autostash origin "${GITHUB_REF_NAME}" && git push origin "HEAD:${GITHUB_REF_NAME}" && exit 0; sleep 5; done; exit 1
