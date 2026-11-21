@@ -215,4 +215,22 @@ void main() {
     await tester.tap(find.text('Galatasaray'));
     expect(tapped?.fixtureId, 77);
   });
+
+  testWidgets('maç kartı: goller dakika ve oyuncuyla golü atan takımın altında', (tester) async {
+    final m = MatchRecord.fromMap({
+      ..._match(),
+      'goal_events': [
+        {'minute': 21, 'extra': 0, 'team_id': _match()['home']['id'], 'player': 'A. Oyuncu', 'detail': 'Normal Goal'},
+        {'minute': 45, 'extra': 2, 'team_id': _match()['away']['id'], 'player': 'B. Oyuncu', 'detail': 'Penalty'},
+      ],
+    });
+    await tester.pumpWidget(_app(Scaffold(body: LiveMatchesStrip(matches: [m], onTap: (_) {}))));
+    await tester.pump();
+    expect(find.text("21'"), findsOneWidget);
+    expect(find.text('A. Oyuncu'), findsOneWidget);
+    expect(find.text("45+2'"), findsOneWidget);
+    expect(find.text('B. Oyuncu (P)'), findsOneWidget);
+    // Ev sahibinin golü solda, deplasmanınki sağda
+    expect(tester.getCenter(find.text('A. Oyuncu')).dx, lessThan(tester.getCenter(find.text('B. Oyuncu (P)')).dx));
+  });
 }

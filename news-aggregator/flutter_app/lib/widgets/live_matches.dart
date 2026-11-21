@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../backend/schema/football_records.dart';
 import '../l10n/app_strings.dart';
-import '../pages/team_picker_page.dart';
 import '../theme.dart';
 
 /// Maç durumu etiketi: "CANLI 67'", "Devre", "MS", "Bugün 20:00".
@@ -20,7 +19,7 @@ String matchStatusLabel(MatchRecord m, S s, {DateTime? now}) {
   return '${two(k.day)}.${two(k.month)} $time';
 }
 
-/// Yatay kaydırılan maç kartları (canlı olanlar önce).
+/// Maç kartları alt alta (canlı olanlar önce); akışla birlikte aşağı kayar.
 class LiveMatchesStrip extends StatelessWidget {
   const LiveMatchesStrip({super.key, required this.matches, required this.onTap});
 
@@ -30,19 +29,26 @@ class LiveMatchesStrip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (matches.isEmpty) return const SizedBox.shrink();
-    return SizedBox(
-      height: 112,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-        itemCount: matches.length,
-        separatorBuilder: (_, _) => const SizedBox(width: 10),
-        itemBuilder: (context, i) => MatchCard(match: matches[i], onTap: () => onTap(matches[i])),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          for (var i = 0; i < matches.length; i++) ...[
+            if (i > 0) const SizedBox(height: 10),
+            MatchCard(match: matches[i], onTap: () => onTap(matches[i])),
+          ],
+        ],
       ),
     );
   }
 }
 
+/// Tam genişlik maç kartı:
+///   [ev sahibi]      CANLI 67'      [deplasman]
+///                     2  –  1
+///   21' A. Yılmaz                   39' C. Şahin
+///   58' M. Arslan (P)
 class MatchCard extends StatelessWidget {
   const MatchCard({super.key, required this.match, required this.onTap});
 
@@ -54,63 +60,173 @@ class MatchCard extends StatelessWidget {
     final theme = Theme.of(context);
     final s = S.of(context);
     final m = match;
-    final scoreStyle = theme.textTheme.titleMedium?.copyWith(
-      fontWeight: FontWeight.w800,
+    final muted = theme.colorScheme.onSurfaceVariant;
+    final scoreStyle = theme.textTheme.headlineMedium?.copyWith(
+      fontWeight: FontWeight.w900,
+      height: 1.1,
       fontFeatures: const [FontFeature.tabularFigures()],
     );
 
-    Widget row(MatchTeam t, int goals) => Row(
+    final homeGoals = m.goals.where((g) => g.teamId == m.home.id).toList();
+    final awayGoals = m.goals.where((g) => g.teamId == m.away.id).toList();
+
+    Widget team(MatchTeam t, CrossAxisAlignment align) => Column(
+      crossAxisAlignment: align,
+      mainAxisSize: MainAxisSize.min,
       children: [
-        TeamCode(code: t.code, width: 40, fontSize: 13),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Text(
-            t.name,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
-          ),
+        _TeamBadge(team: t),
+        const SizedBox(height: 6),
+        Text(
+          t.name,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          textAlign: align == CrossAxisAlignment.start ? TextAlign.left : TextAlign.right,
+          style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700, height: 1.2),
         ),
-        if (!m.notStarted) Text('$goals', style: scoreStyle),
       ],
     );
 
+    Widget goals(List<GoalEvent> list, CrossAxisAlignment align) => Column(
+      crossAxisAlignment: align,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        for (final g in list)
+          Padding(
+            padding: const EdgeInsets.only(top: 3),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              textDirection: align == CrossAxisAlignment.start ? TextDirection.ltr : TextDirection.rtl,
+              children: [
+                Icon(Icons.sports_soccer, size: 13, color: muted),
+                const SizedBox(width: 4),
+                Text(
+                  g.minuteLabel,
+                  style: theme.textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w800, color: muted),
+                ),
+                const SizedBox(width: 4),
+                Flexible(
+                  child: Text(
+                    [
+                      g.player,
+                      if (g.detail == 'Penalty') '(P)',
+                      if (g.detail == 'Own Goal') '(KK)',
+                    ].join(' '),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.labelMedium,
+                  ),
+                ),
+              ],
+            ),
+          ),
+      ],
+    );
+
+    final status = Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (m.isLive) ...[const LiveDot(), const SizedBox(width: 6)],
+        Text(
+          matchStatusLabel(m, s),
+          style: theme.textTheme.labelLarge?.copyWith(
+            color: m.isLive ? AppTheme.breaking : muted,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+      ],
+    );
+
+    final score = m.notStarted
+        ? Text('–', style: scoreStyle?.copyWith(color: muted))
+        : Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('${m.homeGoals}', style: scoreStyle),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: Text('–', style: scoreStyle?.copyWith(color: muted, fontWeight: FontWeight.w400)),
+              ),
+              Text('${m.awayGoals}', style: scoreStyle),
+            ],
+          );
+
     return Material(
       color: theme.colorScheme.surfaceContainer,
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(18),
       child: InkWell(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
         onTap: onTap,
         child: Container(
-          width: 210,
-          padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+          width: double.infinity,
+          padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
           decoration: m.isLive
               ? BoxDecoration(
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(18),
                   border: Border.all(color: AppTheme.breaking.withValues(alpha: 0.6)),
                 )
               : null,
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            mainAxisSize: MainAxisSize.min,
             children: [
               Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (m.isLive) ...[const LiveDot(), const SizedBox(width: 6)],
-                  Text(
-                    matchStatusLabel(m, s),
-                    style: theme.textTheme.labelMedium?.copyWith(
-                      color: m.isLive ? AppTheme.breaking : theme.colorScheme.onSurfaceVariant,
-                      fontWeight: FontWeight.w700,
+                  Expanded(child: team(m.home, CrossAxisAlignment.start)),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        status,
+                        const SizedBox(height: 4),
+                        score,
+                        if (m.round.isNotEmpty)
+                          Text(m.round, style: theme.textTheme.labelSmall?.copyWith(color: muted)),
+                      ],
                     ),
                   ),
+                  Expanded(child: team(m.away, CrossAxisAlignment.end)),
                 ],
               ),
-              row(m.home, m.homeGoals),
-              row(m.away, m.awayGoals),
+              if (m.goals.isNotEmpty) ...[
+                const SizedBox(height: 8),
+                Divider(height: 1, color: theme.colorScheme.outlineVariant.withValues(alpha: 0.6)),
+                const SizedBox(height: 4),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(child: goals(homeGoals, CrossAxisAlignment.start)),
+                    const SizedBox(width: 12),
+                    Expanded(child: goals(awayGoals, CrossAxisAlignment.end)),
+                  ],
+                ),
+              ],
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Takım rozeti: logo yoksa takım renkleriyle kısa kod.
+class _TeamBadge extends StatelessWidget {
+  const _TeamBadge({required this.team});
+
+  final MatchTeam team;
+
+  @override
+  Widget build(BuildContext context) {
+    final bg = team.colors.isNotEmpty ? team.colors.first : Theme.of(context).colorScheme.surfaceContainerHighest;
+    final fg = team.colors.length > 1 ? team.colors[1] : Theme.of(context).colorScheme.onSurface;
+    return Container(
+      width: 36,
+      height: 36,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(color: bg, shape: BoxShape.circle),
+      child: Text(
+        team.code.length > 3 ? team.code.substring(0, 3) : team.code,
+        style: TextStyle(color: fg, fontSize: 11, fontWeight: FontWeight.w900, letterSpacing: 0.2),
       ),
     );
   }

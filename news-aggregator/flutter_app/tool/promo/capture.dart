@@ -68,7 +68,7 @@ void main() {
     SharedPreferences.setMockInitialValues({
       'flutter.interests': ['son-dakika', 'gundem', 'ekonomi', 'futbol', 'teknoloji', 'bilim'],
       'flutter.chose_interests': true,
-      'flutter.followed_teams': ['yesil-fk', 'mavi-sk'],
+      'flutter.followed_teams': ['yesil-fk', 'mavi-sk', 'kirmizi-spor'],
       'flutter.weather_card': true,
       'flutter.notify_news': true,
       'flutter.notify_matches': true,
@@ -485,6 +485,22 @@ Future<void> _seed(FakeFirebaseFirestore db) async {
       {'minute': 58, 'extra': 0, 'team_id': 'yesil-fk', 'player': 'M. Arslan', 'detail': 'Penalty'},
     ],
     'team_ids': ['yesil-fk', 'mavi-sk'],
+    'is_live': true,
+    'is_finished': false,
+  });
+
+  await db.doc('matches/9002').set({
+    'fixture_id': 9002,
+    'kickoff': Timestamp.fromDate(now.subtract(const Duration(minutes: 41))),
+    'status': {'short': '1H', 'elapsed': 41},
+    'league': {'id': 1, 'name': 'Süper Lig', 'round': '13. Hafta'},
+    'home': {'id': 'sari-sk', 'name': 'Sarı SK', 'short': 'SSK', 'colors': ['#f2c200', '#1a1a1a']},
+    'away': {'id': 'kirmizi-spor', 'name': 'Kırmızı Spor', 'short': 'KRS', 'colors': ['#c62828', '#ffffff']},
+    'goals': {'home': 0, 'away': 1},
+    'goal_events': [
+      {'minute': 28, 'extra': 0, 'team_id': 'kirmizi-spor', 'player': 'E. Demir', 'detail': 'Normal Goal'},
+    ],
+    'team_ids': ['sari-sk', 'kirmizi-spor'],
     'is_live': true,
     'is_finished': false,
   });
