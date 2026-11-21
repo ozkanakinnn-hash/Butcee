@@ -4,11 +4,6 @@ name: News iOS inceleme videosu
 
 on:
   workflow_dispatch:
-  push:
-    branches: ["claude/haber-akisi-2026-11"]
-    paths:
-      - "news-aggregator/flutter_app/integration_test/**"
-      - ".github/workflows/news-ios-review-video.yml"
 
 permissions:
   contents: write
