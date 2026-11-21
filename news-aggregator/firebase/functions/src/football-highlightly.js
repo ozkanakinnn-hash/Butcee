@@ -296,7 +296,7 @@ class Highlightly {
           .filter(Boolean)
           .sort((a, b) => b - a);
         const year = seasons[0] || seasonFor();
-        return [{ league: { id, name: this.league.name }, seasons: [{ year, coverage: { fixtures: { events: true } } }] }];
+        return [{ league: { id, name: (this.league && this.league.name) || 'Süper Lig' }, seasons: [{ year, coverage: { fixtures: { events: true } } }] }];
       }
       case '/teams': {
         const leagueId = await this.findLeague();
