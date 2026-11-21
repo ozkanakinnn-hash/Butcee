@@ -106,6 +106,17 @@ cd ~ && rm -rf haber && unzip -o "Haber-Akisi-kodNN.zip" -d haber && cd haber/ne
 
 ## 5. Durum: ne bekliyor
 
+### iOS bildirimleri ÇÖZÜLDÜ (21 Kasım 2026 akşam)
+- **1.0.0 yapı 11 incelemeye gönderildi** (yapı 6 geri çekildi: imzada push yetkisi yoktu → iPhone'a hiç bildirim gitmiyordu).
+- Kök nedenler (3): imzada `aps-environment` yok (iş akışı artık yeniden imzalıyor + doğruluyor), APNs anahtarı yalnızca Sandbox'tı
+  (yeni anahtar "Haber Akisi Push 2" = Sandbox & Production), Firebase'de anahtar yalnızca Development yuvasındaydı (Production'a da yüklendi).
+- Uygulamada Ayarlar → **Bildirim tanılama** (izin, APNs/FCM jetonu, konular, son hata, yeniden abone ol).
+- Sunucu teşhis aracı: `scripts/mac-teshis.js` (`--duzelt`, `--gonder`, `--deneme <konu>`, `--jeton <fcm>`); Cloud Shell'de `~/haber-kod` (sparse clone).
+- iPhone canlı skor: Live Activities YOK; tek bildirim `apns-collapse-id` ile yerinde güncellenir (kod33/kod34 — benim paketlerim;
+  diğer oturumun "kod33"ü X otomasyonuydu, isim çakıştı). **kod34 yüklendi mi teyit et.**
+- Apple'daki eski "Haber Akisi Push" (Sandbox) anahtarı iptal edilebilir.
+- Küçük iş: tanılamadaki "Son hata" başarılı abonelikten sonra temizlenmiyor.
+
 ### iOS (20 Kasım 2026)
 - **1.0.0 (yapı 6) App Store Connect'e yüklendi** — `.github/workflows/news-ios-release.yml` (Mac'siz, Codemagic'siz; macos-15-intel).
   Yeniden yüklemek: `flutter_app/ios/RELEASE_VERSION` değiştir ya da Actions'tan workflow_dispatch (ref: bu dal).
