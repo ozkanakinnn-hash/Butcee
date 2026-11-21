@@ -61,10 +61,9 @@ def main():
     for att in [a.strip() for a in os.environ.get("ATTACHMENT", "").split(",") if a.strip()]:
         if not os.path.exists(att):
             sys.exit(f"Ek bulunamadı: {att}")
-        # Aynı adlı eski eki sil
+        # Apple yalnızca 1 ek kabul eder: mevcut ekleri sil
         for a in call("GET", f"/appStoreReviewDetails/{det['id']}/appStoreReviewAttachments").get("data", []):
-            if a["attributes"].get("fileName") == os.path.basename(att):
-                call("DELETE", f"/appStoreReviewAttachments/{a['id']}")
+            call("DELETE", f"/appStoreReviewAttachments/{a['id']}")
         data = open(att, "rb").read()
         res = call("POST", "/appStoreReviewAttachments", {"data": {"type": "appStoreReviewAttachments",
                    "attributes": {"fileName": os.path.basename(att), "fileSize": len(data)},

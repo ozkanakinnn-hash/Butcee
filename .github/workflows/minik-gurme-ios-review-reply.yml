@@ -28,7 +28,7 @@ jobs:
       ASC_PRIVATE_KEY: ${{ secrets.ASC_PRIVATE_KEY }}
       BUNDLE_ID: akinai.minikgurme
       NOTES_FILE: minik_gurme/docs/store/appstore/inceleme-video/notes.txt
-      ATTACHMENT: minik_gurme/docs/store/appstore/inceleme-video/minik-gurme-review.mp4,minik_gurme/docs/store/appstore/inceleme-video/minik-gurme-review-2-report-block-delete.mp4
+      ATTACHMENT: minik_gurme/docs/store/appstore/inceleme-video/minik-gurme-review.mp4
       RESUBMIT: ${{ github.event.inputs.resubmit }}
     steps:
       - uses: actions/checkout@v5
