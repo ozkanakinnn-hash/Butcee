@@ -61,6 +61,9 @@ jobs:
           xcrun simctl status_bar "$UDID" override --time "9:41" --batteryState charged --batteryLevel 100 --cellularBars 4 --wifiBars 3 || true
           xcrun simctl location "$UDID" set 41.0082,28.9784 || true
           xcrun simctl privacy "$UDID" grant location akinai.app1 || true
+          # Klavye ilk kullanım ipuçları videoda görünmesin
+          xcrun simctl spawn "$UDID" defaults write com.apple.keyboard.preferences DidShowContinuousPathIntroduction -bool true || true
+          xcrun simctl spawn "$UDID" defaults write com.apple.Preferences DidShowContinuousPathIntroduction -bool true || true
       - name: Ön derleme (kayıt başlamadan)
         working-directory: ${{ env.APP_DIR }}
         run: |
@@ -68,7 +71,7 @@ jobs:
           flutter build ios --simulator --debug \
             --dart-define=FIREBASE_IOS_API_KEY="$FIREBASE_IOS_API_KEY" --dart-define=FIREBASE_IOS_APP_ID="$FIREBASE_IOS_APP_ID" \
             --dart-define=FIREBASE_IOS_SENDER_ID="$FIREBASE_IOS_SENDER_ID" --dart-define=FIREBASE_IOS_STORAGE_BUCKET="$FIREBASE_IOS_STORAGE_BUCKET" \
-            --dart-define=FIREBASE_IOS_PROJECT_ID="$FIREBASE_IOS_PROJECT_ID" 2>&1 | tail -5
+            --dart-define=FIREBASE_IOS_PROJECT_ID="$FIREBASE_IOS_PROJECT_ID" --dart-define=NO_ADS=true 2>&1 | tail -5
       - name: Akışı oynat ve kaydet
         working-directory: ${{ env.APP_DIR }}
         run: |
@@ -79,7 +82,7 @@ jobs:
           flutter test integration_test/review_flow_test.dart -d "$UDID" \
             --dart-define=FIREBASE_IOS_API_KEY="$FIREBASE_IOS_API_KEY" --dart-define=FIREBASE_IOS_APP_ID="$FIREBASE_IOS_APP_ID" \
             --dart-define=FIREBASE_IOS_SENDER_ID="$FIREBASE_IOS_SENDER_ID" --dart-define=FIREBASE_IOS_STORAGE_BUCKET="$FIREBASE_IOS_STORAGE_BUCKET" \
-            --dart-define=FIREBASE_IOS_PROJECT_ID="$FIREBASE_IOS_PROJECT_ID" 2>&1 | tee "$RUNNER_TEMP/test.log" | grep -E "REVIEW|All tests|Some tests|Error|error:" || true
+            --dart-define=FIREBASE_IOS_PROJECT_ID="$FIREBASE_IOS_PROJECT_ID" --dart-define=NO_ADS=true 2>&1 | tee "$RUNNER_TEMP/test.log" | grep -E "REVIEW|All tests|Some tests|Error|error:" || true
           kill -INT $REC; wait $REC || true
           ls -la "$OUT"
           mkdir -p "$GITHUB_WORKSPACE/news-aggregator/docs/ios/inceleme-video"
