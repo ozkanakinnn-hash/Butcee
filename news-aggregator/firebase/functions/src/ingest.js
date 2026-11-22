@@ -222,6 +222,9 @@ function resolveCategoryRef(db, value) {
 }
 
 /** Tek bir kaynağı işler ve sonucu kaynak belgesine yazar. */
+/** Deneme modundaki kaynak bu kadar art arda başarısız olursa kapatılır (20 dk'da bir → ≈2 saat). */
+const PROBATION_MAX_ERRORS = 6;
+
 async function ingestSource(db, sourceDoc, categories, { fetchImpl, now = new Date() } = {}) {
   const source = { id: sourceDoc.id, ...sourceDoc.data() };
   const result = { source: source.source_name, fetched: 0, added: 0, notModified: false, error: null };
@@ -254,6 +257,8 @@ async function ingestSource(db, sourceDoc, categories, { fetchImpl, now = new Da
 
     const items = (res.feed.items || []).slice(0, MAX_ITEMS_PER_FEED);
     result.fetched = items.length;
+    // Deneme modundaki kaynak boş dönüyorsa hata gibi sayılır (bozuk/yanlış adres)
+    if (source.probation && items.length === 0) throw new Error('Akış boş (deneme modu)');
 
     const built = dedupeWithinBatch(items.map((it) => buildArticle(it, ctx)).filter(Boolean));
     const lastSeenMs = source.last_seen_published_at ? source.last_seen_published_at.toMillis() : 0;
@@ -282,13 +287,23 @@ async function ingestSource(db, sourceDoc, categories, { fetchImpl, now = new Da
       etag: res.etag || null,
       last_modified: res.lastModified || null,
       last_added_count: result.added,
+      error_streak: 0,
       ...(newestMs > 0 ? { last_seen_published_at: Timestamp.fromMillis(newestMs) } : {}),
     });
   } catch (err) {
     result.error = err.message;
     logger.error('Kaynak işlenemedi', { source: source.source_name, url: source.rss_url, error: err.message });
+    // Deneme modundaki yeni kaynak art arda PROBATION_MAX_ERRORS kez (≈2 saat) başarısızsa kendiliğinden kapatılır.
+    const streak = (source.error_streak || 0) + 1;
+    const retire = source.probation === true && streak >= PROBATION_MAX_ERRORS;
+    if (retire) logger.warn('Deneme kaynağı kapatıldı', { source: source.source_name, url: source.rss_url, error: err.message });
     await sourceDoc.ref
-      .update({ last_fetched_at: FieldValue.serverTimestamp(), last_error: String(err.message).slice(0, 500) })
+      .update({
+        last_fetched_at: FieldValue.serverTimestamp(),
+        last_error: String(err.message).slice(0, 500),
+        error_streak: streak,
+        ...(retire ? { is_active: false, disabled_reason: `Deneme: art arda ${streak} hata — ${String(err.message).slice(0, 200)}` } : {}),
+      })
       .catch(() => {});
   }
   return result;

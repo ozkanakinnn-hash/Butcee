@@ -418,6 +418,91 @@
       "rss_url": "https://www.trthaber.com/bilim_teknoloji_articles.rss",
       "category": "teknoloji",
       "domain": "trthaber.com"
+    },
+    {
+      "id": "aa-yasam",
+      "source_name": "Anadolu Ajansı",
+      "rss_url": "https://www.aa.com.tr/tr/rss/default?cat=yasam",
+      "category": "yasam",
+      "domain": "aa.com.tr"
+    },
+    {
+      "id": "trt-yasam",
+      "source_name": "TRT Haber",
+      "rss_url": "https://www.trthaber.com/yasam_articles.rss",
+      "category": "yasam",
+      "domain": "trthaber.com"
+    },
+    {
+      "id": "aa-dunya",
+      "source_name": "Anadolu Ajansı",
+      "rss_url": "https://www.aa.com.tr/tr/rss/default?cat=dunya",
+      "category": "dunya",
+      "domain": "aa.com.tr"
+    },
+    {
+      "id": "bloomberght-ekonomi",
+      "source_name": "Bloomberg HT",
+      "rss_url": "https://www.bloomberght.com/rss",
+      "category": "ekonomi",
+      "domain": "bloomberght.com",
+      "probation": true
+    },
+    {
+      "id": "dunya-ekonomi",
+      "source_name": "Dünya",
+      "rss_url": "https://www.dunya.com/rss",
+      "category": "ekonomi",
+      "domain": "dunya.com",
+      "probation": true
+    },
+    {
+      "id": "ekonomim-ekonomi",
+      "source_name": "Ekonomim",
+      "rss_url": "https://www.ekonomim.com/export/rss",
+      "category": "ekonomi",
+      "domain": "ekonomim.com",
+      "probation": true
+    },
+    {
+      "id": "paraanaliz-ekonomi",
+      "source_name": "Para Analiz",
+      "rss_url": "https://www.paraanaliz.com/feed/",
+      "category": "ekonomi",
+      "domain": "paraanaliz.com",
+      "probation": true
+    },
+    {
+      "id": "evrimagaci-bilim",
+      "source_name": "Evrim Ağacı",
+      "rss_url": "https://evrimagaci.org/rss.xml",
+      "category": "bilim",
+      "domain": "evrimagaci.org",
+      "probation": true
+    },
+    {
+      "id": "webtekno-teknoloji",
+      "source_name": "Webtekno",
+      "rss_url": "https://www.webtekno.com/rss.xml",
+      "category": "teknoloji",
+      "domain": "webtekno.com",
+      "probation": true
+    },
+    {
+      "id": "shiftdelete-teknoloji",
+      "source_name": "ShiftDelete.Net",
+      "rss_url": "https://shiftdelete.net/feed",
+      "category": "teknoloji",
+      "domain": "shiftdelete.net",
+      "probation": true
+    },
+    {
+      "id": "donanimhaber-teknoloji",
+      "source_name": "DonanımHaber",
+      "rss_url": "https://www.donanimhaber.com/rss/tum/",
+      "category": "teknoloji",
+      "domain": "donanimhaber.com",
+      "probation": true
     }
   ]
 }

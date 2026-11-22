@@ -105,9 +105,12 @@ async function rescanTopicSources(db) {
  * Sonradan eklenen kaynakları (seed-data.json'da `added_version` ≤ SOURCES_VERSION) Firestore'a bir kez yazar;
  * "seed" çalıştırmaya gerek kalmaz. Var olan kaynağın ayarlarına (is_active vb.) dokunmaz.
  */
-const SOURCES_VERSION = 2;
+const SOURCES_VERSION = 3;
 // v2 (2026-11-22): Ekonomi tek kaynağa (NTV) bağlıydı ve boş kalıyordu → AA + TRT Haber; dünya/teknoloji de TRT ile desteklendi.
-const NEW_SOURCE_IDS = ['aa-ekonomi', 'trt-ekonomi', 'trt-dunya', 'trt-teknoloji'];
+// v3 (2026-11-22): kaynak çeşitliliği — AA/TRT konu akışları (doğrulandı) + deneme modunda ekonomi/bilim/teknoloji yayıncıları
+// (probation: art arda hata/boş dönerse ingest kendiliğinden kapatır).
+const NEW_SOURCE_IDS = ['aa-ekonomi', 'trt-ekonomi', 'trt-dunya', 'trt-teknoloji',
+  'aa-bilim', 'trt-saglik', 'aa-kultur', 'trt-kultur', 'trt-egitim', 'aa-yasam', 'trt-yasam', 'aa-spor', 'aa-dunya', 'bloomberght-ekonomi', 'dunya-ekonomi', 'ekonomim-ekonomi', 'paraanaliz-ekonomi', 'evrimagaci-bilim', 'webtekno-teknoloji', 'shiftdelete-teknoloji', 'donanimhaber-teknoloji'];
 
 async function addNewSources(db, { data = require('../scripts/seed-data.json') } = {}) {
   const metaRef = db.doc('app_meta/sources');
@@ -126,6 +129,7 @@ async function addNewSources(db, { data = require('../scripts/seed-data.json') }
       is_breaking: s.is_breaking === true,
       allow_images: s.allow_images !== false,
       topic_only: s.topic_only === true,
+      ...(s.probation ? { probation: true, error_streak: 0 } : {}),
       created_at: FieldValue.serverTimestamp(),
     });
     added += 1;
