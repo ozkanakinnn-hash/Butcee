@@ -56,10 +56,11 @@ const isClickbait = (title) => CLICKBAIT.some((re) => re.test(fold(title)));
 /**
  * Yeni haberleri hikâye listesine işler (saf fonksiyon). Hikâye:
  *  { t: kökler, srcs: [yayıncı adları], first_ms, last_ms, title, url, source, image, cat, br: son dakika kaynağı mı,
- *    id: temsilci haber kimliği, major_ms?: önemli son dakika gönderildiyse }
+ *    id: temsilci haber kimliği, sum: kısa özet (puanlama için), dev/pending_dev: gelişme anahtarları,
+ *    notified_ms?/notified_level?/notified_srcs?/notify_count?: bildirim geçmişi }
  * Temsilci haber: son dakika kaynağından gelen varsa o, yoksa ilk gelen.
  */
-function mergeStories(stories, articles, { now = Date.now() } = {}) {
+function mergeStories(stories, articles, { now = Date.now(), devKeys = null } = {}) {
   const list = stories.map((s) => ({ ...s, srcs: [...s.srcs] }));
   const touched = new Set();
   for (const a of articles) {
@@ -75,6 +76,8 @@ function mergeStories(stories, articles, { now = Date.now() } = {}) {
       source: d.source_name || '',
       image: d.image_url && d.has_original_image !== false ? d.image_url : '',
       cat: (d.category_id && d.category_id.id) || '',
+      // Puanlama başlığın yanında özeti de okur; belge boyutu için kısaltılır.
+      sum: String(d.summary || '').slice(0, 140),
     };
     let s = list.find((x) => sameStory(x.t, t));
     if (!s) {
@@ -85,6 +88,15 @@ function mergeStories(stories, articles, { now = Date.now() } = {}) {
     s.last_ms = Math.max(s.last_ms, ms);
     s.first_ms = Math.min(s.first_ms, ms);
     if (a.breaking && !s.br) Object.assign(s, rep, { br: true });
+    // Olayın İLERLEMESİ (ölüm, gözaltı, istifa…): ilk kez görülen anahtarlar tekrar bildirimi için biriktirilir.
+    if (devKeys) {
+      const seen = new Set(s.dev || []);
+      const fresh = devKeys(d.title, d.summary).filter((k) => !seen.has(k));
+      if (fresh.length) {
+        s.dev = [...seen, ...fresh];
+        s.pending_dev = [...new Set([...(s.pending_dev || []), ...fresh])];
+      }
+    }
     touched.add(s);
   }
   return { stories: list, touched: [...touched] };

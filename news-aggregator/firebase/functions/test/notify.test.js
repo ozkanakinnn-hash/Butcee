@@ -132,7 +132,9 @@ test('önemli son dakika: 3 farklı yayıncı aynı olayı verince "Sadece önem
   ], categories: cats, state: r1.nextState, now: NOW + 20 * 60_000 });
   const major = r2.messages.filter((m) => m.condition === "'news_son-dakika' in topics && 'calm' in topics");
   assert.equal(major.length, 1);
-  assert.equal(major[0].notification.title, '⚡ ÖNEMLİ GELİŞME');
+  // Faiz kararı = SEVİYE 1 (ülkeyi etkileyen ekonomik karar) → "SON DAKİKA" başlığı, data.level = 1
+  assert.equal(major[0].notification.title, '🔴 SON DAKİKA');
+  assert.equal(major[0].data.level, '1');
   assert.match(major[0].notification.body, /3 kaynakta$/);
   // Aynı hikâyeye 4. kaynak eklense de tekrar gitmez
   const r3 = planNotifications({ results: [{ addedArticles: [t('d', 'Sözcü', 'Merkez Bankası faizi indirdi: yüzde 35', 55)] }], categories: cats, state: r2.nextState, now: NOW + 40 * 60_000 });
@@ -305,4 +307,90 @@ test('gündem: bülten saati kaçırılsa da o dilimin gündemi bildirimsiz haz�
   assert.equal(n.briefing, null);
   const inWin = planNotifications({ results: [], categories, state: { stories }, now });
   assert.equal(inWin.messages.filter((m) => m.topic === 'bulletin').length, 1, 'pencere içinde bildirim gider');
+});
+
+test('seviye 2: sıradan 3 kaynaklı haber "ÖNEMLİ GELİŞME" başlığıyla ve günlük sınırla gider', () => {
+  const t = (id, src, title) => art(id, 'gundem', '2026-11-06T11:40:00Z', { source_name: src, title });
+  const r = planNotifications({
+    results: [{ addedArticles: [
+      t('a', 'NTV', 'Şehirde yeni metro hattı hizmete açıldı'),
+      t('b', 'AA', 'Yeni metro hattı bugün hizmete girdi'),
+      t('c', 'TRT', 'Metro hattının açılışı yapıldı'),
+    ] }],
+    categories: cats, state: {}, now: NOW,
+  });
+  const major = r.messages.filter((m) => /'calm'/.test(m.condition || ''));
+  assert.equal(major.length, 1);
+  assert.equal(major[0].notification.title, '⚡ ÖNEMLİ GELİŞME');
+  assert.equal(major[0].data.level, '2');
+  assert.equal(r.nextState.breaking.major_count, 1, 'seviye 2 günlük sınıra sayılır');
+});
+
+test('seviye 4 (rutin/servis) hiç bildirilmez, hikâye akışta kalır', () => {
+  const t = (id, src) => art(id, 'spor', '2026-11-06T11:40:00Z', { source_name: src, title: 'Galatasaray - Samsunspor maçı hangi kanalda, saat kaçta?' });
+  const r = planNotifications({
+    results: [{ addedArticles: [t('a', 'NTV'), t('b', 'AA'), t('c', 'TRT'), t('d', 'Habertürk')] }],
+    categories: cats, state: {}, now: NOW,
+  });
+  assert.equal(r.messages.filter((m) => /'calm'/.test(m.condition || '')).length, 0);
+  assert.equal(r.nextState.stories.length, 1, 'hikâye yine kaydedilir (akış ve gündem için)');
+});
+
+test('gece 23:59–08:00: yalnız can güvenliği gider, diğerleri sabahı bekler', () => {
+  const night = Date.parse('2026-11-06T21:30:00Z'); // İstanbul 00:30
+  const quake = (id, src) => art(id, 'son-dakika', '2026-11-06T21:25:00Z', { source_name: src, title: 'Kahramanmaraş\'ta 5.4 büyüklüğünde deprem' });
+  const rQuake = planNotifications({
+    results: [{ breakingArticles: [quake('q1', 'AA')] }],
+    categories: cats, state: {}, now: night,
+  });
+  const sentQuake = rQuake.messages.filter((m) => /'calm'/.test(m.condition || ''));
+  assert.equal(sentQuake.length, 1, 'deprem gece de gider');
+  assert.equal(sentQuake[0].android.notification.channelId, 'breaking_news', 'sessiz kanala düşmez');
+
+  const normal = (id, src) => art(id, 'gundem', '2026-11-06T21:25:00Z', { source_name: src, title: 'Merkez Bankası faiz kararını açıkladı' });
+  const rNormal = planNotifications({
+    results: [{ addedArticles: [normal('n1', 'AA'), normal('n2', 'NTV'), normal('n3', 'TRT')] }],
+    categories: cats, state: {}, now: night,
+  });
+  assert.equal(rNormal.messages.length, 0, 'gece başka hiçbir bildirim gitmez');
+  // Sabah: gece bekleyen haber artık eskidiği için ANİ bildirim olarak gitmez; "5 dakikada gündem"e girer.
+  const morning = Date.parse('2026-11-07T06:30:00Z'); // 09:30
+  const rMorning = planNotifications({ results: [], categories: cats, state: rNormal.nextState, now: morning });
+  assert.equal(rMorning.messages.filter((m) => /'calm'/.test(m.condition || '')).length, 0, 'bayat haber sabah push olmaz');
+  assert.ok(rMorning.nextState.stories.some((x) => /Merkez Bankası/.test(x.title)), 'hikâye korunur (gündem özetine girer)');
+});
+
+test('tekrar: aynı olay yeni gelişmeyle (ölü sayısı) ve kaynak artışıyla bir kez daha bildirilir', () => {
+  const t = (id, src, title, min) => art(id, 'gundem', `2026-11-06T11:${min}:00Z`, { source_name: src, title });
+  const first = planNotifications({
+    results: [{ addedArticles: [
+      t('a', 'NTV', 'Fabrikada patlama meydana geldi', 40),
+      t('b', 'AA', 'Fabrikada patlama: ekipler sevk edildi', 41),
+      t('c', 'TRT', 'Fabrikadaki patlamanın ardından inceleme', 42),
+    ] }],
+    categories: cats, state: {}, now: NOW,
+  });
+  assert.equal(first.messages.filter((m) => /'calm'/.test(m.condition || '')).length, 1);
+
+  // 30 dk sonra yeni kaynak eklense de tekrar YOK (gelişme yok)
+  const soon = planNotifications({
+    results: [{ addedArticles: [t('d', 'Sözcü', 'Fabrikada patlama haberi', 45)] }],
+    categories: cats, state: first.nextState, now: NOW + 30 * 60_000,
+  });
+  assert.equal(soon.messages.filter((m) => /'calm'/.test(m.condition || '')).length, 0);
+
+  // 2 saat sonra: ölüm haberi + 3 yeni kaynak → tekrar bildirim
+  const later = NOW + 2 * 3_600_000; // 14:00
+  const t2 = (id, src, title, min) => art(id, 'gundem', `2026-11-06T13:${min}:00Z`, { source_name: src, title });
+  const dev = planNotifications({
+    results: [{ addedArticles: [
+      t2('e', 'Habertürk', 'Fabrikadaki patlamada 2 kişi hayatını kaybetti', 50),
+      t2('f', 'CNN Türk', 'Fabrika patlamasında can kaybı', 51),
+      t2('g', 'Milliyet', 'Patlamanın olduğu fabrikada ölü sayısı açıklandı', 52),
+    ] }],
+    categories: cats, state: soon.nextState, now: later,
+  });
+  const again = dev.messages.filter((m) => /'calm'/.test(m.condition || ''));
+  assert.equal(again.length, 1, 'gerçek gelişme → tekrar bildirim');
+  assert.match(dev.nextState.last_pick.why, /gelişme/, 'tekrarın gerekçesi gerçek bir gelişme olmalı');
 });

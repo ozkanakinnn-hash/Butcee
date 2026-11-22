@@ -21,7 +21,8 @@
 
 const { getMessaging } = require('firebase-admin/messaging');
 const { logger } = require('firebase-functions');
-const { isQuietHour, isCritical } = require('./quiet-hours');
+const { isQuietHour, isNightSilent, isCritical } = require('./quiet-hours');
+const { scoreStory, developmentKeys, shouldRenotify, LEVEL } = require('./scoring');
 
 const CATEGORY_COOLDOWN_MS = 2 * 60 * 60 * 1000;
 const BREAKING_COOLDOWN_MS = 10 * 60 * 1000;
@@ -244,7 +245,7 @@ function planDigest(profile, st, categoryAdds, now, stories = []) {
 }
 
 /** Önemli son dakika mesajı (hikâyeden). */
-function buildMajorMessage(story, now) {
+function buildMajorMessage(story, now, score = null) {
   const articles = [{ id: story.id, data: {
     title: story.title, original_url: story.url, source_name: story.source, image_url: story.image,
     has_original_image: Boolean(story.image), published_at: { toMillis: () => story.last_ms },
@@ -252,7 +253,16 @@ function buildMajorMessage(story, now) {
   const msg = buildNewsMessage({ categoryId: BREAKING_CATEGORY_ID, categoryName: 'Son Dakika', articles, breaking: true, now: new Date(now) });
   delete msg.topic;
   msg.condition = `'${topicFor(BREAKING_CATEGORY_ID)}' in topics && '${CALM_TOPIC}' in topics`;
-  if (!story.br) msg.notification.title = '⚡ ÖNEMLİ GELİŞME';
+  // Başlık seviyeye göre: kritik → SON DAKİKA, önemli → ÖNEMLİ GELİŞME
+  const critical = score ? score.level === LEVEL.CRITICAL : story.br;
+  if (!critical) msg.notification.title = '⚡ ÖNEMLİ GELİŞME';
+  else if (!story.br) msg.notification.title = BREAKING_TITLE;
+  // Gece gönderilen can güvenliği haberi sessiz kanala düşmesin (buildNewsMessage saat 00–08'de 'quiet' seçer)
+  if (score && score.night) {
+    msg.android.notification.channelId = 'breaking_news';
+    msg.android.priority = 'high';
+  }
+  if (score) msg.data.level = String(score.level);
   if (story.srcs.length >= 2) msg.notification.body += ` · ${story.srcs.length} kaynakta`;
   msg.android.collapseKey = 'news_major';
   msg.android.notification.tag = `major_${story.id}`;
@@ -332,7 +342,7 @@ function planNotifications({ results, categories, state = {}, now = Date.now() }
     for (const a of r.breakingArticles || []) forStories.push({ ...a, breaking: true });
   }
   // 2) Hikâyeler (önem) — aynı haber farklı akışlarda tekrar gelirse yayıncı bir kez sayılır
-  const { stories } = mergeStories(state.stories || [], forStories, { now });
+  const { stories } = mergeStories(state.stories || [], forStories, { now, devKeys: developmentKeys });
   for (const [key, profile] of Object.entries(PROFILES)) {
     const { messages: m, state: s } = planDigest(profile, state[key] || {}, byCategory, now, stories);
     messages.push(...m);
@@ -345,24 +355,41 @@ function planNotifications({ results, categories, state = {}, now = Date.now() }
     .filter((x) => x.srcs.length >= 2 && x.srcs.length !== before.get(x.id))
     .map((x) => ({ id: x.id, srcs: x.srcs.slice(0, 12) }));
 
-  // 3) Önemli son dakika ("Sadece önemli" + "Dengeli")
+  // 3) Puanlanmış bildirim (src/scoring.js): seviye 1 beklemeden ve sınırsız, seviye 2 aralık + günlük sınırla.
+  //    Gece 23:59–08:00: yalnızca can güvenliği (deprem/savaş/saldırı/afet) gönderilir, diğerleri sabahı bekler.
+  //    Seviye 3–4 hiç bildirilmez; özet ve "5 dakikada gündem" içinde görünürler.
   const br = { ...(state.breaking || {}) };
   const { day } = istanbulClock(now);
   if (br.day !== day) Object.assign(br, { day, major_count: 0 });
-  const major = stories
-    .filter((s) => !s.major_ms && now - s.first_ms <= MAJOR_MAX_AGE_MS && !isClickbait(s.title))
-    .map((s) => ({ s, critical: s.br && isCritical(s.title) }))
-    .filter(({ s, critical }) => critical || (s.srcs.length >= MAJOR_MIN_SOURCES && (s.br || !MAJOR_SKIP_CATEGORIES.has(s.cat))))
-    .sort((a, b) => Number(b.critical) - Number(a.critical) || b.s.srcs.length - a.s.srcs.length)[0];
-  if (major) {
-    const allowed = major.critical
-      || ((br.major_count || 0) < MAJOR_DAILY_CAP && now - (br.last_major_at || 0) >= MAJOR_COOLDOWN_MS);
-    if (allowed) {
-      messages.push(buildMajorMessage(major.s, now));
-      major.s.major_ms = now;
+  const night = isNightSilent(new Date(now));
+  const ranked = stories
+    .map((s) => ({ s, score: scoreStory(s, { now, maxAgeMs: MAJOR_MAX_AGE_MS }) }))
+    .filter(({ score }) => score.level <= LEVEL.IMPORTANT)
+    .filter(({ score }) => !night || score.night)
+    .map((e) => ({ ...e, gate: shouldRenotify(e.s, e.score, { now }) }))
+    .filter((e) => e.gate.ok)
+    .sort((a, b) => a.score.level - b.score.level
+      || Number(b.score.night) - Number(a.score.night)
+      || b.s.srcs.length - a.s.srcs.length
+      || b.s.last_ms - a.s.last_ms);
+  // Kritik haber günlük sınıra ve aralığa takılmaz; önemli haber takılır.
+  const pick = ranked.find(({ score }) => score.level === LEVEL.CRITICAL
+    || ((br.major_count || 0) < MAJOR_DAILY_CAP && now - (br.last_major_at || 0) >= MAJOR_COOLDOWN_MS));
+  if (pick) {
+    const { s, score, gate } = pick;
+    messages.push(buildMajorMessage(s, now, score));
+    // Bildirim geçmişi: tekrar yalnız gerçek gelişmede açılır (scoring.shouldRenotify).
+    s.notified_ms = now;
+    s.notified_level = score.level;
+    s.notified_srcs = s.srcs.length;
+    s.notify_count = (s.notify_count || 0) + 1;
+    s.pending_dev = [];
+    s.major_ms = now; // eski alan: geriye uyum
+    if (score.level === LEVEL.IMPORTANT) {
       br.last_major_at = now;
       br.major_count = (br.major_count || 0) + 1;
     }
+    next.last_pick = { id: s.id, level: score.level, reason: score.reason, why: gate.reason };
   }
 
   // 4) Tüm son dakikalar ("Tümü") — eskisi gibi hemen, 10 dk aralıkla
@@ -370,7 +397,7 @@ function planNotifications({ results, categories, state = {}, now = Date.now() }
     .flatMap((r) => r.breakingArticles || [])
     .filter((a) => now - a.data.published_at.toMillis() < MAX_BREAKING_AGE_MS)
     .filter((a) => a.id !== br.last_minor_id && !isClickbait(a.data.title || ''));
-  if (minor.length && now - (br.last_minor_at || 0) >= BREAKING_COOLDOWN_MS) {
+  if (!night && minor.length && now - (br.last_minor_at || 0) >= BREAKING_COOLDOWN_MS) {
     const msg = buildNewsMessage({ categoryId: BREAKING_CATEGORY_ID, categoryName: 'Son Dakika', articles: minor, breaking: true, now: new Date(now) });
     delete msg.topic;
     msg.condition = `'${topicFor(BREAKING_CATEGORY_ID)}' in topics && '${PROFILES.all.level}' in topics`;

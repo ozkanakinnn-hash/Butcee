@@ -11,6 +11,25 @@
 const QUIET_START_HOUR = 0; // gece yarısı
 const QUIET_END_HOUR = 8;
 
+/** İstanbul saatine göre saat ve dakika. */
+function istanbulHourMinute(now = new Date()) {
+  const p = Object.fromEntries(
+    new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Istanbul', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' })
+      .formatToParts(now).map((x) => [x.type, x.value]),
+  );
+  return { hour: Number(p.hour), minute: Number(p.minute) };
+}
+
+/**
+ * Haber bildirimlerinin TAMAMEN susturulduğu gece aralığı: 23:59 – 08:00 (İstanbul).
+ * Bu aralıkta yalnızca can güvenliğini ilgilendiren haberler (deprem, savaş, saldırı, afet) gönderilir.
+ * `isQuietHour` ise bildirimin SESSİZ kanaldan gitmesini belirler (00:00–08:00) — ikisi ayrı amaçlıdır.
+ */
+function isNightSilent(now = new Date()) {
+  const { hour, minute } = istanbulHourMinute(now);
+  return (hour === 23 && minute >= 59) || hour < QUIET_END_HOUR;
+}
+
 /** İstanbul saatine göre saat (0–23). */
 function istanbulHour(now = new Date()) {
   return Number(new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Istanbul', hour: '2-digit', hourCycle: 'h23' }).format(now));
@@ -59,4 +78,4 @@ function isCritical(...texts) {
   return isCriticalEarthquake(t) || CRITICAL.some((re) => re.test(t));
 }
 
-module.exports = { isQuietHour, istanbulHour, isCritical, fold, QUIET_START_HOUR, QUIET_END_HOUR };
+module.exports = { isQuietHour, isNightSilent, istanbulHourMinute, istanbulHour, isCritical, fold, QUIET_START_HOUR, QUIET_END_HOUR };
