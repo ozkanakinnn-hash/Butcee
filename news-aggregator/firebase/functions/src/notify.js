@@ -261,17 +261,26 @@ function buildMajorMessage(story, now) {
 }
 
 /** "5 dakikada gündem" belgesi (briefings/{gün}-{am|pm}); uygulama ekranı bunu okur. */
-function buildBriefing(slot, day, stories, now) {
+function buildBriefing(slot, day, stories, now, pool = stories) {
+  const item = (x) => ({
+    id: x.id, title: x.title, url: x.url, source: x.source || '', image: x.image || '', category_id: x.cat || '',
+    sources: x.srcs.slice(0, 12), source_count: x.srcs.length,
+  });
+  // İlgi alanlarına göre kısa bölümler: her kategoriden en çok kaynaklı 3 başlık (uygulama kullanıcının seçtiklerini gösterir)
+  const byCategory = {};
+  for (const x of [...pool].sort((a, b) => b.srcs.length - a.srcs.length || b.last_ms - a.last_ms)) {
+    if (!x.cat || x.cat === BREAKING_CATEGORY_ID) continue;
+    const list = (byCategory[x.cat] = byCategory[x.cat] || []);
+    if (list.length < 3) list.push(item(x));
+  }
   return {
+    by_category: byCategory,
     id: `${day}-${slot.key}`,
     slot: slot.key,
     title: slot.name,
     day,
     created_ms: now,
-    items: stories.map((x) => ({
-      id: x.id, title: x.title, url: x.url, source: x.source || '', image: x.image || '', category_id: x.cat || '',
-      sources: x.srcs.slice(0, 12), source_count: x.srcs.length,
-    })),
+    items: stories.map(item),
   };
 }
 
@@ -375,22 +384,28 @@ function planNotifications({ results, categories, state = {}, now = Date.now() }
   const bul = { ...(state.bulletin || {}) };
   const clock = istanbulClock(now);
   let briefing = null;
-  BULLETIN_SLOTS.forEach((slot) => {
-    const key = `${clock.day}#${slot.key}`;
-    if (bul.last === key || clock.minute < slot.minute || clock.minute >= slot.minute + BULLETIN_WINDOW_MIN) return;
-    // Sabah: geceden beri (en çok 14 saat); akşam: sabah bülteninden beri
-    const since = Math.max(bul.last_ms || 0, now - 14 * 3_600_000);
-    const picks = stories
-      .filter((x) => x.last_ms > since && !isClickbait(x.title))
-      .sort((a, b) => b.srcs.length - a.srcs.length || b.last_ms - a.last_ms)
-      .slice(0, BRIEFING_ITEMS);
+  // Şu anki gündem dilimi: 08:30–19:00 sabah, 19:00–08:30 akşam (gece yarısından sonra önceki günün akşamı).
+  const slot = clock.minute >= BULLETIN_SLOTS[1].minute ? BULLETIN_SLOTS[1]
+    : clock.minute >= BULLETIN_SLOTS[0].minute ? BULLETIN_SLOTS[0] : BULLETIN_SLOTS[1];
+  const slotDay = clock.minute < BULLETIN_SLOTS[0].minute ? istanbulClock(now - 12 * 3_600_000).day : clock.day;
+  const key = `${slotDay}#${slot.key}`;
+  const inWindow = slotDay === clock.day && clock.minute >= slot.minute && clock.minute < slot.minute + BULLETIN_WINDOW_MIN;
+  if (bul.briefing_key !== key || (inWindow && bul.last !== key)) {
+    // Sabah: geceden beri (en çok 14 saat); akşam: sabahtan beri
+    const since = now - 14 * 3_600_000;
+    const fresh = stories.filter((x) => x.last_ms > since && !isClickbait(x.title));
+    const picks = [...fresh].sort((a, b) => b.srcs.length - a.srcs.length || b.last_ms - a.last_ms).slice(0, BRIEFING_ITEMS);
     if (picks.length >= 2) {
-      briefing = buildBriefing(slot, clock.day, picks, now);
-      messages.push(buildBulletinMessage(slot, picks.slice(0, BULLETIN_ITEMS), now, briefing.id));
+      briefing = buildBriefing(slot, slotDay, picks, now, fresh);
+      bul.briefing_key = key;
+      // Bildirim yalnızca bülten saatinde (kaçırılan gündem sessizce belge olarak hazırlanır)
+      if (inWindow && bul.last !== key) {
+        messages.push(buildBulletinMessage(slot, picks.slice(0, BULLETIN_ITEMS), now, briefing.id));
+        bul.last = key;
+        bul.last_ms = now;
+      }
     }
-    bul.last = key;
-    bul.last_ms = now;
-  });
+  }
   next.bulletin = bul;
   next.stories = pruneStories(stories, { now, keepSinceMs: bul.last_ms });
 

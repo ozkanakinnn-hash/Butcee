@@ -105,8 +105,9 @@ async function rescanTopicSources(db) {
  * Sonradan eklenen kaynakları (seed-data.json'da `added_version` ≤ SOURCES_VERSION) Firestore'a bir kez yazar;
  * "seed" çalıştırmaya gerek kalmaz. Var olan kaynağın ayarlarına (is_active vb.) dokunmaz.
  */
-const SOURCES_VERSION = 1;
-const NEW_SOURCE_IDS = []; // (Investing kaynakları telif nedeniyle kaldırıldı — bkz. retireSources)
+const SOURCES_VERSION = 2;
+// v2 (2026-11-22): Ekonomi tek kaynağa (NTV) bağlıydı ve boş kalıyordu → AA + TRT Haber; dünya/teknoloji de TRT ile desteklendi.
+const NEW_SOURCE_IDS = ['aa-ekonomi', 'trt-ekonomi', 'trt-dunya', 'trt-teknoloji'];
 
 async function addNewSources(db, { data = require('../scripts/seed-data.json') } = {}) {
   const metaRef = db.doc('app_meta/sources');

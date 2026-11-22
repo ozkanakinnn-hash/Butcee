@@ -16,8 +16,7 @@ class InfoStrip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final s = S.of(context);
-    final hour = (now ?? DateTime.now()).hour;
-    final evening = hour >= 19; // akşam gündemi 19:00'da hazırlanır
+    final evening = isEveningSlot(now ?? DateTime.now()); // 19:00–08:30 akşam gündemi (sunucuyla aynı)
     return SizedBox(
       height: 44,
       child: ListView(

@@ -148,6 +148,10 @@ class S {
   String get briefingMorning => _t('Sabah gündemi', 'Morning briefing');
   String get briefingEvening => _t('Akşam gündemi', 'Evening briefing');
   String get briefingSubtitle => _t('5 dakikada gündem', 'The day in 5 minutes');
+  String get briefingHeadlines => _t('Gündem', 'Top stories');
+  String get briefingInterests => _t('İlgi alanların', 'Your interests');
+  String get briefingMatches => _t('Bugünün maçları', "Today's matches");
+  String get briefingNoMatches => _t('Takip ettiğin takımların bugün maçı yok.', 'Your teams have no matches today.');
   String get briefingEmpty => _t('Gündem özeti 08:30 ve 19:00\'da hazırlanır.', 'Briefings are prepared at 08:30 and 19:00.');
 
   // Deprem

@@ -285,3 +285,24 @@ test('sessiz saat sınırları İstanbul saatine göre', () => {
   assert.equal(isCritical('Ekonomide savaşım sürüyor'), false, 'kelime içinde geçen "savaş" sayılmaz');
   assert.equal(isCritical('Borsa güne yükselişle başladı'), false);
 });
+
+test('gündem: bülten saati kaçırılsa da o dilimin gündemi bildirimsiz hazırlanır; ilgi alanı bölümleri', () => {
+  const now = Date.parse('2026-11-22T17:30:00Z'); // İstanbul 20:30 (akşam bülteni penceresi içinde)
+  const late = Date.parse('2026-11-22T20:00:00Z'); // 23:00 — pencere geçti
+  const stories = [
+    { t: ['a1', 'b1'], srcs: ['AA', 'NTV', 'TRT'], first_ms: late - 3_600_000, last_ms: late - 1_800_000, title: 'Asgari ücret görüşmeleri başladı', url: 'u1', source: 'AA', image: '', cat: 'ekonomi', br: false, id: 's1' },
+    { t: ['a2', 'b2'], srcs: ['AA', 'NTV'], first_ms: late - 3_600_000, last_ms: late - 1_000_000, title: 'Meclis bütçe görüşmelerine başladı', url: 'u2', source: 'NTV', image: '', cat: 'gundem', br: false, id: 's2' },
+  ];
+  const r = planNotifications({ results: [], categories, state: { stories }, now: late });
+  assert.equal(r.messages.filter((m) => m.topic === 'bulletin').length, 0, 'pencere dışında bildirim yok');
+  assert.equal(r.briefing.id, '2026-11-22-pm');
+  assert.equal(r.briefing.by_category.ekonomi[0].id, 's1');
+  const again = planNotifications({ results: [], categories, state: r.nextState, now: late + 20 * 60_000 });
+  assert.equal(again.briefing, null, 'aynı dilim tekrar üretilmez');
+  // Gece yarısından sonra önceki günün akşam gündemi geçerli
+  const night = Date.parse('2026-11-22T22:30:00Z'); // 01:30 (23 Kasım)
+  const n = planNotifications({ results: [], categories, state: r.nextState, now: night });
+  assert.equal(n.briefing, null);
+  const inWin = planNotifications({ results: [], categories, state: { stories }, now });
+  assert.equal(inWin.messages.filter((m) => m.topic === 'bulletin').length, 1, 'pencere içinde bildirim gider');
+});

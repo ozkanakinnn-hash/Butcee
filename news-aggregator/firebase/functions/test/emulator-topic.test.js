@@ -67,5 +67,9 @@ test('emekliye ayrılan kaynaklar (Investing) bir kez kapatılır ve haberleri s
   assert.deepEqual(await retireSources(db), { done: true, removed: 0 }, 'bir kerelik');
   // Yeni kaynak ekleme adımı Investing'i geri getirmez
   await db.doc('app_meta/sources').delete();
-  assert.deepEqual(await addNewSources(db), { done: true, added: 0 });
+  const added = await addNewSources(db);
+  assert.equal(added.added, 4, 'v2: AA/TRT ekonomi, TRT dünya ve teknoloji eklenir');
+  assert.equal((await db.doc('sources/investing-ekonomi').get()).get('is_active'), false, 'Investing kapalı kalır');
+  assert.equal((await db.doc('sources/aa-ekonomi').get()).get('rss_url'), 'https://www.aa.com.tr/tr/rss/default?cat=ekonomi');
+  assert.deepEqual(await addNewSources(db), { done: true, added: 0 }, 'bir kerelik');
 });

@@ -249,6 +249,24 @@ class ArticleFeed extends StatefulWidget {
   State<ArticleFeed> createState() => _ArticleFeedState();
 }
 
+/// Günlük akış: yalnızca son [maxAge] içindeki haberler ve en fazla [max] haber (eski haber yığını olmasın).
+/// Bu sürede hiç haber yoksa sekme boş kalmasın diye en yeni [fallback] haber gösterilir.
+/// Dönen `full` true ise sınıra ulaşıldı (daha fazla sayfa istenmez).
+({List<ArticlesRecord> items, bool full}) dailyFeed(
+  List<ArticlesRecord> all,
+  DateTime now, {
+  int max = 30,
+  Duration maxAge = const Duration(hours: 24),
+  int fallback = 10,
+}) {
+  final cutoff = now.subtract(maxAge);
+  final fresh = all.where((a) => (a.breakingAt ?? a.publishedAt ?? now).isAfter(cutoff)).toList();
+  final reachedOld = fresh.length < all.length;
+  if (fresh.isEmpty) return (items: all.take(fallback).toList(), full: true);
+  if (fresh.length >= max) return (items: fresh.take(max).toList(), full: true);
+  return (items: fresh, full: reachedOld);
+}
+
 class _ArticleFeedState extends State<ArticleFeed> with AutomaticKeepAliveClientMixin {
   final _scroll = ScrollController();
   final _items = <ArticlesRecord>[];
@@ -289,10 +307,13 @@ class _ArticleFeedState extends State<ArticleFeed> with AutomaticKeepAliveClient
       final page = await widget.repository.fetchArticles(category: widget.category, startAfter: first ? null : _cursor);
       if (!mounted) return;
       setState(() {
-        if (first) _items.clear(); // önbellekten gösterilen sayfa güncel sayfayla değişir
-        _items.addAll(page.items);
+        final combined = [if (!first) ..._items, ...page.items]; // önbellekten gösterilen sayfa güncel sayfayla değişir
+        final daily = dailyFeed(combined, DateTime.now());
+        _items
+          ..clear()
+          ..addAll(daily.items);
         _cursor = page.lastDocument;
-        _hasMore = page.hasMore;
+        _hasMore = page.hasMore && !daily.full;
       });
       prefetchArticleImages(context, page.items);
     } catch (e) {
@@ -307,7 +328,7 @@ class _ArticleFeedState extends State<ArticleFeed> with AutomaticKeepAliveClient
     try {
       final page = await widget.repository.fetchArticles(category: widget.category, fromCache: true);
       if (!mounted || _cursor != null || _items.isNotEmpty || page.items.isEmpty) return;
-      setState(() => _items.addAll(page.items));
+      setState(() => _items.addAll(dailyFeed(page.items, DateTime.now()).items));
       prefetchArticleImages(context, page.items);
     } catch (_) {} // önbellek boşsa sorun değil
   }
@@ -318,11 +339,12 @@ class _ArticleFeedState extends State<ArticleFeed> with AutomaticKeepAliveClient
       final page = await widget.repository.fetchArticles(category: widget.category);
       if (!mounted) return;
       setState(() {
+        final daily = dailyFeed(page.items, DateTime.now());
         _items
           ..clear()
-          ..addAll(page.items);
+          ..addAll(daily.items);
         _cursor = page.lastDocument;
-        _hasMore = page.hasMore;
+        _hasMore = page.hasMore && !daily.full;
         _error = null;
       });
     } catch (e) {

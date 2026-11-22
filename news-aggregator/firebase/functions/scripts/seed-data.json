@@ -390,6 +390,34 @@
       "rss_url": "https://www.haberturk.com/rss/kategori/spor.xml",
       "category": "spor",
       "domain": "haberturk.com"
+    },
+    {
+      "id": "aa-ekonomi",
+      "source_name": "Anadolu Ajansı",
+      "rss_url": "https://www.aa.com.tr/tr/rss/default?cat=ekonomi",
+      "category": "ekonomi",
+      "domain": "aa.com.tr"
+    },
+    {
+      "id": "trt-ekonomi",
+      "source_name": "TRT Haber",
+      "rss_url": "https://www.trthaber.com/ekonomi_articles.rss",
+      "category": "ekonomi",
+      "domain": "trthaber.com"
+    },
+    {
+      "id": "trt-dunya",
+      "source_name": "TRT Haber",
+      "rss_url": "https://www.trthaber.com/dunya_articles.rss",
+      "category": "dunya",
+      "domain": "trthaber.com"
+    },
+    {
+      "id": "trt-teknoloji",
+      "source_name": "TRT Haber",
+      "rss_url": "https://www.trthaber.com/bilim_teknoloji_articles.rss",
+      "category": "teknoloji",
+      "domain": "trthaber.com"
     }
   ]
 }
