@@ -55,6 +55,19 @@ async function main() {
   }
 
   await batch.commit();
+
+  // Kaldırılan kayıtlar: yalnızca belge varsa işlem yapılır (merge ile boş belge oluşturulmaz).
+  const retired = data.retired || {};
+  let retiredCount = 0;
+  for (const id of retired.sources || []) {
+    const ref = db.collection('sources').doc(id);
+    if ((await ref.get()).exists) { await ref.update({ is_active: false }); retiredCount++; }
+  }
+  for (const id of retired.categories || []) {
+    const ref = db.collection('categories').doc(id);
+    if ((await ref.get()).exists) { await ref.delete(); retiredCount++; }
+  }
+  if (retiredCount) console.log(`✔ ${retiredCount} kaldırılmış kayıt temizlendi.`);
   console.log(`✔ ${data.categories.length} kategori, ${data.sources.length} kaynak ve Süper Lig takımları yazıldı.`);
 }
 

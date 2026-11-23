@@ -847,5 +847,28 @@
       "allow_images": false,
       "probation": true
     }
-  ]
+  ],
+  "retired": {
+    "_not": "Kaldırılan kayıtlar: varsa kaynak pasife alınır, kategori silinir; yoksa hiçbir şey yazılmaz.",
+    "categories": [
+      "yapay-zeka",
+      "elektrikli-araclar",
+      "sinema-tv",
+      "muzik"
+    ],
+    "sources": [
+      "shiftdelete-gaming",
+      "webtekno-yapay-zeka",
+      "donanimhaber-yapay-zeka",
+      "ntv-elektrikli",
+      "shiftdelete-elektrikli",
+      "cnn-sinema",
+      "trt-sinema",
+      "aa-muzik",
+      "haberturk-muzik",
+      "cnn-moda",
+      "aa-seyahat",
+      "evrimagaci-cevre"
+    ]
+  }
 }
