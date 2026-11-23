@@ -113,6 +113,166 @@
       "icon_name": "spa",
       "order_index": 13,
       "placeholder_image_url": ""
+    },
+    {
+      "id": "galatasaray",
+      "name": "Galatasaray",
+      "name_en": "Galatasaray",
+      "icon_name": "sports_soccer",
+      "order_index": 14,
+      "placeholder_image_url": ""
+    },
+    {
+      "id": "fenerbahce",
+      "name": "Fenerbahçe",
+      "name_en": "Fenerbahce",
+      "icon_name": "sports_soccer",
+      "order_index": 15,
+      "placeholder_image_url": ""
+    },
+    {
+      "id": "besiktas",
+      "name": "Beşiktaş",
+      "name_en": "Besiktas",
+      "icon_name": "sports_soccer",
+      "order_index": 16,
+      "placeholder_image_url": ""
+    },
+    {
+      "id": "trabzonspor",
+      "name": "Trabzonspor",
+      "name_en": "Trabzonspor",
+      "icon_name": "sports_soccer",
+      "order_index": 17,
+      "placeholder_image_url": ""
+    },
+    {
+      "id": "basketbol",
+      "name": "Basketbol",
+      "name_en": "Basketball",
+      "icon_name": "sports",
+      "order_index": 18,
+      "placeholder_image_url": ""
+    },
+    {
+      "id": "formula1",
+      "name": "Formula 1",
+      "name_en": "Formula 1",
+      "icon_name": "directions_car",
+      "order_index": 19,
+      "placeholder_image_url": ""
+    },
+    {
+      "id": "kripto",
+      "name": "Kripto Para",
+      "name_en": "Crypto",
+      "icon_name": "show_chart",
+      "order_index": 20,
+      "placeholder_image_url": ""
+    },
+    {
+      "id": "girisim",
+      "name": "Girişim & Startup",
+      "name_en": "Startups",
+      "icon_name": "science",
+      "order_index": 21,
+      "placeholder_image_url": ""
+    },
+    {
+      "id": "kamu-personeli",
+      "name": "Kamu Personeli",
+      "name_en": "Public Sector",
+      "icon_name": "school",
+      "order_index": 22,
+      "placeholder_image_url": ""
+    },
+    {
+      "id": "oyun-gaming",
+      "name": "Oyun & Gaming",
+      "name_en": "Gaming",
+      "icon_name": "smart_toy",
+      "order_index": 23,
+      "placeholder_image_url": ""
+    },
+    {
+      "id": "yapay-zeka",
+      "name": "Yapay Zeka",
+      "name_en": "AI",
+      "icon_name": "smart_toy",
+      "order_index": 24,
+      "placeholder_image_url": ""
+    },
+    {
+      "id": "savunma",
+      "name": "Savunma Sanayi",
+      "name_en": "Defense",
+      "icon_name": "science",
+      "order_index": 25,
+      "placeholder_image_url": ""
+    },
+    {
+      "id": "havacilik",
+      "name": "Havacılık & Uzay",
+      "name_en": "Aviation & Space",
+      "icon_name": "public",
+      "order_index": 26,
+      "placeholder_image_url": ""
+    },
+    {
+      "id": "elektrikli-araclar",
+      "name": "Elektrikli Araçlar",
+      "name_en": "Electric Vehicles",
+      "icon_name": "directions_car",
+      "order_index": 27,
+      "placeholder_image_url": ""
+    },
+    {
+      "id": "sinema-tv",
+      "name": "Sinema & TV",
+      "name_en": "Movies & TV",
+      "icon_name": "movie",
+      "order_index": 28,
+      "placeholder_image_url": ""
+    },
+    {
+      "id": "muzik",
+      "name": "Müzik",
+      "name_en": "Music",
+      "icon_name": "star",
+      "order_index": 29,
+      "placeholder_image_url": ""
+    },
+    {
+      "id": "moda-guzellik",
+      "name": "Moda & Güzellik",
+      "name_en": "Fashion & Beauty",
+      "icon_name": "spa",
+      "order_index": 30,
+      "placeholder_image_url": ""
+    },
+    {
+      "id": "seyahat",
+      "name": "Seyahat & Turizm",
+      "name_en": "Travel",
+      "icon_name": "public",
+      "order_index": 31,
+      "placeholder_image_url": ""
+    },
+    {
+      "id": "cevre-iklim",
+      "name": "Çevre & İklim",
+      "name_en": "Environment",
+      "icon_name": "science",
+      "order_index": 32,
+      "placeholder_image_url": ""
+    },
+    {
+      "id": "resmi-gazete",
+      "name": "Resmi Gazete",
+      "name_en": "Official Gazette",
+      "icon_name": "newspaper",
+      "order_index": 33,
+      "placeholder_image_url": ""
     }
   ],
   "sources": [
@@ -390,6 +550,432 @@
       "rss_url": "https://www.haberturk.com/rss/kategori/spor.xml",
       "category": "spor",
       "domain": "haberturk.com"
+    },
+    {
+      "id": "aa-ekonomi",
+      "source_name": "Anadolu Ajansı",
+      "rss_url": "https://www.aa.com.tr/tr/rss/default?cat=ekonomi",
+      "category": "ekonomi",
+      "domain": "aa.com.tr"
+    },
+    {
+      "id": "trt-ekonomi",
+      "source_name": "TRT Haber",
+      "rss_url": "https://www.trthaber.com/ekonomi_articles.rss",
+      "category": "ekonomi",
+      "domain": "trthaber.com"
+    },
+    {
+      "id": "trt-dunya",
+      "source_name": "TRT Haber",
+      "rss_url": "https://www.trthaber.com/dunya_articles.rss",
+      "category": "dunya",
+      "domain": "trthaber.com"
+    },
+    {
+      "id": "trt-teknoloji",
+      "source_name": "TRT Haber",
+      "rss_url": "https://www.trthaber.com/bilim_teknoloji_articles.rss",
+      "category": "teknoloji",
+      "domain": "trthaber.com"
+    },
+    {
+      "id": "aa-yasam",
+      "source_name": "Anadolu Ajansı",
+      "rss_url": "https://www.aa.com.tr/tr/rss/default?cat=yasam",
+      "category": "yasam",
+      "domain": "aa.com.tr"
+    },
+    {
+      "id": "trt-yasam",
+      "source_name": "TRT Haber",
+      "rss_url": "https://www.trthaber.com/yasam_articles.rss",
+      "category": "yasam",
+      "domain": "trthaber.com"
+    },
+    {
+      "id": "aa-dunya",
+      "source_name": "Anadolu Ajansı",
+      "rss_url": "https://www.aa.com.tr/tr/rss/default?cat=dunya",
+      "category": "dunya",
+      "domain": "aa.com.tr"
+    },
+    {
+      "id": "bloomberght-ekonomi",
+      "source_name": "Bloomberg HT",
+      "rss_url": "https://www.bloomberght.com/rss",
+      "category": "ekonomi",
+      "domain": "bloomberght.com",
+      "probation": true
+    },
+    {
+      "id": "dunya-ekonomi",
+      "source_name": "Dünya",
+      "rss_url": "https://www.dunya.com/rss",
+      "category": "ekonomi",
+      "domain": "dunya.com",
+      "probation": true
+    },
+    {
+      "id": "ekonomim-ekonomi",
+      "source_name": "Ekonomim",
+      "rss_url": "https://www.ekonomim.com/export/rss",
+      "category": "ekonomi",
+      "domain": "ekonomim.com",
+      "probation": true
+    },
+    {
+      "id": "paraanaliz-ekonomi",
+      "source_name": "Para Analiz",
+      "rss_url": "https://www.paraanaliz.com/feed/",
+      "category": "ekonomi",
+      "domain": "paraanaliz.com",
+      "probation": true
+    },
+    {
+      "id": "evrimagaci-bilim",
+      "source_name": "Evrim Ağacı",
+      "rss_url": "https://evrimagaci.org/rss.xml",
+      "category": "bilim",
+      "domain": "evrimagaci.org",
+      "probation": true
+    },
+    {
+      "id": "webtekno-teknoloji",
+      "source_name": "Webtekno",
+      "rss_url": "https://www.webtekno.com/rss.xml",
+      "category": "teknoloji",
+      "domain": "webtekno.com",
+      "probation": true
+    },
+    {
+      "id": "shiftdelete-teknoloji",
+      "source_name": "ShiftDelete.Net",
+      "rss_url": "https://shiftdelete.net/feed",
+      "category": "teknoloji",
+      "domain": "shiftdelete.net",
+      "probation": true
+    },
+    {
+      "id": "donanimhaber-teknoloji",
+      "source_name": "DonanımHaber",
+      "rss_url": "https://www.donanimhaber.com/rss/tum/",
+      "category": "teknoloji",
+      "domain": "donanimhaber.com",
+      "probation": true
+    },
+    {
+      "id": "aspor-galatasaray",
+      "source_name": "A Spor",
+      "rss_url": "https://www.aspor.com.tr/rss/galatasaray.xml",
+      "category": "galatasaray",
+      "domain": "aspor.com.tr",
+      "topic_only": true,
+      "probation": true
+    },
+    {
+      "id": "fanatik-galatasaray",
+      "source_name": "Fanatik",
+      "rss_url": "https://www.fanatik.com.tr/galatasaray.rss",
+      "category": "galatasaray",
+      "domain": "fanatik.com.tr",
+      "topic_only": true,
+      "probation": true
+    },
+    {
+      "id": "aspor-fenerbahce",
+      "source_name": "A Spor",
+      "rss_url": "https://www.aspor.com.tr/rss/fenerbahce.xml",
+      "category": "fenerbahce",
+      "domain": "aspor.com.tr",
+      "topic_only": true,
+      "probation": true
+    },
+    {
+      "id": "fanatik-fenerbahce",
+      "source_name": "Fanatik",
+      "rss_url": "https://www.fanatik.com.tr/fenerbahce.rss",
+      "category": "fenerbahce",
+      "domain": "fanatik.com.tr",
+      "topic_only": true,
+      "probation": true
+    },
+    {
+      "id": "aspor-besiktas",
+      "source_name": "A Spor",
+      "rss_url": "https://www.aspor.com.tr/rss/besiktas.xml",
+      "category": "besiktas",
+      "domain": "aspor.com.tr",
+      "topic_only": true,
+      "probation": true
+    },
+    {
+      "id": "fanatik-besiktas",
+      "source_name": "Fanatik",
+      "rss_url": "https://www.fanatik.com.tr/besiktas.rss",
+      "category": "besiktas",
+      "domain": "fanatik.com.tr",
+      "topic_only": true,
+      "probation": true
+    },
+    {
+      "id": "aspor-trabzonspor",
+      "source_name": "A Spor",
+      "rss_url": "https://www.aspor.com.tr/rss/trabzonspor.xml",
+      "category": "trabzonspor",
+      "domain": "aspor.com.tr",
+      "topic_only": true,
+      "probation": true
+    },
+    {
+      "id": "fanatik-trabzonspor",
+      "source_name": "Fanatik",
+      "rss_url": "https://www.fanatik.com.tr/trabzonspor.rss",
+      "category": "trabzonspor",
+      "domain": "fanatik.com.tr",
+      "topic_only": true,
+      "probation": true
+    },
+    {
+      "id": "aspor-basketbol",
+      "source_name": "A Spor",
+      "rss_url": "https://www.aspor.com.tr/rss/basketbol.xml",
+      "category": "basketbol",
+      "domain": "aspor.com.tr",
+      "topic_only": true,
+      "probation": true
+    },
+    {
+      "id": "cnn-basketbol",
+      "source_name": "CNN Türk",
+      "rss_url": "https://www.cnnturk.com/feed/rss/spor/basketbol/news",
+      "category": "basketbol",
+      "domain": "cnnturk.com",
+      "topic_only": true,
+      "probation": true
+    },
+    {
+      "id": "motorsport-f1",
+      "source_name": "Motorsport.com",
+      "rss_url": "https://tr.motorsport.com/rss/f1/news/",
+      "category": "formula1",
+      "domain": "motorsport.com",
+      "topic_only": true,
+      "probation": true
+    },
+    {
+      "id": "aspor-formula1",
+      "source_name": "A Spor",
+      "rss_url": "https://www.aspor.com.tr/rss/formula1.xml",
+      "category": "formula1",
+      "domain": "aspor.com.tr",
+      "topic_only": true,
+      "probation": true
+    },
+    {
+      "id": "btchaber-kripto",
+      "source_name": "BTC Haber",
+      "rss_url": "https://btchaber.com/feed/",
+      "category": "kripto",
+      "domain": "btchaber.com",
+      "probation": true
+    },
+    {
+      "id": "kriptokoin-kripto",
+      "source_name": "KriptoKoin",
+      "rss_url": "https://kriptokoin.com/feed/",
+      "category": "kripto",
+      "domain": "kriptokoin.com",
+      "probation": true
+    },
+    {
+      "id": "webrazzi-girisim",
+      "source_name": "Webrazzi",
+      "rss_url": "https://webrazzi.com/feed/",
+      "category": "girisim",
+      "domain": "webrazzi.com",
+      "probation": true
+    },
+    {
+      "id": "memurlar-kamu",
+      "source_name": "Memurlar.net",
+      "rss_url": "https://www.memurlar.net/haber/rss.aspx",
+      "category": "kamu-personeli",
+      "domain": "memurlar.net",
+      "probation": true
+    },
+    {
+      "id": "oyungezer-gaming",
+      "source_name": "Oyungezer",
+      "rss_url": "https://www.oyungezer.com.tr/feed",
+      "category": "oyun-gaming",
+      "domain": "oyungezer.com.tr",
+      "probation": true
+    },
+    {
+      "id": "shiftdelete-gaming",
+      "source_name": "ShiftDelete.Net",
+      "rss_url": "https://shiftdelete.net/feed",
+      "category": "oyun-gaming",
+      "domain": "shiftdelete.net",
+      "probation": true
+    },
+    {
+      "id": "webtekno-yapay-zeka",
+      "source_name": "Webtekno",
+      "rss_url": "https://www.webtekno.com/rss.xml",
+      "category": "yapay-zeka",
+      "domain": "webtekno.com",
+      "probation": true
+    },
+    {
+      "id": "donanimhaber-yapay-zeka",
+      "source_name": "DonanımHaber",
+      "rss_url": "https://www.donanimhaber.com/rss/tum/",
+      "category": "yapay-zeka",
+      "domain": "donanimhaber.com",
+      "probation": true
+    },
+    {
+      "id": "savunma-sanayii",
+      "source_name": "Savunma Sanayii",
+      "rss_url": "https://www.savunmasanayii.com/feed/",
+      "category": "savunma",
+      "domain": "savunmasanayii.com",
+      "probation": true
+    },
+    {
+      "id": "defenceturkey-savunma",
+      "source_name": "Defence Turkey",
+      "rss_url": "https://www.defenceturkey.com/tr/rss",
+      "category": "savunma",
+      "domain": "defenceturkey.com",
+      "probation": true
+    },
+    {
+      "id": "trt-havacilik",
+      "source_name": "TRT Haber",
+      "rss_url": "https://www.trthaber.com/havacilik_articles.rss",
+      "category": "havacilik",
+      "domain": "trthaber.com",
+      "probation": true
+    },
+    {
+      "id": "aa-havacilik",
+      "source_name": "Anadolu Ajansı",
+      "rss_url": "https://www.aa.com.tr/tr/rss/default?cat=havacilik",
+      "category": "havacilik",
+      "domain": "aa.com.tr",
+      "allow_images": false,
+      "probation": true
+    },
+    {
+      "id": "ntv-elektrikli",
+      "source_name": "NTV",
+      "rss_url": "https://www.ntv.com.tr/otomobil.rss",
+      "category": "elektrikli-araclar",
+      "domain": "ntv.com.tr",
+      "probation": true
+    },
+    {
+      "id": "shiftdelete-elektrikli",
+      "source_name": "ShiftDelete.Net",
+      "rss_url": "https://shiftdelete.net/feed",
+      "category": "elektrikli-araclar",
+      "domain": "shiftdelete.net",
+      "probation": true
+    },
+    {
+      "id": "cnn-sinema",
+      "source_name": "CNN Türk",
+      "rss_url": "https://www.cnnturk.com/feed/rss/kultur-sanat/news",
+      "category": "sinema-tv",
+      "domain": "cnnturk.com",
+      "probation": true
+    },
+    {
+      "id": "trt-sinema",
+      "source_name": "TRT Haber",
+      "rss_url": "https://www.trthaber.com/kultur_sanat_articles.rss",
+      "category": "sinema-tv",
+      "domain": "trthaber.com",
+      "probation": true
+    },
+    {
+      "id": "aa-muzik",
+      "source_name": "Anadolu Ajansı",
+      "rss_url": "https://www.aa.com.tr/tr/rss/default?cat=kultur",
+      "category": "muzik",
+      "domain": "aa.com.tr",
+      "allow_images": false,
+      "probation": true
+    },
+    {
+      "id": "haberturk-muzik",
+      "source_name": "Habertürk",
+      "rss_url": "https://www.haberturk.com/rss/kategori/kultur-sanat.xml",
+      "category": "muzik",
+      "domain": "haberturk.com",
+      "probation": true
+    },
+    {
+      "id": "hurriyet-moda",
+      "source_name": "Hürriyet",
+      "rss_url": "https://www.hurriyet.com.tr/rss/magazin",
+      "category": "moda-guzellik",
+      "domain": "hurriyet.com.tr",
+      "probation": true
+    },
+    {
+      "id": "cnn-moda",
+      "source_name": "CNN Türk",
+      "rss_url": "https://www.cnnturk.com/feed/rss/magazin/news",
+      "category": "moda-guzellik",
+      "domain": "cnnturk.com",
+      "probation": true
+    },
+    {
+      "id": "ntv-seyahat",
+      "source_name": "NTV",
+      "rss_url": "https://www.ntv.com.tr/seyahat.rss",
+      "category": "seyahat",
+      "domain": "ntv.com.tr",
+      "probation": true
+    },
+    {
+      "id": "aa-seyahat",
+      "source_name": "Anadolu Ajansı",
+      "rss_url": "https://www.aa.com.tr/tr/rss/default?cat=yasam",
+      "category": "seyahat",
+      "domain": "aa.com.tr",
+      "allow_images": false,
+      "probation": true
+    },
+    {
+      "id": "evrimagaci-cevre",
+      "source_name": "Evrim Ağacı",
+      "rss_url": "https://evrimagaci.org/rss.xml",
+      "category": "cevre-iklim",
+      "domain": "evrimagaci.org",
+      "probation": true
+    },
+    {
+      "id": "aa-cevre",
+      "source_name": "Anadolu Ajansı",
+      "rss_url": "https://www.aa.com.tr/tr/rss/default?cat=cevre",
+      "category": "cevre-iklim",
+      "domain": "aa.com.tr",
+      "allow_images": false,
+      "probation": true
+    },
+    {
+      "id": "resmigazete",
+      "source_name": "Resmî Gazete",
+      "rss_url": "https://www.resmigazete.gov.tr/rss",
+      "category": "resmi-gazete",
+      "domain": "resmigazete.gov.tr",
+      "allow_images": false,
+      "probation": true
     }
   ]
 }
