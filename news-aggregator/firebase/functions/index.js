@@ -27,6 +27,7 @@ exports.fetchRssFeeds = onSchedule(
     timeoutSeconds: 300,
     memory: '512MiB',
     retryCount: 0, // Bir sonraki çalışma zaten 15 dk sonra; başarısız çalışmayı tekrarlamaya gerek yok.
+    secrets: ['GEMINI_API_KEY'],
   },
   async () => {
     await ingestAllSources(getFirestore());
