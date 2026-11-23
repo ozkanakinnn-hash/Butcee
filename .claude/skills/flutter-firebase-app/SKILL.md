@@ -383,3 +383,10 @@ Gerçek widget'ları `flutter test` içinde render edip PNG yaz (flutter_app/too
   "Production APNs auth key" — aynı .p8'i **İKİSİNE DE** yükle (telefonda Upload düğmesi sağda gizli kalır).
   Belirti: `--jeton` denemesi → `messaging/third-party-auth-error Invalid APNs credential`; konu gönderimi "kabul" der ama iPhone'a gelmez.
   Kullanıcıya iOS push kurulumunda bu iki noktayı BAŞTAN söyle.
+
+## 29. Güncellemesiz (sunucu tarafı) değişiklik ve kategori ekleme dersleri (2026-11-23, Haber Akışı)
+- **Yeni kategori = Firestore `categories` + `sources`** (`scripts/seed-data.json` → `npm run seed`, merge). Uygulama listeyi canlı dinler; ana 8 dışındakiler "Diğer kategoriler"de görünür. Seed hiçbir şey SİLMEZ; kaldırılan kayıtlar `retired` listesine yazılır (varsa kaynak pasif, kategori silinir).
+- **Bir RSS adresini iki kategoriye bağlama.** Haber belgesi kimliği = URL hash'i → her haber TEK kategoriye ait; kopya besleme haberleri kategoriler arasında rastgele böler. Konu kategorisinin kendine ait beslemesi yoksa ya ekleme ya da anahtar kelime filtresini (uygulama güncellemesi) bekle.
+- **Deprem filtresi:** "Deprem mi oldu?" türü sorgu başlıklarını susturan kalıp, büyüklük yazan gerçek haberi ("Az önce 5,8 büyüklüğünde deprem") ASLA elememeli. Önce büyüklük kontrolü, sonra sorgu kalıbı (`EARTHQUAKE_QUERY`); ROUTINE'deki deprem kalıbı büyüklük içeren başlığı negatif lookahead ile hariç tutar. Testi: `test/routine-earthquake.test.js`.
+- **Hangi daldan kurulur:** varsayılan dal (`claude/taslak-uygulamasi-…`) 6 Kasım'da kalmış eski kopya; güncel sunucu kodu `claude/haber-akisi-2026-11`. Cloud Shell'de `git clone` varsayılan dalı açar → mutlaka `git checkout claude/haber-akisi-2026-11`.
+- **Telefondan/uzaktan kurulum:** Actions → "Haber Akışı - Firebase'e Kur" (dal: claude/haber-akisi-2026-11, proje: haber-68a3c). `FIREBASE_SERVICE_ACCOUNT` geçersizse "Failed to authenticate" ile Firestore adımında durur, hiçbir şey kurulmaz → anahtarı yenile.
