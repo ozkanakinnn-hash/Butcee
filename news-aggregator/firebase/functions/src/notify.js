@@ -89,10 +89,12 @@ function buildNewsMessage({ categoryId, categoryName, articles, breaking = false
 /** Kategori özeti profilleri (seviye başına ayrı kuyruk). */
 const PROFILES = {
   all: { level: 'lvl_all', gapMs: 90 * 60 * 1000, cooldownMs: 3 * 60 * 60 * 1000, dailyCap: 10 },
-  balanced: { level: 'lvl_balanced', gapMs: 3 * 60 * 60 * 1000, cooldownMs: 6 * 60 * 60 * 1000, dailyCap: 4 },
+  balanced: { level: 'lvl_balanced', gapMs: 3 * 60 * 60 * 1000, cooldownMs: 6 * 60 * 60 * 1000, dailyCap: 3 },
 };
 /** Özete girmek için bir hikâyeyi en az kaç farklı yayıncı vermiş olmalı (tek kaynaklı rutin haber akışta kalır). */
-const DIGEST_MIN_SOURCES = 2;
+const DIGEST_MIN_SOURCES = 3;
+/** Tek kategori gönderilebilmesi için gereken minimum yayıncı sayısı. */
+const DIGEST_SINGLE_MIN_SOURCES = 3;
 /** Gece özet gönderilmez (23:00–08:00); biriken önemli haberleri sabah bülteni toplar. */
 const DIGEST_NIGHT_START_MIN = 23 * 60;
 const DIGEST_NIGHT_END_MIN = 8 * 60;
@@ -118,6 +120,11 @@ const BULLETIN_ITEMS = 4; // bildirimde görünen satır
 const BRIEFING_ITEMS = 7; // uygulamadaki "5 dakikada gündem" ekranı
 
 const { mergeStories, pruneStories, isClickbait } = require('./importance');
+const { ROUTINE } = require('./scoring');
+const { fold } = require('./quiet-hours');
+
+/** Metni normalize edip ROUTINE kalıplarından herhangi birine uyuyorsa true. */
+const isRoutine = (text) => { const t = fold(text); return ROUTINE.some((re) => re.test(t)); };
 
 const levelCondition = (categoryIds, level) => {
   const cats = categoryIds.map((id) => `'${topicFor(id)}' in topics`);
@@ -218,7 +225,7 @@ function planDigest(profile, st, categoryAdds, now, stories = []) {
       .filter(Boolean)
       .sort((a, b) => b.sources - a.sources || b.newest_ms - a.newest_ms)
       .slice(0, DIGEST_MAX_CATEGORIES);
-    if (ready.length === 1) {
+    if (ready.length === 1 && ready[0].sources >= DIGEST_SINGLE_MIN_SOURCES) {
       const e = ready[0];
       const articles = [{ id: e.article_id, data: {
         title: e.title, original_url: e.url, source_name: e.source, image_url: e.image,
@@ -228,9 +235,12 @@ function planDigest(profile, st, categoryAdds, now, stories = []) {
       delete msg.topic;
       msg.condition = levelCondition([e.category_id], profile.level);
       msg.notification.body += ` · ${e.sources} kaynakta`;
+      msg.ttlMs = 2 * 3_600_000; // 2sa — eski bildirim gece teslim edilmesin
       messages.push(msg);
     } else if (ready.length > 1) {
-      messages.push(buildDigestMessage(ready, new Date(now), profile.level));
+      const msg = buildDigestMessage(ready, new Date(now), profile.level);
+      msg.ttlMs = 2 * 3_600_000; // 2sa — eski bildirim gece teslim edilmesin
+      messages.push(msg);
     }
     for (const e of ready) {
       lastSent[e.category_id] = now;
@@ -396,7 +406,7 @@ function planNotifications({ results, categories, state = {}, now = Date.now() }
   const minor = results
     .flatMap((r) => r.breakingArticles || [])
     .filter((a) => now - a.data.published_at.toMillis() < MAX_BREAKING_AGE_MS)
-    .filter((a) => a.id !== br.last_minor_id && !isClickbait(a.data.title || ''));
+    .filter((a) => a.id !== br.last_minor_id && !isClickbait(a.data.title || '') && !isRoutine(a.data.title || ''));
   if (!night && minor.length && now - (br.last_minor_at || 0) >= BREAKING_COOLDOWN_MS) {
     const msg = buildNewsMessage({ categoryId: BREAKING_CATEGORY_ID, categoryName: 'Son Dakika', articles: minor, breaking: true, now: new Date(now) });
     delete msg.topic;
@@ -459,7 +469,7 @@ function toWire(m) {
   return {
     ...(m.topic ? { topic: m.topic } : { condition: m.condition }),
     data,
-    android: { priority: (m.android && m.android.priority) || 'normal', collapseKey: m.android && m.android.collapseKey, ttl: 6 * 3_600_000 },
+    android: { priority: (m.android && m.android.priority) || 'normal', collapseKey: m.android && m.android.collapseKey, ttl: m.ttlMs || 6 * 3_600_000 },
     apns: {
       headers: { 'apns-priority': an.channelId === 'quiet' ? '5' : '10' },
       payload: {

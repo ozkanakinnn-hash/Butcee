@@ -63,10 +63,12 @@ const CRITICAL = [
 
 /**
  * Deprem: küçük sarsıntılar geceyi bölmesin → büyüklük yazıyorsa 4,5 ve üstü; yazmıyorsa (ör. "Deprem! İstanbul
- * sallandı") kritik sayılır.
+ * sallandı") kritik sayılır. "Deprem mi oldu?" tarzı sorgulama başlıkları kritik sayılmaz.
  */
 function isCriticalEarthquake(t) {
   if (!/\bdeprem|\bzelzele|\bsarsinti/.test(t)) return false;
+  // Sorgulama/merak başlıkları ("deprem mi oldu?", "nerede deprem?") kritik değil
+  if (/deprem mi oldu|nerede.*deprem|az once.*deprem|son depremler|deprem sorgula|deprem.*mi \?/.test(t)) return false;
   const m = /(\d+(?:[.,]\d)?)\s*(?:buyuklugunde|siddetinde|magnitude|mw|ml)/.exec(t);
   if (!m) return true;
   return Number(m[1].replace(',', '.')) >= 4.5;

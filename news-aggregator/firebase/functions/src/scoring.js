@@ -110,6 +110,12 @@ const ROUTINE = [
   /\bsorgulama ekrani|\btc kimlik ile|\bbasvuru nasil|\be-devlet uzerinden|\bsonuclari aciklandi mi/,
   /\bzamani geldi mi|\bne kadar oldu|\bguncel fiyat listesi|\bfiyatlari ne kadar/,
   /\bdogum gunu|\bkim kimdir|\bkac yasinda|\bhayati ve|\bbiyografisi/,
+  // Perakende/promosyon içeriği (BIM, A101, Şok vb. aktüel ürünler)
+  /aktuel firsatlar|\bbim aktuel|\ba101 aktuel|\bsok aktuel|market firsatlari|haftalik firsatlar|indirimli urunler/,
+  // "Deprem mi oldu?" tarzı spekülatif/sorgulama başlıkları (gerçek deprem bildirimi değil)
+  /\bdeprem mi oldu\b|az once.*\bdeprem\b|nerede.*\bdeprem.*\?|\bdeprem sorgula|\bdeprem.*mi \?|son depremler listesi/,
+  // Dizi/film izleme linkleri ve TV rehberi
+  /izleme linki|bolum izleme|izle.*link|dizi.*kac bolum|yeni bolum ne zaman|yayin tarihi belli mi|dizi baslangic tarihi/,
 ];
 
 /** Hikâye kaç farklı yayıncıda yer aldı? */
