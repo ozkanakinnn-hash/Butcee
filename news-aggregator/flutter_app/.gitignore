@@ -49,3 +49,13 @@ app.*.map.json
 
 # Firebase yapılandırması (gizli tutulur)
 android/app/google-services.json
+
+# Flutter iOS otomatik üretilen dosyalar
+ios/Flutter/Generated.xcconfig
+ios/Flutter/flutter_export_environment.sh
+ios/Flutter/ephemeral/
+ios/Runner/GeneratedPluginRegistrant.h
+ios/Runner/GeneratedPluginRegistrant.m
+
+# Android build artifacts
+/android/build/
