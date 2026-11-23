@@ -195,14 +195,6 @@
       "placeholder_image_url": ""
     },
     {
-      "id": "yapay-zeka",
-      "name": "Yapay Zeka",
-      "name_en": "AI",
-      "icon_name": "smart_toy",
-      "order_index": 24,
-      "placeholder_image_url": ""
-    },
-    {
       "id": "savunma",
       "name": "Savunma Sanayi",
       "name_en": "Defense",
@@ -216,30 +208,6 @@
       "name_en": "Aviation & Space",
       "icon_name": "public",
       "order_index": 26,
-      "placeholder_image_url": ""
-    },
-    {
-      "id": "elektrikli-araclar",
-      "name": "Elektrikli Araçlar",
-      "name_en": "Electric Vehicles",
-      "icon_name": "directions_car",
-      "order_index": 27,
-      "placeholder_image_url": ""
-    },
-    {
-      "id": "sinema-tv",
-      "name": "Sinema & TV",
-      "name_en": "Movies & TV",
-      "icon_name": "movie",
-      "order_index": 28,
-      "placeholder_image_url": ""
-    },
-    {
-      "id": "muzik",
-      "name": "Müzik",
-      "name_en": "Music",
-      "icon_name": "star",
-      "order_index": 29,
       "placeholder_image_url": ""
     },
     {
@@ -813,30 +781,6 @@
       "probation": true
     },
     {
-      "id": "shiftdelete-gaming",
-      "source_name": "ShiftDelete.Net",
-      "rss_url": "https://shiftdelete.net/feed",
-      "category": "oyun-gaming",
-      "domain": "shiftdelete.net",
-      "probation": true
-    },
-    {
-      "id": "webtekno-yapay-zeka",
-      "source_name": "Webtekno",
-      "rss_url": "https://www.webtekno.com/rss.xml",
-      "category": "yapay-zeka",
-      "domain": "webtekno.com",
-      "probation": true
-    },
-    {
-      "id": "donanimhaber-yapay-zeka",
-      "source_name": "DonanımHaber",
-      "rss_url": "https://www.donanimhaber.com/rss/tum/",
-      "category": "yapay-zeka",
-      "domain": "donanimhaber.com",
-      "probation": true
-    },
-    {
       "id": "savunma-sanayii",
       "source_name": "Savunma Sanayii",
       "rss_url": "https://www.savunmasanayii.com/feed/",
@@ -870,55 +814,6 @@
       "probation": true
     },
     {
-      "id": "ntv-elektrikli",
-      "source_name": "NTV",
-      "rss_url": "https://www.ntv.com.tr/otomobil.rss",
-      "category": "elektrikli-araclar",
-      "domain": "ntv.com.tr",
-      "probation": true
-    },
-    {
-      "id": "shiftdelete-elektrikli",
-      "source_name": "ShiftDelete.Net",
-      "rss_url": "https://shiftdelete.net/feed",
-      "category": "elektrikli-araclar",
-      "domain": "shiftdelete.net",
-      "probation": true
-    },
-    {
-      "id": "cnn-sinema",
-      "source_name": "CNN Türk",
-      "rss_url": "https://www.cnnturk.com/feed/rss/kultur-sanat/news",
-      "category": "sinema-tv",
-      "domain": "cnnturk.com",
-      "probation": true
-    },
-    {
-      "id": "trt-sinema",
-      "source_name": "TRT Haber",
-      "rss_url": "https://www.trthaber.com/kultur_sanat_articles.rss",
-      "category": "sinema-tv",
-      "domain": "trthaber.com",
-      "probation": true
-    },
-    {
-      "id": "aa-muzik",
-      "source_name": "Anadolu Ajansı",
-      "rss_url": "https://www.aa.com.tr/tr/rss/default?cat=kultur",
-      "category": "muzik",
-      "domain": "aa.com.tr",
-      "allow_images": false,
-      "probation": true
-    },
-    {
-      "id": "haberturk-muzik",
-      "source_name": "Habertürk",
-      "rss_url": "https://www.haberturk.com/rss/kategori/kultur-sanat.xml",
-      "category": "muzik",
-      "domain": "haberturk.com",
-      "probation": true
-    },
-    {
       "id": "hurriyet-moda",
       "source_name": "Hürriyet",
       "rss_url": "https://www.hurriyet.com.tr/rss/magazin",
@@ -927,36 +822,11 @@
       "probation": true
     },
     {
-      "id": "cnn-moda",
-      "source_name": "CNN Türk",
-      "rss_url": "https://www.cnnturk.com/feed/rss/magazin/news",
-      "category": "moda-guzellik",
-      "domain": "cnnturk.com",
-      "probation": true
-    },
-    {
       "id": "ntv-seyahat",
       "source_name": "NTV",
       "rss_url": "https://www.ntv.com.tr/seyahat.rss",
       "category": "seyahat",
       "domain": "ntv.com.tr",
-      "probation": true
-    },
-    {
-      "id": "aa-seyahat",
-      "source_name": "Anadolu Ajansı",
-      "rss_url": "https://www.aa.com.tr/tr/rss/default?cat=yasam",
-      "category": "seyahat",
-      "domain": "aa.com.tr",
-      "allow_images": false,
-      "probation": true
-    },
-    {
-      "id": "evrimagaci-cevre",
-      "source_name": "Evrim Ağacı",
-      "rss_url": "https://evrimagaci.org/rss.xml",
-      "category": "cevre-iklim",
-      "domain": "evrimagaci.org",
       "probation": true
     },
     {

@@ -113,9 +113,10 @@ const ROUTINE = [
   // Perakende/promosyon içeriği (BIM, A101, Şok vb. aktüel ürünler)
   /aktuel firsatlar|\bbim aktuel|\ba101 aktuel|\bsok aktuel|market firsatlari|haftalik firsatlar|indirimli urunler/,
   // "Deprem mi oldu?" tarzı spekülatif/sorgulama başlıkları (gerçek deprem bildirimi değil)
-  /\bdeprem mi oldu\b|az once.*\bdeprem\b|nerede.*\bdeprem.*\?|\bdeprem sorgula|\bdeprem.*mi \?|son depremler listesi/,
+  // Büyüklük (ör. "5,8 büyüklüğünde") yazan başlık gerçek deprem haberidir, rutin sayılmaz.
+  /^(?!.*\d+(?:[.,]\d)?\s*(?:buyuklugunde|siddetinde)).*(?:\bdeprem mi (?:oldu|var)|\bnerede deprem|\bson depremler\b|\bdeprem sorgula)/,
   // Dizi/film izleme linkleri ve TV rehberi
-  /izleme linki|bolum izleme|izle.*link|dizi.*kac bolum|yeni bolum ne zaman|yayin tarihi belli mi|dizi baslangic tarihi/,
+  /\bizleme linki|\bbolum izleme|\bizle(?:me)? link|\bdizi.*kac bolum|\byeni bolum ne zaman|\byayin tarihi belli mi|\bdizi baslangic tarihi/,
 ];
 
 /** Hikâye kaç farklı yayıncıda yer aldı? */

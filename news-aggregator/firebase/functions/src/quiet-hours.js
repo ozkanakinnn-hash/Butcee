@@ -65,13 +65,17 @@ const CRITICAL = [
  * Deprem: küçük sarsıntılar geceyi bölmesin → büyüklük yazıyorsa 4,5 ve üstü; yazmıyorsa (ör. "Deprem! İstanbul
  * sallandı") kritik sayılır. "Deprem mi oldu?" tarzı sorgulama başlıkları kritik sayılmaz.
  */
+/** "Deprem mi oldu?", "Nerede deprem oldu?", "son depremler listesi" gibi merak/sorgu başlıkları (katlanmış metin). */
+const EARTHQUAKE_QUERY = /\bdeprem mi (?:oldu|var)|\bnerede deprem|\bson depremler\b|\bdeprem sorgula/;
+
 function isCriticalEarthquake(t) {
   if (!/\bdeprem|\bzelzele|\bsarsinti/.test(t)) return false;
-  // Sorgulama/merak başlıkları ("deprem mi oldu?", "nerede deprem?") kritik değil
-  if (/deprem mi oldu|nerede.*deprem|az once.*deprem|son depremler|deprem sorgula|deprem.*mi \?/.test(t)) return false;
   const m = /(\d+(?:[.,]\d)?)\s*(?:buyuklugunde|siddetinde|magnitude|mw|ml)/.exec(t);
-  if (!m) return true;
-  return Number(m[1].replace(',', '.')) >= 4.5;
+  // Büyüklük yazıyorsa karar onundur: "Az önce 5,8 büyüklüğünde deprem" sorgu kalıbı içerse de kritiktir.
+  if (m) return Number(m[1].replace(',', '.')) >= 4.5;
+  // Büyüklüksüz sorgulama/merak başlıkları ("Deprem mi oldu?", "Nerede deprem oldu?") kritik değil.
+  if (EARTHQUAKE_QUERY.test(t)) return false;
+  return true;
 }
 
 /** Başlık + özet olağanüstü durum mu? */
@@ -80,4 +84,4 @@ function isCritical(...texts) {
   return isCriticalEarthquake(t) || CRITICAL.some((re) => re.test(t));
 }
 
-module.exports = { isQuietHour, isNightSilent, istanbulHourMinute, istanbulHour, isCritical, fold, QUIET_START_HOUR, QUIET_END_HOUR };
+module.exports = { isQuietHour, isNightSilent, istanbulHourMinute, istanbulHour, isCritical, fold, EARTHQUAKE_QUERY, QUIET_START_HOUR, QUIET_END_HOUR };
