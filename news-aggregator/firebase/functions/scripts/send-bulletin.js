@@ -2,11 +2,11 @@
 
 /**
  * Akışın haberlerini Firestore'dan toplar, ücretsiz yapay zekâ ile telifsiz özet zinciri yazdırır ve
- * yalnızca X'te paylaşılmak üzere Make webhook'una gönderir. Hafta sonu (Cmt/Paz) çalışmaz.
+ * yalnızca X'te paylaşılmak üzere Make webhook'una gönderir. Cmt/Paz yalnızca günde bir 'haftasonu' akışı.
  *   GEMINI_API_KEY=... (veya GITHUB_TOKEN) MAKE_WEBHOOK_URL=... GOOGLE_APPLICATION_CREDENTIALS=sa.json \
- *     node scripts/send-bulletin.js [sabah|ogle|aksam|gece] [--dry-run] [--force]
+ *     node scripts/send-bulletin.js [sabah|ogle|aksam|gece|haftasonu] [--dry-run] [--force]
  * --dry-run : metni yazar, Make'e göndermez, hafızaya kaydetmez
- * --force   : hafta sonu da çalıştırır (elle deneme için)
+ * --force   : gün kontrolünü atlar (ör. hafta içi 'haftasonu' akışını denemek için)
  */
 
 const { initAdmin } = require('./init-admin');
@@ -22,14 +22,16 @@ const slot = slotArg && slotArg !== 'auto' ? slotArg : undefined;
 
 (async () => {
   const now = new Date();
-  if (b.isWeekend(now) && !force) {
-    console.log('Hafta sonu: bülten gönderilmez.');
+  const chosen = slot || b.slotForTime(now);
+  const weekendSlot = Boolean(b.SLOTS[chosen]?.weekend);
+  if (b.isWeekend(now) !== weekendSlot && !force) {
+    console.log(weekendSlot ? 'Hafta içi: hafta sonu akışı çalışmaz.' : 'Hafta sonu: yalnızca hafta sonu akışı gönderilir.');
     return;
   }
   initAdmin();
   const db = getFirestore();
 
-  const payload = await b.collectBulletin(db, { slot, now, appLink: process.env.APP_LINK || '' });
+  const payload = await b.collectBulletin(db, { slot: chosen, now, appLink: process.env.APP_LINK || '' });
   console.log(`${payload.slot_label} (${payload.date}): ${payload.event_count} olay, gün toplamı ${payload.day_event_count}`);
   if (payload.event_count === 0) return console.log('Bu aralıkta haber yok; gönderilmedi.');
 

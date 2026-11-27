@@ -80,3 +80,23 @@ test('topicId güvenli belge kimliği üretir', () => {
   assert.equal(b.topicId('Gürcistan / Batum Taraftar Olayları'), 'gurcistan-batum-taraftar-olaylari');
   assert.equal(b.topicId('///'), '');
 });
+
+test('hafta sonu tek akış: haftasonu seçilir ve aralıklar boşluksuz', () => {
+  // Cumartesi 28 Kasım 20:33 TSİ
+  const sat = new Date('2026-11-28T17:33:00Z');
+  assert.equal(b.slotForTime(sat), 'haftasonu');
+  const ws = b.slotWindow('haftasonu', sat);
+  assert.equal(ws.start.toISOString(), '2026-11-27T20:30:00.000Z'); // cuma 23:30
+  assert.equal(ws.end.toISOString(), '2026-11-28T17:30:00.000Z'); // cmt 20:30
+  // Pazar 29 Kasım
+  const sun = b.slotWindow('haftasonu', new Date('2026-11-29T17:40:00Z'));
+  assert.equal(sun.start.toISOString(), '2026-11-28T17:30:00.000Z'); // cmt 20:30
+  assert.equal(sun.end.toISOString(), '2026-11-29T17:30:00.000Z');
+  // Pazartesi sabah akışı pazar 20:30'dan başlar
+  const mon = b.slotWindow('sabah', new Date('2026-11-30T04:35:00Z'));
+  assert.equal(mon.start.toISOString(), '2026-11-29T17:30:00.000Z');
+  // Salı sabah normal (pazartesi 23:30)
+  assert.equal(b.slotWindow('sabah', new Date('2026-12-01T04:35:00Z')).start.toISOString(), '2026-11-30T20:30:00.000Z');
+  // Hafta içi otomatik seçim hafta sonu akışını vermez
+  assert.equal(b.slotForTime(new Date('2026-11-27T17:33:00Z')), 'aksam');
+});

@@ -1,6 +1,6 @@
 ---
 name: make-ai-bulten
-description: Make (make.com) + ÜCRETSİZ yapay zekâ (Gemini ücretsiz katmanı, yedek GitHub Models) ile zamanlanmış, telifsiz haber/özet bülteni üretip X'e (Twitter) zincir olarak gönderme — hafta içi günde N akış (sabah/öğle/akşam/gece), hafta sonu kapalı, "gelişme yoksa tekrar etme" hafızası (Firestore), aynı olayı gruplama, Make Free işlem kotasına sığdırma. Make, webhook, otomatik sosyal medya paylaşımı, AI özet bülteni isteklerinde kullan.
+description: Make (make.com) + ÜCRETSİZ yapay zekâ (Gemini ücretsiz katmanı, yedek GitHub Models) ile zamanlanmış, telifsiz haber/özet bülteni üretip X'e (Twitter) zincir olarak gönderme — hafta içi günde N akış (sabah/öğle/akşam/gece), hafta sonu günde tek akış, "gelişme yoksa tekrar etme" hafızası (Firestore), aynı olayı gruplama, Make Free işlem kotasına sığdırma. Make, webhook, otomatik sosyal medya paylaşımı, AI özet bülteni isteklerinde kullan.
 ---
 
 # Make + Ücretsiz Yapay Zekâ Bülteni — Öğrenilenler (Haber Akışı X bülteni)
@@ -11,14 +11,15 @@ Referans: `news-aggregator/docs/MAKE_X_BULTEN.md`, `firebase/functions/src/{bull
 ## Kullanıcı tercihleri
 - **Ücretsiz seçenekler** öncelikli (kullanıcı isteği, 2026-11-27). Ücretli bir parça kaçınılmazsa açıkça söyle
   ve ücretsiz alternatif öner.
-- Bülten **hafta sonu gönderilmez** (cron `* * 1-5` + kodda İstanbul saatine göre `isWeekend` koruması;
-  elle deneme için `force`). Hafıza penceresi 96 saat, böylece pazartesi cumayı bilir.
+- Hafta içi günde 4 akış; **hafta sonu günde bir kez "Hafta Sonu Akışı"** (Cmt & Paz 20:30 TSİ; kullanıcı isteği
+  2026-11-27). Ayrı cron (`33 17 * * 0,6`) + kodda `isWeekend` ↔ `slot.weekend` eşleşme koruması (elle deneme `force`).
+  Aralıklar boşluksuz: Cmt cuma 23:30'dan, Paz cmt 20:30'dan, Pzt sabah paz 20:30'dan başlar. Hafıza 96 saat.
 
 ## Mimari (ücretsiz)
 - Ağır iş GitHub Actions'ta (ücretsiz): Firestore'dan haber, olay gruplama (başlık Jaccard ≥0.45, 6 harflik kök,
   `foldForSearch`), yapay zekâ çağrısı, Firestore hafıza (`bulletin_topics`).
 - **Make yalnızca paylaşır**: Webhook → X Create a Post (part1) → Router [dal1: part2→part3→part4 yanıt zinciri,
-  `Exists` filtreleri | dal2: Webhook response "ok"] ≈ 7 işlem/çalışma → hafta içi 4 akışta ~620/ay (Free 1.000).
+  `Exists` filtreleri | dal2: Webhook response "ok"] ≈ 7 işlem/çalışma → ~96 çalışma/ay ≈ 680 işlem (Free 1.000).
   Yapay zekâ veya hafıza Make'te olursa ~1.500 işlem/ay olur ve ücretli plana çıkar.
 - Hafıza yalnızca Make "ok" dönünce yazılır (X hatasında Break → "ok" yok → sonraki akışta yeniden dener).
 

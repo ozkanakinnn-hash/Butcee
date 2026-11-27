@@ -67,7 +67,7 @@ news-aggregator/
 
 - **X bülteni (ücretsiz: Make Free + Gemini/GitHub Models):** Hafta içi günde 4 kez (07:30 / 12:30 / 18:30 / 23:30)
   haberler gruplanır, ücretsiz yapay zekâ telifsiz özet zinciri yazar, Make X'te paylaşır; gelişme yoksa aynı haber
-  tekrarlanmaz, hafta sonu gönderilmez. Yoğun günde gece akışı "Günün Bülteni" olur.
+  tekrarlanmaz. Cumartesi ve pazar günde bir kez (20:30) "Hafta Sonu Akışı". Yoğun günde gece akışı "Günün Bülteni" olur.
   Kurulum: [`docs/MAKE_X_BULTEN.md`](docs/MAKE_X_BULTEN.md) (`src/bulletin.js`, `src/ai.js`, `scripts/send-bulletin.js`,
   `.github/workflows/news-x-bulletin.yml`).
 

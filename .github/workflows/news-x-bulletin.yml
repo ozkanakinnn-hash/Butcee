@@ -1,27 +1,28 @@
 name: Haber Akışı - X Bülteni (Make)
 
 # Hafta içi günde 4 kez: Firestore'daki haberler → ücretsiz yapay zekâ (Gemini ücretsiz katmanı, yoksa
-# GitHub Models) ile telifsiz özet zinciri → Make webhook'u → X. Hafta sonu gönderilmez.
+# GitHub Models) ile telifsiz özet zinciri → Make webhook'u → X. Cmt/Paz günde bir "Hafta Sonu Akışı".
 # Kurulum: news-aggregator/docs/MAKE_X_BULTEN.md
 # Gizli değişkenler: FIREBASE_SERVICE_ACCOUNT (zorunlu), MAKE_WEBHOOK_URL (yoksa yalnızca deneme),
 #                    GEMINI_API_KEY (isteğe bağlı; yoksa GitHub Models kullanılır), APP_LINK (isteğe bağlı)
-# Saatler UTC, Pzt–Cum: 04:33=07:33, 09:33=12:33, 15:33=18:33, 20:33=23:33 (İstanbul).
+# Saatler UTC, Pzt–Cum: 04:33=07:33, 09:33=12:33, 15:33=18:33, 20:33=23:33; Cmt/Paz 17:33=20:33 (İstanbul).
 on:
   schedule:
-    - cron: "33 4,9,15,20 * * 1-5"
+    - cron: "33 4,9,15,20 * * 1-5" # hafta içi 4 akış
+    - cron: "33 17 * * 0,6" # Cmt ve Paz 20:33 TSİ: Hafta Sonu Akışı (günde bir kez)
   workflow_dispatch:
     inputs:
       slot:
         description: "Akış"
         type: choice
-        options: [auto, sabah, ogle, aksam, gece]
+        options: [auto, sabah, ogle, aksam, gece, haftasonu]
         default: auto
       dry_run:
         description: "Sadece metni göster, Make'e gönderme"
         type: boolean
         default: true
       force:
-        description: "Hafta sonu da çalıştır (deneme için)"
+        description: "Gün kontrolünü atla (ör. hafta içi hafta sonu akışını dene)"
         type: boolean
         default: false
 

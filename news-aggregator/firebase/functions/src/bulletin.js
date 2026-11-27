@@ -23,7 +23,12 @@ const SLOTS = {
   ogle: { label: 'Öğle Akışı', emoji: '☀️', end: [12, 30], start: [7, 30] },
   aksam: { label: 'Akşam Akışı', emoji: '🌆', end: [18, 30], start: [12, 30] },
   gece: { label: 'Gece Akışı', emoji: '🌙', end: [23, 30], start: [18, 30] },
+  // Cumartesi ve pazar günde bir kez. Cmt: cuma 23:30 → 20:30; Paz: cmt 20:30 → 20:30.
+  // Pazartesi sabah akışı pazar 20:30'dan başlar, böylece arada haber kaybolmaz.
+  haftasonu: { label: 'Hafta Sonu Akışı', emoji: '🗓️', end: [20, 30], start: [23, 30], startPrevDay: true, weekend: true },
 };
+
+const WEEKEND_END = SLOTS.haftasonu.end;
 
 /** Gün içi toplam haber (olay) sayısı bunu aşarsa gece akışı "Günün Bülteni" olur. */
 const DENSE_DAY_THRESHOLD = 40;
@@ -36,7 +41,10 @@ function slotForTime(now = new Date()) {
   const minutes = local.getUTCHours() * 60 + local.getUTCMinutes();
   let best = 'sabah';
   let bestDiff = Infinity;
+  const weekend = isWeekend(now);
+  if (weekend) return 'haftasonu';
   for (const [key, s] of Object.entries(SLOTS)) {
+    if (s.weekend) continue;
     const target = s.end[0] * 60 + s.end[1];
     let diff = Math.abs(minutes - target);
     diff = Math.min(diff, 1440 - diff);
@@ -56,7 +64,7 @@ function istanbulDate(y, m, d, hh, mm) {
 /** Akışın kapsadığı zaman aralığı ve günün başlangıcı. */
 function slotWindow(slot, now = new Date()) {
   const s = SLOTS[slot];
-  if (!s) throw new Error(`Bilinmeyen akış: ${slot} (sabah | ogle | aksam | gece)`);
+  if (!s) throw new Error(`Bilinmeyen akış: ${slot} (sabah | ogle | aksam | gece | haftasonu)`);
   const local = new Date(now.getTime() + TZ_OFFSET_MS);
   let y = local.getUTCFullYear();
   let m = local.getUTCMonth();
@@ -67,7 +75,12 @@ function slotWindow(slot, now = new Date()) {
     [y, m, d] = [prev.getUTCFullYear(), prev.getUTCMonth(), prev.getUTCDate()];
   }
   const end = istanbulDate(y, m, d, s.end[0], s.end[1]);
-  const start = istanbulDate(y, m, d - (s.startPrevDay ? 1 : 0), s.start[0], s.start[1]);
+  let start = istanbulDate(y, m, d - (s.startPrevDay ? 1 : 0), s.start[0], s.start[1]);
+  const dow = new Date(Date.UTC(y, m, d)).getUTCDay();
+  // Pazar hafta sonu akışı ve pazartesi sabah akışı, bir önceki hafta sonu akışının bittiği 20:30'dan başlar.
+  if ((slot === 'haftasonu' && dow === 0) || (slot === 'sabah' && dow === 1)) {
+    start = istanbulDate(y, m, d - 1, WEEKEND_END[0], WEEKEND_END[1]);
+  }
   const dayStart = istanbulDate(y, m, d, 0, 0);
   const dateLabel = new Intl.DateTimeFormat('tr-TR', {
     timeZone: 'Europe/Istanbul', day: 'numeric', month: 'long', year: 'numeric',
@@ -185,7 +198,7 @@ async function collectBulletin(db, { slot, now = new Date(), appLink = '' } = {}
   return buildPayload({ slot: chosen, window, slotArticles, dayEventCount, appLink });
 }
 
-/** İstanbul saatine göre cumartesi/pazar mı? (hafta sonu bülten gönderilmez) */
+/** İstanbul saatine göre cumartesi/pazar mı? (hafta sonu yalnızca 'haftasonu' akışı çalışır) */
 function isWeekend(now = new Date()) {
   const day = new Date(now.getTime() + TZ_OFFSET_MS).getUTCDay();
   return day === 0 || day === 6;

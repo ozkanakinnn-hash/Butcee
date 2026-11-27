@@ -1,8 +1,8 @@
 # X Bülteni — Ücretsiz Kurulum (Make + Ücretsiz Yapay Zekâ)
 
-Haber Akışı'nın topladığı haberler **hafta içi** günde 4 kez yapay zekâ ile **kendi cümlelerimizle** özetlenir ve
-X'te zincir (thread) olarak paylaşılır. Daha önce paylaşılan bir haber, **yeni bir gelişme yoksa tekrar yazılmaz**.
-**Cumartesi ve pazar gönderi yapılmaz.**
+Haber Akışı'nın topladığı haberler **hafta içi günde 4 kez**, **cumartesi ve pazar günde 1 kez (Hafta Sonu Akışı)**
+yapay zekâ ile **kendi cümlelerimizle** özetlenir ve X'te zincir (thread) olarak paylaşılır. Daha önce paylaşılan
+bir haber, **yeni bir gelişme yoksa tekrar yazılmaz**.
 
 | Akış | Saat (TSİ, Pzt–Cum) | Kapsadığı aralık |
 |---|---|---|
@@ -10,26 +10,27 @@ X'te zincir (thread) olarak paylaşılır. Daha önce paylaşılan bir haber, **
 | ☀️ Öğle Akışı | 12:30 | 07:30 → 12:30 |
 | 🌆 Akşam Akışı | 18:30 | 12:30 → 18:30 |
 | 🌙 Gece Akışı / **Günün Bülteni** | 23:30 | 18:30 → 23:30; gün **yoğunsa** (≥ 40 ayrı olay) "Günün Bülteni" olur ve sona *Günün öne çıkanları* eklenir |
+| 🗓️ **Hafta Sonu Akışı** | Cmt & Paz 20:30 | Cmt: cuma 23:30 → 20:30 · Paz: cmt 20:30 → 20:30 |
 
-Pazartesi sabah akışı yalnızca pazar 23:30'dan sonrasını kapsar; hafta sonu haberleri bültene girmez.
-Tekrar hafızası 4 gün tutulur, böylece pazartesi cuma günü paylaşılanları bilir.
+Aralıklar boşluksuzdur: pazartesi sabah akışı pazar 20:30'dan başlar. Tekrar hafızası 4 gün tutulur.
+Hafta sonu akışı da hafızayı kullanır: cuma paylaşılan bir konu cumartesi gelişme yoksa yazılmaz.
 
 ## Neden bu yapı ücretsiz?
 
 | Parça | Ne yapar | Ücret |
 |---|---|---|
-| GitHub Actions | Hafta içi zamanlayıcı, haberleri toplar, aynı olayı gruplar | Ücretsiz (her çalışma ~1 dk; ayda ~88 dk) |
+| GitHub Actions | Zamanlayıcı, haberleri toplar, aynı olayı gruplar | Ücretsiz (her çalışma ~1 dk; ayda ~96 dk) |
 | Firestore (Spark) | Haberler + paylaşılan konular hafızası (`bulletin_topics`) | Ücretsiz kota içinde |
 | **Google Gemini** (AI Studio ücretsiz katmanı) | Telifsiz özet zincirini yazar, tekrar kontrolü yapar | Ücretsiz (dakika/gün sınırlı; günde 4 istek çok az) |
 | **GitHub Models** (yedek) | Gemini anahtarı yoksa ya da hata verirse aynı işi yapar | Ücretsiz, anahtar gerekmez (`GITHUB_TOKEN`) |
-| Make (Free) | Yalnızca X'e gönderir | Çalışma başına ~7 işlem → ayda ~620 / 1.000 |
+| Make (Free) | Yalnızca X'e gönderir | Çalışma başına ~7 işlem → ayda ~680 / 1.000 |
 | X | Zincir gönderi (Premium gerekmez) | Aşağıdaki X notuna bak |
 
 Önceki sürümde yapay zekâ ve hafıza Make içindeydi. Bu, ücretli Claude API'si ve ayda ~1.500 Make işlemi
 demekti. Şimdi bu iki iş ücretsiz tarafta (GitHub + Firestore) yapılıyor, Make'te yalnızca paylaşım kaldı.
 
 ```
-GitHub Actions (Pzt–Cum, günde 4)                         Make (Free)
+GitHub Actions (Pzt–Cum 4×, Cmt/Paz 1×)                         Make (Free)
   1 Firestore'dan aralıktaki haberler                      1 Webhook
   2 aynı olay → tek kayıt, önem sırası                     2 X: Create a Post   (part1)
   3 son 4 günde paylaşılan konular (bulletin_topics)       3 Router ─ dal 1: part2 → part3 → part4 (yanıt zinciri,
@@ -60,8 +61,8 @@ GitHub Actions (Pzt–Cum, günde 4)                         Make (Free)
 2. App → *User authentication settings*: **Read and write**, tür **Web App**, OAuth 2.0,
    Callback URL = Make'in X bağlantısı sırasında gösterdiği adres.
 3. **Ücret uyarısı:** X API planları sık değişiyor. Developer Portal'da şu an ücretsiz gönderi hakkı olup
-   olmadığını ve aylık limiti kontrol et. Bu kurulum ayda en fazla ~88 çalışma × 4 parça ≈ **350 gönderi** yapar.
-   Ücretsiz hak bunun altındaysa `src/ai.js` → `MAX_PARTS` değerini 2'ye düşür (~176 gönderi).
+   olmadığını ve aylık limiti kontrol et. Bu kurulum ayda en fazla ~96 çalışma × 4 parça ≈ **385 gönderi** yapar.
+   Ücretsiz hak bunun altındaysa `src/ai.js` → `MAX_PARTS` değerini 2'ye düşür (~190 gönderi).
    Ücretsiz gönderi hakkı yoksa bu adım ücretlidir. O durumda aynı metni ücretsiz bir kanala
    (ör. Telegram kanalı, Make Free ile) gönderebiliriz.
 4. Premium **gerekmez**: her parça 280 karakter altında zincir olarak atılır.
@@ -85,16 +86,18 @@ GitHub Actions (Pzt–Cum, günde 4)                         Make (Free)
 İlk kurulumda webhook'un alanlarını tanıtmak için Actions'ta `dry_run` kapalı bir kez çalıştır ya da
 webhook modülünde **Redetermine data structure** de ve 2. bölümdeki örnek JSON'u gönder.
 
-Make işlem hesabı: webhook 1 + router 1 + en fazla 4 gönderi + yanıt 1 ≈ **7 işlem/çalışma**. Hafta içi 22 gün × 4 akış
-yaklaşık **620 işlem/ay** eder; ücretsiz 1.000'in altında kalır.
+Make işlem hesabı: webhook 1 + router 1 + en fazla 4 gönderi + yanıt 1 ≈ **7 işlem/çalışma**. Ayda ~88 hafta içi +
+~8 hafta sonu = ~96 çalışma ≈ **680 işlem/ay**; ücretsiz 1.000'in altında kalır.
 
 ### D) GitHub
 - Secrets: `FIREBASE_SERVICE_ACCOUNT` (zaten var), `MAKE_WEBHOOK_URL`, `GEMINI_API_KEY`, isteğe bağlı `APP_LINK`
   (Play Store bağlantısı; son gönderiye eklenir).
-- İş akışı: `.github/workflows/news-x-bulletin.yml` (cron `33 4,9,15,20 * * 1-5` = hafta içi). Zamanlanmış
+- İş akışı: `.github/workflows/news-x-bulletin.yml` (cron `33 4,9,15,20 * * 1-5` = hafta içi 4 akış,
+  `33 17 * * 0,6` = Cmt/Paz 20:33 Hafta Sonu Akışı). Zamanlanmış
   çalışma yalnızca **varsayılan dalda** tetiklenir, yani bu dal birleştirilince başlar.
 - İlk deneme: Actions → *Haber Akışı - X Bülteni (Make)* → Run workflow → `dry_run` işaretli (varsayılan).
-  Kayıtta yazılan zinciri okursun; Make'e gitmez, hafızaya yazılmaz. Hafta sonu denemek için `force` işaretle.
+  Kayıtta yazılan zinciri okursun; Make'e gitmez, hafızaya yazılmaz. Hafta içi `haftasonu` akışını denemek
+  için akış olarak `haftasonu` seç ve `force` işaretle.
 - 2–3 gün `dry_run` ile metinleri kontrol et, sonra Make senaryosunu aç.
 
 ---
@@ -176,8 +179,18 @@ ogretmen-atamasi-15-bin | 15 bin öğretmen ataması için takvim açıklandı
   {"konu_anahtari": "butce-2027-plan-butce-komisyonu", "durum": "gelisme", "son_durum": "2027 bütçesi komisyonda kabul edildi"}
 ]
 ```
-Cumartesi ve pazar hiçbir şey gönderilmez. Pazartesi sabahı aynı taraftar haberi yeni bilgi olmadan gelirse
-`atlananlar` listesine düşer ve **yazılmaz**.
+Cumartesi 20:30'daki Hafta Sonu Akışı'nda aynı taraftar haberi yeni bilgi olmadan gelirse `atlananlar` listesine
+düşer ve **yazılmaz**.
+
+**Hafta Sonu Akışı örneği (biçim, varsayımsal içerik):**
+```
+🗓️ Hafta Sonu Akışı | 28 Kasım 2026
+🔸 <cuma gecesinden bu yana öne çıkan 1. gelişme>
+🔸 <2. gelişme> (1/3)
+...
+📲 Tüm haberler: <uygulama bağlantısı>
+#Gündem (3/3)
+```
 
 ---
 
@@ -190,7 +203,7 @@ Cumartesi ve pazar hiçbir şey gönderilmez. Pazartesi sabahı aynı taraftar h
 ## 7. Sorun giderme
 | Belirti | Çözüm |
 |---|---|
-| "Hafta sonu: bülten gönderilmez." | Beklenen davranış; denemek için `force` |
+| "Hafta sonu: yalnızca hafta sonu akışı gönderilir." / "Hafta içi: hafta sonu akışı çalışmaz." | Beklenen davranış; denemek için `force` |
 | `Gemini HTTP 429` | Ücretsiz dakika/gün sınırı doldu; sistem otomatik GitHub Models'e düşer |
 | `Gemini HTTP 404` model | Model kaldırılmış → `GEMINI_MODEL` ile güncel Flash modelini ver |
 | `GitHub Models HTTP 403` | İş akışında `permissions: models: read` olmalı (dosyada var) |
