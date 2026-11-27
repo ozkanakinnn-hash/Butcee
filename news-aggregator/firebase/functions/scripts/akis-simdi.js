@@ -50,10 +50,20 @@ async function githubModels(prompt) {
   initAdmin();
   const db = getFirestore();
   const config = (await db.doc('app_meta/social').get()).data() || {};
-  const generate = process.env.GEMINI_API_KEY ? undefined : githubModels;
+  // AKIS_LISTE=1 → yalnızca yapay zekâya gidecek haber listesini yazdırır (elle özet hazırlamak için).
+  // AKIS_MADDELER='{"maddeler":[...]}' → hazır (elle/başka modelle yazılmış) maddeleri kullanır.
+  let generate = process.env.GEMINI_API_KEY ? undefined : githubModels;
+  if (process.env.AKIS_LISTE === '1') {
+    generate = async (prompt) => {
+      console.log(`\n──── Yapay zekâ girdisi ────\n${prompt.slice(prompt.indexOf('AKIŞ:'))}\n────────────`);
+      return { text: '{"maddeler":[]}', model: 'liste', error: '' };
+    };
+  } else if (process.env.AKIS_MADDELER) {
+    generate = async () => ({ text: process.env.AKIS_MADDELER, model: 'elle', error: '' });
+  }
   const r = await runAkis(db, {
     slot, ignoreDryRun: true, generate,
-    config: preview ? { ...config, akis_dry_run: true, dry_run: true } : config,
+    config: preview || process.env.AKIS_LISTE === '1' ? { ...config, akis_dry_run: true, dry_run: true } : config,
   });
   console.log(`Akış: ${slot} → ${r.status}${r.error ? ` (${r.error})` : ''}`);
   if (r.metin) console.log(`\n──── X metni ────\n${r.metin}\n─────────────────`);

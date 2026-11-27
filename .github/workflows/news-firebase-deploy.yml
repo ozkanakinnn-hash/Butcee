@@ -26,6 +26,14 @@ on:
         description: "Akışı yalnızca yaz, Make'e gönderme"
         type: boolean
         default: false
+      akis_liste:
+        description: "Yalnızca akış aralığındaki haber listesini kayda yaz (göndermez)"
+        type: boolean
+        default: false
+      akis_maddeler:
+        description: "Hazır maddeler (JSON: {\"maddeler\":[...]}) — boşsa yapay zekâ yazar"
+        required: false
+        default: ""
 
 permissions:
   contents: read
@@ -107,6 +115,8 @@ jobs:
         working-directory: news-aggregator/firebase/functions
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          AKIS_LISTE: ${{ inputs.akis_liste && '1' || '' }}
+          AKIS_MADDELER: ${{ inputs.akis_maddeler }}
         run: node scripts/akis-simdi.js "${{ inputs.akis_now }}" ${{ inputs.akis_onizle && '--onizle' || '' }}
 
       - name: Durum raporu (yalnızca okur)
