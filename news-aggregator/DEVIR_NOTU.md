@@ -1,3 +1,6 @@
+> ⚠️ **BU DAL ARTIK KULLANILMIYOR (27 Kasım 2026 gece).** Asıl uygulama `claude/haber-akisi-2026-11` dalında.
+> Yeni oturum: o dalı açıp **`news-aggregator/DEVAM.md`** dosyasını oku. Bu dosyadaki bilgiler eskidir.
+
 # Devir Notu — Haber Akışı (2026-11-27, 2. oturum)
 
 ## Proje
