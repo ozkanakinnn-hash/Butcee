@@ -140,6 +140,10 @@ Firebase'e o bağımsız daldan deploy yapılmış olabilir: Make'e son gönderi
   (`scripts/durum-raporu.js`, yalnızca okur: Make ayarı, son paylaşımlar, bülten, canlı skor). Deploy için hizmet hesabında
   `iam.serviceAccounts.ActAs` yetkisi YOK (kullanıcı vermedi).
 - API-Football anahtarı (GitHub secret) geçerli ama Free plan 2026 sezonunu kapsamıyor → canlı skor Highlightly ile.
+- **Play AAB 1.0.3+124** üretildi (yükleme anahtarı SHA-256 doğrulandı, gerçek AdMob kimlikleri, 67,5 MB) ve kullanıcıya
+  gönderildi. Play'de daha yüksek kod varsa yeniden derle (Flutter 3.47 + `--android-skip-build-dependency-validation`).
+- ⚠️ 27 Kasım akşamı durum: Firebase'de `briefingTick` var ama **AI (gemini) ve make.js yüklü değil** (kullanıcı eski zip'i
+  yükledi; app_meta/ai ve notify_state/make boş). Kullanıcı zip'i YENİDEN indirip deploy etmeli; sonra durum raporuyla doğrula.
 
 ### Devir notu — oturum session_01Q1LBDnWcxQXWdkeUuDQJoB (27 Kasım 2026)
 ⚠️ Bu dalda **iki Claude oturumu paralel çalıştı**. Göndermeden önce her zaman `git pull` yap; çakışmada iki tarafı da koru.
