@@ -199,3 +199,14 @@ gradle/actions/setup-gradle@v5 → `./gradlew assembleDebug` → upload-artifact
   anahtar kelimeyle çıkar (`ServeShape.detect`, Türkçe çekim eklerine dikkat: "yoğurdu", "kaşığı" → kök "yoğurd", "kaşığ").
 - **Sadeleştirme dersleri** (Minik Gurme): iç içe sekme 2 seviyeyi geçmesin; takip özellikleri (3 gün kuralı) bilgi sekmesinde değil takip sekmesinde;
   çok sıralı filtre çipleri yerine 2 hızlı çip + "Filtrele" penceresi; yönetici araçları (moderatör kimliği) gizli açılışla (sürüm yazısına 5 dokunuş).
+
+## Bulut oturumunda AAB + anahtar dersleri (27 Kasım 2026, Minik Gurme 2.2.1)
+- SDK yoksa: `commandlinetools-linux-*_latest.zip` → `/opt/android-sdk/cmdline-tools/latest` → `sdkmanager "platforms;android-36.1" "build-tools;36.1.0"`.
+- Maven 429: `~/.gradle/init.d/central-mirror.gradle` ile `maven-central.storage-download.googleapis.com/maven2/` önce; Robolectric için aynı dosyada
+  `tasks.withType(Test){ systemProperty 'robolectric.dependency.repo.url', mirror }` (yoksa Robolectric testleri `MavenArtifactFetcher` hatasıyla düşer). KSP ilk denemede düşerse tekrar çalıştır.
+- Yükleme anahtarı kayıpsa: yeni PKCS12 (RSA 4096, alias upload, şifre `secrets` ile üret, ekrana basma) + `keytool -export -rfc` → `upload_certificate.pem`
+  (Play'e önceden yükleme yapıldıysa "Yükleme anahtarı sıfırlama" için). Hepsi Drive'da `<Uygulama> (<paket>)` klasörüne + BENIOKU (parmak izleri).
+- Drive bağlayıcısı: `.jks`/`.pem` dosya referansıyla (sha256:…) gönderilemiyor → küçük dosyayı `base64Content` ile satır içi gönder. Çağrı başına ~3 MB sınırı:
+  AAB ve görsel zip'i Drive'a gitmez → SendUserFile ile kullanıcıya ver.
+- Play görselleri: `:app:testDebugUnitTest` (StoreScreenshotsTest → app/build/store-shots) → `python3 tool/store_graphics.py` + `tool/promo_graphics.py`.
+- iOS için yapılan inceleme düzeltmeleri ortak modülde olduğundan Android'e ayrıca taşımaya gerek yok; yalnız `iosMain`/`iosApp` değişikliklerine bak.
