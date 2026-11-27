@@ -5,6 +5,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'ads/ads_service.dart';
@@ -55,6 +56,9 @@ FirebaseOptions? _iosOptions() {
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // Uçtan uca ekran (Android 15 / SDK 35+ önerisi): içerik sistem çubuklarının arkasına uzanır, boşlukları
+  // Scaffold/AppBar/NavigationBar/SafeArea ayarlar. Çubuk renkleri ayarlanmaz (kullanımdan kaldırılmış API).
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   final settings = await AppSettings.load();
   await LibraryStore.load(); // kaydedilenler, okuma geçmişi, gizlenen kaynaklar (cihazda)
 

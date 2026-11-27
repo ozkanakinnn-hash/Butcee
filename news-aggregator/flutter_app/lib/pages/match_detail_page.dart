@@ -38,7 +38,8 @@ class MatchDetailPage extends StatelessWidget {
             ),
           );
           return ListView(
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+            // Uçtan uca ekranda son satır gezinme çubuğunun altında kalmasın
+            padding: EdgeInsets.fromLTRB(20, 8, 20, 24 + MediaQuery.paddingOf(context).bottom),
             children: [
               if (m.round.isNotEmpty)
                 Text(

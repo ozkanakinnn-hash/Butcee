@@ -96,7 +96,8 @@ class _BriefingPageState extends State<BriefingPage> {
               }
 
               return ListView(
-                padding: const EdgeInsets.fromLTRB(18, 0, 18, 32),
+                // Uçtan uca ekranda son satır gezinme çubuğunun altında kalmasın
+                padding: EdgeInsets.fromLTRB(18, 0, 18, 32 + MediaQuery.paddingOf(context).bottom),
                 children: [
                   _Masthead(evening: evening, day: day),
                   if (data == null) ...[

@@ -144,7 +144,10 @@ Firebase'e o bağımsız daldan deploy yapılmış olabilir: Make'e son gönderi
   numarası 1.0.4 yapıldı (ilk sürüm; "Yenilikler" alanı yok). Yeni iş akışı `news-ios-submit.yml` + `ios/scripts/asc_submit.py`:
   `ios/SUBMIT_VERSION` dosyasına "SÜRÜM DERLEME" yazıp gönder → sürüm hazırla, derleme bağla, incelemeye gönder.
   iOS AdMob kimlikleri GitHub'da TANIMLI DEĞİL → iOS'ta reklam yok.
-- Android: 125 Play'de reddedildi → **1.0.4+200** gönderildi. Sonraki kodlar 201, 202…
+- Android: 125 Play'de reddedildi → **1.0.4+200** gönderildi (Dahili test). Sonraki kodlar 201, 202…
+- **Sonraki sürüme birikenler:** `docs/play-store/sonraki-surum.md` (şimdilik: uçtan uca ekran düzeltmesi). Yeni sürüm
+  derlemeden önce bu dosyayı oku; sürüm notunu oradan al, yayınlayınca "Yayınlananlar"a taşı.
+- Play: kapalı testte (alpha) 0 kullanıcı → 12 test kullanıcısı × 14 gün şartı başlamadı; üretim/açık test kilitli.
 - **Play AAB 1.0.3+124** üretildi (yükleme anahtarı SHA-256 doğrulandı, gerçek AdMob kimlikleri, 67,5 MB) ve kullanıcıya
   gönderildi. Play'de daha yüksek kod varsa yeniden derle (Flutter 3.47 + `--android-skip-build-dependency-validation`).
 - ⚠️ 27 Kasım akşamı durum: Firebase'de `briefingTick` var ama **AI (gemini) ve make.js yüklü değil** (kullanıcı eski zip'i
