@@ -9,8 +9,9 @@
  *   aksam 18:30  → 12:30'dan beri
  *   gece  23:30  → 18:30'dan beri; gün yoğunsa (DENSE_DAY_THRESHOLD) "Günün Bülteni" modu açılır
  *
- * Metin üretimi ve "gelişme yoksa tekrar etme" kararı Make'teki yapay zekâ adımında verilir;
- * bu modül yalnızca ham listeyi küçültür: aynı olayı anlatan farklı kaynakları tek "olay" altında toplar.
+ * Bu modül ham listeyi küçültür (aynı olayı anlatan kaynakları tek "olay"da toplar) ve paylaşılan konuların
+ * hafızasını Firestore `bulletin_topics` koleksiyonunda tutar. Metni src/ai.js (ücretsiz yapay zekâ) yazar;
+ * Make yalnızca X'te paylaşır. Hafta sonu (Cmt/Paz) bülten gönderilmez.
  */
 
 const { foldForSearch } = require('./text');
@@ -184,6 +185,64 @@ async function collectBulletin(db, { slot, now = new Date(), appLink = '' } = {}
   return buildPayload({ slot: chosen, window, slotArticles, dayEventCount, appLink });
 }
 
+/** İstanbul saatine göre cumartesi/pazar mı? (hafta sonu bülten gönderilmez) */
+function isWeekend(now = new Date()) {
+  const day = new Date(now.getTime() + TZ_OFFSET_MS).getUTCDay();
+  return day === 0 || day === 6;
+}
+
+const TOPICS = 'bulletin_topics';
+/** Pazartesi sabahı cuma akşamının konularını da görmek için 4 günlük hafıza. */
+const HISTORY_HOURS = 96;
+
+/** Firestore belge kimliği olarak güvenli konu anahtarı. */
+function topicId(key) {
+  return foldForSearch(String(key)).replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 120);
+}
+
+/** Son paylaşılan konular (tekrar kontrolü için yapay zekâya verilir). */
+async function loadHistory(db, now = new Date(), hours = HISTORY_HOURS) {
+  const since = new Date(now.getTime() - hours * 3600 * 1000);
+  const snap = await db.collection(TOPICS).where('son_paylasim', '>=', since).orderBy('son_paylasim', 'desc').limit(200).get();
+  return snap.docs.map((d) => ({ konu_anahtari: d.id, son_durum: d.get('son_durum') || '' }));
+}
+
+/** Paylaşılan konuları kaydeder (yalnızca gönderi başarıyla atıldıktan sonra çağrılır). */
+async function saveTopics(db, konular, { slot, now = new Date() } = {}) {
+  const { FieldValue } = require('firebase-admin/firestore');
+  const batch = db.batch();
+  let n = 0;
+  for (const k of konular) {
+    const id = topicId(k.konu_anahtari);
+    if (!id) continue;
+    batch.set(
+      db.collection(TOPICS).doc(id),
+      {
+        son_durum: String(k.son_durum || '').slice(0, 300),
+        son_paylasim: now,
+        son_akis: slot || '',
+        paylasim_sayisi: FieldValue.increment(1),
+        ...(k.durum === 'yeni' ? { ilk_paylasim: now } : {}),
+      },
+      { merge: true }
+    );
+    n++;
+  }
+  if (n) await batch.commit();
+  return n;
+}
+
+/** 14 günden eski konu kayıtlarını siler. */
+async function cleanupTopics(db, now = new Date()) {
+  const cutoff = new Date(now.getTime() - 14 * 86400 * 1000);
+  const snap = await db.collection(TOPICS).where('son_paylasim', '<', cutoff).limit(400).get();
+  if (snap.empty) return 0;
+  const batch = db.batch();
+  snap.docs.forEach((d) => batch.delete(d.ref));
+  await batch.commit();
+  return snap.size;
+}
+
 /** Paketi Make webhook'una gönderir. Make'in "Accepted" yanıtını döner. */
 async function sendToMake(url, payload, fetchImpl = fetch) {
   const res = await fetchImpl(url, {
@@ -209,4 +268,10 @@ module.exports = {
   buildPayload,
   collectBulletin,
   sendToMake,
+  isWeekend,
+  topicId,
+  loadHistory,
+  saveTopics,
+  cleanupTopics,
+  HISTORY_HOURS,
 };

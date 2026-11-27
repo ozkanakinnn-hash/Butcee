@@ -1,47 +1,44 @@
 ---
 name: make-ai-bulten
-description: Make (make.com) senaryosu + yapay zekâ (Claude) ile zamanlanmış, telifsiz haber/özet bülteni üretip X'e (Twitter) veya başka kanala webhook ile gönderme — günde N akış (sabah/öğle/akşam/gece), "gelişme yoksa tekrar etme" hafızası (Make Data store), aynı olayı gruplama, zincir/uzun gönderi. Make, webhook, otomatik sosyal medya paylaşımı, AI özet bülteni isteklerinde kullan.
+description: Make (make.com) + ÜCRETSİZ yapay zekâ (Gemini ücretsiz katmanı, yedek GitHub Models) ile zamanlanmış, telifsiz haber/özet bülteni üretip X'e (Twitter) zincir olarak gönderme — hafta içi günde N akış (sabah/öğle/akşam/gece), hafta sonu kapalı, "gelişme yoksa tekrar etme" hafızası (Firestore), aynı olayı gruplama, Make Free işlem kotasına sığdırma. Make, webhook, otomatik sosyal medya paylaşımı, AI özet bülteni isteklerinde kullan.
 ---
 
-# Make + Yapay Zekâ Bülteni — Öğrenilenler (Haber Akışı X bülteni)
+# Make + Ücretsiz Yapay Zekâ Bülteni — Öğrenilenler (Haber Akışı X bülteni)
 
-Referans uygulama: `news-aggregator/docs/MAKE_X_BULTEN.md`, `src/bulletin.js`, `scripts/send-bulletin.js`,
-`.github/workflows/news-x-bulletin.yml`.
+Referans: `news-aggregator/docs/MAKE_X_BULTEN.md`, `firebase/functions/src/{bulletin,ai,bulletin-prompt}.js`,
+`scripts/send-bulletin.js`, `.github/workflows/news-x-bulletin.yml`.
 
-## Mimari (önerilen)
-- **Zamanlayıcı + veri hazırlığı kodda (GitHub Actions cron, ücretsiz)**, **yazım + paylaşım Make'te**.
-  Veri zaten Firestore'daysa Make'e RSS çektirme: her öğe Make'te işlem (operation) harcar.
-- Gönderici betik aynı olayı anlatan haberleri **başlık kelime Jaccard'ı (≥0.45, 6 harflik kaba kök,
-  `foldForSearch` ile Türkçe karakter katlama)** ile tek "olay"da toplar, önem sırasına koyar
-  (son dakika > kaynak sayısı > yenilik), en fazla ~60 olay gönderir → AI maliyeti düşer.
-- Akış aralıkları İstanbul saatiyle (sabit UTC+3) hesaplanır; cron birkaç dk geç kalabileceği için akış
-  `slotForTime` ile **en yakın hedef saate** göre seçilir. Cron dakikasını :00/:30 yerine :33 gibi ver.
-- "Günün bülteni / yoğun gün" kararı kodda sayıyla (gün içi olay sayısı ≥ eşik) verilir, AI'ya bayrak gider.
+## Kullanıcı tercihleri
+- **Ücretsiz seçenekler** öncelikli (kullanıcı isteği, 2026-11-27). Ücretli bir parça kaçınılmazsa açıkça söyle
+  ve ücretsiz alternatif öner.
+- Bülten **hafta sonu gönderilmez** (cron `* * 1-5` + kodda İstanbul saatine göre `isWeekend` koruması;
+  elle deneme için `force`). Hafıza penceresi 96 saat, böylece pazartesi cumayı bilir.
 
-## Tekrar etmeme (hafıza)
-- Make **Data store**: key = AI'nın verdiği kalıcı `konu_anahtari` (küçük harf, tire, Türkçe karaktersiz).
-  Alanlar: `son_durum`, `ilk_paylasim`, `son_paylasim`, `paylasim_sayisi`.
-- Her çalışmada son 48 saatin kayıtları Text aggregator ile AI'ya verilir. Kural: gelişme varsa
-  "🔄 GELİŞME:" + yalnızca yeni bilgi, yoksa hiç yazma; önceki konuda **aynı anahtarı** kullan.
-- Data store'a yazma **gönderi başarılı olduktan sonra**; X modülüne Break hata işleyicisi.
-- Haftalık temizlik senaryosu (7 günden eski kayıtları sil).
+## Mimari (ücretsiz)
+- Ağır iş GitHub Actions'ta (ücretsiz): Firestore'dan haber, olay gruplama (başlık Jaccard ≥0.45, 6 harflik kök,
+  `foldForSearch`), yapay zekâ çağrısı, Firestore hafıza (`bulletin_topics`).
+- **Make yalnızca paylaşır**: Webhook → X Create a Post (part1) → Router [dal1: part2→part3→part4 yanıt zinciri,
+  `Exists` filtreleri | dal2: Webhook response "ok"] ≈ 7 işlem/çalışma → hafta içi 4 akışta ~620/ay (Free 1.000).
+  Yapay zekâ veya hafıza Make'te olursa ~1.500 işlem/ay olur ve ücretli plana çıkar.
+- Hafıza yalnızca Make "ok" dönünce yazılır (X hatasında Break → "ok" yok → sonraki akışta yeniden dener).
 
-## AI talimatı (özü)
-- Telif: başlık/özet kopyalama yok, ≤5 ardışık kelime, doğrudan alıntı yok, listede olmayan bilgi yok.
-- Hukuk: masumiyet karinesi (gözaltı ≠ tutuklama ≠ hüküm), çocuk/mağdur adı yok, hakaret aktarma yok.
-- Çıktı **yalnızca JSON**: `paylas`, `uzun_metin`, `zincir[]` (≤270 karakter parçalar, "(i/n)"), `konular[]`,
-  `atlananlar[]`. Make'te Parse JSON; ```json çitlerini temizle.
-- Model: kalite `claude-sonnet-5-5`, ucuz `claude-haiku-5-5`; temperature 0.3.
+## Ücretsiz yapay zekâ
+- **Gemini** (aistudio.google.com, kart yok, faturalandırmayı AÇMA): REST
+  `POST v1beta/models/{model}:generateContent`, başlık `x-goog-api-key`, `systemInstruction`,
+  `generationConfig.responseMimeType: application/json`, maxOutputTokens yüksek (Flash "thinking" jetonu harcar).
+  Model adı ortam değişkeniyle değiştirilebilir olsun (`GEMINI_MODEL`); modeller sık kaldırılıyor.
+- **GitHub Models** yedek: `POST https://models.github.ai/inference/chat/completions`, `GITHUB_TOKEN`,
+  iş akışında `permissions: models: read`. İstek başına giriş sınırı küçük → daha az olay (30) ve kısa özet gönder.
+- Sağlayıcı zinciri: Gemini → hata/429 → GitHub Models. Çıktı JSON'u çitlerden temizle (`parseModelJson`).
 
-## X (Twitter) gerçekleri
-- 280 karakter üstü tek gönderi **X Premium** ister; yoksa zincir: Iterator + Set/Get variable ile önceki
-  gönderi ID'sine yanıt. Make'te X uygulaması yoksa HTTP OAuth 2.0 → `POST https://api.x.com/2/tweets`.
-- X Developer App: *Read and write*, OAuth 2.0, callback = Make'in adresi. API planı/limitleri sık değişir →
-  kullanıcıya Developer Portal'da kontrol ettir; uydurma limit yazma.
-- Profilde "otomatik / AI destekli" etiketi önerilir.
+## İçerik kuralları
+- Telif: kopya yok, ≤5 ardışık kelime, alıntı yok, uydurma yok. Kod 6 kelimelik ortak dizileri arar ve uyarı yazar.
+- Hukuk: masumiyet karinesi, çocuk/mağdur adı yok, hakaret aktarma yok.
+- X Premium yok sayılır: zincir ≤4 parça, her parça numarasıyla ≤280 (`normalizeThread` zorlar).
+- X API ücretsiz gönderi hakkı belirsiz/değişken → kullanıcıya Developer Portal'da kontrol ettir; yoksa ücretsiz kanal
+  (Telegram) öner. Limit uydurma.
 
-## Süreç kuralları
-- İlk 2–3 gün X modülü kapalı, yalnızca Make History'de çıktıyı izle; Actions'ta `dry_run` girdisi bulunsun.
-- Secret yoksa iş akışı `::notice::` ile atlasın (hata vermesin) — diğer news-* iş akışlarıyla aynı kalıp.
-- Örnek özet üretirken başka özet hesaplarının metnini kopyalama; yeniden yaz ve "biçim örneği" olarak işaretle.
-- Bulut ortamından haber sitelerine erişim yok → gerçek veriyle deneme GitHub Actions'ta yapılır.
+## Süreç
+- `dry_run` varsayılan açık (elle çalıştırmada); 2–3 gün metin kontrolü sonra Make ON.
+- Secret yoksa iş akışı `::notice::` ile atlar; bulut ortamından haber sitelerine erişim yok → deneme Actions'ta.
+- Örnek özet üretirken başka özet hesaplarının metnini kopyalama; yeniden yaz, "biçim örneği" diye işaretle.

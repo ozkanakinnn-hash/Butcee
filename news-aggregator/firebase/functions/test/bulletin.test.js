@@ -68,3 +68,15 @@ test('sendToMake hata durumunda istisna atar', async () => {
     /HTTP 410/
   );
 });
+
+test('isWeekend İstanbul saatine göre cumartesi/pazarı tanır', () => {
+  assert.equal(b.isWeekend(new Date('2026-11-27T20:35:00Z')), false); // Cuma 23:35
+  assert.equal(b.isWeekend(new Date('2026-11-27T21:05:00Z')), true); // Cumartesi 00:05
+  assert.equal(b.isWeekend(new Date('2026-11-29T20:00:00Z')), true); // Pazar 23:00
+  assert.equal(b.isWeekend(new Date('2026-11-29T21:10:00Z')), false); // Pazartesi 00:10
+});
+
+test('topicId güvenli belge kimliği üretir', () => {
+  assert.equal(b.topicId('Gürcistan / Batum Taraftar Olayları'), 'gurcistan-batum-taraftar-olaylari');
+  assert.equal(b.topicId('///'), '');
+});
