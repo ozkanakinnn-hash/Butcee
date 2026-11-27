@@ -25,6 +25,9 @@ sealed class NotificationTarget {
   const NotificationTarget();
 
   static NotificationTarget? fromData(Map<String, dynamic> data) {
+    // Sabah/akşam bülteni → "5 dakikada gündem" ekranı (eski sürüm sunucuda briefing_id yoksa habere gider).
+    final briefingId = '${data['briefing_id'] ?? ''}';
+    if ('${data['bulletin'] ?? ''}' == '1' && briefingId.isNotEmpty) return BriefingTarget(briefingId);
     switch (data['type']) {
       case 'article':
         final url = data['url'] as String?;
@@ -43,6 +46,11 @@ class ArticleTarget extends NotificationTarget {
   final String url;
   final String title;
   final String source;
+}
+
+class BriefingTarget extends NotificationTarget {
+  const BriefingTarget(this.briefingId);
+  final String briefingId;
 }
 
 class MatchTarget extends NotificationTarget {

@@ -47,6 +47,19 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // "5 dakikada gündem" bültenleri (yalnızca bot yazar)
+    match /briefings/{id} {
+      allow get: if true;
+      allow list: if request.query.limit <= 20;
+      allow write: if false;
+    }
+
+    // Uzaktan uygulama ayarları (Firebase Console'dan elle düzenlenir)
+    match /app_config/{id} {
+      allow read: if true;
+      allow write: if false;
+    }
+
     // notify_state, football_meta, app_meta: yalnızca bot (Admin SDK) kullanır; uygulamaya kapalı.
 
     match /users/{uid} {

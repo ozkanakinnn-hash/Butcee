@@ -25,7 +25,17 @@ class AdsService extends ChangeNotifier {
   DateTime? _lastInterstitial;
 
   /// Reklam istenebilir mi (onay alındı ve AdMob başlatıldı). Testlerde false kalır → reklam alanları boş.
-  bool get ready => _ready;
+  bool get ready => _ready && _remoteEnabled;
+
+  bool _remoteEnabled = true;
+
+  /// Uzaktan ayar (`app_config/main.ads_enabled`): false ise yeni reklam istenmez.
+  set remoteEnabled(bool v) {
+    if (v == _remoteEnabled) return;
+    _remoteEnabled = v;
+    notifyListeners();
+    if (v) _loadInterstitial();
+  }
 
   /// Ayarlar'da "Reklam gizlilik seçenekleri" gösterilmeli mi.
   bool get privacyOptionsRequired => _privacyOptionsRequired;
@@ -68,7 +78,7 @@ class AdsService extends ChangeNotifier {
 
   void _loadInterstitial() {
     final id = AdsConfig.interstitialId;
-    if (!_ready || id == null || _interstitial != null) return;
+    if (!ready || id == null || _interstitial != null) return;
     InterstitialAd.load(
       adUnitId: id,
       request: const AdRequest(),
@@ -81,7 +91,7 @@ class AdsService extends ChangeNotifier {
 
   /// Okunan haber sayacı → gerekirse geçiş reklamı. Haber ekranı kapanıp akışa dönülünce çağrılır.
   void onArticleClosed() {
-    if (!_ready) return;
+    if (!ready) return;
     _reads++;
     final ad = _interstitial;
     final gapOk =

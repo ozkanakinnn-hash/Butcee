@@ -148,4 +148,16 @@ class NewsRepository {
   /// Piyasa verileri (bot 30 dakikada bir günceller).
   Stream<MarketSnapshot?> watchMarket() =>
       _db.doc('market/latest').snapshots().map((d) => d.exists ? MarketSnapshot.fromMap(d.data()!) : null);
+
+  /// Son bülten ("5 dakikada gündem").
+  Stream<BriefingRecord?> watchLatestBriefing() => _db
+      .doc('briefings/latest')
+      .snapshots()
+      .map((d) => d.exists ? BriefingRecord.fromMap(d.data()!) : null);
+
+  /// Belirli bülten (bildirimden açılınca); yoksa son bülten.
+  Stream<BriefingRecord?> watchBriefing(String? id) {
+    if (id == null || id.isEmpty) return watchLatestBriefing();
+    return _db.doc('briefings/$id').snapshots().map((d) => d.exists ? BriefingRecord.fromMap(d.data()!) : null);
+  }
 }

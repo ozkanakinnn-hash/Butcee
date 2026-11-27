@@ -2,13 +2,14 @@ import 'package:flutter/material.dart';
 
 import '../app_settings.dart';
 import '../backend/news_repository.dart';
+import '../backend/remote_config.dart';
 import '../backend/schema/extra_records.dart';
 import '../l10n/app_strings.dart';
 import '../pages/settings_page.dart';
 import '../services/weather_service.dart';
 import 'weather_card.dart';
 
-/// Sağ üstteki ☰ ile açılan panel: piyasalar (Dolar, Euro, gram/ons altın, BIST 100, Brent) ve hava durumu.
+/// Sağ üstteki ☰ ile açılan panel: piyasalar (kalemleri sunucu `app_meta/market` ayarına göre seçer) ve hava durumu.
 class MarketPanel extends StatelessWidget {
   const MarketPanel({super.key, required this.settings, required this.repository, required this.weather});
 
@@ -21,6 +22,7 @@ class MarketPanel extends StatelessWidget {
     final s = S.of(context);
     final theme = Theme.of(context);
     final muted = theme.colorScheme.onSurfaceVariant;
+    final showMarket = RemoteConfigService.instance.value.showMarket;
 
     return Drawer(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -29,58 +31,61 @@ class MarketPanel extends StatelessWidget {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
           children: [
-            Text(s.markets, style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w800)),
-            const SizedBox(height: 12),
-            StreamBuilder<MarketSnapshot?>(
-              stream: repository.watchMarket(),
-              builder: (context, snap) {
-                final m = snap.data;
-                if (snap.connectionState == ConnectionState.waiting) {
-                  return const Padding(
-                    padding: EdgeInsets.all(24),
-                    child: Center(child: CircularProgressIndicator()),
-                  );
-                }
-                if (m == null || m.items.isEmpty) {
-                  return Text(s.marketUnavailable, style: TextStyle(color: muted));
-                }
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Column(
-                      children: [
-                        for (var i = 0; i < m.items.length; i += 2)
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 10),
-                            // Yükseklik içeriğe göre (büyük yazı boyutunda taşmaz), yan yana eşit
-                            child: IntrinsicHeight(
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [
-                                  Expanded(child: _MarketTile(item: m.items[i])),
-                                  const SizedBox(width: 10),
-                                  Expanded(
-                                    child: i + 1 < m.items.length
-                                        ? _MarketTile(item: m.items[i + 1])
-                                        : const SizedBox(),
-                                  ),
-                                ],
+            // Piyasa bölümü uzaktan kapatılabilir (app_config/main.show_market).
+            if (showMarket) ...[
+              Text(s.markets, style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w800)),
+              const SizedBox(height: 12),
+              StreamBuilder<MarketSnapshot?>(
+                stream: repository.watchMarket(),
+                builder: (context, snap) {
+                  final m = snap.data;
+                  if (snap.connectionState == ConnectionState.waiting) {
+                    return const Padding(
+                      padding: EdgeInsets.all(24),
+                      child: Center(child: CircularProgressIndicator()),
+                    );
+                  }
+                  if (m == null || m.items.isEmpty) {
+                    return Text(s.marketUnavailable, style: TextStyle(color: muted));
+                  }
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Column(
+                        children: [
+                          for (var i = 0; i < m.items.length; i += 2)
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 10),
+                              // Yükseklik içeriğe göre (büyük yazı boyutunda taşmaz), yan yana eşit
+                              child: IntrinsicHeight(
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                                  children: [
+                                    Expanded(child: _MarketTile(item: m.items[i])),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: i + 1 < m.items.length
+                                          ? _MarketTile(item: m.items[i + 1])
+                                          : const SizedBox(),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
-                          ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    if (m.updatedAt != null)
-                      Text(
-                        '${s.marketUpdated(_hhmm(m.updatedAt!.toLocal()))} · ${m.source}',
-                        style: theme.textTheme.bodySmall?.copyWith(color: muted),
+                        ],
                       ),
-                  ],
-                );
-              },
-            ),
-            const SizedBox(height: 28),
+                      const SizedBox(height: 8),
+                      if (m.updatedAt != null)
+                        Text(
+                          '${s.marketUpdated(_hhmm(m.updatedAt!.toLocal()))} · ${m.source}',
+                          style: theme.textTheme.bodySmall?.copyWith(color: muted),
+                        ),
+                    ],
+                  );
+                },
+              ),
+              const SizedBox(height: 28),
+            ],
             Text(s.weather, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800)),
             const SizedBox(height: 4),
             ListenableBuilder(
