@@ -30,6 +30,10 @@ on:
         description: "Yalnızca akış aralığındaki haber listesini kayda yaz (göndermez)"
         type: boolean
         default: false
+      sosyal_ayar:
+        description: "app_meta/social ayarı yaz (ör. make_daily_cap=7, akis_dry_run=false) — kurulum yapılmaz"
+        required: false
+        default: ""
       akis_maddeler:
         description: "Hazır maddeler (JSON: {\"maddeler\":[...]}) — boşsa yapay zekâ yazar"
         required: false
@@ -83,12 +87,12 @@ jobs:
           node -e "const f=process.env.GOOGLE_APPLICATION_CREDENTIALS; const {readServiceAccount}=require('./scripts/init-admin'); require('fs').writeFileSync(f, JSON.stringify(readServiceAccount(f)));"
 
       - name: Testler
-        if: ${{ !inputs.only_report && (inputs.akis_now == '' || inputs.akis_now == 'yok') }}
+        if: ${{ !inputs.only_report && (inputs.akis_now == '' || inputs.akis_now == 'yok') && inputs.sosyal_ayar == '' }}
         working-directory: news-aggregator/firebase/functions
         run: npm test
 
       - name: Firestore veritabanı (yoksa oluştur)
-        if: ${{ !inputs.only_report && (inputs.akis_now == '' || inputs.akis_now == 'yok') }}
+        if: ${{ !inputs.only_report && (inputs.akis_now == '' || inputs.akis_now == 'yok') && inputs.sosyal_ayar == '' }}
         run: |
           if npx -y firebase-tools@15 firestore:databases:get "(default)" --project "$PROJECT_ID" --non-interactive >/dev/null 2>&1; then
             echo "Firestore veritabanı zaten var."
@@ -97,18 +101,25 @@ jobs:
           fi
 
       - name: Kurallar, dizinler ve Cloud Functions'ı yayınla
-        if: ${{ !inputs.only_report && (inputs.akis_now == '' || inputs.akis_now == 'yok') }}
+        if: ${{ !inputs.only_report && (inputs.akis_now == '' || inputs.akis_now == 'yok') && inputs.sosyal_ayar == '' }}
         run: npx -y firebase-tools@15 deploy --only firestore,functions --project "$PROJECT_ID" --non-interactive --force
 
       - name: Örnek kategori ve kaynakları yükle
-        if: ${{ inputs.seed && !inputs.only_report && (inputs.akis_now == '' || inputs.akis_now == 'yok') }}
+        if: ${{ inputs.seed && !inputs.only_report && (inputs.akis_now == '' || inputs.akis_now == 'yok') && inputs.sosyal_ayar == '' }}
         working-directory: news-aggregator/firebase/functions
         run: npm run seed
 
       - name: İlk haber çekimi
-        if: ${{ !inputs.only_report && (inputs.akis_now == '' || inputs.akis_now == 'yok') }}
+        if: ${{ !inputs.only_report && (inputs.akis_now == '' || inputs.akis_now == 'yok') && inputs.sosyal_ayar == '' }}
         working-directory: news-aggregator/firebase/functions
         run: npm run fetch:once
+
+      - name: Sosyal paylaşım ayarı yaz
+        if: ${{ inputs.sosyal_ayar != '' }}
+        working-directory: news-aggregator/firebase/functions
+        env:
+          AYAR: ${{ inputs.sosyal_ayar }}
+        run: node scripts/sosyal-ayar.js "$AYAR"
 
       - name: Akışı şimdi yazdır ve gönder
         if: ${{ inputs.akis_now != '' && inputs.akis_now != 'yok' }}
