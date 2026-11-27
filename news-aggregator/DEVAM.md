@@ -2,7 +2,7 @@
 
 Yeni sohbete şunu yaz: **"news-aggregator/DEVAM.md dosyasını oku ve oradan devam edelim."**
 
-Son güncelleme: 13 Kasım 2026.
+Son güncelleme: 27 Kasım 2026. ⚠️ §5 başındaki 🔔 HATIRLAT maddesini kullanıcıya hatırlat.
 
 ---
 
@@ -105,6 +105,41 @@ cd ~ && rm -rf haber && unzip -o "Haber-Akisi-kodNN.zip" -d haber && cd haber/ne
 ---
 
 ## 5. Durum: ne bekliyor
+
+### 🔔 HATIRLAT — Planlanan iş: Yerel haberler (kullanıcı 27 Kasım'da erteledi)
+Kullanıcı "şimdilik kalsın, ileride yapacağız, hatırlat" dedi. **Bir sonraki planlama/yeni iş konuşmasında kullanıcıya
+bunu hatırlat ve onay iste** (onaysız başlama). Önerilen tasarım (kullanıcıya sunuldu):
+- **Sunucu:** `src/cities.js` → başlık/özette 81 il (+ ekli hâller: "İzmir'de", "Ankara'nın") tespiti, haberlere `cities: [...]`;
+  belirsiz iller (Ordu, Aydın, Van, Batman…) yalnızca kesin kalıpla ("Ordu'da", "Van Gölü"). Kaynağa Firestore'dan
+  `city: "izmir"` yazılırsa tüm haberleri o ile sayılır (yerel gazeteler güncellemesiz eklenir). Bülten belgesine
+  `by_city` (son 14 saat, il başına en çok kaynaklı ≤3 haber). Dizin: `cities` array-contains + `published_at` desc.
+- **Uygulama:** "Yerel" ilgi alanı (sekme = kullanıcının ilinin haberleri). İl: konum izni varsa hava servisinin bulduğu
+  ilden (`administrativeArea`), yoksa Ayarlar'dan elle seçim (önerildi, kullanıcı cevabı bekleniyor). Gündem ekranında
+  "Öne çıkanlar"dan sonra **"İZMİR'DEN"** bölümü (o ilde haber yoksa görünmez).
+- Açık soru: konum izni yoksa elle il seçimi olsun mu? (öneri: evet)
+
+### Devir notu — oturum session_01Q1LBDkPx3yja1bEy3kGg36 (27 Kasım 2026, öğleden sonra)
+Bu oturum önce bağımsız `ccr-e3d7c6b8-cccl41` dalında çalıştı, sonra kullanıcı onayıyla **bu dala** taşıdı. ⚠️ 23 Kasım'da
+Firebase'e o bağımsız daldan deploy yapılmış olabilir: Make'e son gönderim 23 Kasım 12:03 (o daldaki `fetchRssFeeds`
+`runSocial` çağırmıyordu). **Bu dal yeniden deploy edilmeli** (kullanıcıya Cloud Shell komutu verildi; ya da hizmet hesabına
+"Service Account User" + "Firebase Admin" rolü verilirse GitHub'dan "Haber Akışı - Firebase'e Kur" iş akışıyla).
+
+**Yapılanlar (testli: sunucu 153, Flutter 48):**
+- **Gündem ekranı gazete düzeni** (kullanıcı onaylı taslak 3): logo + künye, manşet (görsel + spot = `summary`), "Günün özeti"
+  (AI), kısa kısa (2 sütun), bölümler; haber satırında görsel SAĞDA; Roboto + uygulama renkleri; Türkçe büyük harf (İ/I).
+- **Bülten mutlaka yenilenir:** `src/briefing-job.js` + `briefingTick`/`briefingTickLate` (08:30–10:59, 19:00–21:59, 10 dk):
+  dilimin belgesi yoksa hikâyelerden/son 14 saatin haberlerinden üretir, bildirim gitmediyse işlemle sahiplenip bir kez yollar.
+  Uygulama dünkü bülteni "bugünkü" gibi göstermez (`lib/utils/briefing_slot.dart`); widget sunucudan okur.
+- **AI özeti (Gemini):** `src/gemini.js` — model `app_meta/ai.model` (vars. `gemini-flash-latest`) + yedekler; durum
+  `active_model`/`last_error`. Secret `GEMINI_API_KEY` (fetchRssFeeds + briefingTick). Bülten bildirimi gövdesinde de.
+- **Make ayrı modül** `src/make.js`: `tur` = `son_dakika` / `gundem` (≥`gundem_min_sources`=5) / `bulten`; durum
+  `notify_state/make`, izleme `app_meta/social.make_status`. Telegram akışı değişmedi. `test_ping` üç türden deneme yollar.
+- **Uzaktan ayar** `app_config/main` (`lib/backend/remote_config.dart`): show_live_scores/show_market/show_briefing,
+  ads_enabled, announcement(+_url, _level), min_build(+update_url), live_stale_minutes. Bayat canlı skor gizlenir.
+- **Kurulum iş akışı:** bozuk satır sonlu `FIREBASE_SERVICE_ACCOUNT` onarılır; `only_report` + "Durum raporu" adımı
+  (`scripts/durum-raporu.js`, yalnızca okur: Make ayarı, son paylaşımlar, bülten, canlı skor). Deploy için hizmet hesabında
+  `iam.serviceAccounts.ActAs` yetkisi YOK (kullanıcı vermedi).
+- API-Football anahtarı (GitHub secret) geçerli ama Free plan 2026 sezonunu kapsamıyor → canlı skor Highlightly ile.
 
 ### Devir notu — oturum session_01Q1LBDnWcxQXWdkeUuDQJoB (27 Kasım 2026)
 ⚠️ Bu dalda **iki Claude oturumu paralel çalıştı**. Göndermeden önce her zaman `git pull` yap; çakışmada iki tarafı da koru.
