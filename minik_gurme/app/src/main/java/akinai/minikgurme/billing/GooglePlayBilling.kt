@@ -58,6 +58,7 @@ object GooglePlayBilling : PlusManager.Store {
             client = BillingClient.newBuilder(c)
                 .setListener { result, purchases -> onPurchases(result, purchases) }
                 .enablePendingPurchases(PendingPurchasesParams.newBuilder().enableOneTimeProducts().build())
+                .enableAutoServiceReconnection()
                 .build()
             client?.startConnection(object : BillingClientStateListener {
                 override fun onBillingSetupFinished(result: BillingResult) {
@@ -94,8 +95,9 @@ object GooglePlayBilling : PlusManager.Store {
         val products = listOf(PRODUCT_MONTHLY, PRODUCT_YEARLY).map {
             QueryProductDetailsParams.Product.newBuilder().setProductId(it).setProductType(BillingClient.ProductType.SUBS).build()
         }
-        client?.queryProductDetailsAsync(QueryProductDetailsParams.newBuilder().setProductList(products).build()) { _, list ->
-            PlusManager.plans = list.mapNotNull { d ->
+        client?.queryProductDetailsAsync(QueryProductDetailsParams.newBuilder().setProductList(products).build()) { _, result ->
+            // Billing 8: sonuç QueryProductDetailsResult; bulunamayan ürünler unfetchedProductList'te
+            PlusManager.plans = result.productDetailsList.mapNotNull { d ->
                 val offer = d.subscriptionOfferDetails?.firstOrNull() ?: return@mapNotNull null
                 val phase = offer.pricingPhases.pricingPhaseList.lastOrNull() ?: return@mapNotNull null
                 PlusManager.Plan(d.productId, phase.formattedPrice, phase.billingPeriod, Offer(offer.offerToken, d))
