@@ -1,0 +1,54 @@
+name: News iOS App Store'a gönder
+
+# Tetikleme: news-aggregator/flutter_app/ios/SUBMIT_VERSION dosyasına "SÜRÜM DERLEME" yazıp gönder (ör. "1.0.4 12").
+# Sürümü hazırlar (gerekirse oluşturur), derlemeyi bağlar, Yenilikler metnini yazar ve incelemeye gönderir.
+# İncelemede bekleyen eski bir gönderim varsa iptal edilir (Apple aynı anda tek gönderime izin verir).
+on:
+  workflow_dispatch:
+  push:
+    branches: ["claude/haber-akisi-2026-11"]
+    paths:
+      - "news-aggregator/flutter_app/ios/SUBMIT_VERSION"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: news-ios-submit
+  cancel-in-progress: false
+
+jobs:
+  submit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+      ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+      ASC_PRIVATE_KEY: ${{ secrets.ASC_PRIVATE_KEY }}
+      BUNDLE_ID: akinai.app1
+      WHATS_NEW_FILE: news-aggregator/docs/ios/yenilikler.txt
+      CANCEL_PENDING: "1"
+    steps:
+      - uses: actions/checkout@v5
+      - name: Sürüm ve derleme
+        run: |
+          read -r V B < news-aggregator/flutter_app/ios/SUBMIT_VERSION
+          echo "VERSION=$V" >> "$GITHUB_ENV"
+          echo "BUILD=$B" >> "$GITHUB_ENV"
+          echo "Gönderilecek: $V ($B)"
+      - name: Anahtar
+        run: |
+          KEY="$RUNNER_TEMP/AuthKey.p8"
+          python3 - "$KEY" <<'PY'
+          import os, re, sys, textwrap
+          body = re.sub(r"-----(BEGIN|END)[A-Z ]*-----", "", os.environ["ASC_PRIVATE_KEY"])
+          body = re.sub(r"[^A-Za-z0-9+/=]", "", body)
+          open(sys.argv[1], "w").write("-----BEGIN PRIVATE KEY-----\n" + "\n".join(textwrap.wrap(body, 64)) + "\n-----END PRIVATE KEY-----\n")
+          PY
+          echo "KEY_PATH=$KEY" >> "$GITHUB_ENV"
+          pip install -q "PyJWT[crypto]"
+      - name: Sürümü hazırla ve incelemeye gönder
+        run: python3 news-aggregator/flutter_app/ios/scripts/asc_submit.py
+      - name: Anahtarı sil
+        if: always()
+        run: rm -f "$RUNNER_TEMP/AuthKey.p8"
