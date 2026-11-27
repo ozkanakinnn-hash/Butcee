@@ -160,12 +160,6 @@ function planNotifications({ results, categories, state = {}, now = Date.now() }
   // 2) Hikâyeler (önem) — aynı haber farklı akışlarda tekrar gelirse yayıncı bir kez sayılır
   const { stories } = mergeStories(state.stories || [], forStories, { now, devKeys: developmentKeys });
 
-  // "Bu haberi kimler verdi?": yayıncı sayısı artan (2+) hikâyeler → haber belgesine kaynak listesi
-  const before = new Map((state.stories || []).map((x) => [x.id, x.srcs.length]));
-  const sourceUpdates = stories
-    .filter((x) => x.srcs.length >= 2 && x.srcs.length !== before.get(x.id))
-    .map((x) => ({ id: x.id, srcs: x.srcs.slice(0, 12) }));
-
   // 3) Bülten (sabah 08:30 / akşam 19:00) — günde en fazla 2 bildirim
   const bul = { ...(state.bulletin || {}) };
   const clock = istanbulClock(now);
@@ -197,35 +191,22 @@ function planNotifications({ results, categories, state = {}, now = Date.now() }
   next.bulletin = bul;
   next.stories = pruneStories(stories, { now, keepSinceMs: bul.last_ms });
 
-  return { messages, nextState: next, briefing, sourceUpdates };
+  return { messages, nextState: next, briefing };
 }
 
-/**
- * Gündem belgesi, AI özeti ve "kimler verdi" listeleri.
- * Hata bildirimi çekimi bozmaz.
- */
-async function writeExtras(db, briefing, sourceUpdates = []) {
+/** Gündem belgesi ve AI özeti. Hata bildirimi çekimi bozmaz. */
+async function writeExtras(db, briefing) {
+  if (!briefing) return;
   try {
-    if (briefing) {
-      const { Timestamp } = require('firebase-admin/firestore');
-      const { summarizeBriefing } = require('./gemini');
-
-      // Gemini ile özet oluştur (paralel)
-      const [aiSummary] = await Promise.all([
-        summarizeBriefing(briefing.items),
-      ]);
-
-      const doc = { ...briefing, ai_summary: aiSummary, created_at: Timestamp.fromMillis(briefing.created_ms) };
-      await db.doc(`briefings/${briefing.id}`).set(doc);
-      await db.doc('briefings/latest').set(doc);
-
-      if (aiSummary) logger.info('Bülten AI özeti oluşturuldu', { id: briefing.id, len: aiSummary.length });
-    }
-    await Promise.allSettled(
-      sourceUpdates.map((u) => db.doc(`articles/${u.id}`).update({ also_by: u.srcs, source_count: u.srcs.length })),
-    );
+    const { Timestamp } = require('firebase-admin/firestore');
+    const { summarizeBriefing } = require('./gemini');
+    const aiSummary = await summarizeBriefing(briefing.items);
+    const doc = { ...briefing, ai_summary: aiSummary, created_at: Timestamp.fromMillis(briefing.created_ms) };
+    await db.doc(`briefings/${briefing.id}`).set(doc);
+    await db.doc('briefings/latest').set(doc);
+    if (aiSummary) logger.info('Bülten AI özeti oluşturuldu', { id: briefing.id, len: aiSummary.length });
   } catch (err) {
-    logger.warn('Gündem/kaynak listesi yazılamadı', { error: err.message });
+    logger.warn('Gündem belgesi yazılamadı', { error: err.message });
   }
 }
 
@@ -234,8 +215,8 @@ async function sendNewsNotifications(db, results, categories, { messaging = getM
   const ref = db.doc('notify_state/news');
   try {
     const snap = await ref.get();
-    const { messages, nextState, briefing, sourceUpdates } = planNotifications({ results, categories, state: snap.data() || {}, now });
-    await writeExtras(db, briefing, sourceUpdates);
+    const { messages, nextState, briefing } = planNotifications({ results, categories, state: snap.data() || {}, now });
+    await writeExtras(db, briefing);
     // Durum her çalışmada güncellenir (hikâyeler ve kaynak listesi için)
     await ref.set(nextState);
     if (messages.length === 0) return { sent: 0 };
