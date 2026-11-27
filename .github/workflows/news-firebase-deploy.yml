@@ -54,6 +54,13 @@ jobs:
         working-directory: news-aggregator/firebase/functions
         run: npm ci
 
+      - name: Hizmet hesabı anahtarını onar
+        # Secret kopyalanırken satır sonları bozulmuşsa firebase-tools giriş yapamıyordu ("Failed to authenticate").
+        # Uygulama betiklerinin kullandığı onarımla düzeltilmiş JSON dosyaya geri yazılır (içerik kayda basılmaz).
+        working-directory: news-aggregator/firebase/functions
+        run: |
+          node -e "const f=process.env.GOOGLE_APPLICATION_CREDENTIALS; const {readServiceAccount}=require('./scripts/init-admin'); require('fs').writeFileSync(f, JSON.stringify(readServiceAccount(f)));"
+
       - name: Testler
         if: ${{ !inputs.only_report }}
         working-directory: news-aggregator/firebase/functions
