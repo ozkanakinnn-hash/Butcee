@@ -7,6 +7,7 @@ import '../ads/ad_widgets.dart';
 import '../ads/ads_config.dart';
 import '../app_settings.dart';
 import '../backend/news_repository.dart';
+import '../backend/remote_config.dart';
 import '../backend/schema/articles_record.dart';
 import '../backend/schema/categories_record.dart';
 import '../backend/schema/football_records.dart';
@@ -16,6 +17,7 @@ import '../widgets/live_matches.dart';
 import '../widgets/observance_banner.dart';
 import '../widgets/market_panel.dart';
 import '../widgets/info_strip.dart';
+import '../widgets/remote_banner.dart';
 import '../l10n/app_strings.dart';
 import '../widgets/article_actions.dart';
 import '../widgets/article_card.dart';
@@ -132,13 +134,16 @@ class _AllHeader extends StatelessWidget {
   final NewsRepository repository;
 
   @override
-  Widget build(BuildContext context) {
-    return Column(
+  Widget build(BuildContext context) => ValueListenableBuilder<RemoteConfig>(
+    // Paneller ve duyuru `app_config/main` belgesinden yönetilir (uygulama güncellemesi gerekmez).
+    valueListenable: RemoteConfigService.instance,
+    builder: (context, config, _) => Column(
       mainAxisSize: MainAxisSize.min,
       children: [
+        const RemoteBanner(),
         const ObservanceBanner(),
-        InfoStrip(showWeather: settings.weatherEnabled),
-        if (settings.followsFootball && settings.followedTeams.isNotEmpty)
+        InfoStrip(showWeather: settings.weatherEnabled, showBriefing: config.showBriefing),
+        if (config.showLiveScores && settings.followsFootball && settings.followedTeams.isNotEmpty)
           _MatchesStream(
             settings: settings,
             repository: repository,
@@ -146,8 +151,8 @@ class _AllHeader extends StatelessWidget {
             filter: (m) => m.isLive || DateUtils.isSameDay(m.kickoff.toLocal(), DateTime.now()),
           ),
       ],
-    );
-  }
+    ),
+  );
 }
 
 /// "Futbol" sekmesinin üstü: takım seçimi + maçlar.
@@ -178,7 +183,13 @@ class _FootballHeader extends StatelessWidget {
             ),
           ),
         ),
-        if (teams.isNotEmpty) _MatchesStream(settings: settings, repository: repository),
+        if (teams.isNotEmpty)
+          ValueListenableBuilder<RemoteConfig>(
+            valueListenable: RemoteConfigService.instance,
+            builder: (context, config, _) => config.showLiveScores
+                ? _MatchesStream(settings: settings, repository: repository)
+                : const SizedBox.shrink(),
+          ),
       ],
     );
   }
@@ -213,7 +224,13 @@ class _MatchesStreamState extends State<_MatchesStream> {
   Widget build(BuildContext context) => StreamBuilder<List<MatchRecord>>(
     stream: _stream,
     builder: (context, snap) {
-      final list = (snap.data ?? const <MatchRecord>[]).where(widget.filter ?? (_) => true).toList();
+      // Sunucu skoru güncelleyemiyorsa yanlış/eski skor göstermek yerine o maç gizlenir.
+      final now = DateTime.now();
+      final staleMin = RemoteConfigService.instance.value.liveStaleMinutes;
+      final list = (snap.data ?? const <MatchRecord>[])
+          .where((m) => !m.isStale(now, minutes: staleMin))
+          .where(widget.filter ?? (_) => true)
+          .toList();
       return LiveMatchesStrip(
         matches: list,
         onTap: (m) => Navigator.of(context).push(

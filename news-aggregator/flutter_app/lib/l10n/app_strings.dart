@@ -330,4 +330,8 @@ class S {
   String get show => _t('Göster', 'Show');
   String get offlineTitle => _t('Çevrimdışısınız', "You're offline");
   String get offlineBody => _t('Son yüklenen haberler gösteriliyor', 'Showing the last loaded stories');
+
+  // Uzaktan ayar
+  String get updateAvailable => _t('Yeni sürüm hazır. Lütfen uygulamayı güncelleyin.', 'A new version is available. Please update.');
+  String get updateNow => _t('Güncelle', 'Update');
 }

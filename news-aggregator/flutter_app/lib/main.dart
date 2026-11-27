@@ -9,6 +9,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'ads/ads_service.dart';
 import 'app_settings.dart';
+import 'backend/remote_config.dart';
 import 'utils/storage.dart';
 import 'l10n/app_strings.dart';
 import 'pages/root_shell.dart';
@@ -63,6 +64,11 @@ Future<void> main() async {
     // derleme anında verilen --dart-define=FIREBASE_IOS_* değerlerinden (depo herkese açık; anahtar commit edilmez).
     await Firebase.initializeApp(options: _iosOptions());
     AppStorage.configure(); // Firestore ve görsel önbellek sınırları
+    // Uzaktan ayarlar (app_config/main): paneller, duyuru, reklam, güncelleme uyarısı.
+    RemoteConfigService.instance.start();
+    RemoteConfigService.instance.addListener(
+      () => AdsService.instance.remoteEnabled = RemoteConfigService.instance.value.adsEnabled,
+    );
     _setupCrashReporting();
     // App Check: Android'de Play Integrity, iOS'ta App Attest (yedek: DeviceCheck). Konsolda "zorunlu" yapılana
     // kadar yalnızca ölçülür; zorunlu kılma YALNIZCA mağaza dağıtımı başladığında açılmalı.

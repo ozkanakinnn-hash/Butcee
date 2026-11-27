@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../app_settings.dart';
 import '../backend/news_repository.dart';
+import '../backend/remote_config.dart';
 import '../backend/schema/extra_records.dart';
 import '../l10n/app_strings.dart';
 import '../pages/library_page.dart';
@@ -31,60 +32,63 @@ class MarketPanel extends StatelessWidget {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
           children: [
-            Text(s.markets, style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w800)),
-            const SizedBox(height: 12),
-            StreamBuilder<MarketSnapshot?>(
-              stream: repository.watchMarket(),
-              builder: (context, snap) {
-                final m = snap.data;
-                if (snap.connectionState == ConnectionState.waiting) {
-                  return const Padding(
-                    padding: EdgeInsets.all(24),
-                    child: Center(child: CircularProgressIndicator()),
-                  );
-                }
-                if (m == null || m.items.isEmpty) {
-                  return Text(s.marketUnavailable, style: TextStyle(color: muted));
-                }
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Column(
-                      children: [
-                        for (var i = 0; i < m.items.length; i += 2)
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 10),
-                            // Yükseklik içeriğe göre (büyük yazı boyutunda taşmaz), yan yana eşit
-                            child: IntrinsicHeight(
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [
-                                  Expanded(child: _MarketTile(item: m.items[i])),
-                                  const SizedBox(width: 10),
-                                  Expanded(
-                                    child: i + 1 < m.items.length
-                                        ? _MarketTile(item: m.items[i + 1])
-                                        : const SizedBox(),
-                                  ),
-                                ],
+            // Piyasa bölümü uzaktan kapatılabilir (app_config/main.show_market).
+            if (RemoteConfigService.instance.value.showMarket) ...[
+              Text(s.markets, style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w800)),
+              const SizedBox(height: 12),
+              StreamBuilder<MarketSnapshot?>(
+                stream: repository.watchMarket(),
+                builder: (context, snap) {
+                  final m = snap.data;
+                  if (snap.connectionState == ConnectionState.waiting) {
+                    return const Padding(
+                      padding: EdgeInsets.all(24),
+                      child: Center(child: CircularProgressIndicator()),
+                    );
+                  }
+                  if (m == null || m.items.isEmpty) {
+                    return Text(s.marketUnavailable, style: TextStyle(color: muted));
+                  }
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Column(
+                        children: [
+                          for (var i = 0; i < m.items.length; i += 2)
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 10),
+                              // Yükseklik içeriğe göre (büyük yazı boyutunda taşmaz), yan yana eşit
+                              child: IntrinsicHeight(
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                                  children: [
+                                    Expanded(child: _MarketTile(item: m.items[i])),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: i + 1 < m.items.length
+                                          ? _MarketTile(item: m.items[i + 1])
+                                          : const SizedBox(),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
-                          ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    if (m.updatedAt != null)
-                      Text(
-                        '${s.marketUpdated(_hhmm(m.updatedAt!.toLocal()))} · ${m.source}',
-                        style: theme.textTheme.bodySmall?.copyWith(color: muted),
+                        ],
                       ),
-                    const SizedBox(height: 4),
-                    Text(s.marketDisclaimer, style: theme.textTheme.bodySmall?.copyWith(color: muted, fontSize: 11)),
-                  ],
-                );
-              },
-            ),
-            const SizedBox(height: 28),
+                      const SizedBox(height: 8),
+                      if (m.updatedAt != null)
+                        Text(
+                          '${s.marketUpdated(_hhmm(m.updatedAt!.toLocal()))} · ${m.source}',
+                          style: theme.textTheme.bodySmall?.copyWith(color: muted),
+                        ),
+                      const SizedBox(height: 4),
+                      Text(s.marketDisclaimer, style: theme.textTheme.bodySmall?.copyWith(color: muted, fontSize: 11)),
+                    ],
+                  );
+                },
+              ),
+              const SizedBox(height: 28),
+            ],
             Text(s.weather, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800)),
             const SizedBox(height: 4),
             ListenableBuilder(

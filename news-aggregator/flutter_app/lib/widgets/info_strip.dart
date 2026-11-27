@@ -8,9 +8,12 @@ import '../services/weather_service.dart';
 /// Ana akışın üstünde TEK satır bilgi şeridi (eskiden büyük hava kartı haberleri aşağı itiyordu):
 /// [☀️ Sabah gündemi] [🔴 Son depremler] [hava °C]. Her çip dokununca ilgili ekranı açar.
 class InfoStrip extends StatelessWidget {
-  const InfoStrip({super.key, required this.showWeather, this.now});
+  const InfoStrip({super.key, required this.showWeather, this.showBriefing = true, this.now});
 
   final bool showWeather;
+
+  /// Uzaktan ayar (`app_config/main.show_briefing`).
+  final bool showBriefing;
   final DateTime? now;
 
   @override
@@ -23,7 +26,7 @@ class InfoStrip extends StatelessWidget {
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.fromLTRB(12, 6, 12, 2),
         children: [
-          _Chip(
+          if (showBriefing) _Chip(
             icon: evening ? Icons.nights_stay_outlined : Icons.wb_twilight_outlined,
             label: evening ? s.briefingEvening : s.briefingMorning,
             onTap: () => Navigator.of(context).push(BriefingPage.route()),

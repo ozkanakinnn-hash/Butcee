@@ -92,6 +92,7 @@ class MatchRecord {
       round = (d['league'] as Map?)?['round'] as String? ?? '',
       isLive = d['is_live'] as bool? ?? false,
       isFinished = d['is_finished'] as bool? ?? false,
+      updatedAt = (d['updated_at'] as Timestamp?)?.toDate(),
       goals = ((d['goal_events'] as List?) ?? const [])
           .map((e) => GoalEvent.fromMap(Map<String, dynamic>.from(e as Map)))
           .toList();
@@ -108,6 +109,19 @@ class MatchRecord {
   final bool isLive;
   final bool isFinished;
   final List<GoalEvent> goals;
+
+  /// Sunucunun bu kaydı en son güncellediği an.
+  final DateTime? updatedAt;
+
+  /// Skor bayat mı? (sunucu çalışmıyorsa yanlış/eski skor göstermemek için)
+  ///  - canlı görünen maç [minutes] dakikadır güncellenmediyse,
+  ///  - başlama saati [minutes] dakika geçtiği hâlde hâlâ "başlamadı" görünüyorsa.
+  bool isStale(DateTime now, {int minutes = 20}) {
+    final limit = Duration(minutes: minutes);
+    if (isLive) return updatedAt != null && now.difference(updatedAt!) > limit;
+    if (notStarted) return now.difference(kickoff) > limit;
+    return false;
+  }
 
   bool get notStarted => !isLive && !isFinished;
 }

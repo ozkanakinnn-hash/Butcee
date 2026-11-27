@@ -69,6 +69,12 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // Uzaktan uygulama ayarları (Firebase Console'dan elle düzenlenir)
+    match /app_config/{id} {
+      allow read: if true;
+      allow write: if false;
+    }
+
     match /market/{id} {
       allow read: if true;
       allow write: if false;
