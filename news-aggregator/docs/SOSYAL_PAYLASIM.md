@@ -49,6 +49,13 @@ Daha önce paylaşılan konu (`bulletin_topics`, 96 saat) gelişme yoksa yazılm
   `make_daily_cap` (vars. 12 → ayda en fazla ~1.080 işlem) **7'ye** indirilirse toplam ~920'de kalır.
 - Akışları Make'te ayrı yönetmek isterseniz (isteğe bağlı): Router'a `tur = akis` filtresiyle yeni dal.
 
+## Günlük Telegram raporu (yalnızca size) — `src/rapor.js`
+Her gün **12:00 TSİ** sonrasındaki ilk turda (≤20 dk) `owner_chat_id` özel sohbetine (kanala DEĞİL) gider; son 24 saat:
+yapay zekâ ile her kategorinin tek cümlelik özeti, sisteme giren haber sayısı (kategorilere göre), uygulamada giden
+bildirim sayısı (haber / son dakika / bülten / maç türleri). Ayarlar (`app_meta/social`): `rapor_enabled` (vars. true),
+`rapor_saat` (vars. 12), `rapor_simdi: true` → bir sonraki turda hemen gönderir (12:00 raporunu etkilemez).
+Durum: `rapor_status`, `rapor_run_at`. Elle ayar: Actions → Firebase'e Kur → `sosyal_ayar: rapor_simdi=true`.
+
 ## Kurulum
 1. **Bot:** Telegram → @BotFather → `/newbot` → ad "Haber Akışı", kullanıcı adı `...bot` ile bitmeli → **jeton** (GİZLİ).
 2. **Kanal:** Yeni kanal (herkese açık) → bağlantı adı ör. `haberakisi` → Yöneticiler → botu ekle, yetki: **Mesaj gönder**.
