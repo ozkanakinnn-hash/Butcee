@@ -630,8 +630,10 @@ private fun WeeklyGuideCard(
                         Text(
                             text = "Kaynak: ${guide.medicalSource}",
                             style = MaterialTheme.typography.labelSmall,
-                            color = TextTertiary,
-                            fontSize = 10.sp
+                            color = SlateBlue,
+                            fontSize = 10.sp,
+                            textDecoration = androidx.compose.ui.text.style.TextDecoration.Underline,
+                            modifier = Modifier.clickable { SourcesNav.open() }.testTag("guide_source_line")
                         )
                     }
                 }

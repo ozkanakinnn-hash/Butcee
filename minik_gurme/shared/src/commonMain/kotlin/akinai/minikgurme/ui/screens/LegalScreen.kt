@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import akinai.minikgurme.i18n.AppLanguage
 import akinai.minikgurme.i18n.t
 import akinai.minikgurme.ui.theme.*
+import androidx.compose.ui.text.withLink
 import akinai.minikgurme.util.LegalTexts
 
 /** Gizlilik politikası / kullanım koşulları / açık kaynak lisansları. Metinler dil başına ayrı yazıldı. */
@@ -48,8 +49,29 @@ fun LegalScreen(kind: String, onBack: () -> Unit) {
         }
         sections.forEachIndexed { i, (h, body) ->
             if (!(i == 0 && kind != "licenses")) Text(h, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = TextPrimary)
-            Text(body, style = MaterialTheme.typography.bodyMedium, color = TextSecondary)
+            if (kind == "sources") LinkifiedText(body) else Text(body, style = MaterialTheme.typography.bodyMedium, color = TextSecondary)
         }
         Spacer(Modifier.height(24.dp))
     }
+}
+
+
+private val URL = Regex("https?://[^\\s·]+")
+
+/** Metindeki adresleri tıklanabilir bağlantıya çevirir (tarayıcıda açılır; Android ve iOS). */
+@Composable
+private fun LinkifiedText(text: String) {
+    val linkColor = CoralPrimary
+    val annotated = androidx.compose.ui.text.buildAnnotatedString {
+        var last = 0
+        URL.findAll(text).forEach { m ->
+            append(text.substring(last, m.range.first))
+            withLink(androidx.compose.ui.text.LinkAnnotation.Url(m.value, androidx.compose.ui.text.TextLinkStyles(
+                style = androidx.compose.ui.text.SpanStyle(color = linkColor, textDecoration = androidx.compose.ui.text.style.TextDecoration.Underline)
+            ))) { append(m.value.removePrefix("https://").removePrefix("www.")) }
+            last = m.range.last + 1
+        }
+        append(text.substring(last))
+    }
+    androidx.compose.material3.Text(annotated, style = MaterialTheme.typography.bodyMedium, color = TextSecondary, modifier = Modifier.testTag("sources_text"))
 }

@@ -1381,6 +1381,8 @@ fun GuideScreen(
             }
         }
 
+        item { akinai.minikgurme.ui.components.SourcesLink() }
+
         item {
             Spacer(modifier = Modifier.height(36.dp))
         }

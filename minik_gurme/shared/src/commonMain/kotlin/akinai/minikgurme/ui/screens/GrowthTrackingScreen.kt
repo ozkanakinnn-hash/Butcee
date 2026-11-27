@@ -456,6 +456,8 @@ fun GrowthTrackingScreen(
                 }
             }
 
+            item { akinai.minikgurme.ui.components.SourcesLink() }
+
             // WHO Reference Guide Card (Bilgi Kartı)
             item {
                 Card(

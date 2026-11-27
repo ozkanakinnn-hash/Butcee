@@ -200,6 +200,12 @@ fun MainScreen(
     )
 
     LaunchedEffect(Unit) { akinai.minikgurme.util.AllergyRisk.load() }
+    // Kaynaklar sayfası her ekrandan açılabilir (açık alt sayfaları kapatıp)
+    akinai.minikgurme.ui.components.SourcesNav.open = {
+        selectedFoodForDetail = null; selectedRecipeForDetail = null
+        if (!currentTab.startsWith("legal_")) subReturn = currentTab
+        currentTab = "legal_sources"
+    }
     val allergenMaintenance = remember(allAllergens, allMeals, allDiaryEntries) {
         akinai.minikgurme.util.AllergenMaintenance.compute(allAllergens, allMeals, allDiaryEntries)
     }

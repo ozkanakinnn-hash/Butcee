@@ -48,6 +48,7 @@ class StoreScreenshotsTest {
 
     private fun seed(en: Boolean) = runBlocking {
         TestResources.init()
+        akinai.minikgurme.billing.PlusManager.purchasesEnabled = true   // IosStoreScreenshotsTest kapatabilir (aynı JVM)
         AppDatabase.closeAll(); ctx.deleteDatabase("minik_gurme_db")
         ctx.getSharedPreferences("app_prefs", Context.MODE_PRIVATE).edit().clear()
             .putBoolean(MainActivity.KEY_ONBOARDED, true).putBoolean("plus_debug_override", true).commit()

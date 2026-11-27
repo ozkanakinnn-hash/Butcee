@@ -8,6 +8,8 @@ package akinai.minikgurme.ui
 object TestHooks {
     /** Doluysa ilk açılış formu bu örnek profille otomatik tamamlanır. */
     var demoProfile: Boolean = false
+    /** -mgDemo 2: App Store ekran görüntüsü modu — örnek kayıtlar ve örnek topluluk gönderileri. */
+    var screenshotMode: Boolean = false
     /** Açılışta gösterilecek sekme: today, foods100, recipes, guide, community, settings, profile ... */
     var startTab: String? = null
 }

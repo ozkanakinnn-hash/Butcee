@@ -14,7 +14,9 @@ email = re.search(r'CONTACT_EMAIL = "([^"]*)"', src).group(1)
 updated = re.search(r'UPDATED = "([^"]*)"', src).group(1)
 
 def sections(fn, lang):
-    body = src[src.index(f"fun {fn}(lang: String)"):]
+    # privacy/terms artık privacyAll/termsAll içinde (web sayfası tüm bölümleri gösterir)
+    key = f"fun {fn}All(lang: String)" if f"fun {fn}All(lang: String)" in src else f"fun {fn}(lang: String)"
+    body = src[src.index(key):]
     body = body[:body.index("\n    fun ", 10)] if "\n    fun " in body[10:] else body
     en_part, tr_part = body.split(") else listOf(", 1)
     part = en_part if lang == "en" else tr_part
@@ -50,11 +52,15 @@ def page(lang, title, other_href, items_html):
 <footer>© Minik Gurme · <a href="mailto:{email}">{email}</a></footer>
 </main></body></html>"""
 
+def linkify(text):
+    t = html.escape(text)
+    return re.sub(r'(https?://[^\s·<]+)', lambda m: f'<a href="{m.group(1)}">{m.group(1).replace("https://","").replace("www.","")}</a>', t)
+
 def legal(lang, fn, fname, other):
     secs = sections(fn, lang)
     title, intro = secs[0]
     items = f"<p>{html.escape(intro)}</p>" + "".join(
-        f"<section><h2>{html.escape(h)}</h2><p>{html.escape(b)}</p></section>" for h, b in secs[1:])
+        f"<section><h2>{html.escape(h)}</h2><p>{linkify(b)}</p></section>" for h, b in secs[1:])
     open(os.path.join(OUT, fname), "w", encoding="utf-8").write(page(lang, title, other, items))
 
 DELETE = {

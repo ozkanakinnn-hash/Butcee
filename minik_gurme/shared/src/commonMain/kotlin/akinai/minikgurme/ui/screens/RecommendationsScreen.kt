@@ -418,6 +418,7 @@ fun RecommendationsScreen(
                 }
             }
         }
+        item { akinai.minikgurme.ui.components.SourcesLink() }
     }
 }
 

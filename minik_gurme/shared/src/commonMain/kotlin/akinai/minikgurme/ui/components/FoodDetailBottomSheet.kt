@@ -422,6 +422,8 @@ fun FoodDetailBottomSheet(
                 }
             }
 
+            SourcesLink()
+
             // Safety Warning Box (Image 3: Boğulma ve Güvenlik Kutusu)
             if (food.safetyAlert.isNotBlank()) {
                 Surface(

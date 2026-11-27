@@ -283,6 +283,27 @@ private fun demoSamplePost(topic: String) = CommunityPost(
     createdAt = 1_700_000_000_000L, lang = "en"
 )
 
+/** Yalnızca App Store ekran görüntüsü modunda (-mgDemo 2): örnek ebeveyn gönderileri (sunucuya yazılmaz). */
+private fun screenshotPosts(topic: String): List<CommunityPost> {
+    val now = akinai.minikgurme.shared.currentTimeMillis()
+    val en = akinai.minikgurme.i18n.AppLanguage.current == "en"
+    val p = if (en) listOf(
+        Triple("Lily's dad", "We steamed broccoli for 8 minutes and served finger-sized florets — she loved it! What veggie did you start with?", 25),
+        Triple("Emma", "Starting eggs at 7 months: whole egg or yolk first? Our paediatrician said whole egg is fine.", 140),
+        Triple("Noah's mum", "Tip: freeze purées in ice-cube trays, perfect portions for busy days.", 60 * 26)
+    ) else listOf(
+        Triple("Elif (Ada'nın annesi)", "Brokoliyi buharda 8 dakika pişirip parmak boyunda verdim, çok sevdi! Siz hangi sebzeyle başladınız?", 25),
+        Triple("Burak", "7. ayda yumurtaya başlarken önce sarısını mı vermeli, bütün olarak mı? Doktorumuz bütün olabilir dedi.", 140),
+        Triple("Zeynep", "İpucu: püreleri buz kalıbında dondurun, yoğun günler için hazır porsiyon oluyor.", 60 * 26)
+    )
+    val likes = listOf(listOf("a", "b", "c", "d"), listOf("a"), listOf("a", "b"))
+    val comments = listOf(3, 2, 0)
+    return p.mapIndexed { i, (nick, text, minAgo) ->
+        CommunityPost(id = "shot-$i", topic = topic, uid = "shot-user-$i", nick = nick, text = text,
+            createdAt = now - minAgo * 60_000L, likedBy = likes[i], commentCount = comments[i], lang = if (en) "en" else "tr")
+    }
+}
+
 @Composable
 private fun Feed(
     topic: String,
@@ -297,6 +318,7 @@ private fun Feed(
     val backend = Community.backend
     val state by produceState<Load<List<CommunityPost>>>(Load.Loading, topic, backend) {
         value = Load.Loading
+        if (akinai.minikgurme.ui.TestHooks.screenshotMode) { value = Load.Ready(screenshotPosts(topic)); return@produceState }
         backend.posts(topic).catch { value = Load.Failed }.collect { value = Load.Ready(if (akinai.minikgurme.ui.TestHooks.demoProfile) it + demoSamplePost(topic) else it) }
     }
     Box(Modifier.fillMaxSize()) {

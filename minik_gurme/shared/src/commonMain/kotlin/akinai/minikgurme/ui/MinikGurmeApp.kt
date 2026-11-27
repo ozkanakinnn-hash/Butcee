@@ -85,7 +85,10 @@ fun MinikGurmeApp(onRestart: (() -> Unit)? = null) {
                 }
                 if (TestHooks.demoProfile) {
                     // Otomatik test: formu örnek profille geç
-                    LaunchedEffect(Unit) { complete("Defne", 8, 8.4f, 70f, "mixed", "girl") }
+                    LaunchedEffect(Unit) {
+                        if (TestHooks.screenshotMode) akinai.minikgurme.util.DemoData.seed(AppDatabase.getDatabase(dbName), en = akinai.minikgurme.i18n.AppLanguage.current == "en")
+                        complete("Defne", 8, 8.1f, 69.2f, "mixed", "girl")
+                    }
                 } else {
                     OnboardingScreen(
                         onOpenPrivacy = { showPrivacy = true },

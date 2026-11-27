@@ -548,6 +548,8 @@ fun RecipeDetailBottomSheet(
                 }
             }
 
+            SourcesLink()
+
             // Action Buttons: Beslenme Günlüğüne Kaydet + Öğünlere Ekle
             Column(
                 modifier = Modifier.fillMaxWidth(),

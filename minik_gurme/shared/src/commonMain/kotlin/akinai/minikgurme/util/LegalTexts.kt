@@ -8,7 +8,7 @@ package akinai.minikgurme.util
 object LegalTexts {
     /** Kullanıcıların ulaşacağı iletişim adresi — yayından önce doldurun. */
     const val CONTACT_EMAIL = "ozkan.akinnn@gmail.com"
-    const val UPDATED = "14.11.2026"
+    const val UPDATED = "27.11.2026"
 
     private val contact get() = CONTACT_EMAIL.ifBlank { "[iletişim e-postası]" }
     private val contactEn get() = CONTACT_EMAIL.ifBlank { "[contact e-mail]" }
@@ -69,19 +69,19 @@ object LegalTexts {
 
     fun sources(lang: String): List<Pair<String, String>> = if (lang == "en") listOf(
         "Sources" to "Last updated: $UPDATED. Recipes, food guides, the allergen plan and growth charts in the app are based on the general recommendations of the sources below. These organisations have not reviewed or endorsed the app, and the content does not replace an individual assessment by your doctor.",
-        "World Health Organization (WHO)" to "WHO Guideline for complementary feeding of infants and young children 6–23 months of age (2023). WHO Child Growth Standards (2006) — used for the growth charts.",
-        "ESPGHAN" to "Fewtrell M, et al. Complementary Feeding: A Position Paper by the ESPGHAN Committee on Nutrition. J Pediatr Gastroenterol Nutr. 2017;64(1):119-132.",
-        "Turkish Ministry of Health" to "Türkiye Nutrition Guide (TÜBER) 2022 — infant and young child nutrition sections.",
-        "American Academy of Pediatrics (AAP)" to "HealthyChildren.org guidance on starting solid foods, choking hazards and avoiding honey before age 1. Fleischer DM, et al. A Consensus Approach to the Primary Prevention of Food Allergy Through Nutrition. J Allergy Clin Immunol Pract. 2021;9(1):22-43.",
-        "Allergen labels" to "Recipe allergen labels follow the major allergens listed in Annex II of EU Regulation 1169/2011 and are derived automatically from ingredient names. Always check the labels of the products you use.",
+        "World Health Organization (WHO)" to "WHO Guideline for complementary feeding of infants and young children 6–23 months of age (2023). WHO Child Growth Standards (2006) — used for the growth charts. https://www.who.int/publications/i/item/9789240081864 · https://www.who.int/tools/child-growth-standards",
+        "ESPGHAN" to "Fewtrell M, et al. Complementary Feeding: A Position Paper by the ESPGHAN Committee on Nutrition. J Pediatr Gastroenterol Nutr. 2017;64(1):119-132. https://doi.org/10.1097/MPG.0000000000001454",
+        "Turkish Ministry of Health" to "Türkiye Nutrition Guide (TÜBER) 2022 — infant and young child nutrition sections. https://hsgm.saglik.gov.tr/media/attachments/2025/05/12/turkiye-beslenme-rehberi-2022.pdf",
+        "American Academy of Pediatrics (AAP)" to "HealthyChildren.org guidance on starting solid foods, choking hazards and avoiding honey before age 1. Fleischer DM, et al. A Consensus Approach to the Primary Prevention of Food Allergy Through Nutrition. J Allergy Clin Immunol Pract. 2021;9(1):22-43. https://www.healthychildren.org/English/ages-stages/baby/feeding-nutrition/Pages/Starting-Solid-Foods.aspx · https://doi.org/10.1016/j.jaip.2020.11.002",
+        "Allergen labels" to "Recipe allergen labels follow the major allergens listed in Annex II of EU Regulation 1169/2011 and are derived automatically from ingredient names. Always check the labels of the products you use. https://eur-lex.europa.eu/eli/reg/2011/1169/oj",
         "Important" to "Every baby is different. If your baby has an allergy history, severe eczema, a chronic illness, was born prematurely or has feeding or swallowing difficulties, consult your paediatrician before following any recipe or plan. In an emergency (difficulty breathing, swelling of the face or lips, persistent vomiting) call 112.",
     ) else listOf(
         "Kaynaklar" to "Son güncelleme: $UPDATED. Uygulamadaki tarifler, gıda rehberleri, alerjen planı ve büyüme grafikleri aşağıdaki kaynakların genel önerilerine dayanır. Bu kuruluşlar uygulamayı incelememiş veya onaylamamıştır; içerik doktorunuzun bireysel değerlendirmesinin yerini tutmaz.",
-        "Dünya Sağlık Örgütü (DSÖ)" to "WHO Guideline for complementary feeding of infants and young children 6–23 months of age (2023). DSÖ Çocuk Büyüme Standartları (2006) — büyüme grafiklerinde kullanılır.",
-        "ESPGHAN" to "Fewtrell M, ve ark. Complementary Feeding: A Position Paper by the ESPGHAN Committee on Nutrition. J Pediatr Gastroenterol Nutr. 2017;64(1):119-132.",
-        "T.C. Sağlık Bakanlığı" to "Türkiye Beslenme Rehberi (TÜBER) 2022 — bebek ve çocuk beslenmesi bölümleri.",
-        "Amerikan Pediatri Akademisi (AAP)" to "HealthyChildren.org: ek gıdaya başlama, boğulma riski taşıyan gıdalar ve 1 yaşından önce bal verilmemesi önerileri. Fleischer DM, ve ark. A Consensus Approach to the Primary Prevention of Food Allergy Through Nutrition. J Allergy Clin Immunol Pract. 2021;9(1):22-43.",
-        "Alerjen etiketleri" to "Tariflerdeki alerjen bilgisi, AB 1169/2011 sayılı Tüzük Ek II'deki başlıca alerjenler esas alınarak malzeme adlarından otomatik çıkarılır. Kullandığınız ürünlerin etiketini mutlaka kontrol edin.",
+        "Dünya Sağlık Örgütü (DSÖ)" to "WHO Guideline for complementary feeding of infants and young children 6–23 months of age (2023). DSÖ Çocuk Büyüme Standartları (2006) — büyüme grafiklerinde kullanılır. https://www.who.int/publications/i/item/9789240081864 · https://www.who.int/tools/child-growth-standards",
+        "ESPGHAN" to "Fewtrell M, ve ark. Complementary Feeding: A Position Paper by the ESPGHAN Committee on Nutrition. J Pediatr Gastroenterol Nutr. 2017;64(1):119-132. https://doi.org/10.1097/MPG.0000000000001454",
+        "T.C. Sağlık Bakanlığı" to "Türkiye Beslenme Rehberi (TÜBER) 2022 — bebek ve çocuk beslenmesi bölümleri. https://hsgm.saglik.gov.tr/media/attachments/2025/05/12/turkiye-beslenme-rehberi-2022.pdf",
+        "Amerikan Pediatri Akademisi (AAP)" to "HealthyChildren.org: ek gıdaya başlama, boğulma riski taşıyan gıdalar ve 1 yaşından önce bal verilmemesi önerileri. Fleischer DM, ve ark. A Consensus Approach to the Primary Prevention of Food Allergy Through Nutrition. J Allergy Clin Immunol Pract. 2021;9(1):22-43. https://www.healthychildren.org/English/ages-stages/baby/feeding-nutrition/Pages/Starting-Solid-Foods.aspx · https://doi.org/10.1016/j.jaip.2020.11.002",
+        "Alerjen etiketleri" to "Tariflerdeki alerjen bilgisi, AB 1169/2011 sayılı Tüzük Ek II'deki başlıca alerjenler esas alınarak malzeme adlarından otomatik çıkarılır. Kullandığınız ürünlerin etiketini mutlaka kontrol edin. https://eur-lex.europa.eu/eli/reg/2011/1169/oj",
         "Önemli" to "Her bebek farklıdır. Bebeğinizin alerji öyküsü, şiddetli egzaması, kronik hastalığı, erken doğum öyküsü veya yutma/beslenme güçlüğü varsa herhangi bir tarif ya da planı uygulamadan önce çocuk doktorunuza danışın. Acil durumda (nefes darlığı, yüzde/dudaklarda şişlik, durmayan kusma) 112'yi arayın.",
     )
 

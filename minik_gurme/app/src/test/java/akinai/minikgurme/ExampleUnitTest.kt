@@ -184,6 +184,8 @@ class ExampleUnitTest {
     val en = akinai.minikgurme.util.LegalTexts.sources("en")
     assertEquals(tr.size, en.size)
     assertTrue(tr.any { it.first.contains("DSÖ") } && en.any { it.first.contains("WHO") })
+    // App Store 1.4.1: her kaynak bölümünde bağlantı
+    for (lang in listOf(tr, en)) lang.drop(1).dropLast(1).forEach { (h, b) -> assertTrue("$h bağlantısız", b.contains("https://")) }
   }
 
   @Test
