@@ -14,16 +14,36 @@ const { runAkis } = require('../src/akis');
 const slot = process.argv[2] || 'gece';
 const preview = process.argv.includes('--onizle');
 
+const MODELS = (process.env.GITHUB_MODEL || 'openai/gpt-4.1-mini,openai/gpt-4o-mini,meta/Llama-3.3-70B-Instruct').split(',');
+
+/** GitHub Models: sırayla modelleri dener; boş/filtreli yanıtın nedenini kayda yazar. */
 async function githubModels(prompt) {
-  const res = await fetch('https://models.github.ai/inference/chat/completions', {
-    method: 'POST',
-    headers: { 'content-type': 'application/json', accept: 'application/vnd.github+json', authorization: `Bearer ${process.env.GITHUB_TOKEN}` },
-    body: JSON.stringify({ model: process.env.GITHUB_MODEL || 'openai/gpt-4.1-mini', temperature: 0.3, response_format: { type: 'json_object' }, messages: [{ role: 'user', content: prompt }] }),
-    signal: AbortSignal.timeout(60_000),
-  });
-  const body = await res.json().catch(() => ({}));
-  if (!res.ok) return { text: '', model: '', error: `GitHub Models HTTP ${res.status}: ${body.error?.message || body.message || ''}` };
-  return { text: body.choices?.[0]?.message?.content || '', model: 'github-models', error: '' };
+  let lastError = '';
+  for (const model of MODELS) {
+    try {
+      const res = await fetch('https://models.github.ai/inference/chat/completions', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', accept: 'application/vnd.github+json', authorization: `Bearer ${process.env.GITHUB_TOKEN}` },
+        body: JSON.stringify({ model, temperature: 0.3, max_tokens: 2000, messages: [{ role: 'user', content: prompt }] }),
+        signal: AbortSignal.timeout(90_000),
+      });
+      const raw = await res.text();
+      let body = {};
+      try { body = JSON.parse(raw); } catch { /* düz metin */ }
+      const choice = body.choices && body.choices[0];
+      const text = (choice && choice.message && choice.message.content) || '';
+      if (res.ok && text) {
+        console.log(`Yapay zekâ: ${model}`);
+        return { text, model, error: '' };
+      }
+      lastError = `${model}: HTTP ${res.status} ${choice ? `finish=${choice.finish_reason}` : ''} ${raw.slice(0, 300).replace(/\s+/g, ' ')}`;
+      console.log(`Deneme başarısız → ${lastError}`);
+    } catch (err) {
+      lastError = `${model}: ${err.message}`;
+      console.log(`Deneme başarısız → ${lastError}`);
+    }
+  }
+  return { text: '', model: '', error: lastError || 'yanıt yok' };
 }
 
 (async () => {
