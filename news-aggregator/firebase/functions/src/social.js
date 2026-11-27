@@ -21,9 +21,9 @@
  * - `link_preview: false` (varsayılan): Telegram yayıncının görselini/açıklamasını göstermez (telif için daha güvenli).
  * - `allowed_sources`: doluysa yalnızca bu yayıncıların (kaynak adı, büyük/küçük harf farkı gözetilmez) haberleri
  *   paylaşılır; boşsa tüm kaynaklar.
- * - X otomatik (ücretsiz yol): `x_enabled: true` + `x_webhook: "https://hook.eu1.make.com/..."` → seçilen haber
- *   Make senaryosuna JSON olarak gider (Make → Google Tablolar kaydı → Buffer → X). Telegram'dan bağımsızdır:
- *   kanal/jeton boşsa yalnızca X'e gider. `test_ping` webhook'a da örnek (deneme: true) bir kayıt yollar; Make'te
+ * - X otomatik (ücretsiz yol): `x_enabled: true` + `x_webhook: "https://hook.eu1.make.com/..."` → make.js
+ *   son dakika, gündem (5+ kaynak) ve sabah/akşam bültenini Make senaryosuna JSON olarak gönderir (`tur` alanı ile).
+ *   Telegram'dan bağımsızdır. `test_ping` webhook'a da örnek (deneme: true) bir kayıt yollar; Make'te
  *   "Redetermine data structure" bu örnekle alanları öğrenir.
  */
 
@@ -149,11 +149,14 @@ async function runSocial(db, { token, fetchImpl = fetch, now = Date.now() } = {}
   if (config.test_ping === true) {
     const errors = [];
     if (xReady(config)) {
-      const sample = { id: 'test', title: 'Haber Akışı bağlantı testi', url: 'https://haber-68a3c.web.app', source: 'Haber Akışı', srcs: ['test'] };
-      try {
-        await webhookSend(fetchImpl, config.x_webhook, xPayload(sample, now, { deneme: true }));
-      } catch (err) {
-        errors.push(`x webhook: ${err.message}`);
+      // Make: her türden (son_dakika, gundem, bulten) birer deneme kaydı → Make alanları öğrenir
+      const { makeSamples } = require('./make');
+      for (const p of makeSamples(now)) {
+        try {
+          await webhookSend(fetchImpl, config.x_webhook, p);
+        } catch (err) {
+          errors.push(`x webhook (${p.tur}): ${err.message}`);
+        }
       }
     }
     if (!token) {
@@ -182,7 +185,8 @@ async function runSocial(db, { token, fetchImpl = fetch, now = Date.now() } = {}
   }
 
   if (!config.enabled) return { status: 'kapalı' };
-  if (!config.dry_run && !telegramReady(config, token) && !xReady(config)) return { status: 'ayar eksik' };
+  // Make (X) ayrı modülde (make.js) çalışır; bu tur yalnızca Telegram içindir.
+  if (!config.dry_run && !telegramReady(config, token)) return { status: xReady(config) ? 'yalnızca make' : 'ayar eksik' };
 
   const [newsSnap, stateSnap] = await Promise.all([db.doc('notify_state/news').get(), db.doc('notify_state/social').get()]);
   const { story, nextState, reason } = pickStory({
@@ -214,14 +218,6 @@ async function runSocial(db, { token, fetchImpl = fetch, now = Date.now() } = {}
       delivered++;
     } catch (err) {
       errors.push(err.message);
-    }
-  }
-  if (xReady(config)) {
-    try {
-      await webhookSend(fetchImpl, config.x_webhook, xPayload(story, now));
-      delivered++;
-    } catch (err) {
-      errors.push(`x: ${err.message}`);
     }
   }
   if (token && config.owner_chat_id && !xReady(config)) {

@@ -165,53 +165,27 @@ test('bağlantı testi: test_ping kanala ve özel sohbete mesaj atar, sonucu yaz
   assert.match((await runSocial(none, { token: '', fetchImpl: fakeFetch([]), now: NOW })).errors[0], /jeton yok/);
 });
 
-test('X (Make webhook): Telegram ile birlikte ya da tek başına gider; test_ping örnek kayıt yollar', async () => {
+test("X (Make): Telegram turu Make'e göndermez (make.js ayrı çalışır); test_ping her türden örnek yollar", async () => {
   const hook = 'https://hook.eu1.make.com/abc';
-  // Telegram + X
   const calls = [];
   const db = fakeDb(world({ enabled: true, dry_run: false, channel: '@k', owner_chat_id: '42', x_enabled: true, x_webhook: hook }));
   const r = await runSocial(db, { token: 'T', fetchImpl: fakeFetch(calls), now: NOW });
   assert.equal(r.status, 'gönderildi');
-  assert.deepEqual(calls.map((c) => c.url), ['https://api.telegram.org/botT/sendMessage', hook], 'X açıkken özel sohbete taslak gitmez');
-  const p = calls[1].body;
-  assert.equal(p.baslik, 'Merkez Bankası faizi indirdi s1');
-  assert.equal(p.link, 'https://yayinci.example/s1');
-  assert.equal(p.kaynak, 'AA');
-  assert.equal(p.deneme, false);
-  assert.ok(p.metin.endsWith(p.link) && p.zaman);
+  assert.deepEqual(calls.map((c) => c.url), ['https://api.telegram.org/botT/sendMessage'], 'X açıkken özel sohbete taslak gitmez, Make bu turda çağrılmaz');
 
-  // Yalnızca X (jeton/kanal yok)
+  // Yalnızca X (jeton/kanal yok) → Telegram turu bir şey yapmaz
   const calls2 = [];
   const onlyX = fakeDb(world({ enabled: true, dry_run: false, x_enabled: true, x_webhook: hook }));
-  assert.equal((await runSocial(onlyX, { token: '', fetchImpl: fakeFetch(calls2), now: NOW })).status, 'gönderildi');
-  assert.deepEqual(calls2.map((c) => c.url), [hook]);
-  assert.ok(onlyX.written.some(([path]) => path === 'notify_state/social'));
+  assert.equal((await runSocial(onlyX, { token: '', fetchImpl: fakeFetch(calls2), now: NOW })).status, 'yalnızca make');
+  assert.equal(calls2.length, 0);
 
-  // Kanal başarısız ama X gitti → sayaç ilerler (aynı haber X'e iki kez gitmesin)
-  const calls3 = [];
-  const mixed = fakeDb(world({ enabled: true, dry_run: false, channel: '@k', x_enabled: true, x_webhook: hook }));
-  const flaky = async (url, opts) => (url === hook ? fakeFetch(calls3)(url, opts) : fakeFetch(calls3, { fail: true })(url, opts));
-  const r3 = await runSocial(mixed, { token: 'T', fetchImpl: flaky, now: NOW });
-  assert.equal(r3.status, 'gönderildi');
-  assert.match(r3.errors[0], /chat not found/);
-
-  // x_enabled kapalıysa ya da adres geçersizse webhook çağrılmaz
-  const calls4 = [];
-  await runSocial(fakeDb(world({ enabled: true, dry_run: false, channel: '@k', x_enabled: false, x_webhook: hook })), { token: 'T', fetchImpl: fakeFetch(calls4), now: NOW });
-  assert.ok(!calls4.some((c) => c.url === hook));
-
-  // Deneme modunda webhook çağrılmaz
-  const calls5 = [];
-  await runSocial(fakeDb(world({ enabled: true, dry_run: true, x_enabled: true, x_webhook: hook })), { token: '', fetchImpl: fakeFetch(calls5), now: NOW });
-  assert.equal(calls5.length, 0);
-
-  // test_ping → webhook'a deneme: true örnek
+  // test_ping → webhook'a üç tür deneme kaydı
   const calls6 = [];
   const ping = fakeDb({ 'app_meta/social': { test_ping: true, x_enabled: true, x_webhook: hook } });
   const r6 = await runSocial(ping, { token: '', fetchImpl: fakeFetch(calls6), now: NOW });
   assert.equal(r6.status, 'test');
   assert.ok(!r6.errors, 'yalnızca X ayarlıyken jeton hatası verilmez');
-  assert.equal(calls6[0].url, hook);
-  assert.equal(calls6[0].body.deneme, true);
+  assert.deepEqual(calls6.map((c) => c.body.tur), ['son_dakika', 'gundem', 'bulten']);
+  assert.ok(calls6.every((c) => c.url === hook && c.body.deneme === true));
   assert.equal(ping.written[0][1].test_result, 'başarılı');
 });

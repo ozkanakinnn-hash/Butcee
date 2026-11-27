@@ -73,6 +73,13 @@ exports.fetchRssFeeds = onSchedule(
     } catch (err) {
       logger.warn('Sosyal paylaşım hatası', { error: err.message });
     }
+    try {
+      const { runMake } = require('./src/make');
+      const m = await runMake(db);
+      if (!['kapalı', 'bekle', 'make kapalı'].includes(m.status)) logger.info('Make', m);
+    } catch (err) {
+      logger.warn('Make hatası', { error: err.message });
+    }
   }
 );
 
