@@ -1,0 +1,48 @@
+# Minik Gurme: App Store Connect sürümünü günceller — yeni yapıyı bağlar, ekran görüntülerini (tr/en) değiştirir, notu günceller.
+# Yeniden incelemeye GÖNDERMEZ (kullanıcı App Store Connect'te "Submit for Review" yapar).
+# Başlatma: minik_gurme/docs/store/appstore/ASC_UPDATE değişip gönderildiğinde (ya da Actions → Run workflow).
+name: Minik Gurme iOS sürüm güncelleme (ASC)
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "minik_gurme/docs/store/appstore/ASC_UPDATE"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: minik-asc-update
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+      ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+      ASC_PRIVATE_KEY: ${{ secrets.ASC_PRIVATE_KEY }}
+      BUNDLE_ID: akinai.minikgurme
+      SHOTS_DIR: minik_gurme/docs/store/appstore
+      ATTACH_BUILD: "1"
+      NOTES_FILE: minik_gurme/docs/store/appstore/inceleme-video/notes-v2.txt
+    steps:
+      - uses: actions/checkout@v5
+      - name: Anahtar
+        run: |
+          KEY="$RUNNER_TEMP/AuthKey.p8"
+          python3 - "$KEY" <<'PY'
+          import os, re, sys, textwrap
+          body = re.sub(r"-----(BEGIN|END)[A-Z ]*-----", "", os.environ["ASC_PRIVATE_KEY"])
+          body = re.sub(r"[^A-Za-z0-9+/=]", "", body)
+          open(sys.argv[1], "w").write("-----BEGIN PRIVATE KEY-----\n" + "\n".join(textwrap.wrap(body, 64)) + "\n-----END PRIVATE KEY-----\n")
+          PY
+          echo "KEY_PATH=$KEY" >> "$GITHUB_ENV"
+          pip install -q "PyJWT[crypto]"
+      - name: Sürümü güncelle
+        run: python3 minik_gurme/tool/asc_version_update.py
+      - name: Anahtarı sil
+        if: always()
+        run: rm -f "$RUNNER_TEMP/AuthKey.p8"
