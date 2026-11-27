@@ -88,6 +88,15 @@ exports.fetchRssFeeds = onSchedule(
     } catch (err) {
       logger.warn('Akış hatası', { error: err.message });
     }
+    try {
+      // Günlük Telegram raporu (yalnızca sahibin özel sohbetine): her gün 12:00 TSİ sonrası ilk turda
+      const { runRapor } = require('./src/rapor');
+      const token = TELEGRAM_BOT_TOKEN.value();
+      const r = await runRapor(db, { token: usable(token) ? token.trim() : '' });
+      if (r.status !== 'bekle') logger.info('Günlük rapor', { status: r.status });
+    } catch (err) {
+      logger.warn('Günlük rapor hatası', { error: err.message });
+    }
   }
 );
 

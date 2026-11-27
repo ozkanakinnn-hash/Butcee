@@ -13,6 +13,7 @@ const ALLOWED = {
   make_daily_cap: 'number', make_gap_min: 'number', breaking_gap_min: 'number', gundem_min_sources: 'number',
   send_akis: 'boolean', akis_dry_run: 'boolean', akis_bulten_birlikte: 'boolean',
   send_breaking: 'boolean', send_gundem: 'boolean', send_bulletin: 'boolean', test_ping: 'boolean',
+  rapor_enabled: 'boolean', rapor_simdi: 'boolean', rapor_saat: 'number',
 };
 
 function parse(input) {
