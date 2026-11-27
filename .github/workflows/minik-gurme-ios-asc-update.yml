@@ -1,4 +1,4 @@
-# Minik Gurme: App Store Connect sürümünü günceller — yeni yapıyı bağlar, ekran görüntülerini (tr/en) değiştirir, notu günceller.
+# Minik Gurme: App Store Connect sürümünü günceller — yeni yapıyı bağlar ve inceleme notunu günceller (ekran görüntülerini kullanıcı yükler; SHOTS_DIR verilirse betik onları da değiştirir).
 # Yeniden incelemeye GÖNDERMEZ (kullanıcı App Store Connect'te "Submit for Review" yapar).
 # Başlatma: minik_gurme/docs/store/appstore/ASC_UPDATE değişip gönderildiğinde (ya da Actions → Run workflow).
 name: Minik Gurme iOS sürüm güncelleme (ASC)
@@ -25,7 +25,6 @@ jobs:
       ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
       ASC_PRIVATE_KEY: ${{ secrets.ASC_PRIVATE_KEY }}
       BUNDLE_ID: akinai.minikgurme
-      SHOTS_DIR: minik_gurme/docs/store/appstore
       ATTACH_BUILD: "1"
       NOTES_FILE: minik_gurme/docs/store/appstore/inceleme-video/notes-v2.txt
     steps:
