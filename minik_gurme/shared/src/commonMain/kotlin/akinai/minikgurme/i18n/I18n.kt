@@ -68,9 +68,10 @@ object Translator {
             val json = Json.parseToJsonElement(read("files/i18n/en.json").decodeToString()).jsonObject
             exact = json.mapValues { it.value.jsonPrimitive.content }
             val arr = Json.parseToJsonElement(read("files/i18n/en_patterns.json").decodeToString()).jsonArray
-            patterns = arr.map { e ->
+            // Her kalıp ayrı derlenir: biri bir platformda desteklenmezse (ör. iOS'ta \p{L}) diğerleri çalışmaya devam eder
+            patterns = arr.mapNotNull { e ->
                 val p = e.jsonArray
-                Regex(p[0].jsonPrimitive.content) to p[1].jsonPrimitive.content
+                runCatching { Regex(p[0].jsonPrimitive.content) to p[1].jsonPrimitive.content }.getOrNull()
             }
         } catch (e: Exception) {
             // Sözlük yüklenemezse uygulama Türkçe çalışmaya devam eder.
