@@ -495,15 +495,30 @@ function toWire(m) {
   };
 }
 
+/** Bülten gövdesi: AI özeti varsa özet + ilk iki başlık, yoksa başlık listesi (saf fonksiyon). */
+function withAiSummary(message, aiSummary) {
+  if (!message || !aiSummary) return message;
+  const lines = String(message.notification.body || '').split('\n').filter((l) => l.startsWith('• ')).slice(0, 2);
+  return { ...message, notification: { ...message.notification, body: [trimText(aiSummary, 320), ...lines].join('\n') } };
+}
+
 /**
- * Gündem belgesi ve "kimler verdi" listeleri. Haber silinmişse (telif/temizlik) güncelleme atlanır — belge yeniden
- * oluşturulmaz (update kullanılır). Hata bildirimleri bozmaz.
+ * Gündem belgesi (+ Gemini AI özeti) ve "kimler verdi" listeleri. Haber silinmişse (telif/temizlik) güncelleme atlanır —
+ * belge yeniden oluşturulmaz (update kullanılır). Hata bildirimleri bozmaz.
+ * `notified`: bu bülten bildirim olarak gönderildi → social.js Make'e de bir kez iletir.
+ * @returns {Promise<string>} AI özeti (yoksa boş)
  */
-async function writeExtras(db, briefing, sourceUpdates = []) {
+async function writeExtras(db, briefing, sourceUpdates = [], { notified = false, summarize } = {}) {
+  let aiSummary = '';
   try {
     if (briefing) {
       const { Timestamp } = require('firebase-admin/firestore');
-      const doc = { ...briefing, created_at: Timestamp.fromMillis(briefing.created_ms) };
+      try {
+        aiSummary = await (summarize || require('./gemini').summarizeBriefing)(briefing.items, { db });
+      } catch (err) {
+        logger.warn('AI özeti alınamadı', { error: err.message });
+      }
+      const doc = { ...briefing, ai_summary: aiSummary, notified, created_at: Timestamp.fromMillis(briefing.created_ms) };
       await db.doc(`briefings/${briefing.id}`).set(doc);
       await db.doc('briefings/latest').set(doc);
     }
@@ -513,15 +528,20 @@ async function writeExtras(db, briefing, sourceUpdates = []) {
   } catch (err) {
     logger.warn('Gündem/kaynak listesi yazılamadı', { error: err.message });
   }
+  return aiSummary;
 }
 
 /** Bildirimleri gönderir ve durumu kaydeder. Hata bildirimi çekimi bozmaz. */
-async function sendNewsNotifications(db, results, categories, { messaging = getMessaging(), now = Date.now() } = {}) {
+async function sendNewsNotifications(db, results, categories, { messaging = getMessaging(), now = Date.now(), summarize } = {}) {
   const ref = db.doc('notify_state/news');
   try {
     const snap = await ref.get();
-    const { messages, nextState, briefing, sourceUpdates } = planNotifications({ results, categories, state: snap.data() || {}, now });
-    await writeExtras(db, briefing, sourceUpdates);
+    const planned = planNotifications({ results, categories, state: snap.data() || {}, now });
+    const { nextState, briefing, sourceUpdates } = planned;
+    const hasBulletin = planned.messages.some((m) => m.topic === BULLETIN_TOPIC);
+    const aiSummary = await writeExtras(db, briefing, sourceUpdates, { notified: hasBulletin, summarize });
+    // Bülten bildirimine AI özeti eklenir (özet yoksa başlık listesi kalır).
+    const messages = planned.messages.map((m) => (m.topic === BULLETIN_TOPIC ? withAiSummary(m, aiSummary) : m));
     if (messages.length === 0) {
       await ref.set(nextState); // kuyruk ve hikâyeler her çalışmada güncellenir (birleştirme değil: silinenler gitsin)
       return { sent: 0 };
@@ -552,6 +572,7 @@ module.exports = {
   buildBriefing,
   buildBulletinMessage,
   writeExtras,
+  withAiSummary,
   CALM_TOPIC,
   BULLETIN_TOPIC,
   PROFILES,

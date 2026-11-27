@@ -36,7 +36,7 @@ test('dünkü bülten kalmışsa bugünün sabah bülteni üretilir, bildirim te
   const sent = [];
   const messaging = { sendEach: async (m) => { sent.push(...m); return { successCount: m.length, failureCount: 0, responses: m.map(() => ({ success: true })) }; } };
 
-  const r = await ensureBriefing(db, { messaging, now: MORNING });
+  const r = await ensureBriefing(db, { messaging, now: MORNING, summarize: async () => 'Bugün faiz kararı öne çıktı.' });
   assert.equal(r.status, 'gönderildi');
   assert.equal(r.id, '2026-11-28-am');
   const latest = (await db.doc('briefings/latest').get()).data();
@@ -47,6 +47,10 @@ test('dünkü bülten kalmışsa bugünün sabah bülteni üretilir, bildirim te
   assert.equal(sent.length, 1);
   assert.equal(sent[0].topic, 'bulletin');
   assert.equal(sent[0].data.briefing_id, '2026-11-28-am');
+  assert.match(sent[0].data.n_body, /^Bugün faiz kararı öne çıktı\./, 'AI özeti bildirimde');
+  const after = (await db.doc('briefings/latest').get()).data();
+  assert.equal(after.ai_summary, 'Bugün faiz kararı öne çıktı.');
+  assert.equal(after.notified, true, 'Make için işaretli');
 
   // İkinci tur: belge var, bildirim gitmiş → hiçbir şey yapmaz
   const r2 = await ensureBriefing(db, { messaging, now: MORNING + 10 * 60_000 });
@@ -70,7 +74,7 @@ test('belge haber çekimiyle yazılmış ama bildirim gitmemişse yalnızca bild
   const sent = [];
   const messaging = { sendEach: async (m) => { sent.push(...m); return { successCount: m.length, failureCount: 0, responses: m.map(() => ({ success: true })) }; } };
 
-  const r = await ensureBriefing(db, { messaging, now: MORNING });
+  const r = await ensureBriefing(db, { messaging, now: MORNING, summarize: async () => 'Bugün faiz kararı öne çıktı.' });
   assert.equal(r.status, 'gönderildi');
   assert.equal(sent.length, 1);
 

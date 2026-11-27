@@ -39,6 +39,8 @@ const FOOTBALL_API_KEY = defineSecret('FOOTBALL_API_KEY');
 const HIGHLIGHTLY_API_KEY = defineSecret('HIGHLIGHTLY_API_KEY');
 // Telegram kanalı için bot jetonu (BotFather). Yoksa kurulumda "-" girilir; paylaşım o zaman hiçbir şey yapmaz.
 const TELEGRAM_BOT_TOKEN = defineSecret('TELEGRAM_BOT_TOKEN');
+// Bülten AI özeti (Gemini). Model `app_meta/ai.model` belgesinden değiştirilir; anahtar yoksa özet atlanır.
+const GEMINI_API_KEY = defineSecret('GEMINI_API_KEY');
 const usable = (k) => Boolean(k && k.trim() && k.trim() !== '-');
 
 exports.fetchRssFeeds = onSchedule(
@@ -48,7 +50,7 @@ exports.fetchRssFeeds = onSchedule(
     timeoutSeconds: 300,
     memory: '512MiB',
     retryCount: 0, // bir sonraki çalışma zaten 20 dk sonra
-    secrets: [TELEGRAM_BOT_TOKEN],
+    secrets: [TELEGRAM_BOT_TOKEN, GEMINI_API_KEY],
   },
   async () => {
     const db = getFirestore();
@@ -84,11 +86,11 @@ exports.cleanupOldArticles = onSchedule(
 // Bülten güvencesi: 08:30–10:59 ve 19:00–21:59 arası 10 dakikada bir. Gündem belgesi o dilim için yazılmadıysa
 // (haber çekimi gecikti/hata verdi) üretir; bildirim gitmediyse gönderir. Uygulama böylece dünkü bülteni göstermez.
 exports.briefingTick = onSchedule(
-  { schedule: '30,40,50 8 * * *', timeZone: 'Europe/Istanbul', timeoutSeconds: 120, memory: '512MiB', retryCount: 1 },
+  { schedule: '30,40,50 8 * * *', timeZone: 'Europe/Istanbul', timeoutSeconds: 180, memory: '512MiB', retryCount: 1, secrets: [GEMINI_API_KEY] },
   async () => runBriefingTick(),
 );
 exports.briefingTickLate = onSchedule(
-  { schedule: '*/10 9,10,19,20,21 * * *', timeZone: 'Europe/Istanbul', timeoutSeconds: 120, memory: '512MiB', retryCount: 1 },
+  { schedule: '*/10 9,10,19,20,21 * * *', timeZone: 'Europe/Istanbul', timeoutSeconds: 180, memory: '512MiB', retryCount: 1, secrets: [GEMINI_API_KEY] },
   async () => runBriefingTick(),
 );
 async function runBriefingTick() {

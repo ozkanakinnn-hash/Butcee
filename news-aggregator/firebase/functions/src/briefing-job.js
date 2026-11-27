@@ -17,7 +17,7 @@ const { Timestamp } = require('firebase-admin/firestore');
 const { logger } = require('firebase-functions');
 const { mergeStories } = require('./importance');
 const {
-  bulletinSlot, pickBriefingStories, buildBriefing, buildBulletinMessage, writeExtras, toWire, BULLETIN_ITEMS,
+  bulletinSlot, pickBriefingStories, buildBriefing, buildBulletinMessage, writeExtras, withAiSummary, toWire, BULLETIN_ITEMS,
 } = require('./notify');
 
 const ARTICLE_LOOKBACK_MS = 14 * 3_600_000;
@@ -39,12 +39,13 @@ async function storiesFromArticles(db, now) {
  * Şu anki dilimin bültenini garanti eder.
  * @returns {Promise<{status: string, id: string, source?: string, sent?: number}>}
  */
-async function ensureBriefing(db, { messaging, now = Date.now(), fromArticles = storiesFromArticles } = {}) {
+async function ensureBriefing(db, { messaging, now = Date.now(), fromArticles = storiesFromArticles, summarize } = {}) {
   const { slot, slotDay, key, id, inWindow } = bulletinSlot(now);
   const stateRef = db.doc('notify_state/news');
 
   const existing = await db.doc(`briefings/${id}`).get();
   let picks = null;
+  let aiSummary = existing.exists ? existing.data().ai_summary || '' : '';
   if (!existing.exists) {
     const state = (await stateRef.get()).data() || {};
     let { picks: p, fresh } = pickBriefingStories(state.stories || [], now);
@@ -58,7 +59,7 @@ async function ensureBriefing(db, { messaging, now = Date.now(), fromArticles = 
       return { status: 'haber yok', id };
     }
     const briefing = buildBriefing(slot, slotDay, p, now, fresh);
-    await writeExtras(db, briefing);
+    aiSummary = await writeExtras(db, briefing, [], { notified: inWindow, summarize });
     picks = p;
     logger.info('Bülten yedek işle oluşturuldu', { id, source, items: p.length });
     if (!inWindow) return { status: 'oluşturuldu', id, source };
@@ -84,7 +85,11 @@ async function ensureBriefing(db, { messaging, now = Date.now(), fromArticles = 
   });
   if (!claimed || !messaging) return { status: 'oluşturuldu', id };
 
-  const msg = buildBulletinMessage(slot, picks.slice(0, BULLETIN_ITEMS), now, id);
+  const msg = withAiSummary(buildBulletinMessage(slot, picks.slice(0, BULLETIN_ITEMS), now, id), aiSummary);
+  // Bildirim gitti → Make'e de iletilsin (social.js briefings/latest.notified'a bakar)
+  await db.doc(`briefings/${id}`).set({ notified: true }, { merge: true });
+  const latest = await db.doc('briefings/latest').get();
+  if (latest.exists && latest.data().id === id) await db.doc('briefings/latest').set({ notified: true }, { merge: true });
   try {
     const res = await messaging.sendEach([toWire(msg)]);
     await require('./notification-log').logSentMessages(db, [msg], res.responses, { now });
