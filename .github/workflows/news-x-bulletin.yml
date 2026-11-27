@@ -1,0 +1,76 @@
+name: Haber Akışı - X Bülteni (Make)
+
+# Günde 4 kez haberleri Firestore'dan toplayıp Make webhook'una gönderir; Make yapay zekâ ile
+# telifsiz özet yazar ve X'te paylaşır. Kurulum: news-aggregator/docs/MAKE_X_BULTEN.md
+# Gerekli gizli değişkenler: FIREBASE_SERVICE_ACCOUNT, MAKE_WEBHOOK_URL (isteğe bağlı: APP_LINK)
+# Saatler UTC: 04:33=07:33, 09:33=12:33, 15:33=18:33, 20:33=23:33 (İstanbul).
+on:
+  schedule:
+    - cron: "33 4,9,15,20 * * *"
+  workflow_dispatch:
+    inputs:
+      slot:
+        description: "Akış"
+        type: choice
+        options: [auto, sabah, ogle, aksam, gece]
+        default: auto
+      dry_run:
+        description: "Sadece paketi göster, Make'e gönderme"
+        type: boolean
+        default: false
+
+concurrency:
+  group: news-x-bulletin
+  cancel-in-progress: false
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: news-aggregator/firebase/functions
+    steps:
+      - name: Anahtar kontrolü
+        id: key
+        working-directory: .
+        env:
+          SA: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          HOOK: ${{ secrets.MAKE_WEBHOOK_URL }}
+        run: |
+          if [ -z "$SA" ] || [ -z "$HOOK" ]; then
+            echo "::notice::FIREBASE_SERVICE_ACCOUNT veya MAKE_WEBHOOK_URL eksik; bülten atlandı."
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          else
+            KEY="$RUNNER_TEMP/sa.json"
+            printf '%s' "$SA" > "$KEY"
+            echo "GOOGLE_APPLICATION_CREDENTIALS=$KEY" >> "$GITHUB_ENV"
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v5
+        if: steps.key.outputs.ready == 'true'
+
+      - uses: actions/setup-node@v5
+        if: steps.key.outputs.ready == 'true'
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: news-aggregator/firebase/functions/package-lock.json
+
+      - name: Bağımlılıklar
+        if: steps.key.outputs.ready == 'true'
+        run: npm ci --omit=dev
+
+      - name: Bülteni gönder
+        if: steps.key.outputs.ready == 'true'
+        env:
+          MAKE_WEBHOOK_URL: ${{ secrets.MAKE_WEBHOOK_URL }}
+          APP_LINK: ${{ secrets.APP_LINK }}
+          SLOT: ${{ inputs.slot || 'auto' }}
+        run: node scripts/send-bulletin.js ${{ inputs.dry_run && '--dry-run' || '' }}
+
+      - name: Anahtarı sil
+        if: always()
+        working-directory: .
+        run: rm -f "$RUNNER_TEMP/sa.json"

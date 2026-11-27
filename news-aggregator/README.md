@@ -65,6 +65,11 @@ news-aggregator/
 - **Kategoriler (14):** Son Dakika, Gündem, Ekonomi, Teknoloji, Spor, Futbol, Dünya, Sağlık, Bilim, Kültür-Sanat,
   Magazin, Otomobil, Eğitim, Yaşam.
 
+- **X bülteni (Make + yapay zekâ):** Günde 4 kez (07:30 / 12:30 / 18:30 / 23:30) haberler gruplanıp Make webhook'una
+  gönderilir; Claude telifsiz özet yazar, X'te paylaşır, gelişme yoksa aynı haberi tekrarlamaz. Yoğun günde gece akışı
+  "Günün Bülteni" olur. Kurulum: [`docs/MAKE_X_BULTEN.md`](docs/MAKE_X_BULTEN.md)
+  (`src/bulletin.js`, `scripts/send-bulletin.js`, `.github/workflows/news-x-bulletin.yml`).
+
 ## Canlı skor kurulumu (API-Football)
 1. [dashboard.api-football.com](https://dashboard.api-football.com/register) → ücretsiz hesap → **Account → My Access**
    sayfasındaki API anahtarını kopyalayın.

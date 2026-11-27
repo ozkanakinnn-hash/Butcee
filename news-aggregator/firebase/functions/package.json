@@ -12,7 +12,8 @@
     "seed": "node scripts/seed.js",
     "fetch:once": "node scripts/run-once.js",
     "serve": "firebase emulators:start --only functions,firestore",
-    "deploy": "firebase deploy --only functions,firestore"
+    "deploy": "firebase deploy --only functions,firestore",
+    "bulletin": "node scripts/send-bulletin.js"
   },
   "dependencies": {
     "firebase-admin": "^14.5.0",
