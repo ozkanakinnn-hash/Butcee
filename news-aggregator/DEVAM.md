@@ -106,6 +106,38 @@ cd ~ && rm -rf haber && unzip -o "Haber-Akisi-kodNN.zip" -d haber && cd haber/ne
 
 ## 5. Durum: ne bekliyor
 
+### Devir notu — oturum session_01Q1LBDnWcxQXWdkeUuDQJoB (27 Kasım 2026)
+⚠️ Bu dalda **iki Claude oturumu paralel çalıştı**. Göndermeden önce her zaman `git pull` yap; çakışmada iki tarafı da koru.
+
+**Bu oturumun yaptıkları (dalda, testli):**
+- **Kitaplığım (1.0.1):** `lib/services/library_store.dart` (kaydedilenler ≤300, okuma geçmişi ≤200, gizlenen kaynaklar — yalnızca
+  cihazda, SharedPreferences `library_*`), `lib/pages/library_page.dart` (Kaydedilenler / Okuma geçmişi / Gizlenen kaynaklar),
+  `lib/widgets/article_actions.dart` (openArticle → geçmişe ekler; kart ⋮ menüsü: Kaydet, Paylaş, "… haberlerini gösterme"),
+  `lib/widgets/offline_banner.dart` (ağ hatası + önbellekten haber varsa "Çevrimdışısınız" şeridi). Okunan haber akışta soluk,
+  kayıtlı haberde küçük yer imi işareti; okurken üst barda Kaydet. Menü ve Ayarlar → **Kitaplığım** girişleri.
+  `ArticlesRecord.reference` artık nullable + `id` alanı + `ArticlesRecord.local(...)`.
+- **Canlı maç kartı** (`lib/widgets/live_matches.dart`): tam genişlik, alt alta; ortada üstte durum (CANLI 67'), altında skor;
+  goller (dakika + oyuncu, (P)/(KK)) golü atan takımın altında; **takım adı yerine yalnızca kısaltma** + takım rengi noktası
+  (tam ad ekran okuyucuya). Kullanıcı önizlemeyle onayladı.
+- Testler: `test/library_test.dart`, `features_test.dart` (gol yerleşimi). Önizleme ekranları: `tool/promo/capture.dart`
+  10-kaydedilenler … 16-menu (örnek kitaplık verisi `_libraryPrefs`, `_OfflineRepo`).
+- `prefetchArticleImages` hatası artık akışı "çevrimdışı" göstermez.
+- App Review: Haber ve Minik Gurme için **gerçek iPhone (TestFlight) kaydı** ile 2.1 cevabı verildi (Haber 21 Kasım ~15:00
+  Waiting for Review, yapı 7 — sonra diğer oturum yapı 11'i gönderdi). İş akışları: `news-ios-review-reply.yml`
+  (push'ta not+ek günceller; yeniden gönderim API'den 409 veriyor → kullanıcı UI'da Reply + Resubmit).
+
+**Yarım kalan iş: Android AAB**
+- Kullanıcı "Android AAB üret" dedi. Gerekenler: `android/app/google-services.json` (kullanıcı yükledi; bu kapta
+  `/root/.claude/uploads/…/881a7509-google-services.json`, gitignore'da) + **akinai-app1-yukleme-anahtari.zip** (HENÜZ GELMEDİ —
+  içinden `android/akinai-app1-upload.jks` + `android/key.properties`; şifre sohbete yazdırılmaz).
+- Sürüm: pubspec artık **1.0.2+123** (diğer oturum: "110 Play'de kullanılmış", 120 ve 123'e çıktı). Yeni AAB kodu Play'deki en
+  yüksek koddan BÜYÜK olmalı — kullanıcıya Play'de son yüklenen kodu sor; 123 yüklendiyse 124'e çıkar.
+- Derleme (denendi, test anahtarıyla başarılı, 67 MB): Flutter 3.50.1 (scratchpad) + `--android-skip-build-dependency-validation`
+  (proje AGP 9.1.0, Flutter 3.50 9.1.1 istiyor), `ANDROID_HOME=/root/android-sdk`, `android/local.properties` sdk.dir.
+  Maven Central ara sıra 429 veriyor → 60 sn arayla tekrar dene.
+- Gerçek reklam kimlikleri: `docs/play-store/admob.md` (ADMOB_APP_ID ortam değişkeni + 3 `--dart-define`).
+- İmza doğrulama: yükleme anahtarı SHA-256 `B6:1C:F6:EC:…:53:76` (§2) ile `keytool -printcert -jarfile` çıktısını karşılaştır.
+
 ### iOS bildirimleri ÇÖZÜLDÜ (21 Kasım 2026 akşam)
 - **1.0.0 yapı 11 incelemeye gönderildi** (yapı 6 geri çekildi: imzada push yetkisi yoktu → iPhone'a hiç bildirim gitmiyordu).
 - Kök nedenler (3): imzada `aps-environment` yok (iş akışı artık yeniden imzalıyor + doğruluyor), APNs anahtarı yalnızca Sandbox'tı
