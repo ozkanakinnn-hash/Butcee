@@ -4,10 +4,12 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'ads/ads_service.dart';
 import 'app_settings.dart';
+import 'backend/remote_config.dart';
 import 'utils/storage.dart';
 import 'l10n/app_strings.dart';
 import 'pages/root_shell.dart';
 import 'pages/article_webview_page.dart';
+import 'pages/briefing_page.dart';
 import 'pages/interests_page.dart';
 import 'pages/match_detail_page.dart';
 import 'services/notification_service.dart';
@@ -22,6 +24,11 @@ Future<void> main() async {
     // android/app/google-services.json varsa seçenekler oradan okunur.
     await Firebase.initializeApp();
     AppStorage.configure(); // Firestore ve görsel önbellek sınırları
+    // Uzaktan ayarlar (app_config/main): paneller, duyuru, reklam, güncelleme uyarısı.
+    RemoteConfigService.instance.start();
+    RemoteConfigService.instance.addListener(
+      () => AdsService.instance.remoteEnabled = RemoteConfigService.instance.value.adsEnabled,
+    );
   } catch (e) {
     debugPrint('Firebase başlatılamadı: $e');
     firebaseReady = false;
@@ -49,6 +56,8 @@ void _openTarget(NotificationTarget target) {
   switch (target) {
     case ArticleTarget(:final url, :final title, :final source):
       nav.push(ArticleWebViewPage.route(url: url, sourceName: source, articleTitle: title));
+    case BriefingTarget(:final briefingId):
+      nav.push(BriefingPage.route(briefingId: briefingId));
     case MatchTarget(:final fixtureId):
       nav.push(MaterialPageRoute<void>(builder: (_) => MatchDetailPage(fixtureId: fixtureId)));
   }

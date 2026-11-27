@@ -241,3 +241,33 @@ description: Flutter/FlutterFlow + Firebase (Firestore, Cloud Functions) uygulam
 - **APK kurulmuyor ("Uygulama yüklenmedi")**: CI her çalışmada rastgele debug anahtarı üretir → imza değişir → güncelleme reddedilir. Çözüm: depoya gizli olmayan sabit `android/app/test-signing.keystore` (.gitignore'da `!` istisnası) + `signingConfigs.test` (debug & release); Play için `UPLOAD_KEYSTORE_*` ortam değişkenleri. `--build-number=${{ github.run_number }}` ile sürüm hep artar. Kullanıcıya: eski sürümü BİR KEZ kaldır; split-per-abi release APK'sının versionCode'u (+2000) debug'dan büyüktür → hep aynı tür APK'yı kur.
 - **Görseller geç geliyor**: CachedNetworkImage varsayılan fadeIn 500 ms + fadeOut 1000 ms → 120 ms / 0 yap; ilk sayfa önce `GetOptions(source: Source.cache)` ile anında göster, sonra sunucu; yeni sayfanın ilk ~10 görselini `cacheManager.getSingleFile` ile önceden indir; logolara `memCacheWidth`.
 - **Telif**: başlık + ≤200 karakter alıntı, okuma kaynağın sitesinde (WebView), kartta/bildirimde "Kaynak: X", kaynak bazında `allow_images:false`, ajans (AA) görselleri kapalı, `takedowns` kaydı tutan Uyar-Kaldır iş akışı (article/source/images), 48 saat taahhüdü, docs/TELIF_PLANI.md kontrol listesi.
+- **Konu sekmesi boş (ör. Ekonomi)**: yayıncılar aynı haberi genel (Gündem/Son Dakika) ve konu akışında yayınlar; ilk gören kaynak kategoriyi sahiplenir → konu sekmesi boş kalır. Çözüm: konu kaynağı var olan haberi görünce genel kategoriden konu kategorisine taşı (`reassignToTopicCategory`), Son Dakika sekmesi `breaking_at`'e bakar; "son dakika işaretlileri gizle" kuralını YALNIZCA Gündem'e uygula; bir kerelik konu kaynaklarının `last_seen` işaretini sıfırla. Görseli kapalı haberlerde boş kutu yerine kaynak logosu.
+
+## 16. Uzaktan ayar, hata teşhisi, AI özet, Make (news-aggregator 5. tur)
+- **Yayından önce uzaktan ayar kur** (kullanıcı: "sürekli güncelleyemem"): Firestore `app_config/main` belgesi +
+  `RemoteConfigService` (ValueNotifier, `snapshots()` dinler, belge yoksa varsayılanlar). Panelleri aç/kapat, duyuru şeridi,
+  `ads_enabled`, `min_build` (+ `package_info_plus`) güncelleme uyarısı. Sunucu tarafı ayarlar `app_meta/*` (ai, social,
+  market) — deploy gerekmez. Kurallarda `app_config` ve uygulamanın okuduğu yeni koleksiyonlar `allow read` olmalı.
+- **"X çalışmıyor" teşhisi:** önce GitHub Actions kayıtlarını oku (`actions_list` → `get_job_logs`; uzun kayıt dosyaya
+  düşerse python ile benzersiz satırları süz). "success" görünen iş içerde hata basıyor olabilir.
+  Canlı skor örneği: api-football "Missing application key" → anahtar reddedildi; betik 4 saat boyunca 146 istek harcadı.
+  Ders: anahtar hatasında/5 ardışık hatada dur, `football_meta/state.last_error` yaz, `process.exitCode=1` (iş kırmızı olsun).
+  Gizli anahtarı `trim()` + tırnak temizle. GitHub cron "15 dk" ≈ saatte bir çalışır; zamanlanmış iş VARSAYILAN daldan koşar.
+- **Uygulamada bayat veri gösterme:** maç kaydına `updated_at`; canlı ama N dk güncellenmeyen ya da saati geçmiş "başlamadı"
+  maçı gizle.
+- **Gemini:** model adını sabit yazma (gemini-1.5-flash kapatıldı → sessizce boş özet). `app_meta/ai.model` + yedek listesi
+  (`gemini-flash-latest` …); 404'te sıradakini dene, 400/401/403 anahtar hatasında dur; `last_error`/`active_model` yaz.
+  Düşünen modellerde `maxOutputTokens` küçükse boş yanıt gelir (≥1024 ver), `thought` parçalarını at.
+- **Make webhook:** tek adres, kayıtta `tur` alanı (son_dakika / gundem / bulten) → Make'te Router. Alan adları tüm türlerde aynı
+  (boşsa ""/[]), ki "Redetermine data structure" tek seferde öğrensin. `test_ping` her türden deneme yollar. Mükerrer engeli
+  kimlikle + başlık kökleriyle (`posted_t`, Firestore iç içe dizi kabul etmez → boşlukla birleştirilmiş dize).
+  Durum `last_status`/`last_run_at` alanına yazılsın (kullanıcı Console'dan görür).
+- **Emülatör testleri:** her tam çalıştırmada TAZE Firestore emülatörü başlat (önceki veriler testleri bozar):
+  `java -jar ~/.cache/firebase/emulators/cloud-firestore-emulator-*.jar --host=127.0.0.1 --port=8080` +
+  `FIRESTORE_EMULATOR_HOST=127.0.0.1:8080 npm test`.
+- **Flutter 3.47+:** `material.dart` deprecated_member_use bilgileri `flutter analyze`'ı (dolayısıyla CI/APK) kırar →
+  `analysis_options.yaml` `analyzer.errors.deprecated_member_use: ignore` (material_ui geçişi ayrı iş).
+  Flutter aracı `analysis_options.yaml`'a kendiliğinden `ios/**` ekleyebilir; `git stash` ile analiz karşılaştırırken dikkat.
+- **Tasarım değişikliği:** kullanıcı "önce görsel sun" der → HTML taslak (koyu + açık varyant, notlar) → Playwright ile PNG
+  (deviceScaleFactor 2) → SendUserFile. Onaysız uygulama yok. Aynı ekranın başka dalda farklı sürümü olabilir; kullanıcının
+  telefondaki sürümün hangi daldan derlendiğini kontrol et (`git grep <metin> $(git branch -r)`).

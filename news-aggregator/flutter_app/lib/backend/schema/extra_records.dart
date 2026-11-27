@@ -68,3 +68,58 @@ class MarketSnapshot {
   final String source;
   final DateTime? updatedAt;
 }
+
+/// "5 dakikada gündem" maddesi (`briefings/{id}.items[]`).
+class BriefingItem {
+  BriefingItem.fromMap(Map<String, dynamic> m)
+    : id = m['id'] as String? ?? '',
+      title = m['title'] as String? ?? '',
+      url = m['url'] as String? ?? '',
+      source = m['source'] as String? ?? '',
+      image = m['image'] as String? ?? '',
+      categoryId = m['category_id'] as String? ?? '',
+      sourceCount = (m['source_count'] as num?)?.toInt() ?? 0;
+
+  final String id;
+  final String title;
+  final String url;
+  final String source;
+  final String image;
+  final String categoryId;
+  final int sourceCount;
+}
+
+/// `briefings/{gün}-{am|pm}` ve `briefings/latest` — sabah/akşam bülteni (sunucu yazar).
+class BriefingRecord {
+  BriefingRecord.fromMap(Map<String, dynamic> d)
+    : id = d['id'] as String? ?? '',
+      title = d['title'] as String? ?? '',
+      slot = d['slot'] as String? ?? '',
+      aiSummary = (d['ai_summary'] as String? ?? '').trim(),
+      createdAt =
+          (d['created_at'] as Timestamp?)?.toDate() ??
+          DateTime.fromMillisecondsSinceEpoch((d['created_ms'] as num?)?.toInt() ?? 0),
+      items = _items(d['items']),
+      byCategory = {
+        for (final e in ((d['by_category'] as Map?) ?? const {}).entries) '${e.key}': _items(e.value),
+      };
+
+  static List<BriefingItem> _items(Object? v) => ((v as List?) ?? const [])
+      .whereType<Map>()
+      .map((e) => BriefingItem.fromMap(Map<String, dynamic>.from(e)))
+      .where((i) => i.title.isNotEmpty && i.url.isNotEmpty)
+      .toList();
+
+  final String id;
+  final String title;
+  final String slot;
+  final String aiSummary;
+  final DateTime createdAt;
+  final List<BriefingItem> items;
+  final Map<String, List<BriefingItem>> byCategory;
+
+  bool get isMorning => slot == 'am';
+
+  /// Ana sayfada gösterilecek kadar yeni mi (bir sonraki bülten gelene kadar).
+  bool isFresh(DateTime now) => items.isNotEmpty && now.difference(createdAt) < const Duration(hours: 14);
+}

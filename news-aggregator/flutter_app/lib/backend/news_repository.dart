@@ -54,9 +54,10 @@ class NewsRepository {
       if (category != null) base = base.where('category_id', isEqualTo: category.reference);
       base = base.orderBy('published_at', descending: true);
     }
-    // Kategori sekmelerinde (Gündem vb.) Son Dakika olarak işaretlenmiş haberler gösterilmez —
-    // onlar Son Dakika sekmesinde. Elenenler yüzünden sayfa kısa kalmasın diye en fazla 3 tur doldurulur.
-    final hideBreaking = category != null && !breakingTab;
+    // Son Dakika olarak işaretlenmiş haberler Gündem'de gösterilmez; elenenler yüzünden sayfa kısa kalmasın diye
+    // en fazla 3 tur doldurulur. Yalnızca Gündem'de gizlenir (Gündem ile Son Dakika aynı haberleri tekrar etmesin). Konu sekmelerinde
+    // (Ekonomi, Spor…) son dakika olan haber de görünür; yoksa bu sekmeler boş kalıyordu.
+    final hideBreaking = category != null && !breakingTab && category.id == 'gundem';
     final items = <ArticlesRecord>[];
     var cursor = startAfter;
     var hasMore = true;
@@ -147,4 +148,16 @@ class NewsRepository {
   /// Piyasa verileri (bot 30 dakikada bir günceller).
   Stream<MarketSnapshot?> watchMarket() =>
       _db.doc('market/latest').snapshots().map((d) => d.exists ? MarketSnapshot.fromMap(d.data()!) : null);
+
+  /// Son bülten ("5 dakikada gündem").
+  Stream<BriefingRecord?> watchLatestBriefing() => _db
+      .doc('briefings/latest')
+      .snapshots()
+      .map((d) => d.exists ? BriefingRecord.fromMap(d.data()!) : null);
+
+  /// Belirli bülten (bildirimden açılınca); yoksa son bülten.
+  Stream<BriefingRecord?> watchBriefing(String? id) {
+    if (id == null || id.isEmpty) return watchLatestBriefing();
+    return _db.doc('briefings/$id').snapshots().map((d) => d.exists ? BriefingRecord.fromMap(d.data()!) : null);
+  }
 }

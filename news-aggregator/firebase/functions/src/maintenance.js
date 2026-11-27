@@ -7,7 +7,7 @@
  *  - 7 günden eski bildirim kayıtlarını siler.
  */
 
-const { FieldPath } = require('firebase-admin/firestore');
+const { FieldPath, FieldValue } = require('firebase-admin/firestore');
 const { searchKeywords } = require('./text');
 const { cleanupNotificationLog } = require('./notification-log');
 
@@ -78,11 +78,35 @@ async function moveBreakingSourceArticles(db) {
   return { done: true, moved };
 }
 
+/**
+ * Bir kerelik: konu kaynaklarının (Ekonomi, Spor…) "son görülen" işaretini sıfırlar. Böylece bir sonraki çekimde
+ * akıştaki tüm haberler yeniden karşılaştırılır ve daha önce Gündem/Son Dakika'ya yazılmış olanlar konu
+ * kategorisine taşınır (ingest.reassignToTopicCategory). Maliyet: bir kez ~1000 okuma.
+ */
+async function rescanTopicSources(db) {
+  const metaRef = db.doc('app_meta/topic_rescan');
+  if (((await metaRef.get()).data() || {}).version >= 1) return { done: true, reset: 0 };
+  const sources = await db.collection('sources').where('is_active', '==', true).get();
+  const batch = db.batch();
+  let reset = 0;
+  for (const d of sources.docs) {
+    const cat = d.get('category_id');
+    const catId = cat ? (typeof cat === 'string' ? cat.split('/').pop() : cat.id) : '';
+    if (d.get('is_breaking') || catId === 'gundem' || catId === 'son-dakika') continue;
+    batch.update(d.ref, { last_seen_published_at: FieldValue.delete(), etag: null, last_modified: null });
+    reset += 1;
+  }
+  batch.set(metaRef, { version: 1 }, { merge: true });
+  await batch.commit();
+  return { done: true, reset };
+}
+
 async function runMaintenance(db) {
+  const topicRescan = await rescanTopicSources(db);
   const breaking = await moveBreakingSourceArticles(db);
   const search = await backfillSearchKeywords(db);
   const deletedNotifications = await cleanupNotificationLog(db);
-  return { breaking, search, deletedNotifications };
+  return { topicRescan, breaking, search, deletedNotifications };
 }
 
-module.exports = { backfillSearchKeywords, moveBreakingSourceArticles, runMaintenance, SEARCH_INDEX_VERSION };
+module.exports = { backfillSearchKeywords, moveBreakingSourceArticles, rescanTopicSources, runMaintenance, SEARCH_INDEX_VERSION };

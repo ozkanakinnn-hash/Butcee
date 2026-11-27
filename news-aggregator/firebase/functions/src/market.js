@@ -10,6 +10,10 @@
  *  - ONS: yalnızca değişim → fiyat gram altın ve dolardan hesaplanır (gram × 31,1035 ÷ USD/TL)
  *  - BRENT: çoğu zaman fiyat 0 gelir → fiyat yoksa gösterilmez
  * Yanıt zaman zaman tümüyle geçerli JSON olmadığından kalemler tek tek ayıklanır.
+ *
+ * Gösterilecek kalemler `app_meta/market` belgesinden seçilir (deploy/uygulama güncellemesi gerekmez):
+ *   { items: ["usdtry", "eurtry", "gram_gold", "gold_oz"] }   // sıra da bu listeye göre
+ * Belge yoksa DEFAULT_ITEMS kullanılır. Kullanılabilir kimlikler: ALL_ITEMS.
  */
 
 const { Timestamp } = require('firebase-admin/firestore');
@@ -17,6 +21,14 @@ const { Timestamp } = require('firebase-admin/firestore');
 const SOURCE_URL = 'https://finans.truncgil.com/v4/today.json';
 const UA = 'HaberAkisi/1.0 (+https://github.com/ozkanakinnn-hash/Butcee)';
 const TROY_OUNCE_GRAMS = 31.1034768;
+const ALL_ITEMS = ['usdtry', 'eurtry', 'gram_gold', 'gold_oz', 'bist100', 'brent'];
+const DEFAULT_ITEMS = ['usdtry', 'eurtry', 'gram_gold', 'gold_oz'];
+
+/** Ayardaki kalem listesi; geçersizse varsayılan. */
+function pickItemIds(config) {
+  const ids = Array.isArray(config && config.items) ? config.items.filter((id) => ALL_ITEMS.includes(id)) : [];
+  return ids.length ? ids : DEFAULT_ITEMS;
+}
 
 /** Yanıttaki `"ANAHTAR":{...}` kalemlerini tek tek okur; bozuk kalemleri atlar (saf fonksiyon). */
 function parseTruncgil(text) {
@@ -35,8 +47,8 @@ function parseTruncgil(text) {
 const num = (v) => (typeof v === 'number' && Number.isFinite(v) && v > 0 ? v : null);
 const chg = (v) => (typeof v === 'number' && Number.isFinite(v) ? v : null);
 
-/** Uygulamanın gösterdiği sıralı liste (saf fonksiyon). */
-function buildMarketItems(t) {
+/** Uygulamanın gösterdiği sıralı liste (saf fonksiyon). `ids` hem seçimi hem sırayı belirler. */
+function buildMarketItems(t, ids = DEFAULT_ITEMS) {
   const items = [];
   const add = (id, label, unit, value, change, decimals) => {
     if (value === null) return;
@@ -51,15 +63,21 @@ function buildMarketItems(t) {
   add('gold_oz', 'Ons Altın', '$', ons, chg(t.ONS && t.ONS.Change), 2);
   add('bist100', 'BIST 100', '', num(t.XU100 && t.XU100.Selling), chg(t.XU100 && t.XU100.Change), 2);
   add('brent', 'Brent Petrol', '$', num(t.BRENT && t.BRENT.Selling), chg(t.BRENT && t.BRENT.Change), 2);
-  return items;
+  return ids.map((id) => items.find((i) => i.id === id)).filter(Boolean);
 }
 
 async function updateMarket(db, { fetchImpl = fetch } = {}) {
+  let ids = DEFAULT_ITEMS;
+  try {
+    ids = pickItemIds((await db.doc('app_meta/market').get()).data());
+  } catch {
+    // ayar okunamazsa varsayılan liste
+  }
   const res = await fetchImpl(SOURCE_URL, { headers: { 'User-Agent': UA }, signal: AbortSignal.timeout(15_000) });
   if (!res.ok) return { count: 0, errors: [`Truncgil: HTTP ${res.status}`] };
   const { items: raw, updateDate } = parseTruncgil(await res.text());
-  const items = buildMarketItems(raw);
-  const missing = ['usdtry', 'eurtry', 'gram_gold', 'gold_oz', 'bist100', 'brent'].filter((id) => !items.some((i) => i.id === id));
+  const items = buildMarketItems(raw, ids);
+  const missing = ids.filter((id) => !items.some((i) => i.id === id));
   if (items.length) {
     await db.doc('market/latest').set({
       items,
@@ -71,4 +89,4 @@ async function updateMarket(db, { fetchImpl = fetch } = {}) {
   return { count: items.length, missing };
 }
 
-module.exports = { parseTruncgil, buildMarketItems, updateMarket, TROY_OUNCE_GRAMS };
+module.exports = { parseTruncgil, buildMarketItems, updateMarket, pickItemIds, TROY_OUNCE_GRAMS, ALL_ITEMS, DEFAULT_ITEMS };

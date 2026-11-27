@@ -14,6 +14,9 @@ const { getFirestore } = require('firebase-admin/firestore');
 const { onSchedule } = require('firebase-functions/v2/scheduler');
 const { setGlobalOptions } = require('firebase-functions/v2');
 const { ingestAllSources, deleteOldArticles } = require('./src/ingest');
+const { runSocial } = require('./src/social');
+const { updateMarket } = require('./src/market');
+const { cleanupNotificationLog } = require('./src/notification-log');
 
 initializeApp();
 
@@ -27,9 +30,17 @@ exports.fetchRssFeeds = onSchedule(
     timeoutSeconds: 300,
     memory: '512MiB',
     retryCount: 0, // Bir sonraki çalışma zaten 15 dk sonra; başarısız çalışmayı tekrarlamaya gerek yok.
+    secrets: ['GEMINI_API_KEY'],
   },
   async () => {
-    await ingestAllSources(getFirestore());
+    const db = getFirestore();
+    const { logger } = require('firebase-functions');
+    await ingestAllSources(db);
+    try { await updateMarket(db); } catch (err) { logger.warn('Piyasa güncellenemedi', { error: err.message }); }
+    try {
+      const r = await runSocial(db);
+      if (r.status !== 'kapalı' && r.status !== 'bekle') logger.info('Sosyal paylaşım', r);
+    } catch (err) { logger.warn('Sosyal paylaşım hatası', { error: err.message }); }
   }
 );
 
@@ -40,6 +51,8 @@ exports.cleanupOldArticles = onSchedule(
     timeoutSeconds: 540,
   },
   async () => {
-    await deleteOldArticles(getFirestore(), Number(process.env.ARTICLE_RETENTION_DAYS || 30));
+    const db = getFirestore();
+    await deleteOldArticles(db, Number(process.env.ARTICLE_RETENTION_DAYS || 30));
+    await cleanupNotificationLog(db);
   }
 );

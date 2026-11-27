@@ -70,3 +70,34 @@ test('plan güncel sezonu kapsamıyorsa 24 saat beklenir, istek harcanmaz', { sk
   await watch(db, api, { sendEach: async () => ({}) }, { sleep: async () => {} });
   assert.equal(calls, 1, 'beklemedeyken API çağrılmaz');
 });
+
+test('anahtar reddedilirse izleme hemen durur, hata kaydedilir; başarıda hata temizlenir', { skip }, async () => {
+  const { getFirestore, Timestamp } = require('firebase-admin/firestore');
+  const fb = require('../src/football');
+  const { watch } = require('../scripts/football-watch');
+  const db = getFirestore();
+  await db.doc('football_meta/state').set({ season: 2026, teams_synced_at: Timestamp.now(), fixtures_date: fb.istanbulDate() });
+  await db.doc('matches/88').set({
+    fixture_id: 88, kickoff: Timestamp.fromMillis(Date.now() - 20 * 60_000), is_live: true, is_finished: false,
+    home: { name: 'A' }, away: { name: 'B' }, goals: { home: 0, away: 0 },
+  });
+  let calls = 0;
+  const api = {
+    remaining: null, used: 0,
+    get: async () => { calls++; throw new Error('/fixtures: Error/Missing application key. Go to https://www.api-football.com/documentation-v3'); },
+  };
+  await watch(db, api, { sendEach: async () => ({}) }, { sleep: async () => {} });
+  assert.equal(calls, 1, 'anahtar hatasında tekrar denenmez');
+  const meta = (await db.doc('football_meta/state').get()).data();
+  assert.match(meta.last_error, /API anahtarı reddedildi/);
+  assert.equal(process.exitCode, 1, 'GitHub işi kırmızı biter');
+  process.exitCode = 0;
+
+  // Üst üste geçici hatalar: 5. hatada durur
+  calls = 0;
+  api.get = async () => { calls++; throw new Error('HTTP 502 (/fixtures)'); };
+  await watch(db, api, { sendEach: async () => ({}) }, { sleep: async () => {} });
+  assert.equal(calls, 5);
+  process.exitCode = 0;
+  await db.doc('matches/88').delete();
+});
