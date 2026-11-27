@@ -12,7 +12,7 @@ Son güncelleme: 2026-11-13 · Dal: `ccr-2e754343-d9gh2t` (önceki: `ccr-bceb93e
 - Commit mesajı sonuna attribution satırları (sistem hatırlatması neyse) eklenir; commit'lerde model kimliği yazılmaz.
 
 ## Uygulama
-Android (Kotlin/Compose) + iPhone (Kotlin Multiplatform / Compose Multiplatform). Paket: `akinai.minikgurme`, sürüm 2.2.2 (16).
+Android (Kotlin/Compose) + iPhone (Kotlin Multiplatform / Compose Multiplatform). Paket: `akinai.minikgurme`, sürüm 2.2.3 (20).
 ```
 minik_gurme/
   app/      Android: MainActivity, GooglePlayBilling, AndroidReminders, AndroidPlatformServices, Firebase topluluk, yedek/PDF

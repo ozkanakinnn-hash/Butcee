@@ -211,4 +211,4 @@ gradle/actions/setup-gradle@v5 → `./gradlew assembleDebug` → upload-artifact
 - Play görselleri: `:app:testDebugUnitTest` (StoreScreenshotsTest → app/build/store-shots) → `python3 tool/store_graphics.py` + `tool/promo_graphics.py`.
 - iOS için yapılan inceleme düzeltmeleri ortak modülde olduğundan Android'e ayrıca taşımaya gerek yok; yalnız `iosMain`/`iosApp` değişikliklerine bak.
 - Play "Faturalandırma Kitaplığı en az 8.0.0" hatası: `billing = "8.3.0"`; `queryProductDetailsAsync` geri çağrısı artık `(BillingResult, QueryProductDetailsResult)` →
-  `result.productDetailsList`; isteğe bağlı `.enableAutoServiceReconnection()`. Reddedilen yüklemeden sonra versionCode +1. "Yerel kod sembolleri" uyarısı engelleyici değil.
+  `result.productDetailsList`; isteğe bağlı `.enableAutoServiceReconnection()`. Reddedilen/yarım kalan yüklemeden sonra kod "daha önce kullanıldı" diyebilir → birkaç numara atla (Minik Gurme: 15→16 reddedildi, 20 kullanıldı). "Yerel kod sembolleri" uyarısı engelleyici değil.

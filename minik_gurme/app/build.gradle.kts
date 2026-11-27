@@ -22,8 +22,8 @@ android {
     applicationId = "akinai.minikgurme"
     minSdk = 24
     targetSdk = 36
-    versionCode = 16
-    versionName = "2.2.2"
+    versionCode = 20
+    versionName = "2.2.3"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
