@@ -37,6 +37,7 @@ async function main() {
     }
     line(`  x_webhook: ${mask(social.x_webhook)}`);
     line(`  channel (Telegram): ${social.channel ? 'var' : 'yok'} | test_at: ${when(social.test_at)}`);
+    line(`  Make son tur: ${social.make_status || '(henüz yok)'} | ${when(social.make_run_at)}`);
     const problems = [];
     if (social.enabled !== true) problems.push('enabled true değil');
     if (social.x_enabled !== true) problems.push('x_enabled true değil');
@@ -48,10 +49,15 @@ async function main() {
   line(`  Son paylaşım kayıtları (${logs.size}):`);
   for (const d of logs.docs) {
     const x = d.data();
-    line(`   - ${when(x.at)} ${x.dry_run ? '[deneme]' : ''} ${String(x.title || '').slice(0, 60)} ${x.errors ? `HATA: ${x.errors.join(', ')}` : ''}`);
+    line(`   - ${when(x.at)} ${x.make ? `[Make:${x.tur}]` : '[Telegram]'} ${x.dry_run ? '[deneme]' : ''} ${String(x.title || '').slice(0, 60)} ${x.errors ? `HATA: ${x.errors.join(', ')}` : ''}`);
   }
   const st = (await db.doc('notify_state/social').get()).data() || {};
   line(`  notify_state/social: gün=${st.day || '-'} sayı=${st.count || 0} son=${st.last_at ? new Date(st.last_at).toISOString() : '-'}`);
+
+  const mk = (await db.doc('notify_state/make').get()).data() || {};
+  line(`  notify_state/make: gün=${mk.day || '-'} sayı=${mk.count || 0} son bülten=${mk.bulletin_last || '-'}`);
+  const ai = (await db.doc('app_meta/ai').get()).data() || {};
+  line(`  AI (app_meta/ai): model=${ai.model || '(varsayılan)'} aktif=${ai.active_model || '-'} son hata=${ai.last_error || '-'} | son başarı ${when(ai.last_ok_at)}`);
 
   line('\n══ Bülten ══');
   const latest = (await db.doc('briefings/latest').get()).data();
