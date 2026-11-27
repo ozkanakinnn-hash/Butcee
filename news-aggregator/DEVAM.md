@@ -118,40 +118,52 @@ bunu hatırlat ve onay iste** (onaysız başlama). Önerilen tasarım (kullanıc
   "Öne çıkanlar"dan sonra **"İZMİR'DEN"** bölümü (o ilde haber yoksa görünmez).
 - Açık soru: konum izni yoksa elle il seçimi olsun mu? (öneri: evet)
 
-### Devir notu — oturum session_01Q1LBDkPx3yja1bEy3kGg36 (27 Kasım 2026, öğleden sonra)
-Bu oturum önce bağımsız `ccr-e3d7c6b8-cccl41` dalında çalıştı, sonra kullanıcı onayıyla **bu dala** taşıdı. ⚠️ 23 Kasım'da
-Firebase'e o bağımsız daldan deploy yapılmış olabilir: Make'e son gönderim 23 Kasım 12:03 (o daldaki `fetchRssFeeds`
-`runSocial` çağırmıyordu). **Bu dal yeniden deploy edilmeli** (kullanıcıya Cloud Shell komutu verildi; ya da hizmet hesabına
-"Service Account User" + "Firebase Admin" rolü verilirse GitHub'dan "Haber Akışı - Firebase'e Kur" iş akışıyla).
+### ✅ ŞU ANKİ DURUM — 27 Kasım 2026 gece (oturum session_01Q1LBDkPx3yja1bEy3kGg36)
+**Çalışma dalı bu dal (`claude/haber-akisi-2026-11`).** Bağımsız `ccr-e3d7c6b8-cccl41` dalı artık kullanılmıyor.
+Kullanıcı bu dala push için izin verdi. GitHub'ın VARSAYILAN dalı `claude/taslak-uygulamasi-vn0y2s` (eski kod).
 
-**Yapılanlar (testli: sunucu 153, Flutter 48):**
-- **Gündem ekranı gazete düzeni** (kullanıcı onaylı taslak 3): logo + künye, manşet (görsel + spot = `summary`), "Günün özeti"
-  (AI), kısa kısa (2 sütun), bölümler; haber satırında görsel SAĞDA; Roboto + uygulama renkleri; Türkçe büyük harf (İ/I).
-- **Bülten mutlaka yenilenir:** `src/briefing-job.js` + `briefingTick`/`briefingTickLate` (08:30–10:59, 19:00–21:59, 10 dk):
-  dilimin belgesi yoksa hikâyelerden/son 14 saatin haberlerinden üretir, bildirim gitmediyse işlemle sahiplenip bir kez yollar.
-  Uygulama dünkü bülteni "bugünkü" gibi göstermez (`lib/utils/briefing_slot.dart`); widget sunucudan okur.
-- **AI özeti (Gemini):** `src/gemini.js` — model `app_meta/ai.model` (vars. `gemini-flash-latest`) + yedekler; durum
-  `active_model`/`last_error`. Secret `GEMINI_API_KEY` (fetchRssFeeds + briefingTick). Bülten bildirimi gövdesinde de.
-- **Make ayrı modül** `src/make.js`: `tur` = `son_dakika` / `gundem` (≥`gundem_min_sources`=5) / `bulten`; durum
-  `notify_state/make`, izleme `app_meta/social.make_status`. Telegram akışı değişmedi. `test_ping` üç türden deneme yollar.
-- **Uzaktan ayar** `app_config/main` (`lib/backend/remote_config.dart`): show_live_scores/show_market/show_briefing,
-  ads_enabled, announcement(+_url, _level), min_build(+update_url), live_stale_minutes. Bayat canlı skor gizlenir.
-- **Kurulum iş akışı:** bozuk satır sonlu `FIREBASE_SERVICE_ACCOUNT` onarılır; `only_report` + "Durum raporu" adımı
-  (`scripts/durum-raporu.js`, yalnızca okur: Make ayarı, son paylaşımlar, bülten, canlı skor). Deploy için hizmet hesabında
-  `iam.serviceAccounts.ActAs` yetkisi YOK (kullanıcı vermedi).
-- API-Football anahtarı (GitHub secret) geçerli ama Free plan 2026 sezonunu kapsamıyor → canlı skor Highlightly ile.
-- **iOS 1.0.4 (yapı 12) İNCELEMEYE GÖNDERİLDİ** (27 Kas 22:27 TR, WAITING_FOR_REVIEW). 1.0.0 kaydı DEVELOPER_REJECTED idi →
-  numarası 1.0.4 yapıldı (ilk sürüm; "Yenilikler" alanı yok). Yeni iş akışı `news-ios-submit.yml` + `ios/scripts/asc_submit.py`:
-  `ios/SUBMIT_VERSION` dosyasına "SÜRÜM DERLEME" yazıp gönder → sürüm hazırla, derleme bağla, incelemeye gönder.
-  iOS AdMob kimlikleri GitHub'da TANIMLI DEĞİL → iOS'ta reklam yok.
-- Android: 125 Play'de reddedildi → **1.0.4+200** gönderildi (Dahili test). Sonraki kodlar 201, 202…
-- **Sonraki sürüme birikenler:** `docs/play-store/sonraki-surum.md` (şimdilik: uçtan uca ekran düzeltmesi). Yeni sürüm
-  derlemeden önce bu dosyayı oku; sürüm notunu oradan al, yayınlayınca "Yayınlananlar"a taşı.
-- Play: kapalı testte (alpha) 0 kullanıcı → 12 test kullanıcısı × 14 gün şartı başlamadı; üretim/açık test kilitli.
-- **Play AAB 1.0.3+124** üretildi (yükleme anahtarı SHA-256 doğrulandı, gerçek AdMob kimlikleri, 67,5 MB) ve kullanıcıya
-  gönderildi. Play'de daha yüksek kod varsa yeniden derle (Flutter 3.47 + `--android-skip-build-dependency-validation`).
-- ⚠️ 27 Kasım akşamı durum: Firebase'de `briefingTick` var ama **AI (gemini) ve make.js yüklü değil** (kullanıcı eski zip'i
-  yükledi; app_meta/ai ve notify_state/make boş). Kullanıcı zip'i YENİDEN indirip deploy etmeli; sonra durum raporuyla doğrula.
+**Yayın durumu**
+- **Android 1.0.4 (kod 200)** Play'de *Dahili test*'te. Kapalı test (alpha) hâlâ 1.0.3/123 ve **0 test kullanıcısı** →
+  12 kullanıcı × 14 gün şartı başlamadı, üretim/açık test kilitli. Kullanıcı Play'den değil APK'dan kurmuştu → Play
+  "Güncelle" göstermez; kaldırıp dahili test katılım bağlantısıyla kurması söylendi. Sonraki kod **201**.
+- **iOS 1.0.4 (yapı 12)** 27 Kas 22:27 TR **incelemeye gönderildi** (WAITING_FOR_REVIEW; 1.0.0 kaydı DEVELOPER_REJECTED idi,
+  numarası 1.0.4 yapıldı). iOS AdMob kimlikleri GitHub'da yok → iOS'ta reklam yok.
+- **Sonraki sürüme birikenler:** `docs/play-store/sonraki-surum.md` (şimdilik uçtan uca ekran düzeltmesi, commit effdfca).
+
+**Sunucu (Firebase, kullanıcı Cloud Shell'den deploy etti — 27 Kas ~22:20 TR, doğrulandı)**
+- Çalışan: fetchRssFeeds (20 dk), briefingTick/briefingTickLate (bülten güvencesi), footballTick (Highlightly),
+  earthquakeTick, cleanupOldArticles. AI özeti (Gemini `gemini-flash-latest`) çalışıyor; Make (`make.js`) çalışıyor
+  (`notify_state/make`). Telegram akışı ayrı.
+- Projede depoda OLMAYAN iki fonksiyon var: `haberIsleVePaylas` (25 Kas) ve `notifyBreakingNews` (19 Kas), ikisi de
+  `articles/{id}` oluşturulunca tetikleniyor. Deploy'da silme sorusuna **N** denildi. Çift son dakika olursa bunlar şüpheli.
+- **GitHub zamanlanmış iş akışları kapatıldı** (kullanıcı UI'dan): `news-fetch-free` (eski kodla her kategoriye ayrı
+  bildirim gönderiyordu — 21:26'daki 7 bildirim) ve `news-football` (eski api-football; Free plan 2026'yı kapsamıyor).
+- Deploy komutu (kullanıcı zip'i GitHub'dan indirip Cloud Shell'e yükler):
+  `cd ~ && Z=$(ls -t ~/Butcee*.zip | head -1) && rm -rf ~/haber && unzip -oq "$Z" -d ~/haber && cd ~/haber/*/news-aggregator/firebase && (cd functions && npm ci --omit=dev) && npx -y firebase-tools@15 deploy --only functions,firestore --project haber-68a3c`
+  GitHub'dan deploy YOK: hizmet hesabında `iam.serviceAccounts.ActAs` yetkisi yok.
+
+**Teşhis aracı:** GitHub Actions → "Haber Akışı - Firebase'e Kur" → `only_report: true` (workflow_dispatch, ref bu dal,
+project_id haber-68a3c) → `scripts/durum-raporu.js`: Make/AI durumu, son paylaşımlar, bülten, canlı skor, son 15 bildirim.
+
+**Bu oturumda eklenenler (hepsi bu dalda, testli: sunucu ~154, Flutter 48)**
+- Gündem ekranı gazete düzeni (logo künye, manşet+spot, günün özeti, kısa kısa, bölümler, görsel sağda; Roboto + lacivert).
+- Bülten güvencesi `src/briefing-job.js`; uygulama dünkü bülteni göstermez (`lib/utils/briefing_slot.dart`); widget sunucudan okur.
+- AI özeti `src/gemini.js` (model `app_meta/ai.model`, yedek modeller, durum alanları); bülten bildirim gövdesinde.
+- Make `src/make.js`: `tur` = son_dakika / gundem (≥5 kaynak) / bulten; `test_ping` üç türden örnek yollar.
+- Uzaktan ayar `app_config/main` (`lib/backend/remote_config.dart`): panelleri, reklamları, duyuru ve güncelleme şeridini yönetir.
+- Bildirim yığını: Android `NewsNotifier.kt` — son dakika ve bülten dışındaki haber bildirimleri tek bildirimde ("N yeni haber",
+  InboxStyle); iOS `thread-id` grupları (sunucu `toWire`).
+- iOS mağaza gönderimi: `news-ios-submit.yml` + `ios/scripts/asc_submit.py` → `ios/SUBMIT_VERSION`'a "SÜRÜM YAPI" yazıp push.
+- Android AAB yerelde derlenir (bu kapta: Flutter `/tmp/claude-0/flutter-sdk`, `/root/android-sdk`, yükleme anahtarı
+  `android/key.properties` + `.jks` ve `google-services.json` gitignore'da) — `docs/play-store/admob.md` komutu +
+  `--android-skip-build-dependency-validation`. İmza SHA-256 `B6:1C:…:53:76` doğrula.
+
+**Bekleyenler / sıradaki**
+1. 🔔 Yerel haberler (yukarıda, kullanıcı onayı gerekir).
+2. Play: 12 test kullanıcısı topla (davet mesajı önerildi), 200'ü "Sürümü yükselt → Kapalı test - alpha".
+3. iOS inceleme sonucu; reddedilirse mesajı al.
+4. Sonraki sürüm 1.0.5 (Android 201 / iOS 1.0.5) — `sonraki-surum.md`'den.
+5. İsteğe bağlı: iOS AdMob kimlikleri; `haberIsleVePaylas`/`notifyBreakingNews` silinmesi (gözlemden sonra).
 
 ### Devir notu — oturum session_01Q1LBDnWcxQXWdkeUuDQJoB (27 Kasım 2026)
 ⚠️ Bu dalda **iki Claude oturumu paralel çalıştı**. Göndermeden önce her zaman `git pull` yap; çakışmada iki tarafı da koru.
