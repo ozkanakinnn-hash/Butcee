@@ -14,6 +14,7 @@ const { getFirestore } = require('firebase-admin/firestore');
 const { onSchedule } = require('firebase-functions/v2/scheduler');
 const { setGlobalOptions } = require('firebase-functions/v2');
 const { ingestAllSources, deleteOldArticles } = require('./src/ingest');
+const { runSocial } = require('./src/social');
 
 initializeApp();
 
@@ -30,7 +31,18 @@ exports.fetchRssFeeds = onSchedule(
     secrets: ['GEMINI_API_KEY'],
   },
   async () => {
-    await ingestAllSources(getFirestore());
+    const db = getFirestore();
+    await ingestAllSources(db);
+    try {
+      const r = await runSocial(db);
+      if (r.status !== 'kapalı' && r.status !== 'bekle') {
+        const { logger } = require('firebase-functions');
+        logger.info('Sosyal paylaşım', r);
+      }
+    } catch (err) {
+      const { logger } = require('firebase-functions');
+      logger.warn('Sosyal paylaşım hatası', { error: err.message });
+    }
   }
 );
 
