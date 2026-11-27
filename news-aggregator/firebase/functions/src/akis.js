@@ -76,6 +76,15 @@ function dueSlot(now, state = {}) {
   return null;
 }
 
+/** Elle çalıştırma: verilen akışın en son (bitmiş ya da süren) aralığı. Gece yarısından sonra 'gece' önceki güne aittir. */
+function forcedSlot(slot, now) {
+  if (!SLOTS[slot]) throw new Error(`bilinmeyen akış: ${slot}`);
+  let L = local(now);
+  const s = SLOTS[slot];
+  if (L.min < s.end[0] * 60 + s.end[1] && slot === 'gece' && L.min < 6 * 60) L = local(now - 86_400_000);
+  return { slot, id: `${dayKeyOf(L)}-${slot}`, ...slotWindow(slot, L.y, L.m, L.d) };
+}
+
 /** Aynı olayı anlatan haberleri tek olayda toplar (en yeniden eskiye sıralı girdi). */
 function groupEvents(articles) {
   const events = [];
@@ -238,16 +247,16 @@ async function saveTopics(db, maddeler, slot, now) {
  * Bir tur: sırası gelen akış varsa yazar ve Make'e gönderir.
  * @returns {Promise<{status: string, ...}>}
  */
-async function runAkis(db, { now = Date.now(), fetchImpl = fetch, generate, config: cfgIn } = {}) {
+async function runAkis(db, { now = Date.now(), fetchImpl = fetch, generate, config: cfgIn, slot: forced = null, ignoreDryRun = false } = {}) {
   const cfgRef = db.doc('app_meta/social');
   const config = cfgIn || (await cfgRef.get()).data() || {};
-  if (config.send_akis !== true) return { status: 'kapalı' };
+  if (config.send_akis !== true && !forced) return { status: 'kapalı' };
   const url = String(config.webhook || config.x_webhook || '').trim();
   if (config.enabled !== true || config.x_enabled !== true || !/^https:\/\/\S+$/.test(url)) return { status: 'make kapalı' };
 
   const stateRef = db.doc('notify_state/akis');
   const state = (await stateRef.get()).data() || {};
-  const due = dueSlot(now, state);
+  const due = forced ? forcedSlot(forced, now) : dueSlot(now, state);
   if (!due) return { status: 'bekle' };
   const s = SLOTS[due.slot];
   const info = { ...due, label: s.label, emoji: s.emoji };
@@ -296,7 +305,7 @@ async function runAkis(db, { now = Date.now(), fetchImpl = fetch, generate, conf
     sources: used.length, make: true, x: metin, ...(copied.length ? { kopya_uyari: copied } : {}),
   };
 
-  if (config.dry_run || config.akis_dry_run === true) {
+  if (config.dry_run || (config.akis_dry_run === true && !ignoreDryRun)) {
     await db.collection('social_log').add({ ...log, dry_run: true, uzun_metin: payload.uzun_metin });
     return finish(`deneme (${used.length} madde, atlanan ${atlanan})`, { metin });
   }
@@ -317,6 +326,6 @@ async function runAkis(db, { now = Date.now(), fetchImpl = fetch, generate, conf
 }
 
 module.exports = {
-  SLOTS, dueSlot, slotWindow, groupEvents, buildPrompt, parseJson, composeText, copiedPhrases, akisPayload,
+  SLOTS, dueSlot, forcedSlot, slotWindow, groupEvents, buildPrompt, parseJson, composeText, copiedPhrases, akisPayload,
   topicId, runAkis, DUE_WINDOW_MS,
 };

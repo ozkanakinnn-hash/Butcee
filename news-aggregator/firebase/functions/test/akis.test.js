@@ -194,3 +194,27 @@ test('runAkis: yapay zekâ hatasında akış ilerlemez (sonraki turda yeniden de
   assert.equal(r.status, 'ai hata');
   assert.equal(db.docs.has('notify_state/akis'), false);
 });
+
+test('forcedSlot: gece yarısından sonra gece akışı önceki günün 18:30–23:30 aralığıdır', () => {
+  const f = a.forcedSlot('gece', T('2026-11-27T23:08:00Z')); // Cmt 02:08 TSİ
+  assert.equal(f.id, '2026-11-27-gece');
+  assert.equal(new Date(f.start).toISOString(), '2026-11-27T15:30:00.000Z');
+  assert.equal(new Date(f.end).toISOString(), '2026-11-27T20:30:00.000Z');
+  assert.throws(() => a.forcedSlot('ikindi', Date.now()), /bilinmeyen/);
+});
+
+test('runAkis elle: send_akis kapalı ve akis_dry_run açık olsa da gönderir (genel dry_run hariç)', async () => {
+  const now = T('2026-11-27T23:08:00Z');
+  const db = fakeDb({
+    'app_meta/social': { ...baseCfg, send_akis: false, akis_dry_run: true },
+    'articles/1': { title: 'Meclis bütçe görüşmelerine başladı', summary: '', source_name: 'K', published_at: Timestamp.fromMillis(T('2026-11-27T18:00:00Z')) },
+  });
+  let sent = 0;
+  const r = await a.runAkis(db, {
+    now, slot: 'gece', ignoreDryRun: true, fetchImpl: async () => { sent += 1; return { ok: true }; },
+    generate: async () => ({ text: '{"maddeler":[{"metin":"Meclis bütçe görüşmeleri başladı.","konu_anahtari":"butce"}]}', model: 'm', error: '' }),
+  });
+  assert.match(r.status, /^gönderildi/);
+  assert.equal(sent, 1);
+  assert.match(r.metin, /^🌙 Gece Akışı \| 27 Kasım/);
+});
