@@ -2,7 +2,7 @@
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { parseTruncgil, buildMarketItems, updateMarket, TROY_OUNCE_GRAMS } = require('../src/market');
+const { parseTruncgil, buildMarketItems, updateMarket, pickItemIds, TROY_OUNCE_GRAMS, ALL_ITEMS } = require('../src/market');
 
 // GitHub sunucusundan alınan gerçek yanıtın kısaltılmış hali (2026-11-06); sonunda bozuk bir kalem var.
 const SAMPLE =
@@ -23,26 +23,41 @@ test('bozuk JSON içinden kalemler tek tek ayıklanır', () => {
   assert.equal(items.PAL, undefined, 'bozuk kalem atlanır');
 });
 
-test('liste: ons fiyatı gram altın ve dolardan hesaplanır, fiyatı olmayan Brent gösterilmez', () => {
+test('liste: varsayılan dört kalem (BIST 100 ve Brent yok), ons gram altın ve dolardan hesaplanır', () => {
   const items = buildMarketItems(parseTruncgil(SAMPLE).items);
-  assert.deepEqual(items.map((i) => i.id), ['usdtry', 'eurtry', 'gram_gold', 'gold_oz', 'bist100']);
+  assert.deepEqual(items.map((i) => i.id), ['usdtry', 'eurtry', 'gram_gold', 'gold_oz']);
   const ons = items.find((i) => i.id === 'gold_oz');
   assert.equal(ons.value, Number(((6563.24 * TROY_OUNCE_GRAMS) / 50.1606).toFixed(2)));
   assert.equal(ons.change_pct, -0.71);
   assert.equal(items.find((i) => i.id === 'usdtry').change_pct, 0.22);
-  assert.equal(items.find((i) => i.id === 'bist100').value, 11307.68);
 });
 
-test('Brent fiyatı gelirse eklenir', () => {
-  const items = buildMarketItems({ BRENT: { Selling: 64.3, Change: 1.1 } });
-  assert.deepEqual(items, [{ id: 'brent', label: 'Brent Petrol', unit: '$', value: 64.3, change_pct: 1.1, decimals: 2 }]);
+test('ayardan seçilen kalemler o sırayla gelir; fiyatı olmayan Brent gösterilmez', () => {
+  const items = buildMarketItems(parseTruncgil(SAMPLE).items, ['bist100', 'usdtry', 'brent']);
+  assert.deepEqual(items.map((i) => i.id), ['bist100', 'usdtry']);
+  assert.equal(items[0].value, 11307.68);
+  const brent = buildMarketItems({ BRENT: { Selling: 64.3, Change: 1.1 } }, ALL_ITEMS);
+  assert.deepEqual(brent, [{ id: 'brent', label: 'Brent Petrol', unit: '$', value: 64.3, change_pct: 1.1, decimals: 2 }]);
+});
+
+test('ayar: geçersiz/boş liste varsayılana döner, bilinmeyen kimlik atılır', () => {
+  assert.deepEqual(pickItemIds(undefined), ['usdtry', 'eurtry', 'gram_gold', 'gold_oz']);
+  assert.deepEqual(pickItemIds({ items: [] }), ['usdtry', 'eurtry', 'gram_gold', 'gold_oz']);
+  assert.deepEqual(pickItemIds({ items: ['eurtry', 'yok'] }), ['eurtry']);
+});
+
+const fakeDb = (writes, config) => ({
+  doc: (path) => ({
+    get: async () => ({ data: () => (path === 'app_meta/market' ? config : undefined) }),
+    set: async (v) => writes.push(v),
+  }),
 });
 
 test('güncelleme: belge yazılır, eksikler raporlanır; HTTP hatasında yazılmaz', async () => {
   const writes = [];
-  const db = { doc: () => ({ set: async (v) => writes.push(v) }) };
+  const db = fakeDb(writes, { items: ['usdtry', 'bist100', 'brent'] });
   const r = await updateMarket(db, { fetchImpl: async () => new Response(SAMPLE) });
-  assert.equal(r.count, 5);
+  assert.equal(r.count, 2);
   assert.deepEqual(r.missing, ['brent']);
   assert.equal(writes[0].source, 'Truncgil Finans');
   assert.equal(writes[0].source_updated, '2026-11-06 13:34:01');

@@ -118,3 +118,17 @@ test('takım çözücü: API adları kendi kimliğimize eşlenir, bilinmeyen tak
   assert.equal(teamKeyText('Gaziantep FK'), 'gaziantep');
   assert.equal(r.team('galatasaray').short, 'GS');
 });
+
+test('anahtar temizlenir; anahtar hatası tanınır (kota boşa harcanmasın)', async () => {
+  const { cleanKey, isAuthError, ApiFootball } = require('../src/football');
+  assert.equal(cleanKey('  "abc123"\n'), 'abc123');
+  let sent = '';
+  const api = new ApiFootball({
+    key: ' abc123 \n',
+    fetchImpl: async (url, opts) => { sent = opts.headers['x-apisports-key']; return new Response(JSON.stringify({ response: [], errors: [] })); },
+  });
+  await api.get('/status');
+  assert.equal(sent, 'abc123');
+  assert.equal(isAuthError(new Error('/fixtures: Error/Missing application key. Go to https://www.api-football.com')), true);
+  assert.equal(isAuthError(new Error('HTTP 500 (/fixtures)')), false);
+});

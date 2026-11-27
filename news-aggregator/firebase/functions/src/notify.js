@@ -7,8 +7,9 @@
  * "5 dakikada gündem" belgesi oluşturmaya devam eder. Kullanıcıya günde en fazla 2 bildirim
  * gider: sabah 08:30 ve akşam 19:00 bültenleri.
  *
- * Bülten içeriği Gemini API ile Türkçe özetlenir; özet `briefings/{id}.ai_summary` alanında
- * saklanır. Anahtar yoksa özet alanı boş bırakılır.
+ * Bülten içeriği Gemini API ile Türkçe özetlenir; özet bildirimin gövdesine ve
+ * `briefings/{id}.ai_summary` alanına yazılır. Anahtar yoksa başlık listesi gider.
+ * Gönderilen bülten `notified: true` ile işaretlenir; social.js onu Make webhook'una iletir.
  *
  * Bildirim seviyeleri (günlük cap; ileride tekrar etkinleştirilecek bildirim türleri için):
  *   Düşük   (lvl_low)      : günde max 5
@@ -194,29 +195,48 @@ function planNotifications({ results, categories, state = {}, now = Date.now() }
   return { messages, nextState: next, briefing };
 }
 
-/** Gündem belgesi ve AI özeti. Hata bildirimi çekimi bozmaz. */
-async function writeExtras(db, briefing) {
-  if (!briefing) return;
+/** Bülten gövdesi: AI özeti varsa özet + ilk iki başlık, yoksa başlık listesi (saf fonksiyon). */
+function withAiSummary(message, aiSummary) {
+  if (!message || !aiSummary) return message;
+  const lines = String(message.notification.body || '').split('\n').filter((l) => l.startsWith('• ')).slice(0, 2);
+  return {
+    ...message,
+    notification: { ...message.notification, body: [trimText(aiSummary, 320), ...lines].join('\n') },
+  };
+}
+
+/**
+ * Gündem belgesi ve AI özeti. Hata bildirimi çekimi bozmaz.
+ * @returns {Promise<string>} AI özeti (yoksa boş)
+ */
+async function writeExtras(db, briefing, { notified = false, summarize } = {}) {
+  if (!briefing) return '';
+  let aiSummary = '';
   try {
     const { Timestamp } = require('firebase-admin/firestore');
-    const { summarizeBriefing } = require('./gemini');
-    const aiSummary = await summarizeBriefing(briefing.items);
-    const doc = { ...briefing, ai_summary: aiSummary, created_at: Timestamp.fromMillis(briefing.created_ms) };
+    const fn = summarize || require('./gemini').summarizeBriefing;
+    aiSummary = await fn(briefing.items, { db });
+    // notified: bu bülten bildirim olarak gönderildi → social.js Make'e de bir kez iletir.
+    const doc = { ...briefing, ai_summary: aiSummary, notified, created_at: Timestamp.fromMillis(briefing.created_ms) };
     await db.doc(`briefings/${briefing.id}`).set(doc);
     await db.doc('briefings/latest').set(doc);
     if (aiSummary) logger.info('Bülten AI özeti oluşturuldu', { id: briefing.id, len: aiSummary.length });
   } catch (err) {
     logger.warn('Gündem belgesi yazılamadı', { error: err.message });
   }
+  return aiSummary;
 }
 
 /** Bildirimleri gönderir ve durumu kaydeder. Hata bildirimi çekimi bozmaz. */
-async function sendNewsNotifications(db, results, categories, { messaging = getMessaging(), now = Date.now() } = {}) {
+async function sendNewsNotifications(db, results, categories, { messaging = getMessaging(), now = Date.now(), summarize } = {}) {
   const ref = db.doc('notify_state/news');
   try {
     const snap = await ref.get();
-    const { messages, nextState, briefing } = planNotifications({ results, categories, state: snap.data() || {}, now });
-    await writeExtras(db, briefing);
+    const planned = planNotifications({ results, categories, state: snap.data() || {}, now });
+    const { nextState, briefing } = planned;
+    const aiSummary = await writeExtras(db, briefing, { notified: planned.messages.length > 0, summarize });
+    // Bülten bildirimine AI özeti eklenir (özet yoksa başlık listesi kalır).
+    const messages = planned.messages.map((m) => (m.topic === BULLETIN_TOPIC ? withAiSummary(m, aiSummary) : m));
     // Durum her çalışmada güncellenir (hikâyeler ve kaynak listesi için)
     await ref.set(nextState);
     if (messages.length === 0) return { sent: 0 };
@@ -242,6 +262,7 @@ module.exports = {
   PROFILES,
   buildBriefing,
   buildBulletinMessage,
+  withAiSummary,
   planNotifications,
   sendNewsNotifications,
   toWire,

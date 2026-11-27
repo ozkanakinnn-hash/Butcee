@@ -28,13 +28,21 @@ const LIVE = new Set(['1H', 'HT', '2H', 'ET', 'BT', 'P', 'SUSP', 'INT', 'LIVE'])
 class FootballApiError extends Error {}
 
 /** Ücretsiz planın güncel sezonu kapsamadığını söyleyen API hatası mı? */
+/** Anahtar/hesap hatası: tekrar denemek kotayı boşa harcar (anahtar yenilenmeli). */
+const isAuthError = (err) =>
+  /application key|api key|invalid key|token|suspended|account|subscription.*(inactive|expired)/i.test(String(err && err.message));
+
+/** Gizli değişkenden gelen anahtar: boşluk, satır sonu ve tırnaklar temizlenir. */
+const cleanKey = (key) => String(key || '').trim().replace(/^["']|["']$/g, '').trim();
+
 const isPlanSeasonError = (err) => /do not have access to this season|plan/i.test(String(err && err.message));
 
 /** API-Football istemcisi; kalan günlük istek sayısını başlıklardan izler. */
 class ApiFootball {
   constructor({ key, fetchImpl = fetch, base = API_BASE } = {}) {
-    if (!key) throw new FootballApiError('FOOTBALL_API_KEY tanımlı değil');
-    this.key = key;
+    const k = cleanKey(key);
+    if (!k) throw new FootballApiError('FOOTBALL_API_KEY tanımlı değil');
+    this.key = k;
     this.fetchImpl = fetchImpl;
     this.base = base;
     this.used = 0;
@@ -218,6 +226,8 @@ module.exports = {
   ApiFootball,
   FootballApiError,
   isPlanSeasonError,
+  isAuthError,
+  cleanKey,
   SUPER_LIG_ID,
   FINISHED,
   LIVE,

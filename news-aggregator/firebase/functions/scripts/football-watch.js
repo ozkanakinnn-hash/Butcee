@@ -16,7 +16,20 @@ const { getMessaging } = require('firebase-admin/messaging');
 const { initAdmin } = require('./init-admin');
 const fb = require('../src/football');
 const { logSentMessages } = require('../src/notification-log');
-const { isPlanSeasonError } = fb;
+const { isPlanSeasonError, isAuthError } = fb;
+
+const MAX_CONSECUTIVE_ERRORS = 5;
+
+/** Hata durumunu kaydeder (uygulama ve Console'dan görülür) ve GitHub işini kırmızı bitirir. */
+async function recordFailure(metaRef, err) {
+  const reason = isAuthError(err)
+    ? `API anahtarı reddedildi: ${err.message}`.slice(0, 300)
+    : String(err.message || err).slice(0, 300);
+  await metaRef.set({ last_error: reason, last_error_at: Timestamp.now() }, { merge: true });
+  log(`✘ ${reason}`);
+  if (isAuthError(err)) log('  Çözüm: dashboard.api-football.com anahtarını kontrol et, GitHub Secrets > FOOTBALL_API_KEY değerini boşluksuz yeniden kaydet, işi "check" ile çalıştır.');
+  process.exitCode = 1;
+}
 
 const MAX_RUN_MS = 5.5 * 60 * 60 * 1000; // GitHub işi 6 saatte kesilir
 const START_EARLY_MS = 35 * 60 * 1000; // maçtan bu kadar önce başlayan çalışma bekler
@@ -148,9 +161,13 @@ async function watch(db, api, messaging, { sleep: wait_ = sleep } = {}) {
       log(`Plan güncel sezonu kapsamıyor; 24 saat beklenecek. (${err.message})`);
       return;
     }
-    throw err;
+    await recordFailure(metaRef, err);
+    return;
   }
   if (meta.fixtures_date !== fb.istanbulDate()) await cleanupOldMatches(db);
+
+  // Senkron başarılı: önceki hata kaydı temizlenir.
+  if (meta.last_error) await metaRef.set({ last_error: '', last_ok_at: Timestamp.now() }, { merge: true });
 
   let active = await activeMatches(db);
   if (active.length === 0) {
@@ -159,6 +176,7 @@ async function watch(db, api, messaging, { sleep: wait_ = sleep } = {}) {
   }
   log(`İzlenecek maçlar: ${active.map((m) => `${m.home.name}-${m.away.name}`).join(', ')}`);
 
+  let consecutiveErrors = 0;
   while (active.length && Date.now() - started < MAX_RUN_MS) {
     // Henüz başlamamışsa başlama saatine kadar istek harcamadan bekle.
     const nextKickoff = Math.min(...active.map((m) => m.kickoff.toMillis()));
@@ -175,10 +193,18 @@ async function watch(db, api, messaging, { sleep: wait_ = sleep } = {}) {
     let fixtures = [];
     try {
       fixtures = await api.get('/fixtures', { ids, timezone: 'Europe/Istanbul' });
+      consecutiveErrors = 0;
     } catch (err) {
+      consecutiveErrors += 1;
       log(`Skor alınamadı: ${err.message}`);
+      // Anahtar hatasında ya da üst üste hatalarda dur: kotayı boşa harcama, durumu kaydet.
+      if (isAuthError(err) || consecutiveErrors >= MAX_CONSECUTIVE_ERRORS) {
+        await recordFailure(metaRef, err);
+        return;
+      }
       if (api.remaining !== null && api.remaining <= 1) {
         log('Günlük istek hakkı bitti; izleme durduruldu.');
+        await metaRef.set({ last_error: 'Günlük istek hakkı bitti', last_error_at: Timestamp.now() }, { merge: true });
         return;
       }
     }
@@ -195,7 +221,10 @@ async function watch(db, api, messaging, { sleep: wait_ = sleep } = {}) {
       }
       batch.set(db.doc(`matches/${next.fixture_id}`), { ...next, updated_at: Timestamp.now() }, { merge: true });
     }
-    if (fixtures.length) await batch.commit();
+    if (fixtures.length) {
+      batch.set(metaRef, { last_ok_at: Timestamp.now(), last_error: '' }, { merge: true });
+      await batch.commit();
+    }
     if (messages.length) {
       const res = await messaging.sendEach(messages);
       log(`Bildirim: ${res.successCount} gönderildi, ${res.failureCount} hata`);
@@ -216,6 +245,9 @@ async function watch(db, api, messaging, { sleep: wait_ = sleep } = {}) {
 
 async function main() {
   const mode = process.argv[2] || 'watch';
+  if (process.env.FOOTBALL_API_KEY && process.env.FOOTBALL_API_KEY !== fb.cleanKey(process.env.FOOTBALL_API_KEY)) {
+    log('Uyarı: FOOTBALL_API_KEY başında/sonunda boşluk veya tırnak vardı; temizlendi. GitHub Secret değerini düzeltmen önerilir.');
+  }
   const api = new fb.ApiFootball({ key: process.env.FOOTBALL_API_KEY });
   if (mode === 'check') return check(api);
   initAdmin();
