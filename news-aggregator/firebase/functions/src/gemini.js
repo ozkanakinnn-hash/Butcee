@@ -50,7 +50,10 @@ function extractText(json) {
  * Bir istem için özet üretir; model hatasında sıradaki modeli dener.
  * @returns {Promise<{text: string, model: string, error: string}>}
  */
-async function generate(prompt, { config = AI_DEFAULTS, fetchImpl = fetch, apiKey = process.env.GEMINI_API_KEY } = {}) {
+async function generate(prompt, {
+  config = AI_DEFAULTS, fetchImpl = fetch, apiKey = process.env.GEMINI_API_KEY,
+  maxOutputTokens = 2048, timeoutMs = TIMEOUT_MS, json = false,
+} = {}) {
   if (!apiKey) return { text: '', model: '', error: 'GEMINI_API_KEY yok' };
   if (config.enabled === false) return { text: '', model: '', error: 'kapalı' };
   let lastError = '';
@@ -62,9 +65,12 @@ async function generate(prompt, { config = AI_DEFAULTS, fetchImpl = fetch, apiKe
         body: JSON.stringify({
           contents: [{ role: 'user', parts: [{ text: prompt }] }],
           // Düşünen modeller düşünme jetonlarını da bu sınırdan harcar; kısa sınır boş yanıt döndürür.
-          generationConfig: { maxOutputTokens: 2048, temperature: 0.3 },
+          generationConfig: {
+            maxOutputTokens, temperature: 0.3,
+            ...(json ? { responseMimeType: 'application/json' } : {}),
+          },
         }),
-        signal: AbortSignal.timeout(TIMEOUT_MS),
+        signal: AbortSignal.timeout(timeoutMs),
       });
       if (!res.ok) {
         const body = (await res.text().catch(() => '')).slice(0, 160).replace(/\s+/g, ' ');
@@ -153,6 +159,7 @@ async function summarizeStory(story, { db = null, fetchImpl, apiKey } = {}) {
 }
 
 module.exports = {
+  loadAiConfig, recordStatus,
   summarizeBriefing, summarizeStory, generate, extractText, modelOrder, briefingPrompt, storyPrompt,
   AI_DEFAULTS, FALLBACK_MODELS,
 };

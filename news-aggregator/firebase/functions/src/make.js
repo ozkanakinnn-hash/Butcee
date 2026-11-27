@@ -275,7 +275,9 @@ async function runMake(db, { now = Date.now(), fetchImpl = fetch, summarize } = 
 
   // 1) Bülten (bildirim olarak gönderildiyse bir kez)
   const briefing = briefSnap.exists ? briefSnap.data() : null;
-  if (bulletinDue({ briefing, state, config, now })) {
+  // X akışları (akis.js) açıksa sabah/akşam bülteni Make'e ayrıca gitmez (aynı içerik iki kez paylaşılmasın).
+  const akisReplacesBulletin = config.send_akis === true && config.akis_bulten_birlikte !== true;
+  if (!akisReplacesBulletin && bulletinDue({ briefing, state, config, now })) {
     const ok = await deliver(bulletinPayload(briefing, now), {
       at: Timestamp.fromMillis(now), tur: 'bulten', story_id: briefing.id, title: briefing.title || '', url: '', source: '', sources: 0,
     });

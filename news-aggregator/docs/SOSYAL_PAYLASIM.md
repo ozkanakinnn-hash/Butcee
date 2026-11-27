@@ -30,6 +30,25 @@ Seçimi yine sunucu yapar; aynı haber hem Telegram'a hem X'e gider (biri kapal�
 Webhook alanları: `zaman, baslik, kaynak, kaynak_sayisi, link, metin (≤280, bağlantı dahil), haber_id, deneme`.
 Kapatmak: `x_enabled: false`. Make ücretsiz planı ayda 1.000 işlem: günde 8 paylaşım × 3 modül ≈ 720 işlem.
 
+## X akışları (Make — mevcut senaryoya dokunmadan) — `src/akis.js`
+Hafta içi **07:30 · 12:30 · 18:30 · 23:30**, cumartesi ve pazar **20:30** (Hafta Sonu Akışı) birer gönderi.
+Aralıktaki haberler gruplanır, Gemini (mevcut `GEMINI_API_KEY` Firebase Secret'ı, `app_meta/ai` modeli) maddeleri
+**kendi cümleleriyle** yazar (telifsiz; başlıktan 6 kelimelik kopya bulunursa `social_log.kopya_uyari`).
+Daha önce paylaşılan konu (`bulletin_topics`, 96 saat) gelişme yoksa yazılmaz; gelişme varsa "🔄" ile yazılır.
+
+- Kayıt aynı webhook'a (`x_webhook`) **aynı alanlarla** gider: `tur: "akis"`, `metin` (≤280, bağlantı dahil),
+  `baslik`, `zaman`, `haber_id` (ör. `2026-11-28-haftasonu`), `deneme: false` + ek `akis`, `uzun_metin`, `maddeler`.
+  → Mevcut senaryo (Webhook → Google Tablolar → filtre → Buffer → X) **değiştirmeden** paylaşır.
+- Ek zamanlayıcı yok: `fetchRssFeeds` (20 dk) içinde, akış saati geçtikten sonraki ilk turda (≤100 dk) bir kez.
+- **Varsayılan KAPALI.** Açmak (Firestore → `app_meta/social`): `send_akis` (boolean) = **true**.
+  Önce denemek için ayrıca `akis_dry_run` = **true**: akışlar X'e gitmez, metin `social_log`'a (`tur: akis`, `x` alanı)
+  yazılır; son dakika/gündem paylaşımları etkilenmez. Beğenince `akis_dry_run` = false. Durum: `akis_status`, `akis_run_at`.
+- Akışlar açıkken eski sabah/akşam `bulten` kaydı Make'e **ayrıca gitmez** (aynı içerik iki kez olmasın).
+  İkisini birlikte isterseniz: `akis_bulten_birlikte: true`. Uygulamadaki bülten bildirimi etkilenmez.
+- Make işlemi: kayıt başına 3 modül → ayda ~96 akış ≈ **290 işlem**. Ücretsiz plan 1.000/ay; son dakika+gündem için
+  `make_daily_cap` (vars. 12 → ayda en fazla ~1.080 işlem) **7'ye** indirilirse toplam ~920'de kalır.
+- Akışları Make'te ayrı yönetmek isterseniz (isteğe bağlı): Router'a `tur = akis` filtresiyle yeni dal.
+
 ## Kurulum
 1. **Bot:** Telegram → @BotFather → `/newbot` → ad "Haber Akışı", kullanıcı adı `...bot` ile bitmeli → **jeton** (GİZLİ).
 2. **Kanal:** Yeni kanal (herkese açık) → bağlantı adı ör. `haberakisi` → Yöneticiler → botu ekle, yetki: **Mesaj gönder**.

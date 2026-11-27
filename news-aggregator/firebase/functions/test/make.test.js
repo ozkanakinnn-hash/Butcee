@@ -138,3 +138,26 @@ test('tur: deneme modunda gönderilmez, webhook hatası kaydedilir; deneme örne
   assert.deepEqual(makeSamples(NOW).map((p) => p.tur), ['son_dakika', 'gundem', 'bulten']);
   assert.ok(makeSamples(NOW).every((p) => p.deneme === true));
 });
+
+test('akışlar açıkken bülten Make\'e ayrıca gitmez (akis_bulten_birlikte ile açılabilir)', async () => {
+  const docs = {
+    'app_meta/social': { ...config, send_akis: true },
+    'notify_state/news': { stories: [] },
+    'notify_state/make': {},
+    'briefings/latest': { id: '2026-11-06-am', notified: true, created_ms: NOW - 10 * 60_000, title: 'Sabah', ai_summary: 'Ö', items: [] },
+  };
+  const mk = () => {
+    const d = JSON.parse(JSON.stringify(docs));
+    return {
+      doc: (p) => ({ get: async () => ({ exists: p in d, data: () => d[p] }), set: async (v) => { d[p] = { ...(d[p] || {}), ...v }; } }),
+      collection: () => ({ add: async () => {} }),
+    };
+  };
+  let sent = 0;
+  const fetchImpl = async () => { sent += 1; return { ok: true }; };
+  await runMake(mk(), { now: NOW, fetchImpl, summarize: async () => '' });
+  assert.equal(sent, 0);
+  docs['app_meta/social'].akis_bulten_birlikte = true;
+  await runMake(mk(), { now: NOW, fetchImpl, summarize: async () => '' });
+  assert.equal(sent, 1);
+});

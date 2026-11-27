@@ -165,6 +165,13 @@ project_id haber-68a3c) → `scripts/durum-raporu.js`: Make/AI durumu, son payla
 4. Sonraki sürüm 1.0.5 (Android 201 / iOS 1.0.5) — `sonraki-surum.md`'den.
 5. İsteğe bağlı: iOS AdMob kimlikleri; `haberIsleVePaylas`/`notifyBreakingNews` silinmesi (gözlemden sonra).
 
+### X akışları eklendi (28 Kasım 2026, oturum session_01Q1LBDnEdHeeDbHVqq6jpJY) — DEPLOY BEKLİYOR
+- `src/akis.js`: hafta içi 07:30/12:30/18:30/23:30, Cmt-Paz 20:30 Gemini ile telifsiz özet → mevcut Make webhook'u
+  (`tur: "akis"`, aynı alanlar; senaryo değişmez). Tekrar hafızası `bulletin_topics`. `fetchRssFeeds` içinden çalışır.
+- Varsayılan KAPALI: `app_meta/social.send_akis = true` (deneme: `akis_dry_run = true`). Açıkken eski `bulten` kaydı
+  Make'e gitmez (`akis_bulten_birlikte` ile ikisi birden). Belge: `docs/SOSYAL_PAYLASIM.md` → "X akışları".
+- Make Free işlem uyarısı: `make_daily_cap` 12 → 7 önerildi (akışlar ~290 işlem/ay ekler).
+
 ### Devir notu — oturum session_01Q1LBDnWcxQXWdkeUuDQJoB (27 Kasım 2026)
 ⚠️ Bu dalda **iki Claude oturumu paralel çalıştı**. Göndermeden önce her zaman `git pull` yap; çakışmada iki tarafı da koru.
 

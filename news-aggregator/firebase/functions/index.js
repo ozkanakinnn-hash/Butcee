@@ -80,6 +80,14 @@ exports.fetchRssFeeds = onSchedule(
     } catch (err) {
       logger.warn('Make hatası', { error: err.message });
     }
+    try {
+      // X akışları: hafta içi 07:30/12:30/18:30/23:30, hafta sonu 20:30 (app_meta/social.send_akis ile açılır)
+      const { runAkis } = require('./src/akis');
+      const a = await runAkis(db);
+      if (!['kapalı', 'bekle', 'make kapalı'].includes(a.status)) logger.info('Akış', a);
+    } catch (err) {
+      logger.warn('Akış hatası', { error: err.message });
+    }
   }
 );
 
