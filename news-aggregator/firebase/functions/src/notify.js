@@ -280,11 +280,32 @@ function buildMajorMessage(story, now, score = null) {
   return msg;
 }
 
+/**
+ * Şu anki gündem dilimi: 08:30–19:00 sabah, 19:00–08:30 akşam (gece yarısından sonra önceki günün akşamı).
+ * Uygulama da aynı kuralla "beklenen bülten" kimliğini hesaplar (eski bülteni göstermemek için).
+ */
+function bulletinSlot(now) {
+  const clock = istanbulClock(now);
+  const slot = clock.minute >= BULLETIN_SLOTS[1].minute ? BULLETIN_SLOTS[1]
+    : clock.minute >= BULLETIN_SLOTS[0].minute ? BULLETIN_SLOTS[0] : BULLETIN_SLOTS[1];
+  const slotDay = clock.minute < BULLETIN_SLOTS[0].minute ? istanbulClock(now - 12 * 3_600_000).day : clock.day;
+  const inWindow = slotDay === clock.day && clock.minute >= slot.minute && clock.minute < slot.minute + BULLETIN_WINDOW_MIN;
+  return { slot, slotDay, key: `${slotDay}#${slot.key}`, id: `${slotDay}-${slot.key}`, inWindow };
+}
+
+/** Bülten için haberler: son 14 saatte en çok yayıncının verdiği (tıklama tuzağı hariç). */
+function pickBriefingStories(stories, now) {
+  const since = now - 14 * 3_600_000;
+  const fresh = stories.filter((x) => x.last_ms > since && !isClickbait(x.title));
+  const picks = [...fresh].sort((a, b) => b.srcs.length - a.srcs.length || b.last_ms - a.last_ms).slice(0, BRIEFING_ITEMS);
+  return { picks, fresh };
+}
+
 /** "5 dakikada gündem" belgesi (briefings/{gün}-{am|pm}); uygulama ekranı bunu okur. */
 function buildBriefing(slot, day, stories, now, pool = stories) {
   const item = (x) => ({
     id: x.id, title: x.title, url: x.url, source: x.source || '', image: x.image || '', category_id: x.cat || '',
-    sources: x.srcs.slice(0, 12), source_count: x.srcs.length,
+    sources: x.srcs.slice(0, 12), source_count: x.srcs.length, summary: x.sum || '',
   });
   // İlgi alanlarına göre kısa bölümler: her kategoriden en çok kaynaklı 3 başlık (uygulama kullanıcının seçtiklerini gösterir)
   const byCategory = {};
@@ -417,21 +438,12 @@ function planNotifications({ results, categories, state = {}, now = Date.now() }
   }
   next.breaking = br;
 
-  // 5) Bülten (sabah / öğle / akşam)
+  // 5) Bülten (sabah / akşam)
   const bul = { ...(state.bulletin || {}) };
-  const clock = istanbulClock(now);
+  const { slot, slotDay, key, inWindow } = bulletinSlot(now);
   let briefing = null;
-  // Şu anki gündem dilimi: 08:30–19:00 sabah, 19:00–08:30 akşam (gece yarısından sonra önceki günün akşamı).
-  const slot = clock.minute >= BULLETIN_SLOTS[1].minute ? BULLETIN_SLOTS[1]
-    : clock.minute >= BULLETIN_SLOTS[0].minute ? BULLETIN_SLOTS[0] : BULLETIN_SLOTS[1];
-  const slotDay = clock.minute < BULLETIN_SLOTS[0].minute ? istanbulClock(now - 12 * 3_600_000).day : clock.day;
-  const key = `${slotDay}#${slot.key}`;
-  const inWindow = slotDay === clock.day && clock.minute >= slot.minute && clock.minute < slot.minute + BULLETIN_WINDOW_MIN;
   if (bul.briefing_key !== key || (inWindow && bul.last !== key)) {
-    // Sabah: geceden beri (en çok 14 saat); akşam: sabahtan beri
-    const since = now - 14 * 3_600_000;
-    const fresh = stories.filter((x) => x.last_ms > since && !isClickbait(x.title));
-    const picks = [...fresh].sort((a, b) => b.srcs.length - a.srcs.length || b.last_ms - a.last_ms).slice(0, BRIEFING_ITEMS);
+    const { picks, fresh } = pickBriefingStories(stories, now);
     if (picks.length >= 2) {
       briefing = buildBriefing(slot, slotDay, picks, now, fresh);
       bul.briefing_key = key;
@@ -534,6 +546,12 @@ async function sendNewsNotifications(db, results, categories, { messaging = getM
 module.exports = {
   BREAKING_TITLE,
   BULLETIN_SLOTS,
+  BULLETIN_ITEMS,
+  bulletinSlot,
+  pickBriefingStories,
+  buildBriefing,
+  buildBulletinMessage,
+  writeExtras,
   CALM_TOPIC,
   BULLETIN_TOPIC,
   PROFILES,

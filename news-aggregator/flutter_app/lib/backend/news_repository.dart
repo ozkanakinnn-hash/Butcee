@@ -29,6 +29,16 @@ class NewsRepository {
   Stream<Map<String, dynamic>?> watchBriefing([String? id]) =>
       _db.doc('briefings/${(id == null || id.isEmpty) ? 'latest' : id}').snapshots().map((d) => d.data());
 
+  /// Bülteni önce SUNUCUDAN okur (önbellekteki dünkü bülten gelmesin); çevrimdışıysa önbellekten.
+  Future<Map<String, dynamic>?> fetchBriefing([String? id]) async {
+    final ref = _db.doc('briefings/${(id == null || id.isEmpty) ? 'latest' : id}');
+    try {
+      return (await ref.get(const GetOptions(source: Source.server))).data();
+    } catch (_) {
+      return (await ref.get(const GetOptions(source: Source.cache))).data();
+    }
+  }
+
   /// Son depremler (quakes/latest; sunucu 2 dakikada bir yeniler).
   Stream<Map<String, dynamic>?> watchQuakes() => _db.doc('quakes/latest').snapshots().map((d) => d.data());
 

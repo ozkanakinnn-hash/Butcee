@@ -152,6 +152,27 @@ class S {
   String get briefingInterests => _t('İlgi alanların', 'Your interests');
   String get briefingMatches => _t('Bugünün maçları', "Today's matches");
   String get briefingNoMatches => _t('Takip ettiğin takımların bugün maçı yok.', 'Your teams have no matches today.');
+  String briefingEdition(bool evening) => evening ? _t('Akşam baskısı · 19:00', 'Evening edition · 19:00') : _t('Sabah baskısı · 08:30', 'Morning edition · 08:30');
+  String get briefingReadTime => _t('5 dk okuma', '5 min read');
+  String get briefingLead => _t('Manşet', 'Lead');
+  String get briefingDaySummary => _t('Günün özeti', 'Summary of the day');
+  String get briefingAiNote => _t('Yapay zekâ ile derlendi', 'Compiled with AI');
+  String get briefingBreaking => _t('Son dakika', 'Breaking');
+  String get briefingPreparing => _t(
+    'Bu baskı hazırlanıyor. Birkaç dakika içinde burada olacak.',
+    'This edition is being prepared. It will be here in a few minutes.',
+  );
+  String get briefingShowPrevious => _t('Önceki baskıyı göster', 'Show previous edition');
+  String newsCount(int n) => _t('$n haber', '$n stories');
+  String longDate(DateTime d) {
+    const tr = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+    const trDays = ['Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi', 'Pazar'];
+    const en = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    const enDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    return isEnglish
+        ? '${enDays[d.weekday - 1]}, ${en[d.month - 1]} ${d.day}, ${d.year}'
+        : '${d.day} ${tr[d.month - 1]} ${d.year}, ${trDays[d.weekday - 1]}';
+  }
   String get briefingEmpty => _t('Gündem özeti 08:30 ve 19:00\'da hazırlanır.', 'Briefings are prepared at 08:30 and 19:00.');
 
   // Deprem

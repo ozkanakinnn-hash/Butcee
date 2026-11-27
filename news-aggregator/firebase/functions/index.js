@@ -5,6 +5,7 @@
  *
  *  fetchRssFeeds     : 20 dakikada bir haber çekimi + bildirimler, ardından piyasa verisi ve bakım işleri
  *  cleanupOldArticles: her gece 04:00'te 30 günden eski haberleri siler
+ *  briefingTick      : bülten saatlerinde 10 dk'da bir; o dilimin gündemi yazılmadıysa üretir ve bildirimi gönderir
  *  footballTick      : dakikada bir canlı skor turu (maç yoksa API isteği yapmadan saniyeler içinde biter)
  *
  * Dağıtım (Cloud Shell): docs/FIREBASE_TASIMA.md
@@ -79,6 +80,22 @@ exports.cleanupOldArticles = onSchedule(
     await deleteOldArticles(getFirestore(), Number(process.env.ARTICLE_RETENTION_DAYS || 30));
   }
 );
+
+// Bülten güvencesi: 08:30–10:59 ve 19:00–21:59 arası 10 dakikada bir. Gündem belgesi o dilim için yazılmadıysa
+// (haber çekimi gecikti/hata verdi) üretir; bildirim gitmediyse gönderir. Uygulama böylece dünkü bülteni göstermez.
+exports.briefingTick = onSchedule(
+  { schedule: '30,40,50 8 * * *', timeZone: 'Europe/Istanbul', timeoutSeconds: 120, memory: '512MiB', retryCount: 1 },
+  async () => runBriefingTick(),
+);
+exports.briefingTickLate = onSchedule(
+  { schedule: '*/10 9,10,19,20,21 * * *', timeZone: 'Europe/Istanbul', timeoutSeconds: 120, memory: '512MiB', retryCount: 1 },
+  async () => runBriefingTick(),
+);
+async function runBriefingTick() {
+  const { ensureBriefing } = require('./src/briefing-job');
+  const r = await ensureBriefing(getFirestore(), { messaging: getMessaging() });
+  if (r.status !== 'güncel') logger.info('Bülten güvencesi', r);
+}
 
 // Deprem uyarısı: 2 dakikada bir AFAD (yedek EMSC); M≥4.5 'deprem' konusuna, M≥5 son dakika abonelerine de.
 exports.earthquakeTick = onSchedule(

@@ -91,9 +91,11 @@ Future<void> main() async {
   }
   // Reklamlar: önce onay (UMP), sonra AdMob. İlk kare çizildikten sonra; hata uygulamayı durdurmaz.
   // NO_ADS: yalnızca App Review ekran kaydı derlemesi (otomatik test, onay penceresine dokunamaz).
-  if (!const bool.fromEnvironment('NO_ADS')) WidgetsBinding.instance.addPostFrameCallback((_) {
-    AdsService.instance.init().catchError((Object e) => debugPrint('Reklamlar başlatılamadı: $e'));
-  });
+  if (!const bool.fromEnvironment('NO_ADS')) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      AdsService.instance.init().catchError((Object e) => debugPrint('Reklamlar başlatılamadı: $e'));
+    });
+  }
 }
 
 /// Bildirime dokunulunca ilgili sayfayı aç.
