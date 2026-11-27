@@ -76,6 +76,31 @@ async function main() {
     line(`  maç: ${when(m.kickoff)} ${m.home && m.home.name} ${m.goals ? `${m.goals.home}-${m.goals.away}` : ''} ${m.away && m.away.name} | canlı=${m.is_live} bitti=${m.is_finished} | güncelleme ${when(m.updated_at)}`);
   }
 
+  line('\n══ Son gönderilen bildirimler (notifications kaydı; yalnızca depodaki kodun gönderdikleri) ══');
+  const notes = await db.collection('notifications').orderBy('sent_at', 'desc').limit(15).get();
+  for (const d of notes.docs) {
+    const n = d.data();
+    line(`  ${when(n.sent_at)} | ${String(n.title || '').slice(0, 28)} | ${String(n.body || '').split('\n')[0].slice(0, 50)} | ${(n.topics || []).join(',')}`);
+  }
+
+  line('\n══ Cloud Functions (Firebase\'deki fonksiyonlar) ══');
+  try {
+    const { GoogleAuth } = require('google-auth-library');
+    const auth = new GoogleAuth({ scopes: ['https://www.googleapis.com/auth/cloud-platform'] });
+    const client = await auth.getClient();
+    const project = process.env.GCLOUD_PROJECT || 'haber-68a3c';
+    const { data } = await client.request({ url: `https://cloudfunctions.googleapis.com/v2/projects/${project}/locations/-/functions?pageSize=100` });
+    for (const f of data.functions || []) {
+      const name = f.name.split('/').pop();
+      const trig = f.eventTrigger
+        ? `olay: ${f.eventTrigger.eventType}${(f.eventTrigger.eventFilters || []).map((x) => ` ${x.attribute}=${x.value}`).join('')}`
+        : (f.labels && f.labels['deployment-scheduled']) ? 'zamanlanmış' : 'HTTP/zamanlanmış';
+      line(`  ${name} | ${f.state} | güncelleme ${String(f.updateTime || '').slice(0, 16)} | ${trig} | ${f.buildConfig && f.buildConfig.runtime}`);
+    }
+  } catch (err) {
+    line(`  (liste alınamadı: ${String(err.message).slice(0, 120)})`);
+  }
+
   line('\n══ Haber çekimi ══');
   const last = await db.collection('articles').orderBy('fetched_at', 'desc').limit(1).get().catch(() => null);
   if (last && !last.empty) line(`  son çekilen haber: ${when(last.docs[0].data().fetched_at)}`);
