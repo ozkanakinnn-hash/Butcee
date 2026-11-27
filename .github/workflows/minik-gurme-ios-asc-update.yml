@@ -41,7 +41,11 @@ jobs:
           echo "KEY_PATH=$KEY" >> "$GITHUB_ENV"
           pip install -q "PyJWT[crypto]"
       - name: Sürümü güncelle
-        run: python3 minik_gurme/tool/asc_version_update.py
+        run: |
+          # ASC_UPDATE içinde "build=7" gibi bir satır varsa tam o yapı beklenir
+          export EXPECT_BUILD="$(grep -oE 'build=[0-9]+' minik_gurme/docs/store/appstore/ASC_UPDATE | cut -d= -f2 || true)"
+          echo "Beklenen yapı: ${EXPECT_BUILD:-en yeni}"
+          python3 minik_gurme/tool/asc_version_update.py
       - name: Anahtarı sil
         if: always()
         run: rm -f "$RUNNER_TEMP/AuthKey.p8"

@@ -66,7 +66,12 @@ def main():
         print("Bağlı yapı:", cur_no)
         best = None
         for _ in range(60):
-            builds = call("GET", f"/builds?filter[app]={app_id}&filter[preReleaseVersion.version]={vs}&sort=-uploadedDate&limit=5")["data"]
+            builds = call("GET", f"/builds?filter[app]={app_id}&filter[preReleaseVersion.version]={vs}&sort=-uploadedDate&limit=10")["data"]
+            want = os.environ.get("EXPECT_BUILD", "").strip()
+            if want:   # belirli yapı numarası bekleniyor (yeni yükleme API'de birkaç dakika sonra görünür)
+                builds = [x for x in builds if x["attributes"]["version"] == want]
+                if not builds:
+                    print("Yapı", want, "henüz görünmüyor, bekleniyor…")
             if builds:
                 b = builds[0]; st = b["attributes"].get("processingState")
                 print("En yeni yapı:", b["attributes"]["version"], st)
