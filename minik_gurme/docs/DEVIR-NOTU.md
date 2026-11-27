@@ -8,11 +8,11 @@ Son güncelleme: 2026-11-13 · Dal: `ccr-2e754343-d9gh2t` (önceki: `ccr-bceb93e
 - Her uygulamada **Türkçe + İngilizce**, ayarlarda dil seçici; veri içeriği de çevrilir (`shared/.../composeResources/files/i18n/en.json`).
 - Her uygulama depoda **kendi klasöründe**. Öğrenilen kalıplar `.claude/skills/` altına yazılır.
 - Dilde Türkçe konuş. Kısa, net, adım adım (kullanıcı çoğunlukla **telefondan** çalışıyor, ekran görüntüsü gönderiyor).
-- İmza anahtarı (`minikgurme-upload.jks`, `keystore.properties`) **depoda yok, asla commit edilmez** (kullanıcıya zip olarak verildi).
+- İmza anahtarı (`minikgurme-upload.jks`, `keystore.properties`) **depoda yok, asla commit edilmez**. İlk anahtar kayboldu; **27 Kasım 2026'da YENİ yükleme anahtarı** üretildi (SHA1 `A2:1A:26:B6:E2:08:0A:B9:5C:02:91:39:35:33:B0:B8:51:C1:0C:2D`), Google Drive › "Minik Gurme (akinai.minikgurme)" klasöründe: `.jks`, `keystore.properties`, `upload_certificate.pem`, `ANAHTAR-BENIOKU.txt`. Yeni oturumda Drive'dan indirip `minik_gurme/` köküne koy.
 - Commit mesajı sonuna attribution satırları (sistem hatırlatması neyse) eklenir; commit'lerde model kimliği yazılmaz.
 
 ## Uygulama
-Android (Kotlin/Compose) + iPhone (Kotlin Multiplatform / Compose Multiplatform). Paket: `akinai.minikgurme`, sürüm 2.2 (14).
+Android (Kotlin/Compose) + iPhone (Kotlin Multiplatform / Compose Multiplatform). Paket: `akinai.minikgurme`, sürüm 2.2.1 (15).
 ```
 minik_gurme/
   app/      Android: MainActivity, GooglePlayBilling, AndroidReminders, AndroidPlatformServices, Firebase topluluk, yedek/PDF
@@ -34,6 +34,11 @@ Test: `./gradlew --no-daemon --no-configuration-cache --max-workers=2 :app:testD
   Sürüme yapı bağlama/not: `minik-gurme-ios-asc-update.yml` (tetik `appstore/ASC_UPDATE`, içinde `build=N`). iOS'ta Kotlin/Native regex `\p{L}` desteklemez.
 - **İlk iOS sürümü Plus'sız:** `IosStore.PURCHASES_ENABLED = false` → `PlusManager.purchasesEnabled` false: Plus kartı/kilitli satırlar/"Plus'a geç" gizli, toplulukta yazma herkese açık, yasal metinlerde satın alma bölümleri yok. Abonelik ürünleri oluşturulunca true yapıp 1.0.1.
 - **21 Kasım 05:41 incelemeye gönderildi (1.0.0 yapı 2), "Waiting for Review".** Tıbbi cihaz beyanı: Hayır. Red gelirse mesajı al.
+
+## Google Play AAB (27 Kasım 2026)
+- v2.2.1 (kod 15) imzalı AAB üretildi (yeni anahtar), 59 test yeşil; Play görselleri yeniden üretildi, metinler güncellendi (35 tarif, alerjen sürdürme, servis şekilleri, kaynaklar).
+- Play'e daha önce eski anahtarla AAB yüklendiyse: Play Console › Uygulama bütünlüğü › Uygulama imzalama › **Yükleme anahtarı sıfırlama isteği** + `upload_certificate.pem`.
+- iOS 1.4.1/2.3.10 düzeltmelerinin hepsi ortak kodda, Android'de de var. Android'de Plus açık (`purchasesEnabled` true): Play'de abonelik ürünleri yoksa satın alma ekranı ürün bulamaz.
 
 ## Durum
 **Bitti:** Android uygulaması; Play Store web sayfaları (GitHub Pages yayında: https://ozkanakinnn-hash.github.io/Butcee/minik-gurme/ — gizlilik, koşullar, hesap-silme); mağaza görselleri + metinleri (`docs/store`, TR/EN, 7 ekran görüntüsü, öne çıkan görsel, tanıtım görselleri); iPhone uygulaması **Codemagic simülatöründe derlendi ve açıldı** (ilk ekran doğrulandı); iPhone'da bildirimler, topluluk (Firebase REST), yedek, PDF, Plus kodu (StoreKit 2 + `StoreEvents`) yazıldı.

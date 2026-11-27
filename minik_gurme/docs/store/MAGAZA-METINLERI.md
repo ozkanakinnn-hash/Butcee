@@ -15,12 +15,14 @@ Kategori: Ebeveynlik · Etiketler: bebek, beslenme, ek gıda, tarif
 Minik Gurme, 6. aydan itibaren ek gıdaya geçişi kolaylaştıran sade ve şık bir takip uygulamasıdır.
 
 • 1 yaşına kadar 100 gıda: denediklerinizi işaretleyin, tepkileri ve belirtileri not edin
-• Alerjen tanıtım planı: sık görülen 9 alerjeni 3 gün kuralıyla sırayla deneyin
-• Yaşa uygun tarifler: günün menüsü, püre ve BLW seçenekleri, porsiyon ayarı, alışveriş listesi
+• Alerjen tanıtım planı: sık görülen 9 alerjeni 3 gün kuralıyla sırayla deneyin; tanıtılan alerjenleri düzenli vermeniz için hatırlatma
+• Yaşa göre servis şekilleri: her gıdanın nasıl kesilip sunulacağını çizimlerle görün
+• 35 yaşa uygun tarif (6–12+ ay): günün menüsü, püre ve BLW seçenekleri, alerjen uyarısı, porsiyon ayarı, alışveriş listesi
 • Ay ay rehber: kıvam aşamaları, günlük öğün akışı ve güvenlik uyarıları
 • Büyüme takibi: kilo ve boy ölçümlerinizi WHO kız/erkek medyanlarıyla karşılaştırın
 • Ebeveyn Topluluğu: ay ay konu başlıklarında soru sorun, deneyim paylaşın (takma adla, isteğe bağlı)
-• Hatırlatıcılar, açık ve koyu tema, Türkçe ve İngilizce
+• Hatırlatıcılar, yedekleme/geri yükleme, açık ve koyu tema, Türkçe ve İngilizce
+• Sağlık konularında kaynak bağlantıları (DSÖ, ESPGHAN, T.C. Sağlık Bakanlığı, AAP)
 
 Gizlilik: Reklam yok, analiz yok. Bebeğinizin tüm kayıtları telefonunuzda kalır; topluluğa yalnızca sizin yazdıklarınız gider.
 
@@ -37,12 +39,14 @@ Uygulama genel bilgi sunar; tıbbi tavsiye yerine geçmez. Lütfen çocuk doktor
 Minik Gurme is a simple, beautiful tracker that makes starting solids easier from 6 months.
 
 • 100 foods before age 1: tick what you've tried and note reactions and symptoms
-• Allergen introduction plan: introduce the 9 common allergens one by one with the 3-day rule
-• Age-appropriate recipes: daily menu, purée and BLW options, portion scaling, shopping list
+• Allergen introduction plan: introduce the 9 common allergens one by one with the 3-day rule, with reminders to keep introduced allergens in the diet
+• Serving shapes by age: see how to cut and serve each food with simple drawings
+• 35 age-appropriate recipes (6–12+ months): daily menu, purée and BLW options, allergen notes, portion scaling, shopping list
 • Month-by-month guide: texture stages, daily meal flow and safety tips
 • Growth tracking: compare weight and height with WHO girl/boy medians
 • Parent Community: ask questions and share experiences in month-by-month topics (optional, with a nickname)
-• Reminders, light and dark theme, Turkish and English
+• Reminders, backup and restore, light and dark theme, Turkish and English
+• Source links on health topics (WHO, ESPGHAN, Turkish Ministry of Health, AAP)
 
 Privacy: no ads, no analytics. All of your baby's records stay on your phone; only what you write yourself goes to the community.
 
