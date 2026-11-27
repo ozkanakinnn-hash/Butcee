@@ -140,6 +140,11 @@ Firebase'e o bağımsız daldan deploy yapılmış olabilir: Make'e son gönderi
   (`scripts/durum-raporu.js`, yalnızca okur: Make ayarı, son paylaşımlar, bülten, canlı skor). Deploy için hizmet hesabında
   `iam.serviceAccounts.ActAs` yetkisi YOK (kullanıcı vermedi).
 - API-Football anahtarı (GitHub secret) geçerli ama Free plan 2026 sezonunu kapsamıyor → canlı skor Highlightly ile.
+- **iOS 1.0.4 (yapı 12) İNCELEMEYE GÖNDERİLDİ** (27 Kas 22:27 TR, WAITING_FOR_REVIEW). 1.0.0 kaydı DEVELOPER_REJECTED idi →
+  numarası 1.0.4 yapıldı (ilk sürüm; "Yenilikler" alanı yok). Yeni iş akışı `news-ios-submit.yml` + `ios/scripts/asc_submit.py`:
+  `ios/SUBMIT_VERSION` dosyasına "SÜRÜM DERLEME" yazıp gönder → sürüm hazırla, derleme bağla, incelemeye gönder.
+  iOS AdMob kimlikleri GitHub'da TANIMLI DEĞİL → iOS'ta reklam yok.
+- Android: 125 Play'de reddedildi → **1.0.4+200** gönderildi. Sonraki kodlar 201, 202…
 - **Play AAB 1.0.3+124** üretildi (yükleme anahtarı SHA-256 doğrulandı, gerçek AdMob kimlikleri, 67,5 MB) ve kullanıcıya
   gönderildi. Play'de daha yüksek kod varsa yeniden derle (Flutter 3.47 + `--android-skip-build-dependency-validation`).
 - ⚠️ 27 Kasım akşamı durum: Firebase'de `briefingTick` var ama **AI (gemini) ve make.js yüklü değil** (kullanıcı eski zip'i
