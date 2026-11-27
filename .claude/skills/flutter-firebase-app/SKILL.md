@@ -390,3 +390,24 @@ Gerçek widget'ları `flutter test` içinde render edip PNG yaz (flutter_app/too
 - **Deprem filtresi:** "Deprem mi oldu?" türü sorgu başlıklarını susturan kalıp, büyüklük yazan gerçek haberi ("Az önce 5,8 büyüklüğünde deprem") ASLA elememeli. Önce büyüklük kontrolü, sonra sorgu kalıbı (`EARTHQUAKE_QUERY`); ROUTINE'deki deprem kalıbı büyüklük içeren başlığı negatif lookahead ile hariç tutar. Testi: `test/routine-earthquake.test.js`.
 - **Hangi daldan kurulur:** varsayılan dal (`claude/taslak-uygulamasi-…`) 6 Kasım'da kalmış eski kopya; güncel sunucu kodu `claude/haber-akisi-2026-11`. Cloud Shell'de `git clone` varsayılan dalı açar → mutlaka `git checkout claude/haber-akisi-2026-11`.
 - **Telefondan/uzaktan kurulum:** Actions → "Haber Akışı - Firebase'e Kur" (dal: claude/haber-akisi-2026-11, proje: haber-68a3c). `FIREBASE_SERVICE_ACCOUNT` geçersizse "Failed to authenticate" ile Firestore adımında durur, hiçbir şey kurulmaz → anahtarı yenile.
+
+## Haber Akışı 27 Kasım dersleri (yayın, teşhis, bildirim)
+- **Önce hangi dal/hangi kod canlıda, onu bul.** Aynı depoda ortak geçmişi olmayan dallar olabilir (`git merge-base` boş).
+  Kullanıcının telefonundaki sürümün dalını ekrandaki metinle `git grep '<metin>' $(git branch -r)` ile bul.
+- **Eski GitHub zamanlanmış iş akışları** varsayılan daldan (eski kodla) çalışmaya devam eder → çift/eski biçimli bildirim.
+  `notifications` kaydındaki saat/konu biçimi + `actions_list` çalıştırma saatleriyle eşleştir; kullanıcıya "Disable workflow".
+- **Yalnızca okuyan durum raporu iş akışı** (Firestore'u hizmet hesabıyla okur, gizlileri maskeler) teşhisi saniyelere indirir.
+  Bozuk satır sonlu SA JSON'u firebase-tools'tan önce onar. Deploy için SA'da `iam.serviceAccounts.ActAs` gerekir.
+- Deploy'da "Skipped (No changes detected)" → kullanıcı ESKİ zip'i yüklemiş; yeniden indirmesini söyle.
+- **Android bildirim yığını:** sabit `tag` + InboxStyle + `setOnlyAlertOnce`; yığın görünür mü `activeNotifications` ile bak.
+  iOS'ta `aps.thread-id`. Son dakika ve bülten ayrı kalsın.
+- **Play:** yeni kişisel hesapta 12 test kullanıcısı × 14 gün kapalı test olmadan "Sürümü yükselt → Üretim/Açık test" gri.
+  APK ile kurulu uygulamaya Play güncelleme göstermez (imza farklı) → kaldır + test katılım bağlantısı. Sürüm kodu
+  reddedilirse belirgin büyük kod seç (ör. 200) ve not al.
+- **App Store gönderimi API ile:** sürüm numarası derlemeyle aynı olmalı; DEVELOPER_REJECTED/hazırlanan sürümün numarası
+  PATCH ile değiştirilir; `reviewSubmissions` → item → `submitted: true`. İlk sürümde `whatsNew` 409 verir (atla).
+- **Uçtan uca ekran (SDK 35 Play uyarısı):** `WindowCompat.setDecorFitsSystemWindows(window,false)` + Flutter
+  `SystemUiMode.edgeToEdge`; çubuk rengi API'si kullanma; açık `padding`li ListView'lara `MediaQuery.paddingOf(context).bottom`.
+- Dart `toUpperCase()` Türkçe değil: önce `i→İ`, `ı→I` çevir.
+- Tasarım isteği → önce HTML taslak (Playwright PNG), sonra uygulama; gerçek ekranı `RepaintBoundary.toImage` + gerçek
+  Roboto (`flutter/bin/cache/artifacts/material_fonts`) ile test içinde çizip gönder.
