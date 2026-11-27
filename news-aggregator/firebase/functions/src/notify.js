@@ -487,6 +487,8 @@ function toWire(m) {
       payload: {
         aps: {
           alert: { title: n.title, body: n.body || '' },
+          // iPhone: son dakika ayrı, diğer haber bildirimleri tek grupta (yığın) toplanır.
+          'thread-id': an.channelId === 'breaking_news' ? 'breaking' : an.tag === 'news_bulletin' ? 'bulletin' : 'news',
           // Gece (quiet kanalı): sessiz ve pasif; aksi halde varsayılan ses.
           ...(an.channelId === 'quiet' ? { 'interruption-level': 'passive' } : { sound: 'default' }),
         },

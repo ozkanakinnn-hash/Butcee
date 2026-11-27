@@ -394,3 +394,12 @@ test('tekrar: aynı olay yeni gelişmeyle (ölü sayısı) ve kaynak artışıyl
   assert.equal(again.length, 1, 'gerçek gelişme → tekrar bildirim');
   assert.match(dev.nextState.last_pick.why, /gelişme/, 'tekrarın gerekçesi gerçek bir gelişme olmalı');
 });
+
+test('iPhone grubu: son dakika ayrı, bülten ayrı, diğer haberler tek grupta', () => {
+  const { toWire } = require('../src/notify');
+  const base = (channelId, tag) => ({ topic: 't', notification: { title: 'x', body: 'y' }, data: {}, android: { notification: { channelId, tag } } });
+  assert.equal(toWire(base('breaking_news', 'major_1')).apns.payload.aps['thread-id'], 'breaking');
+  assert.equal(toWire(base('news', 'news_bulletin')).apns.payload.aps['thread-id'], 'bulletin');
+  assert.equal(toWire(base('news', 'news_ekonomi')).apns.payload.aps['thread-id'], 'news');
+  assert.equal(toWire(base('quiet', 'news_digest')).apns.payload.aps['thread-id'], 'news');
+});
