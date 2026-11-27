@@ -1,0 +1,101 @@
+# Minik Gurme: App Store ekran görüntüleri — GERÇEK iPhone simülatöründe, Apple'ın kendi durum çubuğuyla (9:41, tam pil).
+# App Review 2.3.10: görsellerde Apple dışı platform durum çubuğu olmamalı. Uygulama -mgDemo 2 ile örnek kayıtlarla açılır.
+# Başlatma: minik_gurme/iosApp/SCREENSHOTS_RUN değişip gönderildiğinde (ya da Actions → Run workflow).
+# Çıktı: minik_gurme/docs/store/appstore/raw-ios/{tr,en}_N_sekme.png (1206×2622) → olustur.js ile çerçevelenir.
+name: Minik Gurme iOS ekran görüntüleri
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "minik_gurme/iosApp/SCREENSHOTS_RUN"
+      - ".github/workflows/minik-gurme-ios-screenshots.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: minik-ios-screenshots
+  cancel-in-progress: true
+
+jobs:
+  shots:
+    runs-on: macos-15-intel
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - name: En yeni Xcode 26
+        run: |
+          sudo xcode-select -s "$(ls -d /Applications/Xcode_26*.app | grep -v beta | sort -V | tail -1)"
+          xcodebuild -version
+      - name: Simülatör (en yeni iOS, iPhone Pro — 1206×2622)
+        run: |
+          UDID=$(xcrun simctl list devices available -j | python3 -c '
+          import json,sys,re
+          d=json.load(sys.stdin)["devices"]; best=None
+          for rt,devs in d.items():
+              m=re.search(r"iOS-(\d+)-(\d+)",rt)
+              if not m: continue
+              for x in devs:
+                  n=x["name"]
+                  if not n.startswith("iPhone") or "Pro" not in n or "Max" in n: continue
+                  s=((int(m[1]),int(m[2])),n)
+                  if best is None or s>best[0]: best=(s,x["udid"],n)
+          print(best[1]); print(best[2],file=sys.stderr)')
+          echo "UDID=$UDID" >> "$GITHUB_ENV"
+          xcrun simctl boot "$UDID" || true
+          xcrun simctl bootstatus "$UDID" -b
+          xcrun simctl ui "$UDID" appearance light || true
+          xcrun simctl status_bar "$UDID" override --time "9:41" --dataNetwork wifi --wifiMode active --wifiBars 3 \
+            --cellularMode active --cellularBars 4 --batteryState charged --batteryLevel 100
+      - name: Derle (simülatör, Intel → x86_64)
+        run: |
+          brew install xcodegen
+          echo "sdk.dir=${ANDROID_HOME:-$ANDROID_SDK_ROOT}" > minik_gurme/local.properties
+          cd minik_gurme/iosApp && xcodegen generate
+          set -o pipefail
+          xcodebuild -project MinikGurme.xcodeproj -scheme MinikGurme -destination "id=$UDID" -configuration Debug \
+            -derivedDataPath build/dd ARCHS=x86_64 ONLY_ACTIVE_ARCH=YES CODE_SIGNING_ALLOWED=NO build 2>&1 | tee build.log | grep -E "error:|^e: |\*\* BUILD" || true
+          grep -q "BUILD SUCCEEDED" build.log
+          APP=$(find build/dd -name "MinikGurme.app" -path "*iphonesimulator*" | head -1)
+          test -f "$APP/Info.plist"
+          echo "APP=$GITHUB_WORKSPACE/minik_gurme/iosApp/$APP" >> "$GITHUB_ENV"
+      - name: Derleme hataları
+        if: failure()
+        run: |
+          grep -E "error:|^e: |What went wrong" -A3 minik_gurme/iosApp/build.log | head -80 || true
+      - name: Ekran görüntüleri (TR, EN × 6 sekme)
+        run: |
+          OUT="$GITHUB_WORKSPACE/minik_gurme/docs/store/appstore/raw-ios"
+          rm -rf "$OUT"; mkdir -p "$OUT"
+          for lang in tr en; do
+            # Her dil temiz kurulum: örnek kayıtlar o dilde oluşturulur
+            xcrun simctl uninstall "$UDID" akinai.minikgurme || true
+            xcrun simctl install "$UDID" "$APP"
+            n=1
+            for tab in today foods100 recipes guide growth community; do
+              xcrun simctl terminate "$UDID" akinai.minikgurme 2>/dev/null || true
+              xcrun simctl launch "$UDID" akinai.minikgurme -mgDemo 2 -mgLang "$lang" -mgTab "$tab"
+              sleep $([ $n = 1 ] && echo 25 || echo 12)
+              xcrun simctl io "$UDID" screenshot --type=png "$OUT/${lang}_${n}_${tab}.png"
+              if ! xcrun simctl spawn "$UDID" launchctl list | grep -q "UIKitApplication:akinai.minikgurme"; then
+                echo "::error::$lang/$tab: uygulama çöktü"; exit 1
+              fi
+              n=$((n+1))
+            done
+          done
+          ls -la "$OUT"
+          python3 -c "import struct,glob
+          for f in sorted(glob.glob('$OUT/*.png')):
+              d=open(f,'rb').read(24); print(f.split('/')[-1], struct.unpack('>II', d[16:24]))"
+      - name: Kaydet
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add minik_gurme/docs/store/appstore/raw-ios
+          git commit -m "Minik Gurme App Store ham ekran görüntüleri (iPhone simülatörü) [skip ci]" || exit 0
+          for i in 1 2 3; do git pull --rebase --autostash origin "${GITHUB_REF_NAME}" && git push origin "HEAD:${GITHUB_REF_NAME}" && exit 0; sleep 5; done; exit 1

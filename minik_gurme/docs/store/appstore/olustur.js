@@ -1,8 +1,11 @@
-// App Store görselleri (iPhone 6,3" 1206×2622). Ham ekranlar: raw/ (IosStoreScreenshotsTest, 402×874 @3x).
+// App Store görselleri (iPhone 6,3" 1206×2622). Ham ekranlar: raw-ios/ — GERÇEK iPhone simülatörü, Apple durum çubuğuyla
+// (.github/workflows/minik-gurme-ios-screenshots.yml). App Review 2.3.10: sahte/Android durum çubuğu ÇİZİLMEZ.
+// raw/ (Robolectric) yalnızca yedek; onunla durum çubuğu alanı boş bırakılır.
 // Kullanım: node olustur.js  → tr/*.png, en/*.png
 const { chromium } = require('playwright');
 const fs = require('fs'); const path = require('path');
 const here = __dirname;
+const iosRaw = fs.existsSync(path.join(__dirname, 'raw-ios', 'tr_1_today.png'));
 const uri = (f) => 'data:image/png;base64,' + fs.readFileSync(f).toString('base64');
 const icon = path.join(here, '../../../iosApp/iosApp/Assets.xcassets/AppIcon.appiconset/AppIcon-1024.png'.replace('minik_gurme/', ''));
 const css = `
@@ -50,8 +53,8 @@ const slides = {
           <div class="blob" style="width:200px;height:200px;right:-70px;top:90px;background:${c2}"></div>
           <div class="brand">${fs.existsSync(icon) ? `<img src="${uri(icon)}">` : ''}Minik Gurme</div>
           <div class="head"><h1>${title}</h1><p>${sub}</p></div>
-          <div class="phone"><div class="screen"><div class="island"></div><div class="sb"><span>9:41</span><span>▮▮▮ ▬</span></div>
-            <img class="shot" src="${uri(path.join(here, 'raw', lang + '_' + shot + '.png'))}"></div></div>
+          <div class="phone"><div class="screen"><div class="island"></div>${iosRaw ? '' : '<div class="sb"></div>'}
+            <img class="shot" src="${uri(path.join(here, iosRaw ? 'raw-ios' : 'raw', lang + '_' + shot + '.png'))}"></div></div>
         </div></body></html>`);
       await p.screenshot({ path: path.join(here, lang, String(i + 1).padStart(2, '0') + '-' + shot.slice(2) + '.png') });
     }
