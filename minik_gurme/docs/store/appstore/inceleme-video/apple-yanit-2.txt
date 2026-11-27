@@ -1,0 +1,12 @@
+Hello, and thank you for the detailed review.
+
+Guideline 2.3.10 - Accurate Metadata
+All App Store screenshots (Turkish and English) have been replaced. They were retaken on an iPhone simulator running iOS and show the standard iOS status bar only; no non-Apple platform status bar images remain. The screenshots show the app in use: Today, 100 Foods, Recipes, Guide, Growth and Parent Community.
+
+Guideline 1.4.1 - Safety - Physical Harm
+We added citations with links for the health and nutrition information in the app (new build 1.0.0 attached to this version):
+- Settings > Sources lists every source with a tappable link: WHO Guideline for complementary feeding of infants and young children 6-23 months (2023), WHO Child Growth Standards, the ESPGHAN 2017 complementary feeding position paper (doi:10.1097/MPG.0000000000001454), the Turkish Ministry of Health Nutrition Guide (TÜBER 2022), AAP HealthyChildren.org and the 2021 AAAAI/ACAAI/CSACI food allergy prevention consensus (doi:10.1016/j.jaip.2020.11.002).
+- The sources are easy to find: a "Sources of this information" link is shown at the bottom of the Guide, the 3-Day Rule / allergen plan, every food and recipe detail and the growth chart, and the "Source" line of each monthly guide card opens the same page.
+- The app also states on first launch and in every recipe that it provides general information for feeding tracking and does not replace advice from a paediatrician.
+
+The App Review Information notes have been updated accordingly. Thank you.
