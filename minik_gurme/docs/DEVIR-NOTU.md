@@ -28,6 +28,10 @@ Test: `./gradlew --no-daemon --no-configuration-cache --max-workers=2 :app:testD
 ## iOS App Store (21 Kasım 2026)
 - **1.0.0 (yapı 2) App Store Connect'e yüklendi** — `.github/workflows/minik-gurme-ios-release.yml` (GitHub Actions `macos-15-intel`, Mac/Codemagic'siz; arşiv ~30 dk). Yeniden: `minik_gurme/iosApp/RELEASE_VERSION` değiştir ya da Run workflow (ref bu dal).
 - App Store Connect: Apple ID **6837536740**, ad "Minik Gurme: Ek Gıda Takibi", TR + EN, 13+, Çin hariç, gizlilik/yaş/kategori/metinler girildi; görseller `docs/store/appstore/{tr,en}` (1206×2622, `olustur.js`, ham: `IosStoreScreenshotsTest`). Rehber: `docs/store/APP-STORE.md`.
+- **27 Kasım: App Review 2.3.10 + 1.4.1 düzeltmeleri.** Görseller artık GERÇEK iPhone simülatöründen (`minik-gurme-ios-screenshots.yml`,
+  tetik `iosApp/SCREENSHOTS_RUN`, uygulama `-mgDemo 2` ile örnek kayıtlarla) → `appstore/raw-ios` → `node olustur.js` (sahte durum çubuğu yok).
+  Kaynak bağlantıları her sağlık ekranında (`SourcesLink`). Yapı 7 sürüme bağlandı, not `inceleme-video/notes-v2.txt`, yanıt `apple-yanit-2.txt`.
+  Sürüme yapı bağlama/not: `minik-gurme-ios-asc-update.yml` (tetik `appstore/ASC_UPDATE`, içinde `build=N`). iOS'ta Kotlin/Native regex `\p{L}` desteklemez.
 - **İlk iOS sürümü Plus'sız:** `IosStore.PURCHASES_ENABLED = false` → `PlusManager.purchasesEnabled` false: Plus kartı/kilitli satırlar/"Plus'a geç" gizli, toplulukta yazma herkese açık, yasal metinlerde satın alma bölümleri yok. Abonelik ürünleri oluşturulunca true yapıp 1.0.1.
 - **21 Kasım 05:41 incelemeye gönderildi (1.0.0 yapı 2), "Waiting for Review".** Tıbbi cihaz beyanı: Hayır. Red gelirse mesajı al.
 
