@@ -103,3 +103,10 @@ Sıra (`templates/APPLE-HESAP-REHBERI.md`): Developer Program (Bireysel, 99$) �
 - Not + ek: ASC API (`appStoreReviewDetails` PATCH notes, `appStoreReviewAttachments`) çalışıyor. Notta "physical iPhone, TestFlight build X" yaz.
 - **Yeniden gönderim API'den olmuyor** (409 "Version is not ready"): sürümü videodaki derlemeye bağla (Build → eskiyi (–), yeniyi ekle), App Review'da Apple mesajına **Reply**, sonra **Resubmit to App Review** (kullanıcı UI'da yapar) → "Waiting for Review".
 - `workflow_dispatch`-only iş akışı varsayılan olmayan dalda kayıtlı değildir (404): bir kez `push` tetikleyicisiyle gönder, sonra sayısal workflow id ile dispatch et.
+
+## App Review "4.3(a) Spam" (kalabalık kategori: ezan/namaz vakti, hava durumu, fener vb.)
+- Kod kopyası iddiası değildir: "konsept ve meta veri, kategorideki çok sayıda uygulamaya benziyor" demektir. Az değiştirip tekrar göndermek hesabı riske atar → **tek seferde** belirgin farkla git.
+- Etkili fark: platforma özgü özellikler (Canlı Etkinlik + Dynamic Island, etkileşimli widget "Kıldım", Siri/Kestirmeler), ürünü tek fikre daraltma (ör. "vakit + namaz takibi + seri + kaza"), türün herkesteki ikincil içeriğini (tebrik kartı, kandil listesi, esmaül hüsna) ilk sürümden çıkarma.
+- Mağaza: türün genel kelimeleri olmayan yeni ad + alt başlık, cami/hilal dışı ikon, ilk 3 ekran görüntüsünde farklı özellikler, açıklamanın ilk cümlesi "neden farklı".
+- Gönderirken App Review'a **Reply**: yeni sürümde neyin değiştiğini madde madde yaz (ekran görüntüsüyle). Ret devam ederse App Review Board'a itiraz formu.
+- Önizleme yöntemi: HTML + Playwright ile telefon çerçeveli mock (Inter fontu kurulu), `docs/yeni-tasarim/` altına PNG; kullanıcı onayından sonra SwiftUI'ye geçilir.
