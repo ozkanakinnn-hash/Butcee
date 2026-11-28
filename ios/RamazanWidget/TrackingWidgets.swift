@@ -100,7 +100,8 @@ struct PrayerLiveLockView: View {
 
   var body: some View {
     let s = context.state
-    let entered = context.isStale || Date() >= s.target
+    var entered = Date() >= s.target
+    if #available(iOS 16.2, *), context.isStale { entered = true }
     let en = Shared.defaults.string(forKey: "key_language") == "en"
     VStack(spacing: 10) {
       HStack(spacing: 12) {
