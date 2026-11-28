@@ -238,3 +238,14 @@ gradle/actions/setup-gradle@v5 → `./gradlew assembleDebug` → upload-artifact
 - Açıklamada emoji/→ "invalid characters" hatası verir. Ekran görüntüsü sekmesi yalnız "medium display" ise **1206×2622** yükle.
 - İlk sürümde ürünü olmayan Premium/IAP ekranını gizle (bayrak), yoksa 2.1 reddi riski.
 - Bireysel hesapta: Legal entity → DSA tacir → kimlik/adres belgesi; banka (Türkiye: Banka Kodu/Şube Kodu + 7 haneli hesap no, IBAN değil); W-8BEN (FTIN=TCKN, Treaty: Türkiye, 10. madde boş).
+
+## Namaz vakti uygulamaları — kesin Diyanet kaynağı (28 Kasım 2026'da doğrulandı)
+- **Birincil:** `https://namazvakitleri.diyanet.gov.tr/tr-TR/<IlceID>` (yönlendirmeyi izle). Sayfada "Yıllık Namaz Vakti"
+  tablosu: ilçenin 365 günü (`aria-describedby="table-caption-yearly"`, satır: tarih, hicri, 6 saat; ay adlarında
+  `Eyl&#252;l` gibi HTML kodu olabilir). Yılda bir indir, ayda bir tazele. Anahtar/üyelik gerekmez.
+- **İkincil:** `ezanvakti.emushaf.net/vakitler/<IlceID>` (JSON, ~30 gün, Kıble Saati içerir; yıl geçişini kapatır).
+  İlçe numaraları iki kaynakta aynı (İstanbul 9541). İki kaynak 32/32 gün birebir aynı çıktı.
+- **Aladhan (method=13) Diyanet DEĞİLDİR:** günlerin ~%25'inde ±1 dk sapar; adres modunda sahte koordinat
+  (8.8888888, 7.7777777) döndürebilir. Yalnızca hiç Diyanet verisi yokken kullan, kaydı "resmi değil" işaretle,
+  ekranda "Yaklaşık vakit" yaz ve Diyanet gelince üzerine yaz. Önbellekte her günün kaynağını tut.
+- `awqatsalah.diyanet.gov.tr` resmi API'si kayıt (kullanıcı adı/şifre) ister; uygulamaya gömülecek ortak şifre olmaz.
