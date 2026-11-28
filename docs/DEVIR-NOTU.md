@@ -44,3 +44,8 @@ Kıble modülü sıfırdan (Diyanet yöntemi, 141° birebir), vakitler Diyanet i
 4. Üretim paketi (`-PprodAds=true`) ve app-ads.txt (kök alan adı için `ozkanakinnn-hash.github.io` deposu gerekir).
 5. Meal telif kararı (Diyanet izni ya da telifsiz meal); tam ezan sesleri lisanslı kayıtla.
 6. Yeni özelliklerin iOS'a aktarılması (Cuma, canlı sayaç, hesaplayıcılar, imsakiye, yedekleme).
+
+## 28 Kasım 2026
+- iOS 4.3(a) Spam reddi: kullanıcı ad ve tasarımın aynı kalmasını, Android ile ayrışmamasını istiyor. Mevcut çerçevede geliştirme önizlemeleri `docs/yeni-tasarim/`.
+- **iOS vakit sapması düzeltildi** (dal `ccr-220041a8-fdjzbw`): Diyanet tablosu yeniden çekilir, Aladhan ±1 dk değerleri kalıcı olmaz.
+- **Android'e dokunulmadı** (kapalı test sürüyor). İlk üretim AAB'sine girecekler: `docs/ANDROID-ILK-AAB-NOTLARI.md`.
