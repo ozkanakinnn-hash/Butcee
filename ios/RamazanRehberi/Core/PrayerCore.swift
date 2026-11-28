@@ -16,6 +16,12 @@ struct PrayerTimes: Codable, Hashable {
   var dateStr: String   // "YYYY-MM-DD"
   var city: String
   var district: String
+  /// Verinin kaynağı: "diyanet" (resmi ilçe tablosu), "aladhan" (hesap servisi). Eski kayıtlarda nil.
+  var source: String? = nil
+
+  var isOfficial: Bool { source == PrayerTimes.sourceDiyanet }
+  static let sourceDiyanet = "diyanet"
+  static let sourceAladhan = "aladhan"
 
   var all: [String] { [imsak, gunes, ogle, ikindi, aksam, yatsi] }
   static let names = ["İmsak", "Güneş", "Öğle", "İkindi", "Akşam", "Yatsı"]
@@ -129,6 +135,15 @@ enum PrayerCache {
   }
 
   static func cacheKey(_ c: String, _ d: String, _ k: String) -> String { "\(c)_\(d)_\(k)" }
+
+  /// Önümüzdeki [days] günden biri Diyanet'in resmi tablosundan gelmiyorsa true.
+  /// Aladhan / yerel hesap ±1 dk sapabildiği için bu günler Diyanet'ten yeniden çekilmelidir.
+  static func needsOfficialRefresh(city: String, district: String, from date: Date, days: Int = 7) -> Bool {
+    let m = all()
+    return (0..<days).contains { i in
+      m[cacheKey(city, district, DateUtil.dateKey(DateUtil.addDays(i, to: date)))]?.isOfficial != true
+    }
+  }
 
   /// Widget ve bildirimler için: o konumun bugünkü/yarınki vakitleri (yoksa yaklaşık hesap).
   static func timesFor(date: Date) -> PrayerTimes {

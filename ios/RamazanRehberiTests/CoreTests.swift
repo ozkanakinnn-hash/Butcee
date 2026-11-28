@@ -15,6 +15,46 @@ final class CoreTests: XCTestCase {
   private let manisa = PrayerTimes(imsak: "06:01", gunes: "07:34", ogle: "12:59", ikindi: "15:48", aksam: "18:13", yatsi: "19:31",
                                    dateStr: "2026-11-05", city: "Manisa", district: "Saruhanlı")
 
+  /// Vakit sapması düzeltmesi: Aladhan / eski kayıtlar resmi sayılmaz, Diyanet tablosu yeniden çekilmeli.
+  func testOfficialRefreshDetection() {
+    let city = "TestIl", district = "TestIlce"
+    let start = date(2030, 1, 10)
+    func day(_ i: Int, _ src: String?) -> PrayerTimes {
+      PrayerTimes(imsak: "06:00", gunes: "07:30", ogle: "12:30", ikindi: "15:00", aksam: "17:30", yatsi: "19:00",
+                  dateStr: DateUtil.dateKey(DateUtil.addDays(i, to: start)), city: city, district: district, source: src)
+    }
+    PrayerCache.save((0..<7).map { day($0, PrayerTimes.sourceDiyanet) })
+    XCTAssertFalse(PrayerCache.needsOfficialRefresh(city: city, district: district, from: start))
+    // Aladhan boş günü doldurur ama resmi günün üzerine yazmaz
+    PrayerCache.save([day(3, PrayerTimes.sourceAladhan)], overwrite: false)
+    XCTAssertFalse(PrayerCache.needsOfficialRefresh(city: city, district: district, from: start))
+    // Önümüzdeki günlerden biri Aladhan'dan geldiyse yenileme gerekir
+    PrayerCache.save([day(5, PrayerTimes.sourceAladhan)])
+    XCTAssertTrue(PrayerCache.needsOfficialRefresh(city: city, district: district, from: start))
+    // Diyanet tablosu gelince tekrar resmi
+    PrayerCache.save([day(5, PrayerTimes.sourceDiyanet)])
+    XCTAssertFalse(PrayerCache.needsOfficialRefresh(city: city, district: district, from: start))
+    // Eksik gün de yenileme gerektirir
+    XCTAssertTrue(PrayerCache.needsOfficialRefresh(city: city, district: district, from: start, days: 8))
+  }
+
+  /// Eski sürümün önbelleğinde "source" alanı yok: çözülebilmeli ve resmi sayılmamalı (yeniden çekilsin).
+  func testLegacyCacheDecodesAsUnofficial() throws {
+    let json = #"{"imsak":"06:00","gunes":"07:30","ogle":"12:30","ikindi":"15:00","aksam":"17:30","yatsi":"19:00","dateStr":"2030-01-01","city":"A","district":"B"}"#
+    let p = try JSONDecoder().decode(PrayerTimes.self, from: Data(json.utf8))
+    XCTAssertNil(p.source)
+    XCTAssertFalse(p.isOfficial)
+  }
+
+  /// Aladhan'ın sahte koordinatı (8.88, 7.77) akşam düzeltmesinde kullanılmamalı.
+  func testSunsetCoordsRejectsBogusMeta() {
+    let own = LocalPrayerCalc.coords(city: AppData.shared.province)
+    let c = PrayerService.sunsetCoords(meta: ["latitude": 8.8888888, "longitude": 7.7777777])
+    if !AppData.shared.useCoordinates {
+      XCTAssertEqual(c?.0, own.0); XCTAssertEqual(c?.1, own.1)
+    }
+  }
+
   func testCleanTime() {
     XCTAssertEqual(PrayerTimeUtils.clean("18:30 (+03)"), "18:30")
     XCTAssertEqual(PrayerTimeUtils.clean("5:07"), "05:07")

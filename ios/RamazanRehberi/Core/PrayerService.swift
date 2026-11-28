@@ -38,11 +38,15 @@ final class PrayerService: ObservableObject {
       return PrayerCache.get(city: city, district: district, dateKey: DateUtil.dateKey(last)) == nil
         || PrayerCache.get(city: city, district: district, dateKey: DateUtil.dateKey(m)) == nil
     }
-    if missing.isEmpty { afterUpdate(); return }
+    // Önümüzdeki günler Aladhan/yerel hesaptan geldiyse Diyanet tablosu yeniden çekilir
+    // (eskiden ay bir kez dolunca Diyanet'e hiç dönülmüyor, vakitler ±1 dk sapıyordu).
+    let needOfficial = Self.shouldTryDiyanet(city: city, district: district, now: now)
+    if missing.isEmpty && !needOfficial { afterUpdate(); return }
     isLoading = true
     Task {
       // 1) Diyanet'in resmi ilçe tablosu (dakikası dakikasına). GPS koordinat modunda atlanır.
-      if !AppData.shared.useCoordinates {
+      if needOfficial || !missing.isEmpty, !AppData.shared.useCoordinates {
+        Shared.defaults.set(Date().timeIntervalSince1970, forKey: Self.diyanetTryKey(city, district))
         _ = await DiyanetSource.fetchAndStore(country: countryName, province: city, district: district)
       }
       await geocodeIfNeeded(city: city, district: district, country: country, code: code)
@@ -63,6 +67,17 @@ final class PrayerService: ObservableObject {
         self.afterUpdate()
       }
     }
+  }
+
+  static func diyanetTryKey(_ city: String, _ district: String) -> String { "diyanet_last_try|\(city)|\(district)" }
+
+  /// Diyanet'e yeniden sorulmalı mı: GPS modunda hayır; önümüzdeki 7 günün hepsi resmi tablodansa hayır;
+  /// değilse en çok 3 saatte bir dene (Diyanet'in kapsamadığı yerlerde ağı yormamak için).
+  static func shouldTryDiyanet(city: String, district: String, now: Date = Date()) -> Bool {
+    if AppData.shared.useCoordinates { return false }
+    guard PrayerCache.needsOfficialRefresh(city: city, district: district, from: now) else { return false }
+    let last = Shared.defaults.double(forKey: diyanetTryKey(city, district))
+    return now.timeIntervalSince1970 - last > 3 * 3600
   }
 
   private func afterUpdate() {
@@ -112,7 +127,7 @@ final class PrayerService: ObservableObject {
           ikindi: PrayerTimeUtils.clean(tm["Asr"], fallback: "16:20"),
           aksam: diyanetAksam(PrayerTimeUtils.clean(tm["Maghrib"], fallback: "18:45"), day: d, key: key),
           yatsi: PrayerTimeUtils.clean(tm["Isha"], fallback: "20:05"),
-          dateStr: key, city: city, district: district))
+          dateStr: key, city: city, district: district, source: PrayerTimes.sourceAladhan))
       }
       if !list.isEmpty { PrayerCache.save(list, overwrite: false) }
     } catch {
@@ -122,15 +137,28 @@ final class PrayerService: ObservableObject {
 
   /// Diyanet gibi yuvarla: güneş batışı yukarı yuvarlanır (+7 dk temkin); servis 1 dk erken kaldıysa düzeltilir.
   private func diyanetAksam(_ maghrib: String, day: [String: Any], key: String) -> String {
-    guard let meta = day["meta"] as? [String: Any],
-          let lat = (meta["latitude"] as? Double) ?? (meta["latitude"] as? NSNumber)?.doubleValue,
-          let lon = (meta["longitude"] as? Double) ?? (meta["longitude"] as? NSNumber)?.doubleValue else { return maghrib }
+    let meta = day["meta"] as? [String: Any] ?? [:]
     let p = key.split(separator: "-").compactMap { Int($0) }
-    guard p.count == 3 else { return maghrib }
+    guard p.count == 3, let c = Self.sunsetCoords(meta: meta) else { return maghrib }
+    let lat = c.0, lon = c.1
     let tz = TimeZone(identifier: (meta["timezone"] as? String) ?? "Europe/Istanbul") ?? .current
     let date = DateUtil.date(fromKey: key) ?? Date()
     let tzH = Double(tz.secondsFromGMT(for: date)) / 3600
     return LocalPrayerCalc.diyanetMaghrib(maghrib, lat: lat, lon: lon, y: p[0], m: p[1], d: p[2], tzHours: tzH)
+  }
+
+  /// Akşam düzeltmesi için koordinat. Aladhan adres modunda bazen sahte koordinat döndürüyor
+  /// (ör. 8.8888888, 7.7777777); bu durumda GPS ya da il merkezi kullanılır.
+  static func sunsetCoords(meta: [String: Any]) -> (Double, Double)? {
+    if AppData.shared.useCoordinates, let c = Shared.defaults.array(forKey: "key_gps_coords") as? [Double], c.count == 2 {
+      return (c[0], c[1])
+    }
+    let own = LocalPrayerCalc.coords(city: AppData.shared.province)
+    func num(_ k: String) -> Double? { (meta[k] as? Double) ?? (meta[k] as? NSNumber)?.doubleValue }
+    if let lat = num("latitude"), let lon = num("longitude"), abs(lat - own.0) < 1.5, abs(lon - own.1) < 1.5 {
+      return (lat, lon)
+    }
+    return own
   }
 
   /// Yurt dışı şehirler için çevrimdışı hesapta kullanılacak koordinatı bir kez kaydeder.

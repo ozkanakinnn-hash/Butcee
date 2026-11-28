@@ -28,7 +28,8 @@ enum DiyanetSource {
     guard !days.isEmpty else { return false }
     PrayerCache.save(days.map {
       PrayerTimes(imsak: $0.times[0], gunes: $0.times[1], ogle: $0.times[2], ikindi: $0.times[3],
-                  aksam: $0.times[4], yatsi: $0.times[5], dateStr: $0.dateKey, city: province, district: district)
+                  aksam: $0.times[4], yatsi: $0.times[5], dateStr: $0.dateKey, city: province, district: district,
+                  source: PrayerTimes.sourceDiyanet)
     })
     var kible = Shared.defaults.dictionary(forKey: "diyanet_kible") as? [String: String] ?? [:]
     for d in days { if let k = d.kibleSaati { kible[d.dateKey] = k } }
