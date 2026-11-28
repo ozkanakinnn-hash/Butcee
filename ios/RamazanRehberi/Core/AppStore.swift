@@ -211,7 +211,9 @@ final class AppData: ObservableObject {
   /// Takipte işaretlenmeyen geçmiş vakitleri kaza borcuna ekler (her gün yalnız bir kez).
   @discardableResult
   func applyAutoKaza(today: Date = Date()) -> Int {
-    let missed = PrayerLog.reconcileMissed(today: today)
+    // İmsaktan önce dünün yatsısı hâlâ kılınabilir: dün henüz kazaya işlenmez
+    let beforeImsak = PrayerLog.currentVakit(PrayerCache.timesFor(date: today), now: today) == nil
+    let missed = PrayerLog.reconcileMissed(today: today, includeYesterday: !beforeImsak)
     var n = 0
     for (v, c) in missed { if let k = KazaVakit(rawValue: v.kazaKey) { kazaAdd(k, c); n += c } }
     return n

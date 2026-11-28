@@ -70,6 +70,18 @@ enum PrayerLog {
     return current
   }
 
+  /// İşaretlenecek gün: yatsı vakti imsaka kadar sürer; imsaktan önce yatsı DÜNÜN kaydına yazılır.
+  static func dateKey(for v: FarzVakit, times: PrayerTimes, now: Date = Date()) -> String {
+    if v == .yatsi && currentVakit(times, now: now) == nil { return DateUtil.dateKey(DateUtil.addDays(-1, to: now)) }
+    return DateUtil.dateKey(now)
+  }
+
+  /// "Kıldım" denince işaretlenecek vakit ve gün: vakti girmiş son farz; imsaktan önce dünün yatsısı.
+  static func markTarget(_ times: PrayerTimes, now: Date = Date()) -> (vakit: FarzVakit, dateKey: String) {
+    if let v = currentVakit(times, now: now) { return (v, DateUtil.dateKey(now)) }
+    return (.yatsi, DateUtil.dateKey(DateUtil.addDays(-1, to: now)))
+  }
+
   /// Vakti girmiş (işaretlenebilir) farz vakitler.
   static func enteredVakits(_ times: PrayerTimes, now: Date = Date()) -> [FarzVakit] {
     guard let c = currentVakit(times, now: now) else { return [] }
@@ -147,8 +159,9 @@ enum PrayerLog {
   /// Otomatik kaza: dünden geriye (en çok 30 gün), henüz işlenmemiş ve EN AZ BİR vakit işaretlenmiş günlerde
   /// işaretlenmeyen vakitleri döndürür. Hiç işaret yoksa o gün takip edilmemiş sayılır (kaza eklenmez).
   /// Döndükten sonra işlenen son gün kaydedilir; aynı gün iki kez eklenmez.
-  static func reconcileMissed(today: Date = Date()) -> [FarzVakit: Int] {
-    let yesterday = DateUtil.dateKey(DateUtil.addDays(-1, to: today))
+  /// [includeYesterday] false: bugünün imsakı henüz girmediyse dünün yatsısı hâlâ kılınabilir, dün işlenmez.
+  static func reconcileMissed(today: Date = Date(), includeYesterday: Bool = true) -> [FarzVakit: Int] {
+    let yesterday = DateUtil.dateKey(DateUtil.addDays(includeYesterday ? -1 : -2, to: today))
     let floor = DateUtil.dateKey(DateUtil.addDays(-30, to: today))
     let last = defaults.string(forKey: reconciledKey) ?? ""
     defer { defaults.set(yesterday, forKey: reconciledKey) }

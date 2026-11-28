@@ -248,15 +248,19 @@ struct PrayerTimesCard: View {
       let todayKey = DateUtil.dateKey(now)
       let prayed = PrayerLog.prayed(on: todayKey)
       let entered = Set(PrayerLog.enteredVakits(times, now: now))
+      // İmsaktan önce Yatsı kutusu dünün yatsısını işaretler (yatsı vakti imsaka kadar sürer)
+      let yatsiKey = PrayerLog.dateKey(for: .yatsi, times: times, now: now)
+      let lateYatsi = yatsiKey != todayKey
       HStack(spacing: 6) {
         ForEach(0..<6, id: \.self) { i in
           let sel = i == currentIndex
           let farz = FarzVakit.from(timeIndex: i)
-          let canMark = farz.map { entered.contains($0) } ?? false
-          let isPrayed = farz.map { prayed.contains($0) } ?? false
+          let isLateYatsi = lateYatsi && farz == .yatsi
+          let canMark = isLateYatsi || (farz.map { entered.contains($0) } ?? false)
+          let isPrayed = isLateYatsi ? PrayerLog.isPrayed(.yatsi, on: yatsiKey) : (farz.map { prayed.contains($0) } ?? false)
           Button {
             guard let v = farz, canMark else { return }
-            store.togglePrayed(v, on: now)
+            if isLateYatsi { PrayerLog.toggle(.yatsi, on: yatsiKey) } else { store.togglePrayed(v, on: now) }
             UIImpactFeedbackGenerator(style: .light).impactOccurred()
           } label: {
             VStack(spacing: 7) {

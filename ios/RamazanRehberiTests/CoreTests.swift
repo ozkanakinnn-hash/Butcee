@@ -243,6 +243,10 @@ final class CoreTests: XCTestCase {
     XCTAssertEqual(missed.values.reduce(0, +), 4)       // yalnız k(-4)'ün 4 eksik vakti
     XCTAssertNil(missed[.ogle])
     XCTAssertTrue(PrayerLog.reconcileMissed(today: today).isEmpty)  // ikinci kez eklenmez
+    // İmsaktan önce dün işlenmez (dünün yatsısı hâlâ kılınabilir)
+    d.removeObject(forKey: PrayerLog.reconciledKey)
+    let early = PrayerLog.reconcileMissed(today: DateUtil.addDays(1, to: today), includeYesterday: false)
+    XCTAssertEqual(early.values.reduce(0, +), 4)  // yalnız k(-4); dün (k(0)) beklemede
     XCTAssertGreaterThanOrEqual(PrayerLog.longestStreak(), 3)
     d.removeObject(forKey: PrayerLog.key); d.removeObject(forKey: PrayerLog.reconciledKey)
   }
@@ -253,6 +257,12 @@ final class CoreTests: XCTestCase {
     XCTAssertEqual(PrayerLog.currentVakit(manisa, now: date(2026, 11, 5, 14, 0)), .ogle)
     XCTAssertEqual(PrayerLog.currentVakit(manisa, now: date(2026, 11, 5, 21, 0)), .yatsi)
     XCTAssertEqual(PrayerLog.enteredVakits(manisa, now: date(2026, 11, 5, 16, 0)), [.sabah, .ogle, .ikindi])
+    // İmsaktan önce "Kıldım" dünün yatsısına yazılır
+    let late = PrayerLog.markTarget(manisa, now: date(2026, 11, 5, 1, 30))
+    XCTAssertEqual(late.vakit, .yatsi); XCTAssertEqual(late.dateKey, "2026-11-04")
+    XCTAssertEqual(PrayerLog.markTarget(manisa, now: date(2026, 11, 5, 14, 0)).dateKey, "2026-11-05")
+    XCTAssertEqual(PrayerLog.dateKey(for: .yatsi, times: manisa, now: date(2026, 11, 5, 2, 0)), "2026-11-04")
+    XCTAssertEqual(PrayerLog.dateKey(for: .ogle, times: manisa, now: date(2026, 11, 5, 2, 0)), "2026-11-05")
     XCTAssertEqual(FarzVakit.from(timeIndex: 1), nil)
     XCTAssertEqual(FarzVakit.from(timeIndex: 4), .aksam)
   }

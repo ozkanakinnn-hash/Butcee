@@ -16,8 +16,9 @@ struct MarkPrayedView: View {
     let p = WPalette.current(scheme)
     let en = L10n.isEnglish
     let prayed = PrayerLog.prayed(on: DateUtil.dateKey(e.date))
-    let current = PrayerLog.currentVakit(e.times, now: e.date)
-    let done = current.map { prayed.contains($0) } ?? false
+    let target = PrayerLog.markTarget(e.times, now: e.date)  // imsaktan önce: dünün yatsısı
+    let current: FarzVakit? = target.vakit
+    let done = PrayerLog.isPrayed(target.vakit, on: target.dateKey)
     switch family {
     case .accessoryCircular:
       ZStack {

@@ -93,8 +93,10 @@ struct TrackingView: View {
         ForEach(0..<7, id: \.self) { i in
           Text(heads[i]).font(.system(size: 10, weight: .bold)).foregroundStyle(p.onSurfaceVariant)
         }
-        ForEach(0..<lead, id: \.self) { _ in Color.clear.frame(height: 34) }
-        ForEach(1...count, id: \.self) { d in
+        // Kimlikler çakışmasın: başlık 0…6, boşluk negatif, günler 101…
+        ForEach((0..<lead).map { -1 - $0 }, id: \.self) { _ in Color.clear.frame(height: 34) }
+        ForEach((1...count).map { $0 + 100 }, id: \.self) { code in
+          let d = code - 100
           let date = DateUtil.addDays(d - 1, to: start)
           let k = DateUtil.dateKey(date)
           let n = PrayerLog.count(on: k)

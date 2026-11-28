@@ -22,10 +22,10 @@ struct MarkPrayedIntent: AppIntent {
     L10n.current = Shared.defaults.string(forKey: "key_language") ?? "tr"
     let en = L10n.isEnglish
     let times = PrayerCache.timesFor(date: now)
-    guard let v = FarzVakit(rawValue: vakit) ?? PrayerLog.currentVakit(times, now: now) else {
-      return .result(dialog: IntentDialog(stringLiteral: en ? "Fajr time has not started yet." : "Henüz sabah vakti girmedi."))
-    }
-    let key = DateUtil.dateKey(now)
+    // Verilen vakit ya da vakti girmiş son farz; imsaktan önce dünün yatsısı
+    let target = PrayerLog.markTarget(times, now: now)
+    let v = FarzVakit(rawValue: vakit) ?? target.vakit
+    let key = FarzVakit(rawValue: vakit) == nil ? target.dateKey : PrayerLog.dateKey(for: v, times: times, now: now)
     PrayerLog.set(v, on: key, prayed: true)
     WidgetCenter.shared.reloadAllTimelines()
     #if !WIDGET
