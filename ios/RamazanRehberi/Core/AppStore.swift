@@ -65,6 +65,13 @@ final class AppData: ObservableObject {
   @Published var kazaRemainingMap: [String: Int] { didSet { d.set(kazaRemainingMap, forKey: "kaza_kalan") } }
   @Published var kazaPrayedMap: [String: Int] { didSet { d.set(kazaPrayedMap, forKey: "kaza_kilinan") } }
 
+  // Namaz takibi: kılınmayan vakitler otomatik kazaya eklensin mi (widget/Siri ile ortak depo)
+  @Published var autoKaza: Bool { didSet { s.set(autoKaza, forKey: PrayerLog.autoKazaKey) } }
+  /// Kilit ekranında sıradaki vakte canlı geri sayım (Canlı Etkinlik)
+  @Published var liveActivityEnabled: Bool { didSet { d.set(liveActivityEnabled, forKey: "key_live_activity"); LiveActivityManager.refresh() } }
+  /// Kıldım işaretleri değişince arayüzü tazelemek için sayaç
+  @Published var prayerLogVersion = 0
+
   // Premium
   @Published var isPremium: Bool { didSet { d.set(isPremium, forKey: "key_premium") } }
 
@@ -112,6 +119,13 @@ final class AppData: ObservableObject {
     kazaRemainingMap = (d.dictionary(forKey: "kaza_kalan") as? [String: Int]) ?? [:]
     kazaPrayedMap = (d.dictionary(forKey: "kaza_kilinan") as? [String: Int]) ?? [:]
     isPremium = d.bool(forKey: "key_premium")
+    autoKaza = s.object(forKey: PrayerLog.autoKazaKey) == nil ? true : s.bool(forKey: PrayerLog.autoKazaKey)
+    liveActivityEnabled = b("key_live_activity", true)
+    NotificationCenter.default.addObserver(forName: PrayerLog.changedNotification, object: nil, queue: .main) { [weak self] _ in
+      self?.prayerLogVersion += 1
+      WidgetCenter.shared.reloadAllTimelines()
+      LiveActivityManager.refresh()
+    }
     if s.string(forKey: "key_language") == nil { s.set(lang, forKey: "key_language") }
   }
 
@@ -194,6 +208,20 @@ final class AppData: ObservableObject {
   func kazaAddDays(_ days: Int, includeVitir: Bool) {
     for v in KazaVakit.allCases where v != .vitir || includeVitir { kazaRemainingMap[v.rawValue] = kazaRemaining(v) + days }
   }
+  /// Takipte işaretlenmeyen geçmiş vakitleri kaza borcuna ekler (her gün yalnız bir kez).
+  @discardableResult
+  func applyAutoKaza(today: Date = Date()) -> Int {
+    let missed = PrayerLog.reconcileMissed(today: today)
+    var n = 0
+    for (v, c) in missed { if let k = KazaVakit(rawValue: v.kazaKey) { kazaAdd(k, c); n += c } }
+    return n
+  }
+
+  /// Bugünün bir vaktini işaretle / kaldır.
+  func togglePrayed(_ v: FarzVakit, on date: Date = Date()) {
+    PrayerLog.toggle(v, on: DateUtil.dateKey(date))
+  }
+
   func kazaReset() { kazaRemainingMap = [:]; kazaPrayedMap = [:] }
 }
 

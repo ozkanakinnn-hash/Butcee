@@ -12,7 +12,7 @@ TODAY=$(date +%Y-%m-%d)
 shot () { # ad, argümanlar...
   local name=$1; shift
   xcrun simctl terminate "$DEV" $BID 2>/dev/null
-  xcrun simctl launch "$DEV" $BID -debug_no_ads YES -qiblaCalibrationIntro NO -key_auto_location NO -key_language "${SHOT_LANG:-tr}" -key_onboarding_completed YES -key_user_name "Özkan" -key_province Manisa -key_district Saruhanlı "$@"
+  xcrun simctl launch "$DEV" $BID -debug_no_ads YES -qiblaCalibrationIntro NO -key_auto_location NO -key_language "${SHOT_LANG:-tr}" -key_onboarding_completed YES -key_user_name "Özkan" -key_province Manisa -key_district Saruhanlı -debug_seed_log YES "$@"
   sleep 14
   xcrun simctl io "$DEV" screenshot "$OUT/$name.png"
   # Çökme kontrolü
@@ -23,22 +23,19 @@ shot 02_ana_sayfa_oruc -key_theme_mode DARK -key_fasting_dates "(\"$TODAY\")"
 shot 03_ana_sayfa_aydinlik -key_theme_mode LIGHT -key_color_theme ZUMRUT
 shot 04_kuran -key_theme_mode DARK -debug_start_tab 1
 shot 05_okuyucu -key_theme_mode DARK -debug_route reader
-shot 06_takvim -key_theme_mode DARK -debug_start_tab 2
-shot 07_ayet_dua -key_theme_mode DARK -debug_start_tab 3
+shot 06_takip -key_theme_mode DARK -debug_start_tab 2
+shot 07_ayet_dua -key_theme_mode DARK -debug_route spiritual
 shot 08_dahasi -key_theme_mode DARK -debug_start_tab 4
-shot 09_kible -key_theme_mode DARK -debug_route qibla
+shot 09_kible -key_theme_mode DARK -debug_start_tab 3
 shot 10_zikirmatik -key_theme_mode DARK -debug_route zikirmatik
-shot 11_kartlar -key_theme_mode DARK -debug_route cards
+shot 11_takvim -key_theme_mode DARK -debug_route calendar
 shot 12_rehber -key_theme_mode DARK -debug_route guide -key_fasting_dates "(\"$TODAY\")"
 shot 13_hatim -key_theme_mode DARK -debug_route hatim
 shot 14_kaza -key_theme_mode LIGHT -debug_route kaza
 shot 15_ayarlar -key_theme_mode DARK -debug_route settings
 SHOT_LANG=en shot 16_english -key_theme_mode DARK
-shot 17_esma -key_theme_mode DARK -debug_route esma
-shot 18_kandil -key_theme_mode DARK -debug_route kandil
 shot 19_sihirbaz -key_theme_mode DARK -debug_route wizard
 shot 20_premium -key_theme_mode DARK -debug_route premium
-shot 21_camiler -key_theme_mode DARK -debug_route mosques
 # İlk açılış ekranı
 xcrun simctl terminate "$DEV" $BID; xcrun simctl launch "$DEV" $BID -debug_no_ads YES -key_auto_location NO -key_language tr -key_theme_mode DARK; sleep 12
 xcrun simctl io "$DEV" screenshot "$OUT/00_ilk_acilis.png"

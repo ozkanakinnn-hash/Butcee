@@ -20,6 +20,15 @@ enum L10n {
 
   /// iOS sürümüne özgü ek metinler (Android sözlüğünde olmayanlar).
   static let extra: [String: String] = [
+    "Takip": "Tracking",
+    "kılındı": "prayed",
+    "gün seri": "day streak",
+    "Kıldıkça işaretleyin": "Mark as you pray",
+    "Kaçırılan vakitler otomatik eklenir": "Missed prayers are added automatically",
+    "kalan": "remaining",
+    "Kalan": "Remaining",
+    "Kıldığınız vakte dokunun": "Tap a prayer once you have prayed it",
+    "Kur'an-ı Kerim, kıble, kaza, hatim ve takvim": "Quran, qibla, missed prayers, khatm and calendar",
     "Kaynak: Diyanet İşleri Başkanlığı": "Source: Presidency of Religious Affairs (Diyanet)",
     "Yaklaşık vakit: Diyanet tablosu indirilemedi, internete bağlanınca düzelir": "Approximate times: the official Diyanet table could not be downloaded; it updates once you are online",
     "Ana Sayfa": "Home",

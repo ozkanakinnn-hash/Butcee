@@ -2,8 +2,8 @@ import SwiftUI
 
 /// Alt alt sekmelerden açılan alt ekranlar.
 enum Route: Hashable {
-  case qibla, mosques, zikirmatik, esma, kaza, kandil, hatim, notificationWizard, premium
-  case greetingCards, ramadanGuide, notes, settings, widgets
+  case qibla, zikirmatik, kaza, hatim, notificationWizard, premium
+  case ramadanGuide, notes, settings, widgets, calendar, spiritual, tracking
   case quranList(tab: Int)
   case quranReader(page: Int)
   case surah(Int)
@@ -27,17 +27,15 @@ struct RootView: View {
     switch UserDefaults.standard.string(forKey: "debug_route") ?? "" {
     case "qibla": return [.qibla]
     case "zikirmatik": return [.zikirmatik]
-    case "esma": return [.esma]
     case "kaza": return [.kaza]
-    case "kandil": return [.kandil]
+    case "calendar": return [.calendar]
+    case "spiritual": return [.spiritual]
     case "hatim": return [.hatim]
     case "wizard": return [.notificationWizard]
     case "premium": return [.premium]
-    case "cards": return [.greetingCards]
     case "guide": return [.ramadanGuide]
     case "settings": return [.settings]
     case "reader": return [.quranReader(page: 2)]
-    case "mosques": return [.mosques]
     default: return []
     }
   }
@@ -54,10 +52,10 @@ struct RootView: View {
       .tabItem {
         if isRamadan { Label(t("Ramazan Rehberi"), image: "ic_ramadan_guide") } else { Label(t("Kur'an-ı Kerim"), image: "ic_quran_tab") }
       }.tag(1)
-      NavigationStack { FastingCalendarView().withRoutes() }
-        .tabItem { Label(t("Takvim"), systemImage: "calendar") }.tag(2)
-      NavigationStack { SpiritualView().withRoutes() }
-        .tabItem { Label(t("Ayet & Dua"), systemImage: "book") }.tag(3)
+      NavigationStack { TrackingView().withRoutes() }
+        .tabItem { Label(t("Takip"), systemImage: "checkmark.circle") }.tag(2)
+      NavigationStack { QiblaView().withRoutes() }
+        .tabItem { Label(t("Kıble"), systemImage: "location.north.circle") }.tag(3)
       NavigationStack { MoreHubView().withRoutes() }
         .tabItem { Label(t("Dahası"), systemImage: "ellipsis") }.tag(4)
     }
@@ -79,15 +77,14 @@ extension View {
       Group {
         switch r {
         case .qibla: QiblaView()
-        case .mosques: NearbyMosquesView()
         case .zikirmatik: ZikirmatikView()
-        case .esma: EsmaView()
         case .kaza: KazaView()
-        case .kandil: KandilView()
+        case .calendar: FastingCalendarView()
+        case .spiritual: SpiritualView()
+        case .tracking: TrackingView()
         case .hatim: QuranListView(initialTab: 1)
         case .notificationWizard: NotificationWizardView()
         case .premium: PremiumView()
-        case .greetingCards: GreetingCardsView()
         case .ramadanGuide: RamadanGuideView()
         case .notes: NotesView()
         case .settings: SettingsView()

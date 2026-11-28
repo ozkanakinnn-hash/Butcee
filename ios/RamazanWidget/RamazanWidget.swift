@@ -483,5 +483,7 @@ struct RamazanWidgetBundle: WidgetBundle {
     FiveTimesWidget()
     SpiritualWidget()
     FastingWidget()
+    MarkPrayedWidget()
+    PrayerLiveActivityWidget()
   }
 }

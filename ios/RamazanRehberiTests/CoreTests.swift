@@ -226,12 +226,35 @@ final class CoreTests: XCTestCase {
     XCTAssertEqual(q.firstPage(ofSurah: 2), 2)
   }
 
-  func testGreetingCardsRender() {
-    for o in GreetingOccasion.all {
-      XCTAssertFalse(o.quote.tr.isEmpty); XCTAssertFalse(o.messages.isEmpty)
-      let img = GreetingCardRenderer.render(o, o.messages[0], scale: 0.2)
-      XCTAssertEqual(img.size.width, 216, accuracy: 1)
-    }
+  /// Namaz takibi: işaretleme, seri, otomatik kaza (yalnız işaretli günler, bir kez).
+  func testPrayerLogStreakAndAutoKaza() {
+    let d = Shared.defaults
+    d.removeObject(forKey: PrayerLog.key); d.removeObject(forKey: PrayerLog.reconciledKey); d.removeObject(forKey: PrayerLog.autoKazaKey)
+    let today = date(2030, 3, 10)
+    func k(_ i: Int) -> String { DateUtil.dateKey(DateUtil.addDays(i, to: today)) }
+    for i in 1...3 { for v in FarzVakit.allCases { PrayerLog.set(v, on: k(-i), prayed: true) } }  // 3 gün tam
+    PrayerLog.set(.ogle, on: k(-4), prayed: true)                                                 // 1/5
+    // k(-5): hiç işaret yok → takip edilmemiş
+    XCTAssertEqual(PrayerLog.streak(today: today), 3)
+    PrayerLog.toggle(.sabah, on: k(0))
+    XCTAssertTrue(PrayerLog.isPrayed(.sabah, on: k(0)))
+    XCTAssertEqual(PrayerLog.streak(today: today), 3)  // bugün tamamlanmadı: dünden say
+    let missed = PrayerLog.reconcileMissed(today: today)
+    XCTAssertEqual(missed.values.reduce(0, +), 4)       // yalnız k(-4)'ün 4 eksik vakti
+    XCTAssertNil(missed[.ogle])
+    XCTAssertTrue(PrayerLog.reconcileMissed(today: today).isEmpty)  // ikinci kez eklenmez
+    XCTAssertGreaterThanOrEqual(PrayerLog.longestStreak(), 3)
+    d.removeObject(forKey: PrayerLog.key); d.removeObject(forKey: PrayerLog.reconciledKey)
+  }
+
+  func testCurrentVakit() {
+    XCTAssertNil(PrayerLog.currentVakit(manisa, now: date(2026, 11, 5, 5, 0)))      // imsaktan önce
+    XCTAssertEqual(PrayerLog.currentVakit(manisa, now: date(2026, 11, 5, 7, 0)), .sabah)
+    XCTAssertEqual(PrayerLog.currentVakit(manisa, now: date(2026, 11, 5, 14, 0)), .ogle)
+    XCTAssertEqual(PrayerLog.currentVakit(manisa, now: date(2026, 11, 5, 21, 0)), .yatsi)
+    XCTAssertEqual(PrayerLog.enteredVakits(manisa, now: date(2026, 11, 5, 16, 0)), [.sabah, .ogle, .ikindi])
+    XCTAssertEqual(FarzVakit.from(timeIndex: 1), nil)
+    XCTAssertEqual(FarzVakit.from(timeIndex: 4), .aksam)
   }
 
   func testAutoLocationMatching() {

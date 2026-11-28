@@ -5,6 +5,7 @@ import UserNotifications
 final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDelegate {
   func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
     UNUserNotificationCenter.current().delegate = self
+    NotificationScheduler.registerCategories()
     BGTaskScheduler.shared.register(forTaskWithIdentifier: "akin.ai2.refresh", using: nil) { task in
       // Arka planda vakitleri tazele ve önümüzdeki günlerin bildirimlerini yeniden planla
       DispatchQueue.main.async {
@@ -20,6 +21,17 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
     let req = BGAppRefreshTaskRequest(identifier: "akin.ai2.refresh")
     req.earliestBeginDate = Date(timeIntervalSinceNow: 6 * 3600)
     try? BGTaskScheduler.shared.submit(req)
+  }
+
+  // Bildirim eylemleri: "Kıldım" / "20 dk sonra hatırlat"
+  func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse,
+                              withCompletionHandler completionHandler: @escaping () -> Void) {
+    let info = response.notification.request.content.userInfo
+    let action = response.actionIdentifier
+    DispatchQueue.main.async {
+      NotificationScheduler.handle(action: action, userInfo: info)
+      completionHandler()
+    }
   }
 
   // Uygulama açıkken de bildirimi göster
@@ -50,6 +62,13 @@ struct RamazanRehberiApp: App {
         .onAppear {
           AutoLocator.shared.refreshIfEnabled()
           prayers.reload()
+          #if DEBUG
+          if UserDefaults.standard.bool(forKey: "debug_seed_log") {
+            PrayerLog.seedSample()
+            if store.kazaTotalRemaining == 0 { store.kazaAdd(.sabah, 14); store.kazaAdd(.yatsi, 9); store.kazaAdd(.ikindi, 6) }
+          }
+          #endif
+          store.applyAutoKaza()
           premium.start()
           #if DEBUG
           let skipAds = UserDefaults.standard.bool(forKey: "debug_no_ads")
@@ -64,6 +83,8 @@ struct RamazanRehberiApp: App {
       if p == .active {
         AutoLocator.shared.refreshIfEnabled()
         prayers.reload()
+        store.applyAutoKaza()
+        store.prayerLogVersion += 1  // widget/Siri'den gelen işaretleri göster
         Task { await premium.refresh() }
       }
     }

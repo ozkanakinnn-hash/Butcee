@@ -83,6 +83,7 @@ final class PrayerService: ObservableObject {
   private func afterUpdate() {
     NotificationScheduler.rescheduleAll()
     WidgetCenter.shared.reloadAllTimelines()
+    LiveActivityManager.refresh()
   }
 
   private func fetchMonth(year: Int, month: Int, city: String, district: String, country: String) async {

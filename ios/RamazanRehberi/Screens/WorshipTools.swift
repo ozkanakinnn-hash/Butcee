@@ -119,36 +119,6 @@ struct ZikirmatikView: View {
   }
 }
 
-// MARK: - Esmâü'l-Hüsnâ
-
-struct EsmaView: View {
-  @Environment(\.palette) var p
-  @State private var search = ""
-  var body: some View {
-    let list = AppContent.shared.esma.filter { search.isEmpty || $0.name.localizedCaseInsensitiveContains(search) || $0.meaning.localizedCaseInsensitiveContains(search) }
-    ScrollView {
-      LazyVStack(spacing: 10) {
-        Text(t("Allah'ın 99 güzel ismi")).font(.system(size: 14)).foregroundStyle(p.onSurfaceVariant).frame(maxWidth: .infinity, alignment: .leading)
-        ForEach(list) { e in
-          HStack(spacing: 14) {
-            Text("\(e.number)").font(.system(size: 13, weight: .bold)).foregroundStyle(p.primary).frame(width: 30)
-            VStack(alignment: .leading, spacing: 4) {
-              Text(e.name).font(.system(size: 17, weight: .bold))
-              Text(e.meaning).font(.system(size: 13)).foregroundStyle(p.onSurfaceVariant)
-            }
-            Spacer()
-            Text(e.arabic).font(AppFont.amiri(26)).foregroundStyle(p.primary)
-          }
-          .padding(14).card(radius: 18)
-        }
-      }.padding(16)
-    }
-    .searchable(text: $search)
-    .screen()
-    .navigationTitle(t("Esmâü'l-Hüsnâ"))
-  }
-}
-
 // MARK: - Kaza namazı
 
 struct KazaView: View {
@@ -227,75 +197,5 @@ struct KazaView: View {
     Button(action: action) {
       Text(s).font(.system(size: 18, weight: .bold)).frame(width: 34, height: 34).background(Circle().fill(p.surfaceVariant))
     }.buttonStyle(.plain).disabled(!enabled).opacity(enabled ? 1 : 0.4)
-  }
-}
-
-// MARK: - Kandil duaları
-
-struct KandilView: View {
-  @Environment(\.palette) var p
-  @State private var selected = "regaib"
-
-  var upcoming: (String, String, String)? {
-    let today = DateUtil.dateKey(Date())
-    let y = DateUtil.cal.component(.year, from: Date())
-    let days = IslamicDays.sortedDays(y) + IslamicDays.sortedDays(y + 1)
-    for d in days where d.category == "Mübarek Gece" && d.dateKey >= today {
-      if let k = AppContent.shared.kandilKey(for: d.title) { return (k, d.title, d.dateKey) }
-    }
-    return nil
-  }
-
-  var body: some View {
-    let kandiller = AppContent.shared.kandiller
-    let k = kandiller.first { $0.key == selected } ?? kandiller[0]
-    ScrollView {
-      VStack(alignment: .leading, spacing: 12) {
-        if let u = upcoming {
-          let parts = u.2.split(separator: "-")
-          Text(tr("Yaklaşan: \(u.1) • \(parts[2]).\(parts[1]).\(parts[0])", "Upcoming: \(k.name.en) • \(u.2)")).font(.system(size: 14, weight: .semibold)).foregroundStyle(p.primary)
-        }
-        ScrollView(.horizontal, showsIndicators: false) {
-          HStack {
-            ForEach(kandiller) { kd in
-              Button { selected = kd.key } label: {
-                Text(kd.name.text).font(.system(size: 14, weight: .semibold)).padding(.horizontal, 14).padding(.vertical, 9)
-                  .foregroundStyle(selected == kd.key ? p.onPrimary : p.onBackground)
-                  .background(Capsule().fill(selected == kd.key ? p.primary : p.surfaceVariant))
-              }.buttonStyle(.plain)
-            }
-          }
-        }
-        Text(k.about.text).font(.system(size: 14)).padding(14).frame(maxWidth: .infinity, alignment: .leading).card(radius: 16)
-        ForEach(Array((k.duas + AppContent.shared.generalDuas).enumerated()), id: \.offset) { _, d in duaCard(d) }
-        VStack(alignment: .leading, spacing: 8) {
-          Text(tr("🌙 Bu gece yapılabilecekler", "🌙 What to do tonight")).font(.system(size: 15, weight: .bold))
-          ForEach(Array(AppContent.shared.kandilWorship.enumerated()), id: \.offset) { _, w in
-            HStack(alignment: .top) { Text("•").foregroundStyle(p.primary).bold(); Text(w.text).font(.system(size: 14)) }
-          }
-          Text(AppContent.shared.kandilNote.text).font(.system(size: 12)).foregroundStyle(p.onSurfaceVariant).padding(.top, 4)
-        }.padding(14).frame(maxWidth: .infinity, alignment: .leading).card(radius: 16)
-      }.padding(16)
-    }
-    .screen()
-    .navigationTitle(tr("Kandil Duaları", "Holy Night Duas"))
-    .onAppear { if let u = upcoming { selected = u.0 } }
-  }
-
-  private func duaCard(_ d: Dua) -> some View {
-    VStack(alignment: .leading, spacing: 8) {
-      HStack {
-        Text(d.title.text).font(.system(size: 15, weight: .bold)).foregroundStyle(p.primary)
-        Spacer()
-        Button { UIPasteboard.general.string = "\(d.arabic)\n\n\(d.okunus)\n\n\(d.meaning?.text ?? "")\n— \(d.source ?? "")" } label: {
-          Image(systemName: "doc.on.doc").foregroundStyle(p.primary)
-        }
-      }
-      Text(d.arabic).font(AppFont.amiri(22)).multilineTextAlignment(.trailing).frame(maxWidth: .infinity, alignment: .trailing)
-      Text(d.okunus).font(.system(size: 14)).italic()
-      if let m = d.meaning { Text(m.text).font(.system(size: 14)).foregroundStyle(p.onSurfaceVariant) }
-      if let s = d.source, !s.isEmpty { Text("— \(s)").font(.system(size: 11, weight: .semibold)).foregroundStyle(p.onSurfaceVariant) }
-    }
-    .padding(14).card(radius: 16)
   }
 }

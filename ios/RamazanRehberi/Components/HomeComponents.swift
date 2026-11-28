@@ -1,43 +1,72 @@
 import SwiftUI
 
-// MARK: - Günün İstanbul camisi (fotoğraf + buzlu cam panelde günün sözü)
+// MARK: - Bugün: kılınan vakitler halkası (takip)
 
-struct MosqueBanner: View {
-  private static let mosques: [(img: String, name: String)] = [
-    ("mosque_fatih", "Fatih Camii"),                          // Pazar (weekday 1)
-    ("mosque_sultanahmet", "Sultanahmet Camii"),               // Pazartesi
-    ("mosque_ayasofya", "Ayasofya-i Kebîr Câmi-i Şerîfi"),     // Salı
-    ("mosque_suleymaniye", "Süleymaniye Camii"),               // Çarşamba
-    ("mosque_camlica", "Büyük Çamlıca Camii"),                 // Perşembe
-    ("mosque_eyup", "Eyüp Sultan Camii"),                      // Cuma
-    ("mosque_ortakoy", "Ortaköy Büyük Mecidiye Camii"),        // Cumartesi
-  ]
+struct TodayTrackCard: View {
+  @Environment(\.palette) var p
+  @EnvironmentObject var store: AppData
+  let times: PrayerTimes
+  let now: Date
+  /// Takip sekmesine geçer
+  var open: () -> Void = {}
 
   var body: some View {
-    let m = Self.mosques[DateUtil.cal.component(.weekday, from: Date()) - 1]
-    let message = AppContent.shared.dailyMessage()
-    GeometryReader { geo in
-      ZStack {
-        BundleImage.image(m.img).resizable().scaledToFill().frame(width: geo.size.width, height: geo.size.height).clipped()
-        LinearGradient(stops: [.init(color: .clear, location: 0), .init(color: .clear, location: 0.6), .init(color: .black.opacity(0.65), location: 1)],
-                       startPoint: .top, endPoint: .bottom)
-        VStack {
-          Spacer().frame(height: geo.size.height * 0.5)
-          Text("“\(message)”")
-            .font(.system(size: 12.5, weight: .semibold)).italic()
-            .foregroundStyle(.white).multilineTextAlignment(.center).lineLimit(4)
-            .padding(.horizontal, 10).padding(.vertical, 8)
-            .frame(maxWidth: .infinity, maxHeight: geo.size.height * 0.34)
-            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
-            .overlay(RoundedRectangle(cornerRadius: 16).stroke(.white.opacity(0.28), lineWidth: 1))
-            .environment(\.colorScheme, .light)
-            .padding(.horizontal, 10)
-          Spacer(minLength: 0)
-          Text(m.name).font(.system(size: 9.5, weight: .medium)).foregroundStyle(.white.opacity(0.88)).lineLimit(1).padding(.bottom, 7)
+    let _ = store.prayerLogVersion
+    let prayed = PrayerLog.prayed(on: DateUtil.dateKey(now))
+    let current = PrayerLog.currentVakit(times, now: now)
+    let streak = PrayerLog.streak(today: now)
+    Button(action: open) {
+      VStack(spacing: 8) {
+        HStack {
+          Text(t("Bugün")).font(.system(size: 14, weight: .bold)).foregroundStyle(p.onSurfaceVariant)
+          Spacer()
+          Image(systemName: "chevron.right").font(.system(size: 12, weight: .bold)).foregroundStyle(p.primary)
         }
+        ZStack {
+          PrayerRing(prayed: prayed, current: current.flatMap { prayed.contains($0) ? nil : $0 },
+                     color: p.primary, track: p.surfaceVariant, lineWidth: 11)
+          VStack(spacing: 0) {
+            (Text("\(prayed.count)").font(.system(size: 30, weight: .heavy)).foregroundColor(p.onBackground)
+              + Text("/5").font(.system(size: 16, weight: .bold)).foregroundColor(p.onSurfaceVariant))
+            Text(t("kılındı")).font(.system(size: 11, weight: .semibold)).foregroundStyle(p.onSurfaceVariant)
+          }
+        }
+        .frame(maxWidth: 136, maxHeight: 136)
+        Text(streak > 0 ? "\(streak) \(t("gün seri"))" : t("Kıldıkça işaretleyin"))
+          .font(.system(size: 13, weight: .bold)).foregroundStyle(p.primary).lineLimit(1).minimumScaleFactor(0.7)
       }
+      .padding(14).frame(maxWidth: .infinity, maxHeight: .infinity).card()
     }
-    .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+    .buttonStyle(.plain)
+    .accessibilityElement(children: .combine)
+    .accessibilityLabel(Text("\(t("Bugün")) \(prayed.count) / 5 \(t("kılındı"))"))
+  }
+}
+
+// MARK: - Kaza özeti (ana sayfa)
+
+struct KazaSummaryCard: View {
+  @Environment(\.palette) var p
+  @EnvironmentObject var store: AppData
+
+  var body: some View {
+    NavigationLink(value: Route.kaza) {
+      HStack(spacing: 12) {
+        VStack(alignment: .leading, spacing: 3) {
+          Text(t("Kaza Namazı")).font(.system(size: 16, weight: .bold)).foregroundStyle(p.onBackground)
+          Text(store.autoKaza ? t("Kaçırılan vakitler otomatik eklenir") : t("Kıldıkça işaretleyin"))
+            .font(.system(size: 12)).foregroundStyle(p.onSurfaceVariant)
+        }
+        Spacer()
+        VStack(alignment: .trailing, spacing: 0) {
+          Text("\(store.kazaTotalRemaining)").font(.system(size: 24, weight: .heavy)).foregroundStyle(p.primary)
+          Text(t("kalan")).font(.system(size: 11)).foregroundStyle(p.onSurfaceVariant)
+        }
+        Image(systemName: "chevron.right").foregroundStyle(p.primary)
+      }
+      .padding(16).card()
+    }
+    .buttonStyle(.plain)
   }
 }
 
@@ -129,7 +158,7 @@ struct CannonView: View {
   }
 }
 
-// MARK: - Kısayollar (Yakındaki Camiler • Kıble • Zikirmatik)
+// MARK: - Kısayollar (Kaza • Kıble • Zikirmatik)
 
 struct ShortcutsRow: View {
   @Environment(\.palette) var p
@@ -138,12 +167,13 @@ struct ShortcutsRow: View {
   var body: some View {
     ZStack {
       HStack(spacing: 0) {
-        NavigationLink(value: Route.mosques) {
+        NavigationLink(value: Route.kaza) {
           VStack(alignment: .leading, spacing: 4) {
-            iconChip("ic_hub_mosque")
+            iconChip("ic_hub_kaza")
             Spacer(minLength: 0)
-            Text(t("Yakındaki Camiler")).font(.system(size: 15, weight: .bold)).foregroundStyle(p.onBackground).lineLimit(2).minimumScaleFactor(0.7)
-            Text(t("Harita & yol tarifi")).font(.system(size: 12)).foregroundStyle(p.onSurfaceVariant)
+            Text(t("Kaza Namazı")).font(.system(size: 15, weight: .bold)).foregroundStyle(p.onBackground).lineLimit(2).minimumScaleFactor(0.7)
+            (Text(t("Kalan") + " ").foregroundColor(p.onSurfaceVariant) + Text("\(store.kazaTotalRemaining)").foregroundColor(p.primary).bold())
+              .font(.system(size: 12))
           }
           .padding(14).frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
           .padding(.trailing, 50)
@@ -191,6 +221,7 @@ struct ShortcutsRow: View {
 
 struct PrayerTimesCard: View {
   @Environment(\.palette) var p
+  @EnvironmentObject var store: AppData
   let times: PrayerTimes
   let now: Date
 
@@ -213,19 +244,45 @@ struct PrayerTimesCard: View {
         Spacer()
         Text(DateUtil.trDate(now)).font(.system(size: 13)).foregroundStyle(p.onSurfaceVariant)
       }
+      let _ = store.prayerLogVersion
+      let todayKey = DateUtil.dateKey(now)
+      let prayed = PrayerLog.prayed(on: todayKey)
+      let entered = Set(PrayerLog.enteredVakits(times, now: now))
       HStack(spacing: 6) {
         ForEach(0..<6, id: \.self) { i in
           let sel = i == currentIndex
-          VStack(spacing: 8) {
-            Image(systemName: icons[i]).font(.system(size: 16))
-            Text(t(PrayerTimes.names[i])).font(.system(size: 12, weight: .semibold)).lineLimit(1).minimumScaleFactor(0.7)
-            Text(times.all[i]).font(.system(size: 14, weight: .bold).monospacedDigit())
+          let farz = FarzVakit.from(timeIndex: i)
+          let canMark = farz.map { entered.contains($0) } ?? false
+          let isPrayed = farz.map { prayed.contains($0) } ?? false
+          Button {
+            guard let v = farz, canMark else { return }
+            store.togglePrayed(v, on: now)
+            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+          } label: {
+            VStack(spacing: 7) {
+              Image(systemName: icons[i]).font(.system(size: 16))
+              Text(t(PrayerTimes.names[i])).font(.system(size: 12, weight: .semibold)).lineLimit(1).minimumScaleFactor(0.7)
+              Text(times.all[i]).font(.system(size: 14, weight: .bold).monospacedDigit())
+              if farz != nil {
+                Image(systemName: isPrayed ? "checkmark.circle.fill" : "circle")
+                  .font(.system(size: 19, weight: .semibold))
+                  .foregroundStyle(isPrayed ? (sel ? p.onPrimary : p.primary) : (sel ? p.onPrimary.opacity(0.8) : p.onSurfaceVariant.opacity(canMark ? 0.9 : 0.35)))
+              } else {
+                Image(systemName: "circle").font(.system(size: 19)).hidden()
+              }
+            }
+            .foregroundStyle(sel ? p.onPrimary : p.onBackground)
+            .frame(maxWidth: .infinity).padding(.vertical, 12)
+            .background(RoundedRectangle(cornerRadius: 14).fill(sel ? p.primary : p.surfaceVariant.opacity(0.7)))
           }
-          .foregroundStyle(sel ? p.onPrimary : p.onBackground)
-          .frame(maxWidth: .infinity).padding(.vertical, 12)
-          .background(RoundedRectangle(cornerRadius: 14).fill(sel ? p.primary : p.surfaceVariant.opacity(0.7)))
+          .buttonStyle(.plain)
+          .disabled(!canMark)
+          .accessibilityLabel(Text("\(t(PrayerTimes.names[i])) \(times.all[i])" + (isPrayed ? " ✓" : "")))
         }
       }
+      Text(t("Kıldığınız vakte dokunun"))
+        .font(.system(size: 11)).foregroundStyle(p.onSurfaceVariant)
+        .frame(maxWidth: .infinity, alignment: .leading)
       // Vaktin kaynağı: resmi Diyanet tablosu değilse kullanıcı açıkça uyarılır (sessizce ±1 dk gösterilmez)
       if times.isOfficial || AppData.shared.useCoordinates {
         if times.isOfficial {
@@ -285,30 +342,6 @@ struct DailySpiritualCard: View {
   }
 
   var shareText: String { "“\(text.0)”\n— \(text.1)\n\n" + "Ezan & Vakit" }
-}
-
-// MARK: - Sevdiklerinizle paylaşın
-
-struct ShareWithLovedOnesCard: View {
-  @Environment(\.palette) var p
-  var body: some View {
-    NavigationLink(value: Route.greetingCards) {
-      HStack(spacing: 14) {
-        BundleImage.image("card_bg_cuma").resizable().scaledToFill().frame(width: 46, height: 76)
-          .clipShape(RoundedRectangle(cornerRadius: 8))
-          .overlay(RoundedRectangle(cornerRadius: 8).stroke(p.primary.opacity(0.5), lineWidth: 1))
-        VStack(alignment: .leading, spacing: 5) {
-          Text(t("Sevdiklerinizle Paylaşın")).font(AppFont.playfair(20)).foregroundStyle(p.onBackground)
-          Text(t("Kandil, bayram ve cuma kartları")).font(.system(size: 13)).foregroundStyle(p.primary)
-        }
-        Spacer()
-        Image(systemName: "chevron.right").foregroundStyle(p.primary)
-      }
-      .padding(14)
-      .background(RoundedRectangle(cornerRadius: 22).fill(p.surface))
-      .overlay(RoundedRectangle(cornerRadius: 22).stroke(p.primary.opacity(0.6), lineWidth: 1.2))
-    }.buttonStyle(.plain)
-  }
 }
 
 // MARK: - Bayram / Ramazan geri sayımı

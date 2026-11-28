@@ -34,6 +34,7 @@
   <array>
     <dict><key>SKAdNetworkIdentifier</key><string>cstr6suwn9.skadnetwork</string></dict>
   </array>
+  <key>NSSupportsLiveActivities</key><true/>
   <key>UIBackgroundModes</key><array><string>fetch</string></array>
   <key>BGTaskSchedulerPermittedIdentifiers</key><array><string>akin.ai2.refresh</string></array>
   <key>LSApplicationQueriesSchemes</key><array><string>instagram-stories</string><string>whatsapp</string></array>

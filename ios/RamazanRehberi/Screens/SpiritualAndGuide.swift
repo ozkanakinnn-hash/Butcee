@@ -137,14 +137,12 @@ struct MoreHubView: View {
       Item(route: .ramadanGuide, icon: "ic_hub_ramadan", title: t("Ramazan Rehberi"), sub: en ? "Benefits of fasting\nIftar & Suhoor" : "Orucun Faydaları\nİftar & Sahur"),
       Item(route: .qibla, icon: "ic_hub_qibla", title: t("Kıble Bulucu"), sub: en ? "Compass\nKaaba direction" : "Pusula Sensörü\nKâbe İstikameti"),
       Item(route: .kaza, icon: "ic_hub_kaza", title: t("Kaza Namazı"), sub: en ? "Count your debt\nMark as you pray" : "Borç hesapla\nKıldıkça işaretle"),
-      Item(route: .kandil, icon: "ic_hub_kandil", title: t("Kandil Duaları"), sub: en ? "Blessed nights\nDuas & worship" : "Mübarek geceler\nDua & ibadetler"),
+      Item(route: .calendar, icon: "ic_hub_kandil", title: t("Takvim"), sub: en ? "Fasting calendar\nReligious days" : "Oruç takvimi\nDini günler"),
+      Item(route: .spiritual, icon: "ic_hub_notes", title: t("Ayet & Dua"), sub: en ? "Verse, hadith\nand prayer of the day" : "Günün ayeti\nhadisi ve duası"),
       Item(route: .hatim, icon: "ic_hub_hatim", title: t("Hatim Takibi"), sub: en ? "Juz & Surah\nProgress" : "Cüz & Sure\nİlerleme"),
       Item(route: .notificationWizard, icon: "ic_hub_bell", title: t("Bildirim Sihirbazı"), sub: en ? "No adhan?\nSet up & test" : "Ezan gelmiyor mu?\nAyarla & test et"),
-      Item(route: .mosques, icon: "ic_hub_mosque", title: t("Yakındaki Camiler"), sub: store.locationLabel + (en ? "\nMap & Navigation" : "\nHarita & Navigasyon")),
       Item(route: .quranList(tab: 0), icon: "ic_hub_quran", title: t("Kur'an-ı Kerim"), sub: en ? "114 Surahs\nPage by page" : "114 Sure\nSayfa sayfa"),
       Item(route: .zikirmatik, icon: "ic_hub_tasbih", title: t("Zikirmatik"), sub: en ? "Free • 33 • 99\nTasbihat" : "Serbest • 33 • 99\nTesbihat"),
-      Item(route: .esma, icon: "ic_hub_esma", title: t("Esmâü'l-Hüsnâ"), sub: en ? "99 Names of Allah\nwith meanings" : "Allah'ın 99 ismi\nAnlamlarıyla"),
-      Item(route: .greetingCards, icon: "ic_hub_card", title: t("Özel Gün Kartları"), sub: en ? "Friday • Kandil • Eid\nShare with loved ones" : "Cuma • Kandil • Bayram\nSevdiklerinizle paylaşın"),
       Item(route: .widgets, icon: "ic_hub_widget", title: t("Ana Ekran Widget'ları"), sub: en ? "Prayer times\non home screen" : "Namaz vakitleri\nana ekranda"),
       Item(route: .notes, icon: "ic_hub_notes", title: en ? "Spiritual Notes" : "Manevi Notlar", sub: en ? "Your Ramadan\njournal" : "Ramazan\ngünlüğünüz"),
       Item(route: .settings, icon: "ic_hub_settings", title: t("Ayarlar"), sub: en ? "Theme, language\nNotifications" : "Tema, dil\nBildirimler"),
@@ -154,7 +152,7 @@ struct MoreHubView: View {
   var body: some View {
     ScrollView {
       VStack(alignment: .leading, spacing: 12) {
-        ScreenHeader(title: t("Dahası & Faydalı Araçlar"), subtitle: t("Kur'an-ı Kerim, Kıble bulucu, camiler ve zengin İslami modüller"))
+        ScreenHeader(title: t("Dahası & Faydalı Araçlar"), subtitle: t("Kur'an-ı Kerim, kıble, kaza, hatim ve takvim"))
         let cols = [GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10)]
         LazyVGrid(columns: cols, spacing: 10) {
           ForEach(items.prefix(2)) { hubCard($0) }

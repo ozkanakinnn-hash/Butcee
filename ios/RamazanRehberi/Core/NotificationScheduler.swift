@@ -15,6 +15,40 @@ enum NotificationScheduler {
     }
   }
 
+  static let prayerCategory = "PRAYER"
+  static let actionPrayed = "PRAYED"
+  static let actionSnooze = "SNOOZE20"
+
+  /// Ezan bildirimine basılı tutunca: "Kıldım" ve "20 dk sonra hatırlat".
+  static func registerCategories() {
+    let en = AppData.shared.language == "en"
+    let prayed = UNNotificationAction(identifier: actionPrayed, title: en ? "Prayed ✓" : "Kıldım ✓", options: [])
+    let snooze = UNNotificationAction(identifier: actionSnooze, title: en ? "Remind me in 20 min" : "20 dk sonra hatırlat", options: [])
+    center.setNotificationCategories([UNNotificationCategory(identifier: prayerCategory, actions: [prayed, snooze], intentIdentifiers: [])])
+  }
+
+  /// Bildirim eylemini işler (AppDelegate'ten).
+  static func handle(action: String, userInfo: [AnyHashable: Any]) {
+    guard let raw = userInfo["vakit"] as? Int, let v = FarzVakit(rawValue: raw) else { return }
+    let key = userInfo["date"] as? String ?? DateUtil.dateKey(Date())
+    switch action {
+    case actionPrayed:
+      PrayerLog.set(v, on: key, prayed: true)
+    case actionSnooze:
+      let en = AppData.shared.language == "en"
+      let c = UNMutableNotificationContent()
+      c.title = en ? "⏰ \(v.name) reminder" : "⏰ \(v.name) hatırlatması"
+      c.body = en ? "Have you prayed \(v.name)?" : "\(v.name) namazını kıldınız mı?"
+      c.sound = .default
+      c.categoryIdentifier = prayerCategory
+      c.userInfo = ["vakit": v.rawValue, "date": key]
+      center.add(UNNotificationRequest(identifier: "snooze_\(key)_\(v.rawValue)", content: c,
+                                       trigger: UNTimeIntervalNotificationTrigger(timeInterval: 20 * 60, repeats: false)))
+    default:
+      break
+    }
+  }
+
   static func rescheduleAll() {
     let st = AppData.shared
     center.removeAllPendingNotificationRequests()
@@ -24,11 +58,15 @@ enum NotificationScheduler {
     var requests: [UNNotificationRequest] = []
     let now = Date()
 
-    func add(_ id: String, _ date: Date, _ title: String, _ body: String, sound: String?) {
+    func add(_ id: String, _ date: Date, _ title: String, _ body: String, sound: String?, vakit: FarzVakit? = nil) {
       guard date > now else { return }
       let c = UNMutableNotificationContent()
       c.title = title
       c.body = body
+      if let v = vakit {
+        c.categoryIdentifier = prayerCategory
+        c.userInfo = ["vakit": v.rawValue, "date": DateUtil.dateKey(date)]
+      }
       c.sound = sound.map { UNNotificationSound(named: UNNotificationSoundName($0)) } ?? .default
       if #available(iOS 15.0, *) { c.interruptionLevel = .timeSensitive }
       let comps = DateUtil.cal.dateComponents([.year, .month, .day, .hour, .minute], from: date)
@@ -47,28 +85,28 @@ enum NotificationScheduler {
 
       if st.notifyImsak {
         add("imsak_\(key)", at(pt.imsak), en ? "🌙 Imsak Time" : "🌙 İmsak Vakti",
-            en ? "Imsak time for \(place) (\(pt.imsak))." : "\(place) için imsak vakti (\(pt.imsak)).", sound: ezan)
+            en ? "Imsak time for \(place) (\(pt.imsak))." : "\(place) için imsak vakti (\(pt.imsak)).", sound: ezan, vakit: .sabah)
       }
       if st.notifyOgle {
         add("ogle_\(key)", at(pt.ogle), en ? "🕌 Dhuhr Adhan" : "🕌 Öğle Ezanı",
-            en ? "Dhuhr prayer time for \(place) (\(pt.ogle))." : "\(place) için öğle namazı vakti girdi (\(pt.ogle)).", sound: ezan)
+            en ? "Dhuhr prayer time for \(place) (\(pt.ogle))." : "\(place) için öğle namazı vakti girdi (\(pt.ogle)).", sound: ezan, vakit: .ogle)
       }
       if st.notifyIkindi {
         add("ikindi_\(key)", at(pt.ikindi), en ? "🕌 Asr Adhan" : "🕌 İkindi Ezanı",
-            en ? "Asr prayer time for \(place) (\(pt.ikindi))." : "\(place) için ikindi namazı vakti girdi (\(pt.ikindi)).", sound: ezan)
+            en ? "Asr prayer time for \(place) (\(pt.ikindi))." : "\(place) için ikindi namazı vakti girdi (\(pt.ikindi)).", sound: ezan, vakit: .ikindi)
       }
       if st.notifyIftar {
         if fasting {
           add("aksam_\(key)", at(pt.aksam), en ? "🕌 Maghrib Adhan • Iftar Time" : "🕌 Akşam Ezanı • İftar Vakti",
-              en ? "It's iftar time for \(place) (\(pt.aksam)). May Allah accept your fast! 🤲" : "\(place) için iftar vakti (\(pt.aksam)). Allah orucunuzu kabul etsin! 🤲", sound: ezan)
+              en ? "It's iftar time for \(place) (\(pt.aksam)). May Allah accept your fast! 🤲" : "\(place) için iftar vakti (\(pt.aksam)). Allah orucunuzu kabul etsin! 🤲", sound: ezan, vakit: .aksam)
         } else {
           add("aksam_\(key)", at(pt.aksam), en ? "🕌 Maghrib Adhan" : "🕌 Akşam Ezanı",
-              en ? "Maghrib prayer time for \(place) (\(pt.aksam))." : "\(place) için akşam namazı vakti girdi (\(pt.aksam)).", sound: ezan)
+              en ? "Maghrib prayer time for \(place) (\(pt.aksam))." : "\(place) için akşam namazı vakti girdi (\(pt.aksam)).", sound: ezan, vakit: .aksam)
         }
       }
       if st.notifyYatsi {
         add("yatsi_\(key)", at(pt.yatsi), en ? "🕌 Isha Adhan" : "🕌 Yatsı Ezanı",
-            en ? "Isha prayer time for \(place) (\(pt.yatsi))." : "\(place) için yatsı namazı vakti girdi (\(pt.yatsi)).", sound: ezan)
+            en ? "Isha prayer time for \(place) (\(pt.yatsi))." : "\(place) için yatsı namazı vakti girdi (\(pt.yatsi)).", sound: ezan, vakit: .yatsi)
       }
       if fasting {
         if st.remindBeforeImsak {

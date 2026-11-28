@@ -2,7 +2,7 @@ name: RamazanRehberi
 options:
   bundleIdPrefix: akin
   deploymentTarget:
-    iOS: "16.0"
+    iOS: "16.1"
   developmentLanguage: tr
 settings:
   base:
@@ -70,6 +70,10 @@ targets:
       - path: RamazanRehberi/Core/Calendars.swift
       - path: RamazanRehberi/Core/Content.swift
       - path: RamazanRehberi/Core/L10n.swift
+      - path: RamazanRehberi/Core/PrayerLog.swift
+      - path: RamazanRehberi/Core/PrayerRing.swift
+      - path: RamazanRehberi/Core/PrayerActivity.swift
+      - path: RamazanRehberi/Core/PrayerIntents.swift
       - path: RamazanRehberi/Resources/Data/content.json
         buildPhase: resources
       - path: RamazanRehberi/Resources/Fonts

@@ -17,7 +17,7 @@ shot () { # dil, ad, argümanlar...
   local lang=$1 name=$2; shift 2
   mkdir -p "$OUT/$lang"
   xcrun simctl terminate "$DEV" $BID 2>/dev/null
-  xcrun simctl launch "$DEV" $BID -debug_no_ads YES -qiblaCalibrationIntro NO -key_auto_location NO -key_language "$lang" -debug_hour 19 \
+  xcrun simctl launch "$DEV" $BID -debug_no_ads YES -qiblaCalibrationIntro NO -key_auto_location NO -key_language "$lang" -debug_hour 19 -debug_seed_log YES \
     -key_onboarding_completed YES -key_province Manisa -key_district Saruhanlı "$@"
   sleep 14
   xcrun simctl io "$DEV" screenshot "$OUT/$lang/$name.png"
@@ -30,11 +30,11 @@ shot () { # dil, ad, argümanlar...
 # Her görüntü farklı tema (Saray / İznik / Zümrüt, karanlık ve aydınlık); isim yok → saate göre selamlama
 for L in tr en; do
   shot $L 01_ana_sayfa  -key_theme_mode DARK  -key_color_theme SARAY
-  shot $L 02_oruc       -key_theme_mode DARK  -key_color_theme IZNIK -key_fasting_dates "(\"$TODAY\")"
+  shot $L 02_takip      -key_theme_mode DARK  -key_color_theme SARAY -debug_start_tab 2
   shot $L 03_kible      -key_theme_mode DARK  -key_color_theme ZUMRUT -debug_route qibla -debug_heading 145
   shot $L 03b_kible_don -key_theme_mode LIGHT -key_color_theme SARAY -debug_route qibla -debug_heading 105
   shot $L 04_kuran      -key_theme_mode DARK  -key_color_theme SARAY -debug_route reader
-  shot $L 05_takvim     -key_theme_mode LIGHT -key_color_theme ZUMRUT -debug_start_tab 2
+  shot $L 05_kaza       -key_theme_mode LIGHT -key_color_theme ZUMRUT -debug_route kaza
   shot $L 06_zikirmatik -key_theme_mode DARK  -key_color_theme IZNIK -debug_route zikirmatik
   shot $L 07_aydinlik   -key_theme_mode LIGHT -key_color_theme IZNIK
   shot $L 08_dahasi     -key_theme_mode DARK  -key_color_theme ZUMRUT -debug_start_tab 4

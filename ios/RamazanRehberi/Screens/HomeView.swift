@@ -26,15 +26,15 @@ struct HomeView: View {
         }
         if let f = Festival.today(now) { FestiveGreetingCard(festival: f, name: name) }
         HStack(spacing: 10) {
-          MosqueBanner()
+          TodayTrackCard(times: prayers.today, now: now, open: { selectTab(2) })
           CountdownCard(result: countdown, ramadanWatermark: ramadanDay != nil)
         }
         .frame(height: 250)
         ShortcutsRow()
         if fastingToday { FastingProgressCard(times: prayers.today, now: now) }
         PrayerTimesCard(times: prayers.today, now: now)
+        KazaSummaryCard()
         DailySpiritualCard()
-        ShareWithLovedOnesCard()
         HolidayCountdownCard(now: now)
         if fastingToday {
           IftarMenuCard(ramadanDay: ramadanDay)
@@ -87,7 +87,6 @@ struct HomeView: View {
         Spacer()
         circleLink(.zikirmatik, image: "ic_tasbih")
         circleLink(.qibla, image: "ic_kaaba", original: true)
-        circleLink(.mosques, image: "ic_hub_mosque")
         NavigationLink(value: Route.settings) {
           Image(systemName: "gearshape.fill").font(.system(size: 20)).foregroundStyle(p.onBackground).frame(width: 36, height: 36)
         }
