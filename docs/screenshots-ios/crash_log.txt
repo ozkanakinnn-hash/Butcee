@@ -606,3 +606,22 @@ Timestamp               Ty Process[PID:TID]
 2026-11-20 15:48:09.548 F  RamazanRehberi[30758:162ad] [com.apple.WebKit:Process] Networking process (0x133006c80) took 1.516608 seconds to launch
 2026-11-20 15:48:09.805 F  RamazanRehberi[30758:162ad] [com.apple.runtime-issues:SwiftUI] Modifying state during view update, this will cause undefined behavior.
 2026-11-20 15:48:25.768 F  RamazanRehberi[31342:16922] [com.apple.ManagedConfiguration:MC] Failed to get profile system group container path. Overriding with expected path: /Users/runner/Library/Developer/CoreSimulator/Devices/08AEF2F6-6BFD-48DC-9538-9B3FB7DE50B9/data/Containers/Shared/SystemGroup/systemgroup.com.apple.configurationprofiles
+CRASH: 01_ana_sayfa
+CRASH: 02_ana_sayfa_oruc
+CRASH: 03_ana_sayfa_aydinlik
+CRASH: 04_kuran
+CRASH: 05_okuyucu
+CRASH: 06_takip
+CRASH: 07_ayet_dua
+CRASH: 08_dahasi
+CRASH: 09_kible
+CRASH: 10_zikirmatik
+CRASH: 11_takvim
+CRASH: 12_rehber
+CRASH: 13_hatim
+CRASH: 14_kaza
+CRASH: 15_ayarlar
+CRASH: 16_english
+CRASH: 19_sihirbaz
+CRASH: 20_premium
+Timestamp               Ty Process[PID:TID]
