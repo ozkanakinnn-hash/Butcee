@@ -23,6 +23,15 @@ değeri `saveCache()` ile kaydediliyor ve **o gün bir daha Diyanet'e sorulmuyor
   uzaksa GPS / il merkezi koordinatını kullan.
 - Robolectric testi: Aladhan kaydı varken Diyanet gelince üzerine yazılıyor; eski önbellek resmi sayılmıyor.
 
+### Kesin çözüm: Diyanet'in resmi yıllık tablosu (iOS'ta yapıldı, Android'e aynısı)
+- `https://namazvakitleri.diyanet.gov.tr/tr-TR/<IlceID>` (yönlendirmeyi izle) sayfasında **"Yıllık Namaz Vakti"**
+  tablosu var: ilçenin bütün yılı, 365 gün. İlçe numarası emushaf'takiyle aynı (İstanbul 9541, Saruhanlı 9719).
+- 28.11.2026 karşılaştırması: resmi yıllık tablo = emushaf 30 günlük tablo, **32/32 gün birebir aynı**.
+- Okuma: `aria-describedby="table-caption-yearly"` tablosundaki satırlar `<td>09 Şubat 2026 Pazartesi</td><td>hicri</td>`
+  + 6 saat. Ay adlarında HTML kodu olabilir (`Eyl&#252;l`); çöz. iOS karşılığı: `DiyanetSource.parseYearTable`.
+- Sıra: resmi yıllık tablo (yılda bir, ayda bir tazele) → emushaf 30 gün (yıl geçişi + Kıble Saati) → yalnızca hiç
+  veri yoksa Aladhan/yerel hesap, ekranda "Yaklaşık vakit" uyarısıyla.
+
 ## 2. Alarm hassasiyeti (kontrol edildi, sorun yok — bilgi)
 - Ezan, sahur ve iftar alarmları `setAlarmClock` ile kuruluyor (dakikası dakikasına, Doze muaf). İzin yoksa
   `setAndAllowWhileIdle`'a düşüyor: **bu birkaç dakika gecikebilir**. Bildirim sihirbazı izni istiyor; izin

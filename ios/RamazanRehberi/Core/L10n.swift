@@ -20,6 +20,8 @@ enum L10n {
 
   /// iOS sürümüne özgü ek metinler (Android sözlüğünde olmayanlar).
   static let extra: [String: String] = [
+    "Kaynak: Diyanet İşleri Başkanlığı": "Source: Presidency of Religious Affairs (Diyanet)",
+    "Yaklaşık vakit: Diyanet tablosu indirilemedi, internete bağlanınca düzelir": "Approximate times: the official Diyanet table could not be downloaded; it updates once you are online",
     "Ana Sayfa": "Home",
     "Kur'an-ı Kerim": "Holy Quran",
     "Ramazan Rehberi": "Ramadan Guide",

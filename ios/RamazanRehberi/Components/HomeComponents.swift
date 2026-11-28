@@ -226,6 +226,18 @@ struct PrayerTimesCard: View {
           .background(RoundedRectangle(cornerRadius: 14).fill(sel ? p.primary : p.surfaceVariant.opacity(0.7)))
         }
       }
+      // Vaktin kaynağı: resmi Diyanet tablosu değilse kullanıcı açıkça uyarılır (sessizce ±1 dk gösterilmez)
+      if times.isOfficial || AppData.shared.useCoordinates {
+        if times.isOfficial {
+          Label(t("Kaynak: Diyanet İşleri Başkanlığı"), systemImage: "checkmark.seal")
+            .font(.system(size: 11, weight: .medium)).foregroundStyle(p.onSurfaceVariant)
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+      } else {
+        Label(t("Yaklaşık vakit: Diyanet tablosu indirilemedi, internete bağlanınca düzelir"), systemImage: "exclamationmark.triangle")
+          .font(.system(size: 11, weight: .semibold)).foregroundStyle(p.primary)
+          .frame(maxWidth: .infinity, alignment: .leading)
+      }
     }
     .padding(16).card()
   }

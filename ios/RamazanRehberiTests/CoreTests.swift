@@ -38,6 +38,37 @@ final class CoreTests: XCTestCase {
     XCTAssertTrue(PrayerCache.needsOfficialRefresh(city: city, district: district, from: start, days: 8))
   }
 
+  /// Diyanet resmi sitesinin yıllık tablosu (namazvakitleri.diyanet.gov.tr) doğru okunmalı; "Eyl&#252;l" gibi kodlar çözülmeli.
+  func testParseOfficialYearTable() {
+    let html = """
+    <table class="table vakit-table" id="yourTable" aria-describedby="table-caption-yearly">
+    <caption id="table-caption-yearly"><h3 class="h4">Saruhanlı İçin Yıllık Namaz Vakti</h3></caption>
+    <tbody>
+    <tr>
+        <td>09 Şubat 2026 Pazartesi</td>
+        <td>21 Şaban 1447</td>
+        <td>06:38</td>
+        <td>08:01</td>
+        <td>13:29</td>
+        <td>16:20</td>
+        <td>18:47</td>
+        <td>20:05</td>
+    </tr>
+    <tr><td>07 Eyl&#252;l 2026 Pazartesi</td><td>25 Rebiulevvel 1448</td><td>05:15</td><td>06:45</td><td>13:20</td><td>16:58</td><td>19:45</td><td>21:08</td></tr>
+    </tbody></table>
+    <table><tr><td>01 Ocak 2099 Perşembe</td><td>x</td><td>00:00</td><td>00:00</td><td>00:00</td><td>00:00</td><td>00:00</td><td>00:00</td></tr></table>
+    """
+    let days = DiyanetSource.parseYearTable(html)
+    XCTAssertEqual(days.count, 2)  // tablo dışındaki satır alınmaz
+    XCTAssertEqual(days[0].dateKey, "2026-02-09")
+    XCTAssertEqual(days[0].times, ["06:38", "08:01", "13:29", "16:20", "18:47", "20:05"])
+    XCTAssertEqual(days[1].dateKey, "2026-09-07")
+    XCTAssertEqual(days[1].times[4], "19:45")
+    XCTAssertEqual(DiyanetSource.monthNumber("Ağustos"), 8)
+    XCTAssertEqual(DiyanetSource.monthNumber("Aralık"), 12)
+    XCTAssertNil(DiyanetSource.monthNumber("Recep"))
+  }
+
   /// Eski sürümün önbelleğinde "source" alanı yok: çözülebilmeli ve resmi sayılmamalı (yeniden çekilsin).
   func testLegacyCacheDecodesAsUnofficial() throws {
     let json = #"{"imsak":"06:00","gunes":"07:30","ogle":"12:30","ikindi":"15:00","aksam":"17:30","yatsi":"19:00","dateStr":"2030-01-01","city":"A","district":"B"}"#
