@@ -38,9 +38,18 @@ değeri `saveCache()` ile kaydediliyor ve **o gün bir daha Diyanet'e sorulmuyor
   verilmemişse ana ekranda kalıcı bir uyarı kartı göstermek düşünülebilir.
 - `IFTAR_LIVE` (canlı sayaç) 3 dk, `FASTING_TIP` 15 dk pencereli. Bunlar ezan değil; bilerek böyle.
 
-## 3. iOS ile ortak tutulacak yeni özellikler (App Store 4.3(a) reddi sonrası)
-iOS'a eklenen takip / kaza / widget özellikleri onaylanırsa Android'e de aynı tasarımla eklenecek
-(kullanıcı iki sürümün birbirinden ayrılmasını istemiyor). Ayrıntı: `docs/yeni-tasarim/`.
+## 3. iOS ile ortak tutulacak yeni özellikler (App Store 4.3(a) reddi sonrası) — kullanıcı onayladı
+iOS'ta yapıldı (dal `ccr-220041a8-fdjzbw`, commit 53ae629). Android'e AYNI tema ve davranışla eklenecek:
+- Takip kaydı `prayer_log_v1` = {"YYYY-MM-DD": [0..4]} (0 Sabah … 4 Yatsı). iOS: `Core/PrayerLog.swift`.
+- Ana sayfa: cami fotoğraflı söz kartı yerine "Bugün" halkası (5 yay, n/5 kılındı, seri); vakit kartında her farz
+  vaktin altında işaret dairesi (yalnız vakti girmişler dokunulabilir); altında Kaza özeti kartı.
+- Takip ekranı: Hafta/Ay; ay takvimi renkleri 5/5, 3–4, 1–2, işaret yok; Seri / Bu ay % / Kaza; son 30 gün vakit bazında
+  oranlar; en çok kaçırılan vakit ipucu; ayarlar: "Kaçırılan vakitleri kazaya ekle" (varsayılan açık).
+- Otomatik kaza: yalnız EN AZ BİR vakit işaretlenen günler; eksikler ertesi gün kazaya, aynı gün iki kez eklenmez, 30 gün geriye.
+- Kilit ekranı sayacının Android karşılığı: sıradaki vakte geri sayan kalıcı bildirim (mevcut IFTAR_LIVE altyapısı).
+- Widget'ta "Kıldım" düğmesi (Glance/AppWidget), ezan bildiriminde "Kıldım" / "20 dk sonra hatırlat" eylemleri.
+- Android'de modül ÇIKARILMAZ (kullanıcı yalnız iOS'ta çıkarmayı onayladı).
+Tasarım: `docs/yeni-tasarim/6..9-*.png`.
 
 ## 4. Sürüm
 `gradle.properties` → `APP_VERSION_CODE` Play'deki en yüksek koddan büyük olmalı.
