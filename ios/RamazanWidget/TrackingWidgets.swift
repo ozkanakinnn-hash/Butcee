@@ -98,10 +98,16 @@ private func liveRing(_ s: PrayerActivityAttributes.ContentState, width: CGFloat
 struct PrayerLiveLockView: View {
   let context: ActivityViewContext<PrayerActivityAttributes>
 
+  /// Hedef vakit geçti mi (iOS 16.2+: sistem "eski" işaretini de dikkate al)
+  private var isEntered: Bool {
+    if Date() >= context.state.target { return true }
+    if #available(iOS 16.2, *) { return context.isStale }
+    return false
+  }
+
   var body: some View {
     let s = context.state
-    var entered = Date() >= s.target
-    if #available(iOS 16.2, *), context.isStale { entered = true }
+    let entered = isEntered
     let en = Shared.defaults.string(forKey: "key_language") == "en"
     VStack(spacing: 10) {
       HStack(spacing: 12) {
