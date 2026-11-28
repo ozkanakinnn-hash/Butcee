@@ -403,3 +403,68 @@ test('iPhone grubu: son dakika ayrı, bülten ayrı, diğer haberler tek grupta'
   assert.equal(toWire(base('news', 'news_ekonomi')).apns.payload.aps['thread-id'], 'news');
   assert.equal(toWire(base('quiet', 'news_digest')).apns.payload.aps['thread-id'], 'news');
 });
+
+// ── Yapay zekâ bildirim editörü (calm: Sadece önemli + Dengeli) ──
+test('AI: karar yoksa calm bildirimi gitmez, aday aiPending ile döner; karar gelince gider', () => {
+  const t = (id, src) => art(id, 'gundem', '2026-11-06T11:40:00Z', { source_name: src, title: 'Deprem enkazından yayılan tozlar bilimsel araştırmaya konu oldu' });
+  const results = [{ addedArticles: [t('a', 'NTV'), t('b', 'AA'), t('c', 'TRT')] }];
+  const r1 = planNotifications({ results, categories: cats, state: {}, now: NOW, ai: { enabled: true } });
+  assert.equal(r1.messages.filter((m) => /'calm'/.test(m.condition || '')).length, 0);
+  assert.equal(r1.nextState.aiPending.length, 1);
+  const id = r1.nextState.aiPending[0].story.id;
+  // Gemini: "araştırma haberi, gönderme"
+  const no = planNotifications({ results, categories: cats, state: {}, now: NOW, ai: { enabled: true, decisions: { [id]: { ok: false, at: NOW } } } });
+  assert.equal(no.messages.filter((m) => /'calm'/.test(m.condition || '')).length, 0);
+  assert.equal(no.nextState.aiPending.length, 0, 'karar verilmiş aday tekrar sorulmaz');
+  assert.equal(no.nextState.ai_decisions[id].ok, false, 'karar saklanır');
+  // Gemini: "gönder, kritik değil" → ÖNEMLİ GELİŞME
+  const yes = planNotifications({ results, categories: cats, state: {}, now: NOW, ai: { enabled: true, decisions: { [id]: { ok: true, kritik: false, gece: false, neden: 'test', at: NOW } } } });
+  const major = yes.messages.filter((m) => /'calm'/.test(m.condition || ''));
+  assert.equal(major.length, 1);
+  assert.equal(major[0].notification.title, '⚡ ÖNEMLİ GELİŞME');
+  assert.deepEqual(yes.nextState.breaking.sent_titles, ['Deprem enkazından yayılan tozlar bilimsel araştırmaya konu oldu']);
+});
+
+test('AI: günlük sınır kritik dahil 4; yalnızca gece=true (can güvenliği) aşabilir', () => {
+  const quake = art('q', 'gundem', '2026-11-06T11:58:00Z', { source_name: 'AA', title: 'Malatya\'da 6,1 büyüklüğünde deprem' });
+  const state = { breaking: { day: '2026-11-06', major_count: 4, last_major_at: NOW - 3_600_000 } };
+  const r1 = planNotifications({ results: [{ breakingArticles: [quake] }], categories, state, now: NOW, ai: { enabled: true } });
+  const id = r1.nextState.aiPending[0].story.id;
+  const capped = planNotifications({ results: [{ breakingArticles: [quake] }], categories, state, now: NOW, ai: { enabled: true, decisions: { [id]: { ok: true, kritik: true, gece: false, at: NOW } } } });
+  assert.equal(capped.messages.filter((m) => /'calm'/.test(m.condition || '')).length, 0, 'sınır doldu');
+  const urgent = planNotifications({ results: [{ breakingArticles: [quake] }], categories, state, now: NOW, ai: { enabled: true, decisions: { [id]: { ok: true, kritik: true, gece: true, at: NOW } } } });
+  const m = urgent.messages.filter((x) => /'calm'/.test(x.condition || ''));
+  assert.equal(m.length, 1);
+  assert.equal(m[0].notification.title, '🔴 SON DAKİKA');
+});
+
+test('AI kapalıyken de kritik haber günlük sınıra sayılır (gece/can güvenliği hariç)', () => {
+  const t = (id, src) => art(id, 'gundem', '2026-11-06T11:40:00Z', { source_name: src, title: 'Merkez Bankası faiz kararını açıkladı' });
+  const state = { breaking: { day: '2026-11-06', major_count: 4, last_major_at: NOW - 3_600_000 } };
+  const r = planNotifications({ results: [{ addedArticles: [t('a', 'NTV'), t('b', 'AA'), t('c', 'TRT')] }], categories: cats, state, now: NOW });
+  assert.equal(r.messages.filter((m) => /'calm'/.test(m.condition || '')).length, 0);
+});
+
+test('sendNewsNotifications: Gemini kararıyla gönderir ve kararı saklar', async () => {
+  const t = (id, src) => art(id, 'gundem', '2026-11-06T11:40:00Z', { source_name: src, title: 'Seçim takvimi açıklandı' });
+  const docs = new Map([['app_meta/ai', { enabled: true }]]);
+  const db = {
+    doc: (p) => ({ get: async () => ({ data: () => docs.get(p), exists: docs.has(p) }), set: async (v) => docs.set(p, v), update: async () => {} }),
+    collection: () => ({ doc: () => ({ set: async () => {} }), where: () => ({ limit: () => ({ get: async () => ({ empty: true, docs: [] }) }) }) }),
+    batch: () => ({ set: () => {}, commit: async () => {} }),
+  };
+  const sent = [];
+  const messaging = { sendEach: async (msgs) => { sent.push(...msgs); return { successCount: msgs.length, failureCount: 0, responses: msgs.map(() => ({ success: true })) }; } };
+  let asked = 0;
+  const judge = async (prompt) => {
+    asked += 1;
+    const id = JSON.parse(prompt.slice(prompt.indexOf('['), prompt.lastIndexOf(']') + 1))[0].id;
+    return { text: JSON.stringify({ kararlar: [{ id, ok: true, kritik: true, gece: false, neden: 'ülke gündemi' }] }), error: '' };
+  };
+  const r = await sendNewsNotifications(db, [{ addedArticles: [t('a', 'NTV'), t('b', 'AA'), t('c', 'TRT')] }], cats, { messaging, now: NOW, judge, summarize: async () => '' });
+  assert.equal(asked, 1);
+  assert.ok(r.sent >= 1);
+  const state = docs.get('notify_state/news');
+  assert.equal(Object.values(state.ai_decisions)[0].ok, true);
+  assert.equal(state.aiPending, undefined, 'geçici alan kaydedilmez');
+});

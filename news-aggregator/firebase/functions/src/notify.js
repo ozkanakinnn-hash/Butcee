@@ -89,7 +89,8 @@ function buildNewsMessage({ categoryId, categoryName, articles, breaking = false
 /** Kategori özeti profilleri (seviye başına ayrı kuyruk). */
 const PROFILES = {
   all: { level: 'lvl_all', gapMs: 90 * 60 * 1000, cooldownMs: 3 * 60 * 60 * 1000, dailyCap: 10 },
-  balanced: { level: 'lvl_balanced', gapMs: 3 * 60 * 60 * 1000, cooldownMs: 6 * 60 * 60 * 1000, dailyCap: 3 },
+  // Dengeli bütçesi (günde en fazla 8): 2 bülten + en fazla 4 son dakika/önemli gelişme + en fazla 2 özet
+  balanced: { level: 'lvl_balanced', gapMs: 3 * 60 * 60 * 1000, cooldownMs: 6 * 60 * 60 * 1000, dailyCap: 2 },
 };
 /** Özete girmek için bir hikâyeyi en az kaç farklı yayıncı vermiş olmalı (tek kaynaklı rutin haber akışta kalır). */
 const DIGEST_MIN_SOURCES = 3;
@@ -109,6 +110,9 @@ const BULLETIN_TOPIC = 'bulletin';
 const MAJOR_MIN_SOURCES = 3;
 const MAJOR_COOLDOWN_MS = 30 * 60 * 1000;
 const MAJOR_DAILY_CAP = 6;
+/** calm (Sadece önemli + Dengeli) için günlük son dakika/önemli gelişme sınırı — KRİTİK dahil. Yalnızca yapay zekânın
+ *  "gece=true" (gerçekleşmiş can güvenliği olayı) dediği haber bu sınırı aşabilir. */
+const CALM_DAILY_CAP = 4;
 const MAJOR_MAX_AGE_MS = 2 * 60 * 60 * 1000;
 const MAJOR_SKIP_CATEGORIES = new Set(['spor', 'magazin']); // son dakika kaynağı değilse
 const BULLETIN_SLOTS = [
@@ -353,7 +357,7 @@ function buildBulletinMessage(slot, stories, now, briefingId = '') {
  * Çalışma sonuçlarından gönderilecek bildirimleri seçer (saf fonksiyon; test edilir).
  * @returns {{messages: object[], nextState: object}}
  */
-function planNotifications({ results, categories, state = {}, now = Date.now() }) {
+function planNotifications({ results, categories, state = {}, now = Date.now(), ai = null }) {
   const messages = [];
   const next = {};
 
@@ -391,7 +395,7 @@ function planNotifications({ results, categories, state = {}, now = Date.now() }
   //    Seviye 3–4 hiç bildirilmez; özet ve "5 dakikada gündem" içinde görünürler.
   const br = { ...(state.breaking || {}) };
   const { day } = istanbulClock(now);
-  if (br.day !== day) Object.assign(br, { day, major_count: 0 });
+  if (br.day !== day) Object.assign(br, { day, major_count: 0, sent_titles: [] });
   const night = isNightSilent(new Date(now));
   const ranked = stories
     .map((s) => ({ s, score: scoreStory(s, { now, maxAgeMs: MAJOR_MAX_AGE_MS }) }))
@@ -403,9 +407,27 @@ function planNotifications({ results, categories, state = {}, now = Date.now() }
       || Number(b.score.night) - Number(a.score.night)
       || b.s.srcs.length - a.s.srcs.length
       || b.s.last_ms - a.s.last_ms);
-  // Kritik haber günlük sınıra ve aralığa takılmaz; önemli haber takılır.
-  const pick = ranked.find(({ score }) => score.level === LEVEL.CRITICAL
-    || ((br.major_count || 0) < MAJOR_DAILY_CAP && now - (br.last_major_at || 0) >= MAJOR_COOLDOWN_MS));
+  // Karar: yapay zekâ açıksa (ai.enabled) calm bildirimini Gemini seçer (src/ai-notify.js); kararı olmayan adaylar
+  // aiPending ile döner, çağıran Gemini'ye sorup planı yeniden kurar. Kapalıysa eski kurallar.
+  // Her iki durumda calm için günlük sınır KRİTİK dahil CALM_DAILY_CAP; yalnız gece/can güvenliği kararı aşabilir.
+  const { pruneDecisions, MAX_CANDIDATES } = require('./ai-notify');
+  const decisions = { ...pruneDecisions(state.ai_decisions, now), ...((ai && ai.decisions) || {}) };
+  next.ai_decisions = decisions;
+  const capOk = () => (br.major_count || 0) < CALM_DAILY_CAP && now - (br.last_major_at || 0) >= MAJOR_COOLDOWN_MS;
+  let pick = null;
+  if (ai && ai.enabled) {
+    next.aiPending = ranked.filter((e) => !decisions[e.s.id]).slice(0, MAX_CANDIDATES).map((e) => ({ story: e.s, score: e.score }));
+    const chosen = ranked
+      .filter((e) => decisions[e.s.id] && decisions[e.s.id].ok)
+      .filter((e) => !night || decisions[e.s.id].gece)
+      .find((e) => decisions[e.s.id].gece || capOk());
+    if (chosen) {
+      const d = decisions[chosen.s.id];
+      pick = { ...chosen, score: { ...chosen.score, level: d.kritik || d.gece ? LEVEL.CRITICAL : LEVEL.IMPORTANT, night: d.gece, reason: `AI: ${d.neden}` } };
+    }
+  } else {
+    pick = ranked.find(({ score }) => (score.level === LEVEL.CRITICAL && score.night) || capOk()) || null;
+  }
   if (pick) {
     const { s, score, gate } = pick;
     messages.push(buildMajorMessage(s, now, score));
@@ -416,10 +438,9 @@ function planNotifications({ results, categories, state = {}, now = Date.now() }
     s.notify_count = (s.notify_count || 0) + 1;
     s.pending_dev = [];
     s.major_ms = now; // eski alan: geriye uyum
-    if (score.level === LEVEL.IMPORTANT) {
-      br.last_major_at = now;
-      br.major_count = (br.major_count || 0) + 1;
-    }
+    br.last_major_at = now;
+    br.major_count = (br.major_count || 0) + 1;
+    br.sent_titles = [...(br.sent_titles || []), s.title].slice(-12);
     next.last_pick = { id: s.id, level: score.level, reason: score.reason, why: gate.reason };
   }
 
@@ -534,11 +555,34 @@ async function writeExtras(db, briefing, sourceUpdates = [], { notified = false,
 }
 
 /** Bildirimleri gönderir ve durumu kaydeder. Hata bildirimi çekimi bozmaz. */
-async function sendNewsNotifications(db, results, categories, { messaging = getMessaging(), now = Date.now(), summarize } = {}) {
+/** app_meta/ai.notify_ai (vars. true): calm bildirimlerini Gemini seçsin mi. */
+async function aiNotifyEnabled(db) {
+  try {
+    const d = (await db.doc('app_meta/ai').get()).data() || {};
+    return d.enabled !== false && d.notify_ai !== false;
+  } catch {
+    return false;
+  }
+}
+
+async function sendNewsNotifications(db, results, categories, { messaging = getMessaging(), now = Date.now(), summarize, judge } = {}) {
   const ref = db.doc('notify_state/news');
   try {
     const snap = await ref.get();
-    const planned = planNotifications({ results, categories, state: snap.data() || {}, now });
+    const state = snap.data() || {};
+    const aiEnabled = (await aiNotifyEnabled(db)) && Boolean(process.env.GEMINI_API_KEY || judge);
+    let planned = planNotifications({ results, categories, state, now, ai: { enabled: aiEnabled } });
+    const pending = planned.nextState.aiPending || [];
+    if (aiEnabled && pending.length) {
+      // Gemini'ye bugün gönderilenlerle birlikte adayları sor, kararlarla planı yeniden kur (plan saf fonksiyondur).
+      const { judgeCandidates } = require('./ai-notify');
+      const sentToday = ((state.breaking || {}).day === istanbulClock(now).day && (state.breaking || {}).sent_titles) || [];
+      const { decisions, error } = await judgeCandidates(pending, sentToday, { db, now, generate: judge });
+      if (error) logger.warn('AI bildirim editörü yanıt vermedi, kurallar kullanıldı', { error });
+      planned = planNotifications({ results, categories, state, now, ai: { enabled: true, decisions } });
+      logger.info('AI bildirim kararları', { decisions: Object.entries(decisions).map(([id, d]) => `${id.slice(0, 6)}:${d.ok ? 'GÖNDER' : 'hayır'}${d.kritik ? '/kritik' : ''} ${d.neden}`) });
+    }
+    delete planned.nextState.aiPending;
     const { nextState, briefing, sourceUpdates } = planned;
     const hasBulletin = planned.messages.some((m) => m.topic === BULLETIN_TOPIC);
     const aiSummary = await writeExtras(db, briefing, sourceUpdates, { notified: hasBulletin, summarize });
@@ -589,4 +633,5 @@ module.exports = {
   CATEGORY_COOLDOWN_MS,
   BREAKING_COOLDOWN_MS,
   MAJOR_DAILY_CAP,
+  CALM_DAILY_CAP,
 };

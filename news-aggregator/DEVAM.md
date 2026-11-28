@@ -165,6 +165,16 @@ project_id haber-68a3c) → `scripts/durum-raporu.js`: Make/AI durumu, son payla
 4. Sonraki sürüm 1.0.5 (Android 201 / iOS 1.0.5) — `sonraki-surum.md`'den.
 5. İsteğe bağlı: iOS AdMob kimlikleri; `haberIsleVePaylas`/`notifyBreakingNews` silinmesi (gözlemden sonra).
 
+### Bildirimleri yapay zekâ seçiyor (28 Kasım 2026) — DEPLOY BEKLİYOR
+- Sorun: "Dengeli" kullanıcıya sabah 12 bildirim. Neden: seviye 1 (kritik) günlük sınırsızdı ve anahtar kelimeyle
+  belirleniyordu ("deprem enkazı tozları araştırması", "taht savaşı", "Kızılay Kanunu: afet alımları" → kritik).
+- Çözüm `src/ai-notify.js`: kurallar yalnız ADAY üretir; calm (Sadece önemli + Dengeli) için Gemini karar verir
+  (ok/kritik/gece). Karar `notify_state/news.ai_decisions`'ta 24 saat saklanır; bugün gidenler (`breaking.sent_titles`)
+  tekrar kontrolü için Gemini'ye verilir. Gemini yoksa eski kurallar (yedek).
+- Sınır: calm son dakika/önemli gelişme günde en fazla 4, KRİTİK DAHİL (`CALM_DAILY_CAP`); yalnız AI'nın gece=true
+  (gerçekleşmiş can güvenliği) dediği aşar. Dengeli özet 3→2. Bütçe: Sadece önemli ≤6, Dengeli ≤8 (+ olağanüstü).
+- Kapatmak: `app_meta/ai.notify_ai = false`. Tümü (lvl_all) değişmedi.
+
 ### X akışları eklendi (28 Kasım 2026, oturum session_01Q1LBDnEdHeeDbHVqq6jpJY) — DEPLOY BEKLİYOR
 - `src/akis.js`: hafta içi 07:30/12:30/18:30/23:30, Cmt-Paz 20:30 Gemini ile telifsiz özet → mevcut Make webhook'u
   (`tur: "akis"`, aynı alanlar; senaryo değişmez). Tekrar hafızası `bulletin_topics`. `fetchRssFeeds` içinden çalışır.
